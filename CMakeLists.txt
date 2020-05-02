@@ -1,15 +1,28 @@
 cmake_minimum_required(VERSION 3.14)
 project(RDFCacheK2)
+set(CMAKE_VERBOSE_MAKEFILE ON)
 
 set(CMAKE_CXX_STANDARD 17)
 
-set(SOURCE_FILES memory/MemoryManager.cpp)
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release)
+endif()
 
-set(HEADER_FILES memory/MemoryManager.hpp memory/MemoryPool.hpp)
+set(CMAKE_CXX_FLAGS "-Wall -Wextra")
+set(CMAKE_CXX_FLAGS_DEBUG "-g")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+
+set(SOURCE_FILES
+        block/Block.cpp
+        )
+
+set(HEADER_FILES
+        block/Block.hpp
+        )
 
 set(INCLUDES memory)
 
-set(K2TREE_PATH lib/c-k2tree-dyn)
+set(K2TREE_PATH ${CMAKE_SOURCE_DIR}/lib/c-k2tree-dyn)
 
 set(INCLUDES_LIBS
         ${K2TREE_PATH}/include
@@ -23,8 +36,17 @@ set(LINK_LIBS ${K2TREE_PATH}/bin)
 include_directories(${INCLUDES} ${INCLUDES_LIBS})
 link_directories(${LINK_LIBS})
 
+
+add_library(MemoryPool STATIC
+        memory/pooled_memory_impl.cpp
+        memory/MemoryManager.cpp
+        )
+
 add_library(RDFCacheK2 STATIC ${SOURCE_FILES})
 
-add_library(pooled_memory_impl STATIC memory/pooled_memory_impl.cpp)
+add_executable(main main.cpp )
 
-add_executable(main main.cpp)
+
+target_link_libraries(main RDFCacheK2 k2tree_merged_noalloc MemoryPool    )
+
+

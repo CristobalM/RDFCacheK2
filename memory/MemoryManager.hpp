@@ -22,8 +22,9 @@ extern "C" {
 
 #include "MemoryPool.hpp"
 
-class MemoryManager {
+#include <string>
 
+class MemoryManager {
 
 
 protected:
@@ -48,6 +49,7 @@ public:
   static MemoryManager &instance();
 
 
+  std::string memory_usage();
 
 };
 
