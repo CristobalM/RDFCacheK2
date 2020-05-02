@@ -52,7 +52,7 @@ std::vector<std::pair<unsigned long, unsigned long>> Block::scan_points() {
     throw std::runtime_error("scan_points: CODE: " + std::to_string(err_check));
   }
 
-  std::vector<std::pair<unsigned long, unsigned long>> out(result.nof_items);
+  std::vector<std::pair<unsigned long, unsigned long>> out;
 
   for(int i = 0; i < result.nof_items; i++){
     struct pair2dl *current;

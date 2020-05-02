@@ -22,9 +22,27 @@ int main() {
 
     cout << "finished inserting" << endl;
 
+
     cout << "Elapsed time milliseconds : "
          << chrono::duration_cast<chrono::milliseconds>(end - start).count()
          << endl;
+
+    start = chrono::steady_clock::now();
+    auto scanned_points = block.scan_points();
+    end = chrono::steady_clock::now();
+
+    cout << "scanned points amount: " << scanned_points.size() << endl;
+
+    cout << "first ten scanned: " << endl;
+
+    for(int i = 0; i < 10; i++){
+      cout << scanned_points[i].first << ", " << scanned_points[i].second << endl;
+    }
+
+    cout << "Elapsed time milliseconds scanning : "
+         << chrono::duration_cast<chrono::milliseconds>(end - start).count()
+         << endl;
+
 
     cout << "memory usage before cleanup:" << endl;
     cout << MemoryManager::instance().memory_usage() << endl;
