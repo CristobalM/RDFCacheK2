@@ -8,7 +8,7 @@
 #include "exceptions.hpp"
 
 
-CacheResult::CacheResult() : predicates_indexes() {}
+CacheResult::CacheResult() = default;
 
 void CacheResult::insert_triple(ulong subject_index, ulong predicate_index, ulong object_index) {
   if (predicates_indexes.find(predicate_index) == predicates_indexes.end()) {
