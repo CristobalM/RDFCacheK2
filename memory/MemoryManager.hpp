@@ -26,6 +26,8 @@ extern "C" {
 
 class MemoryManager {
 
+  uint64_t current_index;
+
 
 protected:
   MemoryManager();
@@ -45,8 +47,11 @@ public:
   MemoryPool<uint32_t[512]> containers_512;
   MemoryPool<uint32_t[1024]> containers_1024;
 
+  uint64_t new_block_index();
+
 
   static MemoryManager &instance();
+
 
 
   std::string memory_usage();
