@@ -1,7 +1,7 @@
 #include <iostream>
 #include <chrono>
 
-#include "block/Block.hpp"
+#include "core/K2Tree.hpp"
 
 #include "MemoryManager.hpp"
 
@@ -11,11 +11,11 @@ int main() {
   {
     int treedepth = 9;
     int side = 1 << treedepth;
-    Block block(treedepth);
+    K2Tree k2tree(treedepth);
     auto start = chrono::steady_clock::now();
     for (int col = 0; col < side; col++) {
       for (int row = 0; row < side; row++) {
-        block.insert(col, row);
+        k2tree.insert(col, row);
       }
     }
     auto end = chrono::steady_clock::now();
@@ -28,7 +28,7 @@ int main() {
          << endl;
 
     start = chrono::steady_clock::now();
-    auto scanned_points = block.scan_points();
+    auto scanned_points = k2tree.scan_points();
     end = chrono::steady_clock::now();
 
     cout << "scanned points amount: " << scanned_points.size() << endl;

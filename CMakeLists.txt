@@ -13,14 +13,19 @@ set(CMAKE_CXX_FLAGS_DEBUG "-g")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 set(SOURCE_FILES
-        block/Block.cpp
+        core/K2Tree.cpp
+        core/Cache.cpp
+        core/CacheResult.cpp
         )
 
 set(HEADER_FILES
-        block/Block.hpp
+        core/K2Tree.hpp
+        core/Cache.hpp
+        core/CacheResult.hpp
+        core/RDFTriple.hpp
         )
 
-set(INCLUDES memory)
+set(INCLUDES memory core)
 
 set(K2TREE_PATH ${CMAKE_SOURCE_DIR}/lib/c-k2tree-dyn)
 
@@ -37,7 +42,7 @@ include_directories(${INCLUDES} ${INCLUDES_LIBS})
 link_directories(${LINK_LIBS})
 
 
-add_library(MemoryPool STATIC
+add_library(MemoryManager STATIC
         memory/pooled_memory_impl.cpp
         memory/MemoryManager.cpp
         )
@@ -45,8 +50,10 @@ add_library(MemoryPool STATIC
 add_library(RDFCacheK2 STATIC ${SOURCE_FILES})
 
 add_executable(main main.cpp )
+add_executable(cache_example cache_example.cpp)
 
 
-target_link_libraries(main RDFCacheK2 k2tree_merged_noalloc MemoryPool    )
+target_link_libraries(main RDFCacheK2 k2tree_merged_noalloc MemoryManager)
+target_link_libraries(cache_example RDFCacheK2 k2tree_merged_noalloc MemoryManager)
 
 
