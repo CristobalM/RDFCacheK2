@@ -3,14 +3,14 @@
 //
 
 #include <cmath>
-#include "CacheResult.hpp"
+#include "GraphResult.hpp"
 
 #include "exceptions.hpp"
 
 
-CacheResult::CacheResult() = default;
+GraphResult::GraphResult() = default;
 
-void CacheResult::insert_triple(ulong subject_index, ulong predicate_index, ulong object_index) {
+void GraphResult::insert_triple(ulong subject_index, ulong predicate_index, ulong object_index) {
   if (predicates_indexes.find(predicate_index) == predicates_indexes.end()) {
     throw PredicateNotFound(predicate_index);
   }
@@ -18,12 +18,12 @@ void CacheResult::insert_triple(ulong subject_index, ulong predicate_index, ulon
   predicates_indexes[predicate_index]->insert(subject_index, object_index);
 }
 
-bool CacheResult::has_triple(ulong subject_index, ulong predicate_index, ulong object_index) {
+bool GraphResult::has_triple(ulong subject_index, ulong predicate_index, ulong object_index) {
   return predicates_indexes.find(predicate_index) != predicates_indexes.end() &&
          predicates_indexes[predicate_index]->has(subject_index, object_index);
 }
 
-std::vector<RDFTriple> CacheResult::scan_points() {
+std::vector<RDFTriple> GraphResult::scan_points() {
   std::vector<RDFTriple> result;
   for (auto &hmap_item : predicates_indexes) {
     ulong predicate_index = hmap_item.first;
@@ -36,14 +36,14 @@ std::vector<RDFTriple> CacheResult::scan_points() {
   return result;
 }
 
-void CacheResult::insert_predicate(ulong predicate_index, ulong max_associated_entities) {
+void GraphResult::insert_predicate(ulong predicate_index, ulong max_associated_entities) {
   if (predicates_indexes.find(predicate_index) != predicates_indexes.end()) {
     throw PredicateAlreadyExists(predicate_index);
   }
   predicates_indexes[predicate_index] = std::make_unique<K2Tree>(std::ceil(std::log2(max_associated_entities)));
 }
 
-std::string CacheResult::serialize_result() {
+std::string GraphResult::serialize_result() {
   std::vector<uint64_t> predicates;
   for (auto &hmap_item : predicates_indexes){
     predicates.push_back((uint64_t)hmap_item.first);
@@ -64,7 +64,7 @@ std::string CacheResult::serialize_result() {
   return ss.str();
 }
 
-std::unique_ptr<CacheResult> CacheResult::from_binary(const std::string &cache_result_binary_string) {
+std::unique_ptr<GraphResult> GraphResult::from_binary(const std::string &cache_result_binary_string) {
   std::istringstream iss(cache_result_binary_string);
   uint32_t predicates_sz;
 
@@ -73,7 +73,7 @@ std::unique_ptr<CacheResult> CacheResult::from_binary(const std::string &cache_r
 
   iss.read((char *)predicates.data(), sizeof(uint64_t) * predicates_sz);
 
-  auto cache_result = std::make_unique<CacheResult>();
+  auto cache_result = std::make_unique<GraphResult>();
   for(unsigned long predicate : predicates){
     cache_result->predicates_indexes[predicate] = K2Tree::from_binary_stream(iss);
   }

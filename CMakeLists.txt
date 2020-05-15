@@ -12,20 +12,39 @@ set(CMAKE_CXX_FLAGS "-Wall -Wextra")
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
-set(SOURCE_FILES
+set(CORE_SOURCE_FILES
         core/K2Tree.cpp
         core/Cache.cpp
-        core/CacheResult.cpp
+        core/GraphResult.cpp
+        core/cache_result/ExistingCacheResult.cpp
+        core/cache_result/NonExistingCacheResult.cpp
         )
 
-set(HEADER_FILES
+set(CORE_HEADER_FILES
         core/K2Tree.hpp
         core/Cache.hpp
-        core/CacheResult.hpp
+        core/GraphResult.hpp
         core/RDFTriple.hpp
+        core/cache_result/ExistingCacheResult.hpp
+        core/cache_result/CacheResult.hpp
+        core/cache_result/NonExistingCacheResult.hpp
         )
 
-set(INCLUDES memory core)
+set(NETWORK_SOURCE_FILES
+        network/CacheServer.cpp
+        network/TCPServerConnection.cpp
+        network/ServerTask.cpp
+        network/CacheServerTaskProcessor.cpp
+        )
+
+set(NETWORK_HEADER_FILES
+        network/CacheServer.hpp
+        network/TCPServerConnection.hpp
+        network/ServerTask.hpp
+        network/CacheServerTaskProcessor.hpp
+        )
+
+set(INCLUDES memory core network)
 
 set(K2TREE_PATH ${CMAKE_SOURCE_DIR}/lib/c-k2tree-dyn)
 
@@ -47,7 +66,8 @@ add_library(MemoryManager STATIC
         memory/MemoryManager.cpp
         )
 
-add_library(RDFCacheK2 STATIC ${SOURCE_FILES})
+add_library(RDFCacheK2 STATIC ${CORE_SOURCE_FILES})
+add_library(RDFCacheK2_Network STATIC ${NETWORK_SOURCE_FILES})
 
 add_executable(main main.cpp )
 add_executable(cache_example cache_example.cpp)
@@ -55,5 +75,3 @@ add_executable(cache_example cache_example.cpp)
 
 target_link_libraries(main RDFCacheK2 k2tree_merged_noalloc MemoryManager)
 target_link_libraries(cache_example RDFCacheK2 k2tree_merged_noalloc MemoryManager)
-
-

@@ -9,7 +9,6 @@
 
 class Cache {
 
-
 public:
   Cache();
 };

@@ -18,6 +18,7 @@ extern "C" {
 #include <string>
 #include <vector>
 #include <sstream>
+#include <memory>
 
 class K2Tree {
   struct block *root;
