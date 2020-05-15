@@ -21,7 +21,9 @@ extern "C" {
 #include <string>
 
 struct block *k2tree_alloc_block(void){
-  return MemoryManager::instance().blocks.request_memory();
+  auto *out = MemoryManager::instance().blocks.request_memory();
+  out->block_index = MemoryManager::instance().new_block_index();
+  return out;
 }
 
 struct block_topology *k2tree_alloc_block_topology(void){

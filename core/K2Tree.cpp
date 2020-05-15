@@ -4,7 +4,6 @@
 
 #include <unordered_map>
 #include <cmath>
-#include <memory>
 
 #include "K2Tree.hpp"
 #include "exceptions.hpp"
