@@ -12,6 +12,11 @@
 
 class Message {
   uint32_t message_size;
+  /**
+   * Syntax:
+   * uint32_t ReqType
+   * the remaining message_size - 4 bytes depend on ReqType
+   */
   std::unique_ptr<char[]> buffer;
 public:
   Message(std::unique_ptr<char[]> &&buffer, uint32_t message_size);

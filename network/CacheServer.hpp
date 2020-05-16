@@ -15,7 +15,6 @@
 
 
 class CacheServer {
-  Cache &cache;
   uint16_t port;
   uint8_t workers_count;
   CacheServerTaskProcessor task_processor;

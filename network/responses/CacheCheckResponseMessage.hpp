@@ -6,10 +6,12 @@
 #define RDFCACHEK2_CACHECHECKRESPONSEMESSAGE_HPP
 
 
+#include <cstdint>
+#include <array>
 #include "ResponseMessage.hpp"
 
 class CacheCheckResponseMessage : public ResponseMessage {
-  bool exists;
+  std::array<uint32_t, 2> response;
 public:
   explicit CacheCheckResponseMessage(bool exists);
 

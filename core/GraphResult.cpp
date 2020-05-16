@@ -36,12 +36,17 @@ std::vector<RDFTriple> GraphResult::scan_points() {
   return result;
 }
 
-void GraphResult::insert_predicate(ulong predicate_index, ulong max_associated_entities) {
+void GraphResult::insert_predicate(ulong predicate_index, ulong association_depth) {
   if (predicates_indexes.find(predicate_index) != predicates_indexes.end()) {
     throw PredicateAlreadyExists(predicate_index);
   }
-  predicates_indexes[predicate_index] = std::make_unique<K2Tree>(std::ceil(std::log2(max_associated_entities)));
+  predicates_indexes[predicate_index] = std::make_unique<K2Tree>(association_depth);
 }
+
+void GraphResult::insert_predicate(ulong predicate_index) {
+  insert_predicate(predicate_index, MAX_ASSOCIATION_DEPTH_DEFAULT);
+}
+
 
 std::string GraphResult::serialize_result() {
   std::vector<uint64_t> predicates;
@@ -80,3 +85,21 @@ std::unique_ptr<GraphResult> GraphResult::from_binary(const std::string &cache_r
 
   return cache_result;
 }
+
+GraphResult::GraphResult(FeedData &feed_data) {
+  for(const RDFTriple &rdf_triple : feed_data){
+    if(!has_predicate(rdf_triple.predicate)){
+      insert_predicate(rdf_triple.predicate);
+    }
+    insert_triple(rdf_triple);
+  }
+}
+
+bool GraphResult::has_predicate(ulong predicate_index) {
+  return predicates_indexes.find(predicate_index) != predicates_indexes.end();
+}
+
+void GraphResult::insert_triple(const RDFTriple &rdf_triple) {
+  insert_triple(rdf_triple.subject, rdf_triple.predicate, rdf_triple.object);
+}
+

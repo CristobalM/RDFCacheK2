@@ -6,9 +6,12 @@
 #define RDFCACHEK2_CACHEFEEDRESPONSEMESSAGE_HPP
 
 
+#include <cstdint>
+#include <array>
 #include "ResponseMessage.hpp"
 
 class CacheFeedResponseMessage : public ResponseMessage {
+  std::array<uint32_t, 2> response;
 public:
   CacheFeedResponseMessage(bool feed_result);
 

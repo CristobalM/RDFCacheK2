@@ -61,7 +61,7 @@ void process_cache_retrieve(ServerTask &server_task){
     send_response(client_fd, dynamic_cast<ResponseMessage *>(&response));
   }
   else{
-    auto cache_graph_result = cache.get_graph_result(label);
+    auto &cache_graph_result = cache.get_graph_result(label);
     auto response = CacheRetrieveResponseMessage(cache_graph_result);
     send_response(client_fd, dynamic_cast<ResponseMessage *>(&response));
   }

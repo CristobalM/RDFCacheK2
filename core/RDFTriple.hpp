@@ -5,10 +5,12 @@
 #ifndef RDFCACHEK2_RDFTRIPLE_HPP
 #define RDFCACHEK2_RDFTRIPLE_HPP
 
+#include <cstdint>
+
 struct RDFTriple {
-  unsigned long subject;
-  unsigned long predicate;
-  unsigned long object;
+  uint64_t subject;
+  uint64_t predicate;
+  uint64_t object;
 };
 
 #endif //RDFCACHEK2_RDFTRIPLE_HPP

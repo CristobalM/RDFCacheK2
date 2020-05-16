@@ -6,10 +6,12 @@
 #define RDFCACHEK2_CACHERETRIEVERESPONSEMESSAGE_HPP
 
 
+#include <string>
 #include <GraphResult.hpp>
 #include "ResponseMessage.hpp"
 
 class CacheRetrieveResponseMessage : public ResponseMessage{
+  std::string serialized_result;
 public:
   CacheRetrieveResponseMessage(GraphResult &result);
 

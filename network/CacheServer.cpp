@@ -24,7 +24,6 @@ void CacheServer::main_thread_op() {
 }
 
 CacheServer::CacheServer(Cache &cache, uint16_t port, uint8_t workers_count) :
-cache(cache),
 port(port),
 workers_count(workers_count),
 task_processor(cache)

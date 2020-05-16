@@ -31,3 +31,9 @@ std::string Message::get_query_label() {
   char *data = buffer.get() + sizeof(uint32_t) * 2;
   return std::string(data, data + label_sz * sizeof(char));
 }
+
+FeedData Message::get_feed_data() {
+  auto query_label = get_query_label();
+  char *remaining_msg = buffer.get() + sizeof(uint32_t) * 2 + query_label.size() * sizeof(char);
+  return FeedData(query_label, remaining_msg);
+}
