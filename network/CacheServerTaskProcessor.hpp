@@ -8,16 +8,26 @@
 #include <memory>
 #include <queue>
 #include <mutex>
+
+#include <Cache.hpp>
+
 #include "ServerTask.hpp"
+#include "Message.hpp"
 
 class CacheServerTaskProcessor {
   std::queue<std::unique_ptr<ServerTask>> server_tasks;
 
   std::mutex mutex;
+
+  Cache &cache;
 public:
-  void process_request(int client_socket_fd, std::unique_ptr<char[]> &&msg_buffer);
+
+  CacheServerTaskProcessor(Cache &cache);
+
+  void process_request(int client_socket_fd, Message &&message);
 
   std::unique_ptr<ServerTask> get_server_task();
+
 
 };
 

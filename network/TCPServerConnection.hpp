@@ -8,7 +8,7 @@
 
 #include <cstdint>
 #include <vector>
-#include <bits/unique_ptr.h>
+#include <mutex>
 
 
 
@@ -17,13 +17,25 @@ class TCPServerConnection {
   int server_fd;
   uint16_t port;
 
-  TCPServerTaskProcessor task_processor;
+  TCPServerTaskProcessor &task_processor;
+
+  bool running;
+  std::mutex running_mutex;
 
 public:
-  explicit TCPServerConnection(uint16_t port);
+  TCPServerConnection(uint16_t port, TCPServerTaskProcessor &task_processor);
 
   void start();
+  void stop();
 
+  TCPServerTaskProcessor &get_processor();
+
+
+
+private:
+
+  bool is_running();
+  void set_running(bool value);
 
 };
 

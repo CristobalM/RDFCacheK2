@@ -18,6 +18,7 @@ set(CORE_SOURCE_FILES
         core/GraphResult.cpp
         core/cache_result/ExistingCacheResult.cpp
         core/cache_result/NonExistingCacheResult.cpp
+        core/FeedData.cpp
         )
 
 set(CORE_HEADER_FILES
@@ -28,6 +29,7 @@ set(CORE_HEADER_FILES
         core/cache_result/ExistingCacheResult.hpp
         core/cache_result/CacheResult.hpp
         core/cache_result/NonExistingCacheResult.hpp
+        core/FeedData.hpp
         )
 
 set(NETWORK_SOURCE_FILES
@@ -35,6 +37,11 @@ set(NETWORK_SOURCE_FILES
         network/TCPServerConnection.cpp
         network/ServerTask.cpp
         network/CacheServerTaskProcessor.cpp
+        network/ServerWorker.cpp
+        network/Message.cpp
+        network/responses/CacheCheckResponseMessage.cpp
+        network/responses/CacheFeedResponseMessage.cpp
+        network/responses/CacheRetrieveResponseMessage.cpp
         )
 
 set(NETWORK_HEADER_FILES
@@ -42,6 +49,12 @@ set(NETWORK_HEADER_FILES
         network/TCPServerConnection.hpp
         network/ServerTask.hpp
         network/CacheServerTaskProcessor.hpp
+        network/ServerWorker.hpp
+        network/Message.hpp
+        network/responses/ResponseMessage.hpp
+        network/responses/CacheCheckResponseMessage.hpp
+        network/responses/CacheFeedResponseMessage.hpp
+        network/responses/CacheRetrieveResponseMessage.hpp
         )
 
 set(INCLUDES memory core network)

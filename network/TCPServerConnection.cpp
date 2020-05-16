@@ -5,6 +5,7 @@
 #include "TCPServerConnection.hpp"
 
 #include <iostream>
+#include <memory>
 
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -14,16 +15,19 @@
 #include "exception/CantEstablishSocketException.hpp"
 #include "exception/CantBindToPortException.hpp"
 #include "exception/CantStartListeningException.hpp"
+#include "Message.hpp"
 
 template <class TCPServerTaskProcessor>
-TCPServerConnection<TCPServerTaskProcessor>::TCPServerConnection(uint16_t port)
-: port(port){
-}
+TCPServerConnection<TCPServerTaskProcessor>::TCPServerConnection(uint16_t port, TCPServerTaskProcessor &task_processor):
+port(port),
+task_processor(task_processor)
+{}
 
 
 
 template <class TCPServerTaskProcessor>
 void TCPServerConnection<TCPServerTaskProcessor>::start() {
+  set_running(true);
   server_fd = socket(AF_INET, SOCK_STREAM, 0);
   if(server_fd == -1){
     throw CantEstablishSocketException(port);
@@ -52,7 +56,7 @@ void TCPServerConnection<TCPServerTaskProcessor>::start() {
   uint32_t msg_size;
 
 
-  for(;;){
+  while(is_running()){
     client_socket_fd = accept(server_fd, (struct sockaddr *)&address, (socklen_t *)&addrlen);
     if(client_socket_fd < 0){
       // Error while accepting
@@ -76,8 +80,31 @@ void TCPServerConnection<TCPServerTaskProcessor>::start() {
       continue;
     }
 
+    Message message(std::move(buffer), msg_size);
 
-    TCPServerTaskProcessor::process_request(client_socket_fd, std::move(buffer));
+    TCPServerTaskProcessor::process_request(client_socket_fd, std::move(message));
   }
 
+}
+
+template<class TCPServerTaskProcessor>
+TCPServerTaskProcessor &TCPServerConnection<TCPServerTaskProcessor>::get_processor() {
+  return task_processor;
+}
+
+template<class TCPServerTaskProcessor>
+bool TCPServerConnection<TCPServerTaskProcessor>::is_running() {
+  std::lock_guard<std::mutex> lg_running(running_mutex);
+  return running;
+}
+
+template<class TCPServerTaskProcessor>
+void TCPServerConnection<TCPServerTaskProcessor>::stop() {
+  set_running(false);
+}
+
+template<class TCPServerTaskProcessor>
+void TCPServerConnection<TCPServerTaskProcessor>::set_running(bool value) {
+  std::lock_guard<std::mutex> lg_running(running_mutex);
+  running = value;
 }

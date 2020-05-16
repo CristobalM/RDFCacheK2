@@ -1,0 +1,23 @@
+//
+// Created by Cristobal Miranda, 2020
+//
+
+#ifndef RDFCACHEK2_CACHECHECKRESPONSEMESSAGE_HPP
+#define RDFCACHEK2_CACHECHECKRESPONSEMESSAGE_HPP
+
+
+#include "ResponseMessage.hpp"
+
+class CacheCheckResponseMessage : public ResponseMessage {
+  bool exists;
+public:
+  explicit CacheCheckResponseMessage(bool exists);
+
+  char *get_response_buffer() override;
+
+  int get_response_size() override;
+
+};
+
+
+#endif //RDFCACHEK2_CACHECHECKRESPONSEMESSAGE_HPP
