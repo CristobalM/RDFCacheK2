@@ -6,19 +6,15 @@
 
 #include "Message.hpp"
 
-Message::Message(std::unique_ptr<char[]> &&buffer, uint32_t message_size) :
-message_size(message_size),
-buffer(std::move(buffer))
-{}
+Message::Message(std::unique_ptr<char[]> &&buffer, uint32_t message_size)
+    : message_size(message_size), buffer(std::move(buffer)) {}
 
-Message::Message(Message &&other) :
-message_size(other.message_size),
-buffer(std::move(other.buffer))
-{}
+Message::Message(Message &&other)
+    : message_size(other.message_size), buffer(std::move(other.buffer)) {}
 
 Message &Message::operator=(Message &&rhs) {
   message_size = rhs.message_size;
-  buffer= std::move(rhs.buffer);
+  buffer = std::move(rhs.buffer);
   return *this;
 }
 
@@ -27,13 +23,15 @@ int Message::request_type() {
 }
 
 std::string Message::get_query_label() {
-  auto label_sz = *reinterpret_cast<uint32_t *>(buffer.get() + sizeof(uint32_t));
+  auto label_sz =
+      *reinterpret_cast<uint32_t *>(buffer.get() + sizeof(uint32_t));
   char *data = buffer.get() + sizeof(uint32_t) * 2;
   return std::string(data, data + label_sz * sizeof(char));
 }
 
 FeedData Message::get_feed_data() {
   auto query_label = get_query_label();
-  char *remaining_msg = buffer.get() + sizeof(uint32_t) * 2 + query_label.size() * sizeof(char);
+  char *remaining_msg =
+      buffer.get() + sizeof(uint32_t) * 2 + query_label.size() * sizeof(char);
   return FeedData(query_label, remaining_msg);
 }

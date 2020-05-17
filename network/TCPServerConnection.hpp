@@ -5,15 +5,11 @@
 #ifndef RDFCACHEK2_TCPSERVERCONNECTION_HPP
 #define RDFCACHEK2_TCPSERVERCONNECTION_HPP
 
-
 #include <cstdint>
-#include <vector>
 #include <mutex>
+#include <vector>
 
-
-
-template <class TCPServerTaskProcessor>
-class TCPServerConnection {
+template <class TCPServerTaskProcessor> class TCPServerConnection {
   int server_fd;
   uint16_t port;
 
@@ -30,14 +26,9 @@ public:
 
   TCPServerTaskProcessor &get_processor();
 
-
-
 private:
-
   bool is_running();
   void set_running(bool value);
-
 };
 
-
-#endif //RDFCACHEK2_TCPSERVERCONNECTION_HPP
+#endif // RDFCACHEK2_TCPSERVERCONNECTION_HPP

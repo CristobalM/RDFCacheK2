@@ -5,15 +5,15 @@
 #ifndef RDFCACHEK2_CACHE_HPP
 #define RDFCACHEK2_CACHE_HPP
 
-
-#include <map>
-#include <string>
-#include <cache_result/CacheResult.hpp>
 #include "FeedData.hpp"
 #include "GraphResult.hpp"
+#include <cache_result/CacheResult.hpp>
+#include <map>
+#include <string>
 
 class Cache {
   std::map<std::string, GraphResult> results_map;
+
 public:
   Cache();
 
@@ -22,5 +22,4 @@ public:
   GraphResult &get_graph_result(const std::string &label);
 };
 
-
-#endif //RDFCACHEK2_CACHE_HPP
+#endif // RDFCACHEK2_CACHE_HPP

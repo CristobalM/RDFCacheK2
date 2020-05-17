@@ -8,11 +8,10 @@
 #include <memory>
 #include <thread>
 
-#include <Cache.hpp>
 #include "CacheServerTaskProcessor.hpp"
-#include "TCPServerConnection.hpp"
 #include "ServerWorker.hpp"
-
+#include "TCPServerConnection.hpp"
+#include <Cache.hpp>
 
 class CacheServer {
   uint16_t port;
@@ -26,7 +25,6 @@ class CacheServer {
   std::vector<std::unique_ptr<worker_t>> workers;
 
 public:
-
   explicit CacheServer(Cache &cache, uint16_t port, uint8_t workers_count);
 
   void start();
@@ -34,8 +32,6 @@ public:
 
 private:
   void main_thread_op();
-
 };
 
-
-#endif //RDFCACHEK2_CACHESERVER_HPP
+#endif // RDFCACHEK2_CACHESERVER_HPP

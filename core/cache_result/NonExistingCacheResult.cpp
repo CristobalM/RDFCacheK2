@@ -4,10 +4,6 @@
 
 #include "NonExistingCacheResult.hpp"
 
-bool NonExistingCacheResult::exists() {
-  return false;
-}
+bool NonExistingCacheResult::exists() { return false; }
 
-std::string NonExistingCacheResult::as_string() {
-  return nullptr;
-}
+std::string NonExistingCacheResult::as_string() { return nullptr; }

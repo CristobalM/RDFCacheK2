@@ -4,14 +4,11 @@
 
 #include "ExistingCacheResult.hpp"
 
-ExistingCacheResult::ExistingCacheResult(std::unique_ptr<GraphResult> &&graph_result) {
+ExistingCacheResult::ExistingCacheResult(
+    std::unique_ptr<GraphResult> &&graph_result) {
   this->graph_result = std::move(graph_result);
 }
 
-bool ExistingCacheResult::exists() {
-  return true;
-}
+bool ExistingCacheResult::exists() { return true; }
 
-std::string ExistingCacheResult::as_string() {
-  return std::string();
-}
+std::string ExistingCacheResult::as_string() { return std::string(); }

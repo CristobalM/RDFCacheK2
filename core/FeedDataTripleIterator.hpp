@@ -10,8 +10,7 @@ struct FeedDataTripleIterator {
   using reference = const RDFTriple &;
   using pointer = const RDFTriple *;
   using difference_type = std::ptrdiff_t;
-  using iterator_category  = std::input_iterator_tag;
-
+  using iterator_category = std::input_iterator_tag;
 
   FeedDataTripleIterator(pointer ptr) : ptr_(ptr) {}
 
@@ -26,13 +25,9 @@ struct FeedDataTripleIterator {
     return *this;
   }
 
-  reference operator*() {
-    return *ptr_;
-  }
+  reference operator*() { return *ptr_; }
 
-  pointer operator->() {
-    return ptr_;
-  }
+  pointer operator->() { return ptr_; }
 
   bool operator==(const FeedDataTripleIterator &rhs) {
     return ptr_ == rhs.ptr_;
@@ -46,4 +41,4 @@ private:
   pointer ptr_;
 };
 
-#endif //RDFCACHEK2_FEEDDATATRIPLEITERATOR_HPP
+#endif // RDFCACHEK2_FEEDDATATRIPLEITERATOR_HPP

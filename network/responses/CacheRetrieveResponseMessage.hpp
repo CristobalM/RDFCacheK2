@@ -5,21 +5,19 @@
 #ifndef RDFCACHEK2_CACHERETRIEVERESPONSEMESSAGE_HPP
 #define RDFCACHEK2_CACHERETRIEVERESPONSEMESSAGE_HPP
 
-
-#include <string>
-#include <GraphResult.hpp>
 #include "ResponseMessage.hpp"
+#include <GraphResult.hpp>
+#include <string>
 
-class CacheRetrieveResponseMessage : public ResponseMessage{
+class CacheRetrieveResponseMessage : public ResponseMessage {
   std::string serialized_result;
+
 public:
   CacheRetrieveResponseMessage(GraphResult &result);
 
   char *get_response_buffer() override;
 
   int get_response_size() override;
-
 };
 
-
-#endif //RDFCACHEK2_CACHERETRIEVERESPONSEMESSAGE_HPP
+#endif // RDFCACHEK2_CACHERETRIEVERESPONSEMESSAGE_HPP

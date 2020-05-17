@@ -5,10 +5,9 @@
 #ifndef RDFCACHEK2_SERVERTASK_HPP
 #define RDFCACHEK2_SERVERTASK_HPP
 
-
-#include <memory>
-#include <Cache.hpp>
 #include "Message.hpp"
+#include <Cache.hpp>
+#include <memory>
 
 class ServerTask {
   int client_socket_fd;
@@ -23,10 +22,6 @@ public:
   int get_client_socket_fd();
   Message &get_message();
   Cache &get_cache();
-
-
-
 };
 
-
-#endif //RDFCACHEK2_SERVERTASK_HPP
+#endif // RDFCACHEK2_SERVERTASK_HPP

@@ -85,6 +85,8 @@ add_library(RDFCacheK2_Network STATIC ${NETWORK_SOURCE_FILES})
 add_executable(main main.cpp )
 add_executable(cache_example cache_example.cpp)
 
+add_executable(example1 example/example1.cpp)
 
 target_link_libraries(main RDFCacheK2 k2tree_merged_noalloc MemoryManager)
 target_link_libraries(cache_example RDFCacheK2 k2tree_merged_noalloc MemoryManager)
+target_link_libraries(example1 RDFCacheK2 RDFCacheK2_Network k2tree_merged_noalloc MemoryManager pthread)

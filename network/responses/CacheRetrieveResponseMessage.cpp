@@ -12,6 +12,5 @@ int CacheRetrieveResponseMessage::get_response_size() {
   return serialized_result.size() * sizeof(char);
 }
 
-CacheRetrieveResponseMessage::CacheRetrieveResponseMessage(GraphResult &result) :
-serialized_result(result.serialize_result()) {
-}
+CacheRetrieveResponseMessage::CacheRetrieveResponseMessage(GraphResult &result)
+    : serialized_result(result.serialize_result()) {}

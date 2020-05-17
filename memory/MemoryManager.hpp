@@ -9,9 +9,9 @@ extern "C" {
 #include <bitvector.h>
 #include <vector.h>
 
+#include <block.h>
 #include <block_frontier.h>
 #include <block_topology.h>
-#include <block.h>
 
 #include <memalloc.h>
 
@@ -27,7 +27,6 @@ extern "C" {
 class MemoryManager {
 
   uint64_t current_index;
-
 
 protected:
   MemoryManager();
@@ -49,14 +48,9 @@ public:
 
   uint64_t new_block_index();
 
-
   static MemoryManager &instance();
 
-
-
   std::string memory_usage();
-
 };
 
-
-#endif //RDFCACHEK2_MEMORYMANAGER_HPP
+#endif // RDFCACHEK2_MEMORYMANAGER_HPP

@@ -11,4 +11,4 @@ public:
   virtual std::string as_string() = 0;
 };
 
-#endif //RDFCACHEK2_CACHERESULT_HPP
+#endif // RDFCACHEK2_CACHERESULT_HPP

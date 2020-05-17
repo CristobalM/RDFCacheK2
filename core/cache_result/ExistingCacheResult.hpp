@@ -12,7 +12,6 @@
 
 #include "GraphResult.hpp"
 
-
 using timestamp_t = std::chrono::time_point<std::chrono::high_resolution_clock>;
 
 class ExistingCacheResult : CacheResult {
@@ -26,5 +25,4 @@ public:
   std::string as_string() override;
 };
 
-
-#endif //RDFCACHEK2_EXISTINGCACHERESULT_HPP
+#endif // RDFCACHEK2_EXISTINGCACHERESULT_HPP

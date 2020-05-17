@@ -8,9 +8,9 @@
 #include <stdexcept>
 #include <string>
 
-class CantBindToPortException : std::runtime_error{
+class CantBindToPortException : std::runtime_error {
 public:
-  CantBindToPortException(uint16_t port) :
-          std::runtime_error("Cant bind to port " + std::to_string(port))  {}
+  CantBindToPortException(uint16_t port)
+      : std::runtime_error("Cant bind to port " + std::to_string(port)) {}
 };
-#endif //RDFCACHEK2_CANTBINDTOPORTEXCEPTION_HPP
+#endif // RDFCACHEK2_CANTBINDTOPORTEXCEPTION_HPP

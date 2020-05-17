@@ -7,11 +7,10 @@
 
 #include <memory>
 #include <queue>
-#include <vector>
 #include <stdexcept>
+#include <vector>
 
-template <class T>
-class MemoryPool {
+template <class T> class MemoryPool {
   using buffer_t = T[];
 
   std::vector<std::unique_ptr<buffer_t>> buffers;
@@ -23,24 +22,24 @@ class MemoryPool {
   size_t allocation_times;
 
 public:
-  explicit MemoryPool(size_t pool_block_capacity) :
-    pool_block_capacity(pool_block_capacity),
-    items_occupied(0),
-    allocation_times(0){
+  explicit MemoryPool(size_t pool_block_capacity)
+      : pool_block_capacity(pool_block_capacity), items_occupied(0),
+        allocation_times(0) {
     auto buffer = std::make_unique<buffer_t>(pool_block_capacity);
     buffers.push_back(std::move(buffer));
     item_queue.push(0);
   }
 
-  T * request_memory(){
+  T *request_memory() {
     ensure_enough_capacity();
     auto next_item_pos = item_queue.top();
     item_queue.pop();
     size_t buffer_index = next_item_pos / pool_block_capacity;
     size_t buffer_offset = next_item_pos % pool_block_capacity;
-    T *result = reinterpret_cast<T *>(buffers[buffer_index].get()) + buffer_offset;
+    T *result =
+        reinterpret_cast<T *>(buffers[buffer_index].get()) + buffer_offset;
 
-    if(next_item_pos + 1 > item_queue.top()){
+    if (next_item_pos + 1 > item_queue.top()) {
       item_queue.push(next_item_pos + 1);
     }
 
@@ -49,46 +48,38 @@ public:
     return result;
   }
 
-  void free_memory(T *ptr){
+  void free_memory(T *ptr) {
     size_t buffer_index = find_owner_buffer(ptr);
     auto *buffer = reinterpret_cast<T *>(buffers[buffer_index].get());
     size_t offset = ptr - buffer;
-    size_t item_index = offset + (buffer_index) * pool_block_capacity;
+    size_t item_index = offset + (buffer_index)*pool_block_capacity;
     item_queue.push(item_index);
     items_occupied--;
   }
 
-  size_t get_bytes_occupied(){
-    return sizeof(T) * items_occupied;
-  }
+  size_t get_bytes_occupied() { return sizeof(T) * items_occupied; }
 
-  size_t get_items_occupied(){
-    return items_occupied;
-  }
+  size_t get_items_occupied() { return items_occupied; }
 
-  size_t get_bytes_allocated(){
+  size_t get_bytes_allocated() {
     return sizeof(T) * buffers.size() * pool_block_capacity;
   }
 
-  size_t get_items_allocated(){
-    return buffers.size() * pool_block_capacity;
-  }
+  size_t get_items_allocated() { return buffers.size() * pool_block_capacity; }
 
-  float get_usage_rate(){
+  float get_usage_rate() {
     return (float)get_items_occupied() / (float)get_items_allocated();
   }
 
-  float get_bytes_usage_rate(){
+  float get_bytes_usage_rate() {
     return (float)get_bytes_occupied() / (float)get_bytes_allocated();
   }
 
-  size_t get_times_allocated(){
-    return allocation_times;
-  }
+  size_t get_times_allocated() { return allocation_times; }
 
 private:
-  void ensure_enough_capacity(){
-    if(item_queue.top() + 1 > pool_block_capacity * buffers.size()){
+  void ensure_enough_capacity() {
+    if (item_queue.top() + 1 > pool_block_capacity * buffers.size()) {
       /* The pool is out of space */
       auto buffer = std::make_unique<buffer_t>(pool_block_capacity);
       buffers.push_back(std::move(buffer));
@@ -96,19 +87,18 @@ private:
     }
   }
 
-  size_t find_owner_buffer(T *ptr){
+  size_t find_owner_buffer(T *ptr) {
     // TODO: binary search if needed
-    for(size_t i = 0; i < buffers.size(); i++){
-      T *last_in_buffer = reinterpret_cast<T *>(buffers[i].get()) + (pool_block_capacity - 1);
+    for (size_t i = 0; i < buffers.size(); i++) {
+      T *last_in_buffer =
+          reinterpret_cast<T *>(buffers[i].get()) + (pool_block_capacity - 1);
       T *first_in_buffer = reinterpret_cast<T *>(buffers[i].get());
-      if(first_in_buffer <= ptr && last_in_buffer >= ptr){
+      if (first_in_buffer <= ptr && last_in_buffer >= ptr) {
         return i;
       }
     }
     throw std::runtime_error("Couldn't find pointer in buffers");
   }
-
 };
 
-
-#endif //RDFCACHEK2_MEMORYPOOL_HPP
+#endif // RDFCACHEK2_MEMORYPOOL_HPP

@@ -13,4 +13,4 @@ struct RDFTriple {
   uint64_t object;
 };
 
-#endif //RDFCACHEK2_RDFTRIPLE_HPP
+#endif // RDFCACHEK2_RDFTRIPLE_HPP

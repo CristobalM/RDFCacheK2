@@ -2,8 +2,8 @@
 // Created by Cristobal Miranda, 2020
 //
 
-#include <Message.hpp>
 #include "CacheCheckResponseMessage.hpp"
+#include <Message.hpp>
 
 char *CacheCheckResponseMessage::get_response_buffer() {
   return reinterpret_cast<char *>(response.data());
@@ -15,5 +15,5 @@ int CacheCheckResponseMessage::get_response_size() {
 
 CacheCheckResponseMessage::CacheCheckResponseMessage(bool exists) {
   response[0] = Message::ReqType::CACHE_CHECK;
-  response[1] = (uint32_t) exists;
+  response[1] = (uint32_t)exists;
 }

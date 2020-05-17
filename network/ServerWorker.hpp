@@ -5,13 +5,11 @@
 #ifndef RDFCACHEK2_SERVERWORKER_HPP
 #define RDFCACHEK2_SERVERWORKER_HPP
 
-
-#include <mutex>
 #include <condition_variable>
+#include <mutex>
 #include <thread>
 
-template<class TaskProcessor>
-class ServerWorker {
+template <class TaskProcessor> class ServerWorker {
   std::condition_variable cv;
   std::mutex m;
 
@@ -23,7 +21,6 @@ class ServerWorker {
   using self_t = ServerWorker<TaskProcessor>;
 
 public:
-
   ServerWorker(TaskProcessor &task_processor);
   void start();
   void stop();
@@ -32,5 +29,4 @@ private:
   void main_loop();
 };
 
-
-#endif //RDFCACHEK2_SERVERWORKER_HPP
+#endif // RDFCACHEK2_SERVERWORKER_HPP

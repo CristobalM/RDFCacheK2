@@ -6,13 +6,13 @@
 #define RDFCACHEK2_CACHESERVERTASKPROCESSOR_HPP
 
 #include <memory>
-#include <queue>
 #include <mutex>
+#include <queue>
 
 #include <Cache.hpp>
 
-#include "ServerTask.hpp"
 #include "Message.hpp"
+#include "ServerTask.hpp"
 
 class CacheServerTaskProcessor {
   std::queue<std::unique_ptr<ServerTask>> server_tasks;
@@ -20,16 +20,13 @@ class CacheServerTaskProcessor {
   std::mutex mutex;
 
   Cache &cache;
-public:
 
+public:
   CacheServerTaskProcessor(Cache &cache);
 
   void process_request(int client_socket_fd, Message &&message);
 
   std::unique_ptr<ServerTask> get_server_task();
-
-
 };
 
-
-#endif //RDFCACHEK2_CACHESERVERTASKPROCESSOR_HPP
+#endif // RDFCACHEK2_CACHESERVERTASKPROCESSOR_HPP

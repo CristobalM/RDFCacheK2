@@ -7,8 +7,9 @@
 
 class CantStartListeningException : std::runtime_error {
 public:
-  CantStartListeningException(uint16_t port) :
-  std::runtime_error("Cant start listening port " + std::to_string(port))  {}
+  CantStartListeningException(uint16_t port)
+      : std::runtime_error("Cant start listening port " +
+                           std::to_string(port)) {}
 };
 
-#endif //RDFCACHEK2_CANTSTARTLISTENINGEXCEPTION_HPP
+#endif // RDFCACHEK2_CANTSTARTLISTENINGEXCEPTION_HPP

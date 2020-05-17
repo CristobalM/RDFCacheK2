@@ -1,5 +1,5 @@
-#include <iostream>
 #include <chrono>
+#include <iostream>
 
 #include "core/K2Tree.hpp"
 
@@ -22,7 +22,6 @@ int main() {
 
     cout << "finished inserting" << endl;
 
-
     cout << "Elapsed time milliseconds : "
          << chrono::duration_cast<chrono::milliseconds>(end - start).count()
          << endl;
@@ -35,14 +34,14 @@ int main() {
 
     cout << "first ten scanned: " << endl;
 
-    for(int i = 0; i < 10; i++){
-      cout << scanned_points[i].first << ", " << scanned_points[i].second << endl;
+    for (int i = 0; i < 10; i++) {
+      cout << scanned_points[i].first << ", " << scanned_points[i].second
+           << endl;
     }
 
     cout << "Elapsed time milliseconds scanning : "
          << chrono::duration_cast<chrono::milliseconds>(end - start).count()
          << endl;
-
 
     cout << "memory usage before cleanup:" << endl;
     cout << MemoryManager::instance().memory_usage() << endl;
@@ -55,5 +54,4 @@ int main() {
   std::cin >> catch_me;
 
   return 0;
-
 }
