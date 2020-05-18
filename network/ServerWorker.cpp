@@ -23,7 +23,7 @@ template <class TaskProcessor> void ServerWorker<TaskProcessor>::stop() {
 template <class TaskProcessor> void ServerWorker<TaskProcessor>::main_loop() {
   std::unique_lock<std::mutex> ul(m);
   for (;;) {
-    cv.wait(ul, [this] { return running; });
+    cv.wait(ul, [this] { return running && task_processor.tasks_available(); });
     if (stopped) {
       break;
     }
@@ -38,8 +38,17 @@ template <class TaskProcessor> void ServerWorker<TaskProcessor>::main_loop() {
 
 template <class TaskProcessor>
 ServerWorker<TaskProcessor>::ServerWorker(TaskProcessor &task_processor)
-    : running(false), stopped(false), task_processor(task_processor) {
+    : running(true), stopped(false), task_processor(task_processor) {
   start();
+}
+
+template <class TaskProcessor> void ServerWorker<TaskProcessor>::notify() {
+  cv.notify_all();
+}
+
+template <class TaskProcessor> void ServerWorker<TaskProcessor>::pause() {
+  std::lock_guard<std::mutex> lg(m);
+  running = false;
 }
 
 template class ServerWorker<CacheServerTaskProcessor>;

@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package proto_msg;
+
+
+option java_package = "com.github.cristobalm.proto";
+option java_outer_classname = "MsgType";
+
+enum MessageType {
+    UNKNOWN = 0;
+    CACHE_CHECK = 1;
+    CACHE_FEED = 2;
+    CACHE_RETRIEVE = 3;
+    CONNECTION_END = 4;
+}

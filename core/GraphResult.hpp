@@ -9,7 +9,9 @@
 #include <unordered_map>
 #include <utility>
 
-#include "FeedData.hpp"
+#include <graph_result.pb.h>
+#include <request_msg.pb.h>
+
 #include "K2Tree.hpp"
 #include "RDFTriple.hpp"
 
@@ -18,7 +20,7 @@ class GraphResult {
 
 public:
   GraphResult();
-  GraphResult(FeedData &feed_data);
+  GraphResult(proto_msg::CacheFeedRequest &cache_feed_request);
 
   static const ulong MAX_ASSOCIATION_DEPTH_DEFAULT = 32;
 
@@ -26,7 +28,7 @@ public:
   void insert_predicate(ulong predicate_index, ulong association_depth);
   void insert_triple(ulong subject_index, ulong predicate_index,
                      ulong object_index);
-  void insert_triple(const RDFTriple &rdf_triple);
+  void insert_triple(const proto_msg::RDFTriple &rdf_triple);
   bool has_triple(ulong subject_index, ulong predicate_index,
                   ulong object_index);
   bool has_predicate(ulong predicate_index);
@@ -36,6 +38,8 @@ public:
 
   static std::unique_ptr<GraphResult>
   from_binary(const std::string &cache_result_binary_string);
+
+  void produce_proto(proto_msg::GraphResult *graph_result);
 };
 
 #endif // RDFCACHEK2_GRAPHRESULT_HPP

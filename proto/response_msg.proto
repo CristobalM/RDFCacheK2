@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+import "message_type.proto";
+import  "graph_result.proto";
+
+package proto_msg;
+
+
+option java_package = "com.github.cristobalm.proto";
+option java_outer_classname = "ResponseMsg";
+
+message CacheResponse{
+    MessageType response_type = 1;
+
+    oneof response {
+        CacheCheckResponse cache_check_response = 2;
+        CacheFeedResponse cache_feed_response = 3;
+        CacheRetrieveResponse cache_retrieve_Response = 4;
+        ConnectionEndResponse connection_end_response = 5;
+    }
+}
+
+message CacheCheckResponse {
+    bool has_result_stored = 1;
+}
+
+message CacheFeedResponse {
+    bool data_was_stored = 1;
+}
+
+message CacheRetrieveResponse {
+    bool has_result_stored = 1;
+    GraphResult graph_result = 2;
+}
+
+message ConnectionEndResponse{
+    bool end = 1;
+}

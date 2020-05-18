@@ -11,16 +11,14 @@
 
 class ServerTask {
   int client_socket_fd;
-  Message message;
   Cache &cache;
 
 public:
-  explicit ServerTask(int client_socket_fd, Message &&message, Cache &cache);
+  explicit ServerTask(int client_socket_fd, Cache &cache);
 
   void process();
 
   int get_client_socket_fd();
-  Message &get_message();
   Cache &get_cache();
 };
 

@@ -5,9 +5,9 @@
 #ifndef RDFCACHEK2_MESSAGE_HPP
 #define RDFCACHEK2_MESSAGE_HPP
 
-#include <FeedData.hpp>
 #include <cstdint>
 #include <memory>
+#include <request_msg.pb.h>
 
 class Message {
   uint32_t message_size;
@@ -17,18 +17,22 @@ class Message {
    * the remaining message_size - 4 bytes depend on ReqType
    */
   std::unique_ptr<char[]> buffer;
+  std::unique_ptr<proto_msg::CacheRequest> deserialized;
 
 public:
-  Message(std::unique_ptr<char[]> &&buffer, uint32_t message_size);
+  explicit Message(uint32_t message_size);
 
-  Message(Message &&);
-  Message &operator=(Message &&);
+  proto_msg::MessageType request_type();
 
-  int request_type();
-  std::string get_query_label();
-  FeedData get_feed_data();
+  enum ReqType { CACHE_CHECK = 0, CACHE_FEED, CACHE_RETRIEVE, CONNECTION_END };
 
-  enum ReqType { CACHE_CHECK = 0, CACHE_FEED, CACHE_RETRIEVE };
+  char *get_buffer();
+
+  size_t get_size();
+
+  void deserialize();
+
+  proto_msg::CacheRequest &get_cache_request();
 
 private:
   Message(const Message &);

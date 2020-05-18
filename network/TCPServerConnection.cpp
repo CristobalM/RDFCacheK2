@@ -48,8 +48,6 @@ void TCPServerConnection<TCPServerTaskProcessor>::start() {
     throw CantStartListeningException(port);
   }
 
-  uint32_t msg_size;
-
   while (is_running()) {
     client_socket_fd =
         accept(server_fd, (struct sockaddr *)&address, (socklen_t *)&addrlen);
@@ -59,26 +57,10 @@ void TCPServerConnection<TCPServerTaskProcessor>::start() {
       continue;
     }
 
-    int val_read = read(client_socket_fd, (char *)&msg_size, sizeof(msg_size));
+    std::cout << "Incoming connection" << std::endl;
 
-    if (val_read < 0) {
-      std::cerr << "Error while reading msg_size data from connection"
-                << std::endl;
-      continue;
-    }
-
-    auto buffer = std::make_unique<char[]>(msg_size);
-
-    val_read = read(client_socket_fd, buffer.get(), msg_size * sizeof(char));
-
-    if (val_read < 0) {
-      std::cerr << "Error while reading data from connection" << std::endl;
-      continue;
-    }
-
-    Message message(std::move(buffer), msg_size);
-
-    task_processor.process_request(client_socket_fd, std::move(message));
+    task_processor.process_request(client_socket_fd);
+    task_processor.notify_workers();
   }
 }
 

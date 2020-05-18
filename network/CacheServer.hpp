@@ -15,14 +15,11 @@
 
 class CacheServer {
   uint16_t port;
-  uint8_t workers_count;
   CacheServerTaskProcessor task_processor;
 
   using connection_t = TCPServerConnection<CacheServerTaskProcessor>;
-  using worker_t = ServerWorker<CacheServerTaskProcessor>;
 
   std::unique_ptr<connection_t> connection;
-  std::vector<std::unique_ptr<worker_t>> workers;
 
 public:
   explicit CacheServer(Cache &cache, uint16_t port, uint8_t workers_count);

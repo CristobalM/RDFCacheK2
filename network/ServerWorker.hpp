@@ -24,6 +24,9 @@ public:
   ServerWorker(TaskProcessor &task_processor);
   void start();
   void stop();
+  void pause();
+
+  void notify();
 
 private:
   void main_loop();

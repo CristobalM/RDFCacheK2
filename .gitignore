@@ -3,3 +3,5 @@ cmake-build-debug/
 lib/
 build/
 *.env
+proto/generated/
+proto/java-generated/

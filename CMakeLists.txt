@@ -18,7 +18,6 @@ set(CORE_SOURCE_FILES
         core/GraphResult.cpp
         core/cache_result/ExistingCacheResult.cpp
         core/cache_result/NonExistingCacheResult.cpp
-        core/FeedData.cpp
         )
 
 set(CORE_HEADER_FILES
@@ -29,7 +28,7 @@ set(CORE_HEADER_FILES
         core/cache_result/ExistingCacheResult.hpp
         core/cache_result/CacheResult.hpp
         core/cache_result/NonExistingCacheResult.hpp
-        core/FeedData.hpp
+        core/utils.hpp
         )
 
 set(NETWORK_SOURCE_FILES
@@ -39,9 +38,6 @@ set(NETWORK_SOURCE_FILES
         network/CacheServerTaskProcessor.cpp
         network/ServerWorker.cpp
         network/Message.cpp
-        network/responses/CacheCheckResponseMessage.cpp
-        network/responses/CacheFeedResponseMessage.cpp
-        network/responses/CacheRetrieveResponseMessage.cpp
         )
 
 set(NETWORK_HEADER_FILES
@@ -51,21 +47,31 @@ set(NETWORK_HEADER_FILES
         network/CacheServerTaskProcessor.hpp
         network/ServerWorker.hpp
         network/Message.hpp
-        network/responses/ResponseMessage.hpp
-        network/responses/CacheCheckResponseMessage.hpp
-        network/responses/CacheFeedResponseMessage.hpp
-        network/responses/CacheRetrieveResponseMessage.hpp
         )
 
-set(INCLUDES memory core network)
+set(PROTO_MESSAGES
+        proto/generated/graph_result.pb.cc
+        proto/generated/response_msg.pb.cc
+        proto/generated/request_msg.pb.cc
+        proto/generated/message_type.pb.cc
+        )
+
+set(PROTO_MESSAGES_PATH ${CMAKE_SOURCE_DIR}/proto/generated)
+
+set(INCLUDES memory core network ${PROTO_MESSAGES_PATH})
 
 set(K2TREE_PATH ${CMAKE_SOURCE_DIR}/lib/c-k2tree-dyn)
+set(BOOST_ENDIAN_PATH ${CMAKE_SOURCE_DIR}/lib/boost.endian-boost-1.69.0)
+
+
 
 set(INCLUDES_LIBS
         ${K2TREE_PATH}/include
         ${K2TREE_PATH}/lib/c-bitvector/include
         ${K2TREE_PATH}/lib/c-queue/include
         ${K2TREE_PATH}/lib/c-vector/include
+
+        ${BOOST_ENDIAN_PATH/include}
         )
 
 set(LINK_LIBS ${K2TREE_PATH}/bin)
@@ -82,11 +88,27 @@ add_library(MemoryManager STATIC
 add_library(RDFCacheK2 STATIC ${CORE_SOURCE_FILES})
 add_library(RDFCacheK2_Network STATIC ${NETWORK_SOURCE_FILES})
 
-add_executable(main main.cpp )
-add_executable(cache_example cache_example.cpp)
+add_library(ProtoMessages STATIC ${PROTO_MESSAGES})
+
+
+find_package(Protobuf REQUIRED)
+include_directories(${Protobuf_INCLUDE_DIRS})
+
+
+
+
+#add_executable(main main.cpp )
+#add_executable(cache_example cache_example.cpp)
 
 add_executable(example1 example/example1.cpp)
 
-target_link_libraries(main RDFCacheK2 k2tree_merged_noalloc MemoryManager)
-target_link_libraries(cache_example RDFCacheK2 k2tree_merged_noalloc MemoryManager)
-target_link_libraries(example1 RDFCacheK2 RDFCacheK2_Network k2tree_merged_noalloc MemoryManager pthread)
+set(DEFAULT_LIBS
+        RDFCacheK2
+        RDFCacheK2_Network
+        k2tree_merged_noalloc
+        MemoryManager
+        pthread
+        ProtoMessages
+        ${Protobuf_LIBRARIES})
+
+target_link_libraries(example1 ${DEFAULT_LIBS})

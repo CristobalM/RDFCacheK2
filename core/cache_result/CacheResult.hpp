@@ -5,6 +5,8 @@
 #ifndef RDFCACHEK2_CACHERESULT_HPP
 #define RDFCACHEK2_CACHERESULT_HPP
 
+#include <string>
+
 class CacheResult {
 public:
   virtual bool exists() = 0;

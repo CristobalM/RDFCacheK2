@@ -18,6 +18,8 @@ extern "C" {
 #include <string>
 #include <vector>
 
+#include <graph_result.pb.h>
+
 class K2Tree {
   struct block *root;
   struct queries_state qs;
@@ -37,6 +39,8 @@ public:
 
   static std::unique_ptr<K2Tree>
   from_binary_stream(std::istringstream &k2tree_binary_stream);
+
+  void produce_proto(proto_msg::K2Tree *to_feed);
 };
 
 #endif // RDFCACHEK2_K2TREE_HPP

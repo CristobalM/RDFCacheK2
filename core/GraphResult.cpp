@@ -3,7 +3,10 @@
 //
 
 #include "GraphResult.hpp"
+#include "utils.hpp"
+#include <boost/endian/conversion.hpp>
 #include <cmath>
+#include <request_msg.pb.h>
 
 #include "exceptions.hpp"
 
@@ -57,13 +60,19 @@ std::string GraphResult::serialize_result() {
     predicates.push_back((uint64_t)hmap_item.first);
   }
 
+  auto predicates_big = predicates;
+
   std::stringstream ss;
 
   uint32_t predicates_sz = predicates.size();
 
+  boost::endian::native_to_big_inplace(predicates_sz);
   ss.write(reinterpret_cast<const char *>(&predicates_sz), sizeof(uint32_t));
-  ss.write(reinterpret_cast<const char *>(predicates.data()),
-           sizeof(uint64_t) * predicates.size());
+  boost::endian::big_to_native_inplace(predicates_sz);
+
+  big_to_native_arr(predicates_big.data(), predicates_big.size());
+  ss.write(reinterpret_cast<const char *>(predicates_big.data()),
+           sizeof(uint64_t) * predicates_big.size());
 
   for (auto predicate_index : predicates) {
     K2Tree &k2tree = *predicates_indexes[predicate_index];
@@ -78,9 +87,11 @@ GraphResult::from_binary(const std::string &cache_result_binary_string) {
   uint32_t predicates_sz;
 
   iss.read((char *)&predicates_sz, sizeof(uint32_t));
+  boost::endian::big_to_native_inplace(predicates_sz);
   std::vector<uint64_t> predicates(predicates_sz, 0);
 
   iss.read((char *)predicates.data(), sizeof(uint64_t) * predicates_sz);
+  big_to_native_arr(predicates.data(), predicates.size());
 
   auto cache_result = std::make_unique<GraphResult>();
   for (unsigned long predicate : predicates) {
@@ -91,10 +102,10 @@ GraphResult::from_binary(const std::string &cache_result_binary_string) {
   return cache_result;
 }
 
-GraphResult::GraphResult(FeedData &feed_data) {
-  for (const RDFTriple &rdf_triple : feed_data) {
-    if (!has_predicate(rdf_triple.predicate)) {
-      insert_predicate(rdf_triple.predicate);
+GraphResult::GraphResult(proto_msg::CacheFeedRequest &cache_feed_request) {
+  for (const proto_msg::RDFTriple& rdf_triple : cache_feed_request.rdf_triples()) {
+    if (!has_predicate(rdf_triple.predicate())) {
+      insert_predicate(rdf_triple.predicate());
     }
     insert_triple(rdf_triple);
   }
@@ -104,6 +115,16 @@ bool GraphResult::has_predicate(ulong predicate_index) {
   return predicates_indexes.find(predicate_index) != predicates_indexes.end();
 }
 
-void GraphResult::insert_triple(const RDFTriple &rdf_triple) {
-  insert_triple(rdf_triple.subject, rdf_triple.predicate, rdf_triple.object);
+void GraphResult::insert_triple(const proto_msg::RDFTriple &rdf_triple) {
+  insert_triple(rdf_triple.subject(), rdf_triple.predicate(), rdf_triple.object());
+}
+
+void GraphResult::produce_proto(proto_msg::GraphResult *graph_result) {
+  for (auto &hmap_item : predicates_indexes) {
+    auto predicate = (uint64_t)hmap_item.first;
+    graph_result->add_predicates(predicate);
+    auto &k2tree_ptr = predicates_indexes[predicate];
+    proto_msg::K2Tree *k2tree_proto = graph_result->add_k2trees();
+    k2tree_ptr->produce_proto(k2tree_proto);
+  }
 }

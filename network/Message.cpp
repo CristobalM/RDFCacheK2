@@ -2,36 +2,30 @@
 // Created by Cristobal Miranda, 2020
 //
 
+#include <iostream>
+#include <netinet/in.h>
 #include <utility>
 
 #include "Message.hpp"
 
-Message::Message(std::unique_ptr<char[]> &&buffer, uint32_t message_size)
-    : message_size(message_size), buffer(std::move(buffer)) {}
+Message::Message(uint32_t message_size)
+    : message_size(message_size),
+      buffer(std::make_unique<char[]>(message_size)) {}
 
-Message::Message(Message &&other)
-    : message_size(other.message_size), buffer(std::move(other.buffer)) {}
-
-Message &Message::operator=(Message &&rhs) {
-  message_size = rhs.message_size;
-  buffer = std::move(rhs.buffer);
-  return *this;
+proto_msg::MessageType Message::request_type() {
+  return deserialized->request_type();
 }
 
-int Message::request_type() {
-  return *reinterpret_cast<uint32_t *>(buffer.get());
+char *Message::get_buffer() { return buffer.get(); }
+
+size_t Message::get_size() { return message_size; }
+
+
+void Message::deserialize() {
+  deserialized = std::make_unique<proto_msg::CacheRequest>();
+  deserialized->ParseFromArray(buffer.get(), message_size);
 }
 
-std::string Message::get_query_label() {
-  auto label_sz =
-      *reinterpret_cast<uint32_t *>(buffer.get() + sizeof(uint32_t));
-  char *data = buffer.get() + sizeof(uint32_t) * 2;
-  return std::string(data, data + label_sz * sizeof(char));
-}
-
-FeedData Message::get_feed_data() {
-  auto query_label = get_query_label();
-  char *remaining_msg =
-      buffer.get() + sizeof(uint32_t) * 2 + query_label.size() * sizeof(char);
-  return FeedData(query_label, remaining_msg);
+proto_msg::CacheRequest &Message::get_cache_request() {
+  return *deserialized;
 }

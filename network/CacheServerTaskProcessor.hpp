@@ -13,20 +13,29 @@
 
 #include "Message.hpp"
 #include "ServerTask.hpp"
+#include "ServerWorker.hpp"
+#include "TCPServerConnection.hpp"
 
 class CacheServerTaskProcessor {
+  using worker_t = ServerWorker<CacheServerTaskProcessor>;
+
   std::queue<std::unique_ptr<ServerTask>> server_tasks;
-
   std::mutex mutex;
-
   Cache &cache;
+  uint8_t workers_count;
+  std::vector<std::unique_ptr<worker_t>> workers;
 
 public:
-  CacheServerTaskProcessor(Cache &cache);
+  explicit CacheServerTaskProcessor(Cache &cache, uint8_t workers_count);
 
-  void process_request(int client_socket_fd, Message &&message);
+  void process_request(int client_socket_fd);
 
   std::unique_ptr<ServerTask> get_server_task();
+  bool tasks_available();
+
+  void start_workers(TCPServerConnection<CacheServerTaskProcessor> &connection);
+
+  void notify_workers();
 };
 
 #endif // RDFCACHEK2_CACHESERVERTASKPROCESSOR_HPP
