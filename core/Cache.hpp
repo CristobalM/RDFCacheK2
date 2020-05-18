@@ -8,8 +8,8 @@
 #include "GraphResult.hpp"
 #include <cache_result/CacheResult.hpp>
 #include <map>
-#include <string>
 #include <request_msg.pb.h>
+#include <string>
 
 class Cache {
   std::map<std::string, GraphResult> results_map;

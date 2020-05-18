@@ -103,7 +103,8 @@ GraphResult::from_binary(const std::string &cache_result_binary_string) {
 }
 
 GraphResult::GraphResult(proto_msg::CacheFeedRequest &cache_feed_request) {
-  for (const proto_msg::RDFTriple& rdf_triple : cache_feed_request.rdf_triples()) {
+  for (const proto_msg::RDFTriple &rdf_triple :
+       cache_feed_request.rdf_triples()) {
     if (!has_predicate(rdf_triple.predicate())) {
       insert_predicate(rdf_triple.predicate());
     }
@@ -116,7 +117,8 @@ bool GraphResult::has_predicate(ulong predicate_index) {
 }
 
 void GraphResult::insert_triple(const proto_msg::RDFTriple &rdf_triple) {
-  insert_triple(rdf_triple.subject(), rdf_triple.predicate(), rdf_triple.object());
+  insert_triple(rdf_triple.subject(), rdf_triple.predicate(),
+                rdf_triple.object());
 }
 
 void GraphResult::produce_proto(proto_msg::GraphResult *graph_result) {

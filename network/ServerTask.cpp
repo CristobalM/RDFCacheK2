@@ -50,7 +50,8 @@ void process_cache_feed(ServerTask &server_task, Message &message) {
 
   proto_msg::CacheResponse cache_response;
   cache_response.set_response_type(proto_msg::MessageType::CACHE_FEED);
-  cache_response.mutable_cache_feed_response()->set_data_was_stored(feed_result);
+  cache_response.mutable_cache_feed_response()->set_data_was_stored(
+      feed_result);
 
   send_response(client_fd, cache_response);
 }
@@ -59,16 +60,19 @@ void process_cache_retrieve(ServerTask &server_task, Message &message) {
   int client_fd = server_task.get_client_socket_fd();
   auto &cache = server_task.get_cache();
 
-  auto &label = message.get_cache_request().cache_retrieve_request().query_label();
+  auto &label =
+      message.get_cache_request().cache_retrieve_request().query_label();
   bool exists = cache.result_exists(label);
-
 
   proto_msg::CacheResponse cache_response;
   cache_response.set_response_type(proto_msg::MessageType::CACHE_RETRIEVE);
-  cache_response.mutable_cache_retrieve_response()->set_has_result_stored(exists);
+  cache_response.mutable_cache_retrieve_response()->set_has_result_stored(
+      exists);
   if (exists) {
     auto &cache_graph_result = cache.get_graph_result(label);
-    cache_graph_result.produce_proto(cache_response.mutable_cache_retrieve_response()->mutable_graph_result());
+    cache_graph_result.produce_proto(
+        cache_response.mutable_cache_retrieve_response()
+            ->mutable_graph_result());
   }
   send_response(client_fd, cache_response);
 }
@@ -159,7 +163,7 @@ void ServerTask::process() {
     std::cout << "Incoming message" << message.get_buffer() << std::endl;
 
     switch (message.request_type()) {
-      case proto_msg::MessageType::CACHE_CHECK:
+    case proto_msg::MessageType::CACHE_CHECK:
       std::cout << "Request of type CACHE_CHECK" << std::endl;
       process_cache_check(*this, message);
       break;

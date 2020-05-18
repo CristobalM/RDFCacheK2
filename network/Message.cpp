@@ -20,12 +20,9 @@ char *Message::get_buffer() { return buffer.get(); }
 
 size_t Message::get_size() { return message_size; }
 
-
 void Message::deserialize() {
   deserialized = std::make_unique<proto_msg::CacheRequest>();
   deserialized->ParseFromArray(buffer.get(), message_size);
 }
 
-proto_msg::CacheRequest &Message::get_cache_request() {
-  return *deserialized;
-}
+proto_msg::CacheRequest &Message::get_cache_request() { return *deserialized; }
