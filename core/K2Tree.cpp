@@ -360,3 +360,80 @@ void K2Tree::produce_proto(proto_msg::K2Tree *to_feed) {
   to_feed->set_tree_depth(root->tree_depth);
   traverse_tree_proto(root, to_feed);
 }
+
+K2Tree::K2Tree(proto_msg::K2Tree &k2tree_proto) {
+  uint32_t tree_depth = k2tree_proto.tree_depth();
+  uint32_t blocks_qty = k2tree_proto.blocks_qty();
+
+  std::unordered_map<uint64_t, struct block *> blocks_map;
+
+  for (uint32_t i = 0; i < k2tree_proto.blocks_qty(); i++) {
+    auto &block = k2tree_proto.blocks(i);
+
+    struct block *new_block = k2tree_alloc_block();
+    struct block_topology *new_block_topology = k2tree_alloc_block_topology();
+    struct bitvector *bv = k2tree_alloc_bitvector();
+    struct block_frontier *new_block_frontier = k2tree_alloc_block_frontier();
+
+    bv->container_size = block.container_sz();
+
+    struct u32array_alloc alloc_container =
+        k2tree_alloc_u32array((int)bv->container_size);
+    bv->container = reinterpret_cast<BVCTYPE *>(alloc_container.data);
+    for (int sub_block_i = 0; sub_block_i < block.topology_size();
+         sub_block_i++) {
+      bv->container[sub_block_i] = block.topology(sub_block_i);
+    }
+    bv->size_in_bits = block.topology_sz();
+    bv->alloc_tag = alloc_container.size;
+
+    new_block_topology->bv = bv;
+    new_block_topology->nodes_count = block.topology_sz() / 4;
+
+    new_block->block_index = block.block_index();
+    new_block->tree_depth = tree_depth;
+    new_block->max_node_count = block.max_node_count();
+    new_block->block_depth = block.block_depth();
+    new_block->bt = new_block_topology;
+
+    blocks_map[block.block_index()] = new_block;
+  }
+}
+
+void rec_occup_ratio_count(struct block *b, K2TreeStats &k2tree_stats) {
+
+  k2tree_stats.allocated_u32s += b->bt->bv->container_size;
+  k2tree_stats.nodes_count += b->bt->nodes_count;
+
+  k2tree_stats.containers_sz_sum += sizeof(uint32_t) * 3 + sizeof(uint64_t) +
+                                    sizeof(struct block_frontier *) +
+                                    sizeof(struct block *);
+
+  /*
+   *
+     struct block_topology *bt;
+  struct block_frontier *bf;
+  uint32_t block_depth;
+  uint32_t tree_depth;
+  uint32_t max_node_count;
+
+  struct block *root;
+  uint64_t block_index;
+   */
+
+  struct vector &children = b->bf->blocks;
+  for (int i = 0; i < children.nof_items; i++) {
+    struct block *child_block;
+    get_element_at(&children, i, (char **)&child_block);
+    rec_occup_ratio_count(child_block, k2tree_stats);
+  }
+}
+
+K2TreeStats K2Tree::k2tree_stats() {
+  K2TreeStats result{};
+  result.allocated_u32s = 0;
+  result.nodes_count = 0;
+  result.containers_sz_sum = 0;
+  rec_occup_ratio_count(root, result);
+  return result;
+}

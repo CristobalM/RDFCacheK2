@@ -9,6 +9,7 @@
 
 #include "ServerTask.hpp"
 
+#include <MemoryManager.hpp>
 #include <graph_result.pb.h>
 #include <message_type.pb.h>
 #include <response_msg.pb.h>
@@ -54,6 +55,23 @@ void process_cache_feed(ServerTask &server_task, Message &message) {
       feed_result);
 
   send_response(client_fd, cache_response);
+
+  std::cout << MemoryManager::instance().memory_usage() << std::endl;
+  std::cout << "Results stored: " << cache.results_stored() << std::endl;
+  std::cout << "Predicates stored: " << cache.predicates_stored() << std::endl;
+  CacheStats cache_stats = cache.cache_stats();
+  std::cout << "U32s allocated: " << cache_stats.allocated_u32s << std::endl;
+  std::cout << "Nodes count: " << cache_stats.nodes_count << std::endl;
+
+  float nodes_bytes = (float)cache_stats.nodes_count / 2;
+
+  float occupation_ratio_topology =
+      nodes_bytes / ((float)cache_stats.allocated_u32s * 4);
+  std::cout << "Total Occupation ratio topology: " << occupation_ratio_topology
+            << std::endl;
+
+  std::cout << "Size in struct stuff " << cache_stats.containers_sz_sum
+            << std::endl;
 }
 
 void process_cache_retrieve(ServerTask &server_task, Message &message) {
@@ -77,9 +95,8 @@ void process_cache_retrieve(ServerTask &server_task, Message &message) {
   send_response(client_fd, cache_response);
 }
 
-void process_connection_end(ServerTask &server_task, Message &message) {
+void process_connection_end(ServerTask &server_task, Message &) {
   int client_fd = server_task.get_client_socket_fd();
-  auto &cache = server_task.get_cache();
 
   proto_msg::CacheResponse cache_response;
   cache_response.set_response_type(proto_msg::MessageType::CONNECTION_END);
@@ -108,7 +125,7 @@ bool read_nbytes_from_socket(int client_socket_fd, char *read_buffer,
         return false;
       } else {
         std::cerr << "Unexpected end of stream" << std::endl;
-        return -1;
+        return false;
       }
     } else if (offset + bytes_read == bytes_to_read) {
       std::cout << "finish reading " << bytes_to_read << "bytes" << std::endl;
@@ -131,7 +148,7 @@ void ServerTask::process() {
     if (!was_read) {
       std::cerr << "Error while reading msg_size data from connection"
                 << std::endl;
-      continue;
+      return;
     }
 
     std::cout << "msg_size before: " << msg_size << std::endl;
@@ -139,7 +156,7 @@ void ServerTask::process() {
     msg_size = ntohl(msg_size);
     if (msg_size <= sizeof(msg_size)) {
       std::cout << "Message with size " << msg_size << std::endl;
-      continue;
+      return;
     }
     std::cout << "msg_size before rsz: " << msg_size << std::endl;
 
@@ -155,7 +172,7 @@ void ServerTask::process() {
                                        message.get_size());
     if (!was_read) {
       std::cerr << "Error while reading data from connection" << std::endl;
-      continue;
+      return;
     }
 
     message.deserialize();
@@ -163,6 +180,8 @@ void ServerTask::process() {
     std::cout << "Incoming message" << message.get_buffer() << std::endl;
 
     switch (message.request_type()) {
+    case proto_msg::MessageType::UNKNOWN:
+      break;
     case proto_msg::MessageType::CACHE_CHECK:
       std::cout << "Request of type CACHE_CHECK" << std::endl;
       process_cache_check(*this, message);
@@ -171,7 +190,6 @@ void ServerTask::process() {
       std::cout << "Request of type CACHE_FEED" << std::endl;
       process_cache_feed(*this, message);
       break;
-
     case proto_msg::MessageType::CACHE_RETRIEVE:
       std::cout << "Request of type CACHE_RETRIEVE" << std::endl;
       process_cache_retrieve(*this, message);
@@ -187,4 +205,5 @@ void ServerTask::process() {
 }
 
 int ServerTask::get_client_socket_fd() { return client_socket_fd; }
+
 Cache &ServerTask::get_cache() { return cache; }

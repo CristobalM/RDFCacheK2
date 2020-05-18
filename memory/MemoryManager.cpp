@@ -10,11 +10,9 @@
 const size_t default_pool_block_sz = 512;
 
 MemoryManager::MemoryManager()
-    : current_index(0), blocks(default_pool_block_sz),
-      block_topologies(default_pool_block_sz),
-      block_frontiers(default_pool_block_sz), vectors(default_pool_block_sz),
-      bitvectors(default_pool_block_sz), containers_32(default_pool_block_sz),
-      containers_64(default_pool_block_sz),
+    : current_index(0), blocks(649880), block_topologies(649880),
+      block_frontiers(649880), vectors(1299760), bitvectors(649880),
+      containers_32(1299760), containers_64(default_pool_block_sz),
       containers_128(default_pool_block_sz),
       containers_256(default_pool_block_sz),
       containers_512(default_pool_block_sz),

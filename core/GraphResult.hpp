@@ -15,6 +15,12 @@
 #include "K2Tree.hpp"
 #include "RDFTriple.hpp"
 
+struct GraphResultStats {
+  int allocated_u32s;
+  int nodes_count;
+  int containers_sz_sum;
+};
+
 class GraphResult {
   std::unordered_map<ulong, std::unique_ptr<K2Tree>> predicates_indexes;
 
@@ -39,7 +45,11 @@ public:
   static std::unique_ptr<GraphResult>
   from_binary(const std::string &cache_result_binary_string);
 
+  GraphResultStats graph_result_stats();
+
   void produce_proto(proto_msg::GraphResult *graph_result);
+
+  ulong predicates_count();
 };
 
 #endif // RDFCACHEK2_GRAPHRESULT_HPP

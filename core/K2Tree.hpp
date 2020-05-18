@@ -20,6 +20,12 @@ extern "C" {
 
 #include <graph_result.pb.h>
 
+struct K2TreeStats {
+  int allocated_u32s;
+  int nodes_count;
+  int containers_sz_sum;
+};
+
 class K2Tree {
   struct block *root;
   struct queries_state qs;
@@ -40,7 +46,11 @@ public:
   static std::unique_ptr<K2Tree>
   from_binary_stream(std::istringstream &k2tree_binary_stream);
 
+  K2TreeStats k2tree_stats();
+
   void produce_proto(proto_msg::K2Tree *to_feed);
+
+  K2Tree(proto_msg::K2Tree &k2tree_proto);
 };
 
 #endif // RDFCACHEK2_K2TREE_HPP

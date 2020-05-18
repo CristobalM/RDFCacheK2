@@ -130,3 +130,21 @@ void GraphResult::produce_proto(proto_msg::GraphResult *graph_result) {
     k2tree_ptr->produce_proto(k2tree_proto);
   }
 }
+
+GraphResultStats GraphResult::graph_result_stats() {
+  GraphResultStats result{};
+  result.allocated_u32s = 0;
+  result.nodes_count = 0;
+  result.containers_sz_sum = 0;
+  for (auto &hmap_item : predicates_indexes) {
+    auto &k2tree_ptr = hmap_item.second;
+
+    K2TreeStats k2tree_stats = k2tree_ptr->k2tree_stats();
+    result.allocated_u32s += k2tree_stats.allocated_u32s;
+    result.nodes_count += k2tree_stats.nodes_count;
+    result.containers_sz_sum += k2tree_stats.containers_sz_sum;
+  }
+  return result;
+}
+
+ulong GraphResult::predicates_count() { return predicates_indexes.size(); }
