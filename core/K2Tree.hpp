@@ -41,11 +41,6 @@ public:
   bool has(unsigned long col, unsigned long row);
   std::vector<std::pair<unsigned long, unsigned long>> scan_points();
 
-  void serialize_tree(std::stringstream &stream);
-
-  static std::unique_ptr<K2Tree>
-  from_binary_stream(std::istringstream &k2tree_binary_stream);
-
   K2TreeStats k2tree_stats();
 
   void produce_proto(proto_msg::K2Tree *to_feed);

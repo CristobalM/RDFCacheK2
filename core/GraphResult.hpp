@@ -40,11 +40,6 @@ public:
   bool has_predicate(ulong predicate_index);
   std::vector<RDFTriple> scan_points();
 
-  std::string serialize_result();
-
-  static std::unique_ptr<GraphResult>
-  from_binary(const std::string &cache_result_binary_string);
-
   GraphResultStats graph_result_stats();
 
   void produce_proto(proto_msg::GraphResult *graph_result);

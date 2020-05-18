@@ -28,7 +28,6 @@ set(CORE_HEADER_FILES
         core/cache_result/ExistingCacheResult.hpp
         core/cache_result/CacheResult.hpp
         core/cache_result/NonExistingCacheResult.hpp
-        core/utils.hpp
         )
 
 set(NETWORK_SOURCE_FILES
@@ -61,7 +60,6 @@ set(PROTO_MESSAGES_PATH ${CMAKE_SOURCE_DIR}/proto/generated)
 set(INCLUDES memory core network ${PROTO_MESSAGES_PATH})
 
 set(K2TREE_PATH ${CMAKE_SOURCE_DIR}/lib/c-k2tree-dyn)
-set(BOOST_ENDIAN_PATH ${CMAKE_SOURCE_DIR}/lib/boost.endian-boost-1.69.0)
 
 
 
@@ -70,8 +68,6 @@ set(INCLUDES_LIBS
         ${K2TREE_PATH}/lib/c-bitvector/include
         ${K2TREE_PATH}/lib/c-queue/include
         ${K2TREE_PATH}/lib/c-vector/include
-
-        ${BOOST_ENDIAN_PATH/include}
         )
 
 set(LINK_LIBS ${K2TREE_PATH}/bin)

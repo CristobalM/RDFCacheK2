@@ -3,8 +3,6 @@
 //
 
 #include "GraphResult.hpp"
-#include "utils.hpp"
-#include <boost/endian/conversion.hpp>
 #include <cmath>
 #include <request_msg.pb.h>
 
@@ -52,54 +50,6 @@ void GraphResult::insert_predicate(ulong predicate_index,
 
 void GraphResult::insert_predicate(ulong predicate_index) {
   insert_predicate(predicate_index, MAX_ASSOCIATION_DEPTH_DEFAULT);
-}
-
-std::string GraphResult::serialize_result() {
-  std::vector<uint64_t> predicates;
-  for (auto &hmap_item : predicates_indexes) {
-    predicates.push_back((uint64_t)hmap_item.first);
-  }
-
-  auto predicates_big = predicates;
-
-  std::stringstream ss;
-
-  uint32_t predicates_sz = predicates.size();
-
-  boost::endian::native_to_big_inplace(predicates_sz);
-  ss.write(reinterpret_cast<const char *>(&predicates_sz), sizeof(uint32_t));
-  boost::endian::big_to_native_inplace(predicates_sz);
-
-  big_to_native_arr(predicates_big.data(), predicates_big.size());
-  ss.write(reinterpret_cast<const char *>(predicates_big.data()),
-           sizeof(uint64_t) * predicates_big.size());
-
-  for (auto predicate_index : predicates) {
-    K2Tree &k2tree = *predicates_indexes[predicate_index];
-    k2tree.serialize_tree(ss);
-  }
-  return ss.str();
-}
-
-std::unique_ptr<GraphResult>
-GraphResult::from_binary(const std::string &cache_result_binary_string) {
-  std::istringstream iss(cache_result_binary_string);
-  uint32_t predicates_sz;
-
-  iss.read((char *)&predicates_sz, sizeof(uint32_t));
-  boost::endian::big_to_native_inplace(predicates_sz);
-  std::vector<uint64_t> predicates(predicates_sz, 0);
-
-  iss.read((char *)predicates.data(), sizeof(uint64_t) * predicates_sz);
-  big_to_native_arr(predicates.data(), predicates.size());
-
-  auto cache_result = std::make_unique<GraphResult>();
-  for (unsigned long predicate : predicates) {
-    cache_result->predicates_indexes[predicate] =
-        K2Tree::from_binary_stream(iss);
-  }
-
-  return cache_result;
 }
 
 GraphResult::GraphResult(proto_msg::CacheFeedRequest &cache_feed_request) {
