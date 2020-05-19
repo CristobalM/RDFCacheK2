@@ -185,14 +185,16 @@ K2Tree::K2Tree(proto_msg::K2Tree &k2tree_proto) {
   }
 }
 
+
+
 void rec_occup_ratio_count(struct block *b, K2TreeStats &k2tree_stats) {
 
   k2tree_stats.allocated_u32s += b->bt->bv->container_size;
   k2tree_stats.nodes_count += b->bt->nodes_count;
-
-  k2tree_stats.containers_sz_sum += sizeof(uint32_t) * 3 + sizeof(uint64_t) +
-                                    sizeof(struct block_frontier *) +
-                                    sizeof(struct block *);
+  k2tree_stats.containers_sz_sum += sizeof(struct block) + sizeof(struct block_topology) +sizeof(struct block_frontier);
+  k2tree_stats.frontier_data +=  b->bf->frontier.nof_items * b->bf->frontier.element_size;
+  k2tree_stats.blocks_data +=  b->bf->blocks.nof_items * b->bf->blocks.element_size;
+  k2tree_stats.blocks_counted += 1;
 
   /*
    *
@@ -206,7 +208,7 @@ void rec_occup_ratio_count(struct block *b, K2TreeStats &k2tree_stats) {
   uint64_t block_index;
    */
 
-  struct vector &children = b->bf->blocks;
+  struct vector children = b->bf->blocks;
   for (int i = 0; i < children.nof_items; i++) {
     struct block *child_block;
     get_element_at(&children, i, (char **)&child_block);
@@ -219,6 +221,16 @@ K2TreeStats K2Tree::k2tree_stats() {
   result.allocated_u32s = 0;
   result.nodes_count = 0;
   result.containers_sz_sum = 0;
+  result.frontier_data = 0;
+  result.blocks_data = 0;
+  result.number_of_points = 0;
+  result.blocks_counted = 0;
+
   rec_occup_ratio_count(root, result);
+
+
+  auto scanned_points = scan_points();
+  result.number_of_points = scanned_points.size();
+
   return result;
 }

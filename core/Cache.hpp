@@ -15,6 +15,13 @@ struct CacheStats {
   int allocated_u32s;
   int nodes_count;
   int containers_sz_sum;
+  int frontier_data;
+  int blocks_data;
+
+  int max_points_k2;
+  int number_of_points_avg;
+  int blocks_counted;
+
 };
 
 class Cache {

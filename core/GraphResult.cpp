@@ -86,6 +86,11 @@ GraphResultStats GraphResult::graph_result_stats() {
   result.allocated_u32s = 0;
   result.nodes_count = 0;
   result.containers_sz_sum = 0;
+  result.frontier_data = 0;
+  result.blocks_data = 0;
+  result.number_of_points = 0;
+  result.max_points_k2 = 0;
+  result.blocks_counted = 0;
   for (auto &hmap_item : predicates_indexes) {
     auto &k2tree_ptr = hmap_item.second;
 
@@ -93,6 +98,11 @@ GraphResultStats GraphResult::graph_result_stats() {
     result.allocated_u32s += k2tree_stats.allocated_u32s;
     result.nodes_count += k2tree_stats.nodes_count;
     result.containers_sz_sum += k2tree_stats.containers_sz_sum;
+    result.frontier_data += k2tree_stats.frontier_data;
+    result.blocks_data += k2tree_stats.blocks_data;
+    result.number_of_points += k2tree_stats.number_of_points;
+    result.max_points_k2 = std::max(result.max_points_k2, k2tree_stats.number_of_points);
+    result.blocks_counted += k2tree_stats.blocks_counted;
   }
   return result;
 }
