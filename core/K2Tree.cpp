@@ -146,7 +146,7 @@ void K2Tree::produce_proto(proto_msg::K2Tree *to_feed) {
   traverse_tree_proto(root, to_feed);
 }
 
-K2Tree::K2Tree(proto_msg::K2Tree &k2tree_proto) {
+K2Tree::K2Tree(const proto_msg::K2Tree &k2tree_proto) {
   uint32_t tree_depth = k2tree_proto.tree_depth();
   uint32_t blocks_qty = k2tree_proto.blocks_qty();
 
@@ -185,15 +185,17 @@ K2Tree::K2Tree(proto_msg::K2Tree &k2tree_proto) {
   }
 }
 
-
-
 void rec_occup_ratio_count(struct block *b, K2TreeStats &k2tree_stats) {
 
   k2tree_stats.allocated_u32s += b->bt->bv->container_size;
   k2tree_stats.nodes_count += b->bt->nodes_count;
-  k2tree_stats.containers_sz_sum += sizeof(struct block) + sizeof(struct block_topology) +sizeof(struct block_frontier);
-  k2tree_stats.frontier_data +=  b->bf->frontier.nof_items * b->bf->frontier.element_size;
-  k2tree_stats.blocks_data +=  b->bf->blocks.nof_items * b->bf->blocks.element_size;
+  k2tree_stats.containers_sz_sum += sizeof(struct block) +
+                                    sizeof(struct block_topology) +
+                                    sizeof(struct block_frontier);
+  k2tree_stats.frontier_data +=
+      b->bf->frontier.nof_items * b->bf->frontier.element_size;
+  k2tree_stats.blocks_data +=
+      b->bf->blocks.nof_items * b->bf->blocks.element_size;
   k2tree_stats.blocks_counted += 1;
 
   /*
@@ -228,9 +230,23 @@ K2TreeStats K2Tree::k2tree_stats() {
 
   rec_occup_ratio_count(root, result);
 
-
   auto scanned_points = scan_points();
   result.number_of_points = scanned_points.size();
 
   return result;
 }
+
+K2Tree::K2Tree(
+    proto_msg::CacheFeedFullK2TreeRequest &cache_feed_full_k2tree_request)
+    : K2Tree(cache_feed_full_k2tree_request.tree_depth()) {
+  for (int i = 0; i < cache_feed_full_k2tree_request.subject_object_pair_size();
+       i++) {
+    auto subject =
+        cache_feed_full_k2tree_request.subject_object_pair(i).subject();
+    auto predicate =
+        cache_feed_full_k2tree_request.subject_object_pair(i).object();
+    insert(subject, predicate);
+  }
+}
+
+unsigned long K2Tree::get_tree_depth() { return root->tree_depth; }

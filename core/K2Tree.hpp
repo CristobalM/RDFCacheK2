@@ -18,7 +18,8 @@ extern "C" {
 #include <string>
 #include <vector>
 
-#include <graph_result.pb.h>
+#include <k2tree.pb.h>
+#include <request_msg.pb.h>
 
 struct K2TreeStats {
   int allocated_u32s;
@@ -43,13 +44,17 @@ public:
 
   void insert(unsigned long col, unsigned long row);
   bool has(unsigned long col, unsigned long row);
+
+  unsigned long get_tree_depth();
+
   std::vector<std::pair<unsigned long, unsigned long>> scan_points();
 
   K2TreeStats k2tree_stats();
 
   void produce_proto(proto_msg::K2Tree *to_feed);
 
-  K2Tree(proto_msg::K2Tree &k2tree_proto);
+  K2Tree(const proto_msg::K2Tree &k2tree_proto);
+  K2Tree(proto_msg::CacheFeedFullK2TreeRequest &cache_feed_full_k2tree_request);
 };
 
 #endif // RDFCACHEK2_K2TREE_HPP

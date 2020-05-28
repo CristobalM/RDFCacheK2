@@ -101,7 +101,8 @@ GraphResultStats GraphResult::graph_result_stats() {
     result.frontier_data += k2tree_stats.frontier_data;
     result.blocks_data += k2tree_stats.blocks_data;
     result.number_of_points += k2tree_stats.number_of_points;
-    result.max_points_k2 = std::max(result.max_points_k2, k2tree_stats.number_of_points);
+    result.max_points_k2 =
+        std::max(result.max_points_k2, k2tree_stats.number_of_points);
     result.blocks_counted += k2tree_stats.blocks_counted;
   }
   return result;

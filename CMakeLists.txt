@@ -18,6 +18,8 @@ set(CORE_SOURCE_FILES
         core/GraphResult.cpp
         core/cache_result/ExistingCacheResult.cpp
         core/cache_result/NonExistingCacheResult.cpp
+
+        core/PredicatesIndexCache.cpp
         )
 
 set(CORE_HEADER_FILES
@@ -28,6 +30,8 @@ set(CORE_HEADER_FILES
         core/cache_result/ExistingCacheResult.hpp
         core/cache_result/CacheResult.hpp
         core/cache_result/NonExistingCacheResult.hpp
+
+        core/PredicatesIndexCache.hpp
         )
 
 set(NETWORK_SOURCE_FILES
@@ -98,6 +102,14 @@ include_directories(${Protobuf_INCLUDE_DIRS})
 
 add_executable(example1 example/example1.cpp)
 
+set(BASE_LIBS
+        RDFCacheK2
+        k2tree_merged_noalloc
+        MemoryManager
+        ProtoMessages
+        ${Protobuf_LIBRARIES}
+        )
+
 set(DEFAULT_LIBS
         RDFCacheK2
         RDFCacheK2_Network
@@ -109,6 +121,10 @@ set(DEFAULT_LIBS
 
 target_link_libraries(example1 ${DEFAULT_LIBS})
 
+
+add_executable(index_by_k2tree scripts/index_by_k2tree.cpp)
+
+target_link_libraries(index_by_k2tree ${BASE_LIBS})
 
 
 
@@ -160,3 +176,4 @@ endif()
 
 add_executable(serialization_test  test/serialization_tests.cpp)
 target_link_libraries(serialization_test ${DEFAULT_LIBS} gtest_main)
+

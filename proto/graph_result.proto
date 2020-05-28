@@ -1,4 +1,5 @@
 syntax = "proto3";
+import "k2tree.proto";
 
 package proto_msg;
 
@@ -10,24 +11,4 @@ option java_outer_classname = "GraphResultMsg";
 message GraphResult {
     repeated uint64 predicates = 1;
     repeated K2Tree k2trees = 2;
-}
-
-message K2Tree {
-    uint32 tree_depth = 1;
-    uint32 blocks_qty = 2;
-    repeated Block blocks = 3;
-}
-
-message Block {
-    uint32 block_index = 1;
-    uint32 block_depth = 2;
-    uint32 topology_sz = 3;
-    uint32 frontier_sz = 4;
-    uint32 container_sz = 5;
-    uint32 max_node_count = 6;
-
-    repeated uint32 topology = 7;
-    repeated uint32 frontier = 8;
-
-    repeated uint64 children_ids = 9;
 }

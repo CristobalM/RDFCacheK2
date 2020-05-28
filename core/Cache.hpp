@@ -21,7 +21,6 @@ struct CacheStats {
   int max_points_k2;
   int number_of_points_avg;
   int blocks_counted;
-
 };
 
 class Cache {

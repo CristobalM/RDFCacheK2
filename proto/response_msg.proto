@@ -17,6 +17,8 @@ message CacheResponse{
         CacheFeedResponse cache_feed_response = 3;
         CacheRetrieveResponse cache_retrieve_Response = 4;
         ConnectionEndResponse connection_end_response = 5;
+
+        CacheFeedFullK2TreeResponse cache_feed_full_k2tree_response = 6;
     }
 }
 
@@ -35,4 +37,8 @@ message CacheRetrieveResponse {
 
 message ConnectionEndResponse{
     bool end = 1;
+}
+
+message CacheFeedFullK2TreeResponse{
+    bool data_was_stored = 1;
 }

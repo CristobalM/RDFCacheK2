@@ -15,6 +15,9 @@ message CacheRequest{
         CacheFeedRequest cache_feed_request = 3;
         CacheRetrieveRequest cache_retrieve_request = 4;
         ConnectionEndRequest connection_end_request = 5;
+
+        CacheFeedFullK2TreeRequest cache_feed_full_k2tree_request = 6;
+
     }
 }
 
@@ -33,6 +36,17 @@ message CacheRetrieveRequest{
 
 message ConnectionEndRequest{
     bool end = 1;
+}
+
+message CacheFeedFullK2TreeRequest{
+    uint64 predicate_index = 1;
+    uint64 tree_depth = 2;
+    repeated SubjectObjectPair subject_object_pair = 3;
+}
+
+message SubjectObjectPair{
+    uint64 subject = 1;
+    uint64 object = 2;
 }
 
 message RDFTriple {

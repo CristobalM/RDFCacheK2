@@ -75,7 +75,8 @@ void process_cache_feed(ServerTask &server_task, Message &message) {
 
   std::cout << "Frontier data  sz: " << cache_stats.frontier_data << std::endl;
   std::cout << "Blocks ptr data  sz: " << cache_stats.blocks_data << std::endl;
-  std::cout << "Number of points: " << cache_stats.number_of_points_avg << std::endl;
+  std::cout << "Number of points: " << cache_stats.number_of_points_avg
+            << std::endl;
   std::cout << "max_points_k2:  " << cache_stats.max_points_k2 << std::endl;
   std::cout << "Blocks counted: " << cache_stats.blocks_counted << std::endl;
 }

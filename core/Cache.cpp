@@ -52,7 +52,7 @@ CacheStats Cache::cache_stats() {
     result.number_of_points_avg += gstats.number_of_points;
     result.blocks_counted += gstats.blocks_counted;
   }
-  if(results_map.size() > 0){
+  if (results_map.size() > 0) {
     result.number_of_points_avg /= results_map.size();
   }
 

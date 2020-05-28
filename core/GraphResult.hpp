@@ -25,7 +25,6 @@ struct GraphResultStats {
   int max_points_k2;
   int number_of_points;
   int blocks_counted;
-
 };
 
 class GraphResult {
