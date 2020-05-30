@@ -122,7 +122,7 @@ set(DEFAULT_LIBS
 target_link_libraries(example1 ${DEFAULT_LIBS})
 
 
-add_executable(index_by_k2tree scripts/index_by_k2tree.cpp)
+add_executable(index_by_k2tree scripts/index_by_k2tree.cpp scripts/NTParser.cpp)
 
 target_link_libraries(index_by_k2tree ${BASE_LIBS})
 
