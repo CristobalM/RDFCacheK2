@@ -24,7 +24,8 @@ proto-build:
 		./proto/graph_result.proto \
 		./proto/request_msg.proto \
 		./proto/response_msg.proto \
-		./proto/predicates_index_cache.proto
+		./proto/predicates_index_cache.proto \
+		./proto/entities_mapping.proto
 
 
 

@@ -52,3 +52,6 @@ void PredicatesIndexCache::load_dump_file(const std::string &file_path) {
 
   ifstream.close();
 }
+void PredicatesIndexCache::add_predicate(uint64_t predicate_index) {
+  predicates_map[predicate_index] = std::make_unique<K2Tree>(32);
+}

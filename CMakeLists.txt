@@ -53,10 +53,13 @@ set(NETWORK_HEADER_FILES
         )
 
 set(PROTO_MESSAGES
+        proto/generated/entities_mapping.pb.cc
         proto/generated/graph_result.pb.cc
-        proto/generated/response_msg.pb.cc
-        proto/generated/request_msg.pb.cc
+        proto/generated/k2tree.pb.cc
         proto/generated/message_type.pb.cc
+        proto/generated/predicates_index_cache.pb.cc
+        proto/generated/request_msg.pb.cc
+        proto/generated/response_msg.pb.cc
         )
 
 set(PROTO_MESSAGES_PATH ${CMAKE_SOURCE_DIR}/proto/generated)
@@ -122,9 +125,15 @@ set(DEFAULT_LIBS
 target_link_libraries(example1 ${DEFAULT_LIBS})
 
 
-add_executable(index_by_k2tree scripts/index_by_k2tree.cpp scripts/NTParser.cpp)
+# index by k2tree script
 
-target_link_libraries(index_by_k2tree ${BASE_LIBS})
+
+set(RAPTOR_PATH lib/raptor2-2.0.15)
+link_directories(${RAPTOR_PATH}/src/.libs/)
+include_directories(${RAPTOR_PATH}/src)
+
+add_executable(index_by_k2tree scripts/index_by_k2tree.cpp scripts/NTParser.cpp scripts/EntitiesMapping.cpp)
+target_link_libraries(index_by_k2tree ${BASE_LIBS} raptor2)
 
 
 
