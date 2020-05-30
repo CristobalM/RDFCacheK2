@@ -16,7 +16,7 @@ set -o history -o histexpand
 mkdir -p lib
 cd lib || (echo "cant enter lib" && exit)
 
-: '
+
 LIBXML2=libxml2-2.9.10
 LIBXML2_TAR_GZ=${LIBXML2}.tar.gz
 if [[ ! -d  ${LIBXML2} ]]; then
@@ -28,7 +28,6 @@ if [[ ! -d  ${LIBXML2} ]]; then
     cd ..
 fi
 
-'
 
 RAPTOR=raptor2-2.0.15
 RAPTOR_TAR_GZ=${RAPTOR}.tar.gz

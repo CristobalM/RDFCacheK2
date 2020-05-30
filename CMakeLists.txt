@@ -129,11 +129,13 @@ target_link_libraries(example1 ${DEFAULT_LIBS})
 
 
 set(RAPTOR_PATH lib/raptor2-2.0.15)
-link_directories(${RAPTOR_PATH}/src/.libs/)
-include_directories(${RAPTOR_PATH}/src)
+set(LIBXML_PATH lib/libxml2-2.9.10)
+link_directories(${RAPTOR_PATH}/src/.libs/ ${LIBXML_PATH}/.libs/)
+include_directories(${RAPTOR_PATH}/src ${LIBXML_PATH}/include)
+
 
 add_executable(index_by_k2tree scripts/index_by_k2tree.cpp scripts/NTParser.cpp scripts/EntitiesMapping.cpp)
-target_link_libraries(index_by_k2tree ${BASE_LIBS} raptor2)
+target_link_libraries(index_by_k2tree ${BASE_LIBS} raptor2 xml2)
 
 
 
