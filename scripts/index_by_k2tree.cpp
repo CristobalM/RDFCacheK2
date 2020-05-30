@@ -10,8 +10,6 @@
 #include <fstream>
 #include <iostream>
 
-#include "EntitiesMapping.h"
-
 enum InputFormat { NT = 0 };
 
 struct parsed_options {
@@ -87,7 +85,7 @@ void write_mapping(const std::string &fname,
 }
 
 parsed_options parse_cmline(int argc, char **argv) {
-  const char const short_options[] = "f::gp::d:o:";
+  const char short_options[] = "f::gp::d:o:";
   struct option long_options[] = {
       {"input-format", optional_argument, nullptr, 'f'},
       {"generate-mapping", optional_argument, nullptr, 'g'},
