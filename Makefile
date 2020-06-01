@@ -25,7 +25,8 @@ proto-build:
 		./proto/request_msg.proto \
 		./proto/response_msg.proto \
 		./proto/predicates_index_cache.proto \
-		./proto/entities_mapping.proto
+		./proto/entities_mapping.proto \
+		./proto/radix_tree.proto
 
 
 

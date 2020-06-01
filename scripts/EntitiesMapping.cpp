@@ -3,10 +3,15 @@
 //
 
 #include <exception>
-#include <functional>
+
+#include <rax.h>
 
 #include "EntitiesMapping.h"
 
+/* Exposes functions in rax.c */
+raxNode *raxNewNode(size_t children, int datafield);
+raxNode *raxCompressNode(raxNode *n, unsigned char *s, size_t len,
+                         raxNode **child);
 class InvalidEntityType : public std::runtime_error {
 public:
   InvalidEntityType(int given_entity)
@@ -60,15 +65,10 @@ get_proto_type_from_etype(Entity::EntityType entity_type) {
   return proto_entity_type;
 }
 
-EntitiesMapping::EntitiesMapping(proto_msg::EntitiesMapping &input_proto) {
-
-
-}
+EntitiesMapping::EntitiesMapping(proto_msg::EntitiesMapping &input_proto) {}
 
 std::unique_ptr<proto_msg::EntitiesMapping> EntitiesMapping::serialize() {
   auto out = std::make_unique<proto_msg::EntitiesMapping>();
-
-
 
   return out;
 }
@@ -79,7 +79,7 @@ unsigned long EntitiesMapping::add_subject(const std::string &value,
   auto lookup_result = entities_mapping.lookup(value);
 
   if (lookup_result.was_found()) {
-    if(!lookup_result.result().is_subject()){
+    if (!lookup_result.result().is_subject()) {
       lookup_result.result().mark_as_subject();
       lookup_result.result().subject_value = subjects_count++;
     }
@@ -99,7 +99,7 @@ unsigned long EntitiesMapping::add_predicate(const std::string &value,
   auto lookup_result = entities_mapping.lookup(value);
 
   if (lookup_result.was_found()) {
-    if(!lookup_result.result().is_predicate()){
+    if (!lookup_result.result().is_predicate()) {
       lookup_result.result().mark_as_predicate();
       lookup_result.result().predicate_value = predicates_count++;
     }
@@ -119,7 +119,7 @@ unsigned long EntitiesMapping::add_object(const std::string &value,
   auto lookup_result = entities_mapping.lookup(value);
 
   if (lookup_result.was_found()) {
-    if(!lookup_result.result().is_object()){
+    if (!lookup_result.result().is_object()) {
       lookup_result.result().mark_as_object();
       lookup_result.result().object_value = objects_count++;
     }
@@ -151,3 +151,62 @@ bool EntitiesMapping::has_object(const std::string &value) {
 
 EntitiesMapping::EntitiesMapping()
     : subjects_count(0), predicates_count(0), objects_count(0) {}
+proto_msg::RadixTree EntitiesMapping::serialize_tree() {
+  proto_msg::RadixTree out;
+
+  rax *inner_rt = entities_mapping.get_inner_rt();
+
+  out.set_numele(inner_rt->numele);
+  out.set_num_nodes(inner_rt->numnodes);
+  serialize_node(out.mutable_root(), inner_rt->head);
+
+  return out;
+}
+
+void EntitiesMapping::serialize_node(proto_msg::RadixNode *proto_node,
+                                     raxNode *rax_node) {
+
+  proto_node->set_is_key(rax_node->iskey);
+  proto_node->set_is_null(rax_node->isnull);
+  proto_node->set_is_compr(rax_node->iscompr);
+  proto_node->set_size(rax_node->size);
+
+  if (rax_node->iskey && !rax_node->isnull) {
+    size_t skipping_ptrs =
+        sizeof(void *) * (rax_node->iscompr ? 1 : rax_node->size);
+    auto *entity = reinterpret_cast<Entity *>(rax_node->data + rax_node->size +
+                                              skipping_ptrs);
+    uint8_t both_type_kind = 0;
+    both_type_kind = static_cast<uint8_t>(entity->entity_type) << 3u;
+    both_type_kind |= entity->entity_kinds;
+    proto_node->mutable_entity()->set_entity_type_kind(&both_type_kind,
+                                                       sizeof(both_type_kind));
+  }
+
+  if (rax_node->iscompr) {
+    proto_node->mutable_compr_node()->set_compressed_data(rax_node->data,
+                                                          rax_node->size);
+    serialize_node(
+        proto_node->mutable_compr_node()->mutable_child(),
+        reinterpret_cast<raxNode *>(rax_node->data + rax_node->size));
+
+  } else {
+    proto_node->mutable_normal_node()->set_children_chars(rax_node->data,
+                                                          rax_node->size);
+    for (int i = 0; i < rax_node->size; i++) {
+      serialize_node(proto_node->mutable_normal_node()->mutable_children(i),
+                     reinterpret_cast<raxNode *>(
+                         rax_node->data + rax_node->size + sizeof(void *) * i));
+    }
+  }
+}
+void EntitiesMapping::deserialize_tree(proto_msg::RadixTree &proto_radix_tree) {
+  rax *inner_rt = entities_mapping.get_inner_rt();
+
+
+  deserialize_node(inner_rt, nullptr, proto_radix_tree.root());
+}
+void EntitiesMapping::deserialize_node(rax *rax_tree, raxNode *parent_node,
+                                       const proto_msg::RadixNode &proto_node) {
+  
+}
