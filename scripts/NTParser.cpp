@@ -88,8 +88,9 @@ std::unique_ptr<NTParsedResult> NTParser::parse() {
   if (previous_mapping == nullptr) {
     result = std::make_unique<NTParsedResult>();
   } else {
-    result = std::make_unique<NTParsedResult>(*previous_mapping,
+    result = std::make_unique<NTParsedResult>(std::move(*previous_mapping),
                                               PredicatesIndexCache());
+    previous_mapping = &result->entities_mapping;
   }
 
   PairNTParserNResult pair_to_pass{};

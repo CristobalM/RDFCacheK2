@@ -1,5 +1,5 @@
 syntax = "proto3";
-
+import "radix_tree.proto";
 package proto_msg;
 
 
@@ -8,24 +8,9 @@ option java_package = "com.github.cristobalm.proto";
 option java_outer_classname = "Entities";
 
 message EntitiesMapping{
-    repeated PairEntityNumber subjects_mapping = 1;
-    repeated PairEntityNumber predicates_mapping = 2;
-    repeated PairEntityNumber objects_mapping = 3;
-}
+    RadixTree entities_mapping = 1;
 
-message PairEntityNumber{
-    Entity entity = 1;
-    uint64 mapped_value = 2;
-}
-
-message Entity{
-    EntityType entity_type = 1;
-    string value = 2;
-}
-
-enum EntityType{
-    UNKNOWN_ENTITY = 0;
-    URI_ENTITY = 1;
-    LITERAL_ENTITY = 2;
-    BLANK_ENTITY = 3;
+    uint64 subjects_count = 2;
+    uint64 predicates_count = 3;
+    uint64 objects_count = 4;
 }

@@ -9,10 +9,15 @@
 #include <string>
 
 #include <radix_tree.pb.h>
+
+extern "C" {
 #include <rax.h>
+}
 
 #include "Entity.h"
 #include "RadixTree.hpp"
+
+/* Exposes functions in rax.c */
 
 class EntitiesMapping {
   RadixTree<Entity> entities_mapping;
@@ -23,6 +28,10 @@ class EntitiesMapping {
 
 public:
   EntitiesMapping();
+
+  EntitiesMapping(const EntitiesMapping&) = delete;
+
+  EntitiesMapping(EntitiesMapping &&);
 
   EntitiesMapping(proto_msg::EntitiesMapping &input_proto);
 
@@ -39,12 +48,13 @@ public:
   bool has_predicate(const std::string &value);
   bool has_object(const std::string &value);
 
-  void deserialize_tree(proto_msg::RadixTree &proto_radix_tree);
-  proto_msg::RadixTree serialize_tree();
+
 
 private:
-  void deserialize_node(rax *rax_tree, raxNode *parent_node,
-                        const proto_msg::RadixNode &proto_node);
+  void deserialize_tree(proto_msg::RadixTree &proto_radix_tree);
+  void serialize_tree(proto_msg::RadixTree &radix_tree);
+  raxNode * deserialize_node(rax *rax_tree, raxNode *parent_node, const proto_msg::RadixNode &proto_node,
+                             raxNode *child_carry);
   void serialize_node(proto_msg::RadixNode *proto_node, raxNode *rax_node);
 };
 

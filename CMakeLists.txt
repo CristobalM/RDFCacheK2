@@ -60,6 +60,8 @@ set(PROTO_MESSAGES
         proto/generated/predicates_index_cache.pb.cc
         proto/generated/request_msg.pb.cc
         proto/generated/response_msg.pb.cc
+        proto/generated/radix_tree.pb.cc
+
         )
 
 set(PROTO_MESSAGES_PATH ${CMAKE_SOURCE_DIR}/proto/generated)
@@ -134,18 +136,25 @@ set(RAPTOR_PATH lib/raptor2-2.0.15)
 set(LIBXML_PATH lib/libxml2-2.9.10)
 set(RAX_PATH plib/rax-31-may-2020-1927550)
 
-add_library(Rax ${RAX_PATH}/rax.c)
+add_library(Rax ${RAX_PATH}/rax.c ${RAX_PATH}/crc16.c ${RAX_PATH}/rc4rand.c)
 
 link_directories(${RAPTOR_PATH}/src/.libs/ ${LIBXML_PATH}/.libs/)
-include_directories(${RAPTOR_PATH}/src ${LIBXML_PATH}/include ${RAX_PATH})
+include_directories(${RAPTOR_PATH}/src ${LIBXML_PATH}/include ${RAX_PATH} scripts)
 
 
 add_executable(index_by_k2tree
         scripts/index_by_k2tree.cpp
         scripts/NTParser.cpp
         scripts/EntitiesMapping.cpp
+
         )
-target_link_libraries(index_by_k2tree ${BASE_LIBS} raptor2 xml2 Rax)
+target_link_libraries(index_by_k2tree
+        ${BASE_LIBS}
+        raptor2
+        xml2
+        Rax
+        ProtoMessages
+        ${Protobuf_LIBRARIES})
 
 
 

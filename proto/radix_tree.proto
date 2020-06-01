@@ -29,7 +29,8 @@ message RadixNode{
 }
 
 message StoredEntity {
-    // 5 bytes: EEKKK ; EE stores the entity type, KKK the entity kinds
+    // 5 bits (stored in 1 byte):
+    // TTKKK ; TT stores the entity type, KKK the entity kinds
     bytes entity_type_kind = 1;
 
     uint64 subject_value = 2;

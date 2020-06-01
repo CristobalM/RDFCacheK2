@@ -85,7 +85,7 @@ struct u32array_alloc k2tree_alloc_u32array(int size) {
     out.size = 1024;
     break;
   default:
-    throw std::runtime_error("Invalid container_sz" +
+    throw std::runtime_error("Invalid container_sz: " +
                              std::to_string(container_sz));
   }
 

@@ -213,4 +213,12 @@ void raxSetDebugMsg(int onoff);
  * in a low level way, so this function is exported as well. */
 void raxSetData(raxNode *n, void *data);
 
+// Added by current project to use these functions
+raxNode *raxNewNode(size_t children, int datafield);
+raxNode *raxCompressNode(raxNode *n, unsigned char *s, size_t len,
+                         raxNode **child);
+raxNode *raxReallocForData(raxNode *n, void *data);
+raxNode *raxAddChild(raxNode *n, unsigned char c, raxNode **childptr, raxNode ***parentlink);
+
+
 #endif
