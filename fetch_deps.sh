@@ -39,4 +39,3 @@ if [[ ! -d ${RAPTOR} ]]; then
     make
     cd ..
 fi
-

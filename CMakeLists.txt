@@ -128,14 +128,25 @@ target_link_libraries(example1 ${DEFAULT_LIBS})
 # index by k2tree script
 
 
+
+
 set(RAPTOR_PATH lib/raptor2-2.0.15)
 set(LIBXML_PATH lib/libxml2-2.9.10)
+set(RAX_PATH plib/rax-31-may-2020-1927550)
+
+add_library(Rax ${RAX_PATH}/rax.c)
+
 link_directories(${RAPTOR_PATH}/src/.libs/ ${LIBXML_PATH}/.libs/)
-include_directories(${RAPTOR_PATH}/src ${LIBXML_PATH}/include)
+include_directories(${RAPTOR_PATH}/src ${LIBXML_PATH}/include ${RAX_PATH})
 
 
-add_executable(index_by_k2tree scripts/index_by_k2tree.cpp scripts/NTParser.cpp scripts/EntitiesMapping.cpp)
-target_link_libraries(index_by_k2tree ${BASE_LIBS} raptor2 xml2)
+add_executable(index_by_k2tree
+        scripts/index_by_k2tree.cpp
+        scripts/NTParser.cpp
+        scripts/EntitiesMapping.cpp
+        )
+target_link_libraries(index_by_k2tree ${BASE_LIBS} raptor2 xml2 Rax)
+
 
 
 

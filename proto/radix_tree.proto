@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package proto_msg;
+
+
+option java_package = "com.github.cristobalm.proto";
+option java_outer_classname = "RadixTreeMsg";
+
+message RadixTree{
+
+}

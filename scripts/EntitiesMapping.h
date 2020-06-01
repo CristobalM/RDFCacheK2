@@ -7,7 +7,14 @@
 
 #include <entities_mapping.pb.h>
 #include <string>
-#include <map>
+
+#include "RadixTree.hpp"
+
+
+constexpr uint8_t _SUBJECT_MASK = 1u;
+constexpr uint8_t _PREDICATE_MASK = 1u << 1u;
+constexpr uint8_t _OBJECT_MASK = 1u << 2u;
+
 
 struct Entity{
 
@@ -18,14 +25,47 @@ struct Entity{
     BLANK_ENTITY = 3
   };
 
-  EntityType entity_type;
-  unsigned long value;
+
+  bool is_subject(){
+    return entity_kinds & _SUBJECT_MASK;
+  }
+
+  bool is_predicate(){
+    return entity_kinds & _PREDICATE_MASK;
+  }
+
+  bool is_object(){
+    return entity_kinds & _OBJECT_MASK;
+  }
+
+  void mark_as_subject(){
+    entity_kinds |= _SUBJECT_MASK;
+  }
+
+  void mark_as_predicate(){
+    entity_kinds |= _PREDICATE_MASK;
+  }
+
+  void mark_as_object(){
+    entity_kinds |= _OBJECT_MASK;
+  }
+
+
+  EntityType entity_type:2;
+  uint8_t entity_kinds:3;
+
+  unsigned long subject_value;
+  unsigned long predicate_value;
+  unsigned long object_value;
 };
 
 class EntitiesMapping {
-  std::map<std::string, Entity> subjects_mapping;
-  std::map<std::string, Entity> predicates_mapping;
-  std::map<std::string, Entity> objects_mapping;
+  //std::map<std::string, Entity> subjects_mapping;
+  //std::map<std::string, Entity> predicates_mapping;
+  //std::map<std::string, Entity> objects_mapping;
+  RadixTree<Entity> entities_mapping;
+
+
 
   unsigned long subjects_count;
   unsigned long predicates_count;
@@ -37,11 +77,7 @@ public:
 
   EntitiesMapping(proto_msg::EntitiesMapping &input_proto);
 
-  enum Kind{
-    SUBJECT = 0,
-    PREDICATE = 1,
-    OBJECT = 2
-  };
+
 
   std::unique_ptr<proto_msg::EntitiesMapping> serialize();
 
