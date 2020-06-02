@@ -49,6 +49,8 @@ public:
   bool has_object(const std::string &value);
 
 
+  void _debug_print_radix_tree();
+
 
 private:
   void deserialize_tree(proto_msg::RadixTree &proto_radix_tree);

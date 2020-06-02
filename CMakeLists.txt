@@ -136,7 +136,7 @@ set(RAPTOR_PATH lib/raptor2-2.0.15)
 set(LIBXML_PATH lib/libxml2-2.9.10)
 set(RAX_PATH plib/rax-31-may-2020-1927550)
 
-add_library(Rax ${RAX_PATH}/rax.c ${RAX_PATH}/crc16.c ${RAX_PATH}/rc4rand.c)
+add_library(Rax ${RAX_PATH}/rax.c )
 
 link_directories(${RAPTOR_PATH}/src/.libs/ ${LIBXML_PATH}/.libs/)
 include_directories(${RAPTOR_PATH}/src ${LIBXML_PATH}/include ${RAX_PATH} scripts)
@@ -148,13 +148,15 @@ add_executable(index_by_k2tree
         scripts/EntitiesMapping.cpp
 
         )
-target_link_libraries(index_by_k2tree
-        ${BASE_LIBS}
+
+set(INDEX_FILE_LIBS ${BASE_LIBS}
         raptor2
         xml2
         Rax
         ProtoMessages
         ${Protobuf_LIBRARIES})
+
+target_link_libraries(index_by_k2tree ${INDEX_FILE_LIBS})
 
 
 
@@ -208,3 +210,6 @@ endif()
 add_executable(serialization_test  test/serialization_tests.cpp)
 target_link_libraries(serialization_test ${DEFAULT_LIBS} gtest_main)
 
+add_executable(index_file_test test/index_file_test.cpp
+        scripts/EntitiesMapping.cpp)
+target_link_libraries(index_file_test ${INDEX_FILE_LIBS} gtest_main)

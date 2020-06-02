@@ -26,6 +26,11 @@ if [[ ! -d  ${LIBXML2} ]]; then
     ./configure
     make
     cd ..
+else
+    cd ${LIBXML2}  || (echo "cant enter ${LIBXML2} folder" && exit)
+    ./configure
+    make
+    cd ..
 fi
 
 
@@ -34,6 +39,11 @@ RAPTOR_TAR_GZ=${RAPTOR}.tar.gz
 if [[ ! -d ${RAPTOR} ]]; then
     wget http://download.librdf.org/source/${RAPTOR_TAR_GZ}
     tar -zxvf ${RAPTOR_TAR_GZ} && rm ${RAPTOR_TAR_GZ}
+    cd ${RAPTOR} || (echo "${RAPTOR} folder was not created" && exit)
+    ./configure --enable-parsers="ntriples turtle" --enable-serializers=ntriples --enable-static --disable-shared
+    make
+    cd ..
+else
     cd ${RAPTOR} || (echo "${RAPTOR} folder was not created" && exit)
     ./configure --enable-parsers="ntriples turtle" --enable-serializers=ntriples --enable-static --disable-shared
     make

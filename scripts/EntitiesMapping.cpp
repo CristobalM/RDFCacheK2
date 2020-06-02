@@ -3,8 +3,16 @@
 //
 
 #include <exception>
+#include <string>
 
 #include "EntitiesMapping.h"
+
+#define raxPadding(nodesize)                                                   \
+  ((sizeof(void *) - ((nodesize + 4) % sizeof(void *))) & (sizeof(void *) - 1))
+
+/* Return the pointer to the first child pointer. */
+#define raxNodeFirstChildPtr(n)                                                \
+  ((raxNode **)((n)->data + (n)->size + raxPadding((n)->size)))
 
 EntitiesMapping::EntitiesMapping(proto_msg::EntitiesMapping &input_proto) {
   deserialize_tree(*input_proto.mutable_entities_mapping());
@@ -116,11 +124,12 @@ void EntitiesMapping::serialize_node(proto_msg::RadixNode *proto_node,
   proto_node->set_is_compr(rax_node->iscompr);
   proto_node->set_size(rax_node->size);
 
-  if (rax_node->iskey && !rax_node->isnull) {
-    size_t skipping_ptrs =
-        sizeof(void *) * (rax_node->iscompr ? 1 : rax_node->size);
-    auto *entity = reinterpret_cast<Entity *>(rax_node->data + rax_node->size +
-                                              skipping_ptrs);
+  if (rax_node->isnull) {
+    return;
+  }
+
+  if (rax_node->iskey) {
+    auto *entity = reinterpret_cast<Entity *>(raxGetData(rax_node));
     uint8_t both_type_kind = 0;
     both_type_kind = static_cast<uint8_t>(entity->entity_type) << 3u;
     both_type_kind |= entity->entity_kinds;
@@ -131,25 +140,29 @@ void EntitiesMapping::serialize_node(proto_msg::RadixNode *proto_node,
   if (rax_node->iscompr) {
     proto_node->mutable_compr_node()->set_compressed_data(rax_node->data,
                                                           rax_node->size);
-    serialize_node(
-        proto_node->mutable_compr_node()->mutable_child(),
-        reinterpret_cast<raxNode *>(rax_node->data + rax_node->size));
+    serialize_node(proto_node->mutable_compr_node()->mutable_child(),
+                   *raxNodeFirstChildPtr(rax_node));
 
   } else {
     proto_node->mutable_normal_node()->set_children_chars(rax_node->data,
                                                           rax_node->size);
     for (int i = 0; i < rax_node->size; i++) {
-      serialize_node(proto_node->mutable_normal_node()->mutable_children(i),
-                     reinterpret_cast<raxNode *>(
-                         rax_node->data + rax_node->size + sizeof(void *) * i));
+      proto_msg::RadixNode *new_child_added =
+          proto_node->mutable_normal_node()->add_children();
+      serialize_node(new_child_added, *(raxNodeFirstChildPtr(rax_node) + i));
+      // serialize_node(new_child_added,
+      //               reinterpret_cast<raxNode **>(rax_node->data +
+      //               rax_node->size)[i] );
     }
   }
 }
 
 void EntitiesMapping::deserialize_tree(proto_msg::RadixTree &proto_radix_tree) {
   rax *inner_rt = entities_mapping.get_inner_rt();
+  inner_rt->numele = proto_radix_tree.numele();
+  inner_rt->numnodes = proto_radix_tree.num_nodes();
 
-  deserialize_node(inner_rt, nullptr, proto_radix_tree.root(), nullptr);
+  inner_rt->head = deserialize_node(inner_rt, nullptr, proto_radix_tree.root(), nullptr);
 }
 
 raxNode *
@@ -159,7 +172,7 @@ EntitiesMapping::deserialize_node(rax *rax_tree, raxNode *parent_node,
 
   raxNode *new_node;
 
-  int entity_offset;
+
   if (proto_node.has_compr_node()) {
     if (child_carry == nullptr) {
       new_node = raxNewNode(0, proto_node.has_entity());
@@ -210,16 +223,7 @@ EntitiesMapping::deserialize_node(rax *rax_tree, raxNode *parent_node,
     throw std::runtime_error("Unknown node type");
   }
 
-  if (parent_node == nullptr) {
-    rax_tree->head = new_node;
-  }
 
-  /*
-  new_node->iskey = proto_node.is_key();
-  new_node->isnull = proto_node.is_null();
-  new_node->iscompr = proto_node.is_compr();
-  new_node->size = proto_node.size();
-   */
 
   if (proto_node.has_entity()) {
     Entity entity{};
@@ -236,6 +240,13 @@ EntitiesMapping::deserialize_node(rax *rax_tree, raxNode *parent_node,
     raxSetData(new_node, entity_stored);
   }
 
+
+  new_node->iskey = proto_node.is_key();
+  new_node->isnull = proto_node.is_null();
+  new_node->iscompr = proto_node.is_compr();
+  new_node->size = proto_node.size();
+
+
   return new_node;
 }
 
@@ -243,4 +254,8 @@ EntitiesMapping::EntitiesMapping(EntitiesMapping &&rhs)
     : entities_mapping(std::move(rhs.entities_mapping)),
       subjects_count(rhs.subjects_count),
       predicates_count(rhs.predicates_count), objects_count(rhs.objects_count) {
+}
+
+void EntitiesMapping::_debug_print_radix_tree() {
+  entities_mapping._debug_print_radix_tree();
 }

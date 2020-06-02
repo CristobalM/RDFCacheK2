@@ -2,10 +2,21 @@
 mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
 current_dir := $(notdir $(patsubst %/,%,$(dir $(mkfile_path))))
 
-all: format proto-build build
+all: format proto-build build-libs build
 
 
-re: clean format build
+re: clean-all format proto-build build-libs build
+
+
+build-libs:
+	cd lib/c-k2tree-dyn
+	./fetch_deps.sh
+
+clean-libs:
+	cd lib/c-k2tree-dyn && make clean
+	cd lib/libxml2-2.9.10 && make clean
+
+rebuild-libs: clean-libs build-libs
 
 
 build:
@@ -28,10 +39,16 @@ proto-build:
 		./proto/entities_mapping.proto \
 		./proto/radix_tree.proto
 
+proto-clean:
+	rm -rf ./proto/generated
+	rm -rf ./proto/java-generated
 
 
 clean:
 	rm -rf build
+
+clean-all: clean clean-libs proto-clean
+
 
 
 format:

@@ -80,6 +80,8 @@ public:
     data_holder.push_back(std::move(sptr));
     return raw_ptr;
   }
+
+  void _debug_print_radix_tree() { raxShow(inner_rt); }
 };
 
 #endif // RDFCACHEK2_RADIXTREE_HPP

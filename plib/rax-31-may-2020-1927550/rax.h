@@ -219,6 +219,6 @@ raxNode *raxCompressNode(raxNode *n, unsigned char *s, size_t len,
                          raxNode **child);
 raxNode *raxReallocForData(raxNode *n, void *data);
 raxNode *raxAddChild(raxNode *n, unsigned char c, raxNode **childptr, raxNode ***parentlink);
-
+void *raxGetData(raxNode *n);
 
 #endif

@@ -23,14 +23,13 @@ TEST(test_case_one, test_name_one) {
 
   K2Tree k2tree_deserialized(k2tree_proto_rev);
 
-
   ASSERT_TRUE(k2Tree.same_as(k2tree_deserialized)) << "Trees not matching";
 
   for (int i = 0; i < 100; i++) {
     for (int j = 0; j < 100; j++) {
       ASSERT_TRUE(k2Tree.has(i, j)) << "normal doesn't have " << i << ", " << j;
-      ASSERT_TRUE(k2tree_deserialized.has(i, j)) << "deserialized doesn't have " << i << ", " << j;
+      ASSERT_TRUE(k2tree_deserialized.has(i, j))
+          << "deserialized doesn't have " << i << ", " << j;
     }
   }
-
 }
