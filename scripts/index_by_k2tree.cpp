@@ -57,9 +57,13 @@ int main(int argc, char **argv) {
 std::vector<std::string> read_predicates(const std::string &predicates_file) {
   std::vector<std::string> out;
   std::ifstream ifs(predicates_file);
+  if(ifs.fail()){
+    throw std::runtime_error("File '" + predicates_file + "' not found");
+  }
   std::string line;
   while (std::getline(ifs, line)) {
     out.push_back(line);
+    std::cout << "read predicate: '" << line << "'" << std::endl;
   }
   ifs.close();
   return out;
@@ -77,11 +81,16 @@ void print_help() {
 
 void write_mapping(const std::string &fname,
                    proto_msg::EntitiesMapping &mapping) {
-  std::ofstream ofs(fname, std::ios::binary);
+  std::fstream outfs(fname, std::ios::out | std::ios::trunc | std::ios::binary);
 
-  mapping.SerializeToOstream(&ofs);
+  std::cout << "write_mapping String serialized size: " << mapping.SerializeAsString().size() << std::endl;
 
-  ofs.close();
+  if(!mapping.SerializeToOstream(&outfs)){
+    std::cerr << "Failed to serialize Entities Mapping" << std::endl;
+  }
+
+
+
 }
 
 parsed_options parse_cmline(int argc, char **argv) {

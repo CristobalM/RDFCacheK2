@@ -18,6 +18,9 @@ TEST(test_case_one, test_name_one) {
   k2Tree.produce_proto(&k2tree_proto);
   auto serialized = k2tree_proto.SerializeAsString();
 
+  std::cout << "serialized k2_tree size " << serialized.size() << std::endl;
+  std::cout << "serialized k2 tree: \n" << serialized << std::endl;
+
   proto_msg::K2Tree k2tree_proto_rev;
   k2tree_proto_rev.ParseFromString(serialized);
 

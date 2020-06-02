@@ -33,10 +33,14 @@ void PredicatesIndexCache::dump_to_file(const std::string &file_path) {
     hmap_item.second->produce_proto(k2tree);
   }
 
-  std::ofstream ofstream(file_path, std::ofstream::binary);
-  predicates_index_cache_proto.SerializeToOstream(&ofstream);
+  std::cout << "PredicatesIndexCache String serialized size: " << predicates_index_cache_proto.SerializeAsString().size() << std::endl;
 
-  ofstream.close();
+  std::fstream outfs(file_path, std::ios::out | std::ios::trunc | std::ios::binary);
+  if(!predicates_index_cache_proto.SerializeToOstream(&outfs)){
+    std::cerr << "Failed to serialize the predicates index cache" << std::endl;
+  }
+
+
 }
 
 void PredicatesIndexCache::load_dump_file(const std::string &file_path) {
