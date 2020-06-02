@@ -55,6 +55,8 @@ public:
 
   K2Tree(const proto_msg::K2Tree &k2tree_proto);
   K2Tree(proto_msg::CacheFeedFullK2TreeRequest &cache_feed_full_k2tree_request);
+
+  bool same_as(const K2Tree &other);
 };
 
 #endif // RDFCACHEK2_K2TREE_HPP
