@@ -47,8 +47,12 @@ struct u32array_alloc k2tree_alloc_u32array(int size) {
     throw std::runtime_error(
         "Blocks with size higher than 1024 are not allowed");
   }
-  size_t container_sz = 1UL
-                        << (unsigned long)std::ceil(std::log2((double)size));
+  size_t container_sz;
+  if (size > 0) {
+    container_sz = 1UL << (unsigned long)std::ceil(std::log2((double)size));
+  } else {
+    container_sz = 32;
+  }
   struct u32array_alloc out {};
 
   if (container_sz <= 32) {

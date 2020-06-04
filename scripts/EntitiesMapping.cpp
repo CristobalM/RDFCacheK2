@@ -3,7 +3,10 @@
 //
 
 #include <exception>
+#include <fstream>
 #include <string>
+
+#include <stdlib.h>
 
 #include "EntitiesMapping.h"
 
@@ -162,90 +165,79 @@ void EntitiesMapping::deserialize_tree(proto_msg::RadixTree &proto_radix_tree) {
   inner_rt->numele = proto_radix_tree.numele();
   inner_rt->numnodes = proto_radix_tree.num_nodes();
 
-  inner_rt->head = deserialize_node(inner_rt, nullptr, proto_radix_tree.root(), nullptr);
+  free(inner_rt->head);
+  inner_rt->head = deserialize_node(inner_rt, proto_radix_tree.root());
 }
 
 raxNode *
-EntitiesMapping::deserialize_node(rax *rax_tree, raxNode *parent_node,
-                                  const proto_msg::RadixNode &proto_node,
-                                  raxNode *child_carry) {
+EntitiesMapping::deserialize_node(rax *rax_tree,
+                                  const proto_msg::RadixNode &proto_node) {
 
   raxNode *new_node;
 
+  size_t node_size;
 
   if (proto_node.has_compr_node()) {
-    if (child_carry == nullptr) {
-      new_node = raxNewNode(0, proto_node.has_entity());
-    } else {
-      new_node = child_carry;
-    }
+    node_size = sizeof(raxNode) + proto_node.size() +
+                raxPadding(proto_node.size()) + sizeof(raxNode *);
+    new_node = reinterpret_cast<raxNode *>(malloc(node_size));
 
-    raxNode *new_child;
-    raxCompressNode(new_node,
-                    reinterpret_cast<unsigned char *>(const_cast<char *>(
-                        proto_node.compr_node().compressed_data().c_str())),
-                    proto_node.compr_node().compressed_data().size(),
-                    &new_child);
+    new_node->isnull = proto_node.is_null();
+    new_node->iscompr = proto_node.is_compr();
+    new_node->iskey = proto_node.is_key();
+    new_node->size = proto_node.size();
 
-    deserialize_node(rax_tree, new_node, proto_node.compr_node().child(),
-                     new_child);
+    memcpy(new_node->data, proto_node.compr_node().compressed_data().c_str(),
+           proto_node.size());
 
-    /*
-    entity_offset = proto_node.compr_node().compressed_data().size() +
-                    sizeof(raxNode *);
-    */
+    raxNode *child_node =
+        deserialize_node(rax_tree, proto_node.compr_node().child());
+
+    memcpy(raxNodeFirstChildPtr(new_node), &child_node, sizeof(raxNode *));
 
   } else if (proto_node.has_normal_node()) {
-    if (child_carry == nullptr) {
-      new_node = raxNewNode(proto_node.normal_node().children_size(),
-                            proto_node.has_entity());
-    } else {
-      new_node = child_carry;
+    node_size = sizeof(raxNode) + proto_node.size() +
+                raxPadding(proto_node.size()) +
+                sizeof(raxNode *) * proto_node.size();
+
+    if (!proto_node.is_null()) {
+      node_size += sizeof(void *);
     }
+
+    new_node = reinterpret_cast<raxNode *>(malloc(node_size));
+    new_node->isnull = proto_node.is_null();
+    new_node->iscompr = proto_node.is_compr();
+    new_node->iskey = proto_node.is_key();
+    new_node->size = proto_node.size();
 
     for (int i = 0; i < proto_node.normal_node().children_size(); i++) {
-      raxNode *child;
-      raxNode **parent_link;
-      new_node =
-          raxAddChild(new_node, proto_node.normal_node().children_chars()[i],
-                      &child, &parent_link);
 
-      deserialize_node(rax_tree, new_node, proto_node.normal_node().children(i),
-                       child);
+      new_node->data[i] = proto_node.normal_node().children_chars()[i];
+
+      raxNode *child =
+          deserialize_node(rax_tree, proto_node.normal_node().children(i));
+      memcpy(raxNodeFirstChildPtr(new_node) + i, &child, sizeof(raxNode *));
     }
 
-    /*
-    entity_offset = proto_node.normal_node().children_size() +
-                    proto_node.normal_node().children_size() * sizeof(raxNode
-    *);
-      */
   } else {
     throw std::runtime_error("Unknown node type");
   }
 
-
-
   if (proto_node.has_entity()) {
     Entity entity{};
-    entity.entity_kinds =
+
+    auto both_type_kind =
         static_cast<uint8_t>(proto_node.entity().entity_type_kind()[0]);
+
+    entity.entity_kinds = both_type_kind & 7u;
+    entity.entity_type = static_cast<Entity::EntityType>(both_type_kind >> 3u);
     entity.subject_value = proto_node.entity().subject_value();
     entity.predicate_value = proto_node.entity().predicate_value();
     entity.object_value = proto_node.entity().object_value();
     Entity *entity_stored = entities_mapping.add_data(entity);
 
-    if (new_node->isnull) {
-      raxReallocForData(new_node, entity_stored);
-    }
     raxSetData(new_node, entity_stored);
   }
-
-
-  new_node->iskey = proto_node.is_key();
-  new_node->isnull = proto_node.is_null();
-  new_node->iscompr = proto_node.is_compr();
-  new_node->size = proto_node.size();
-
 
   return new_node;
 }
@@ -258,4 +250,12 @@ EntitiesMapping::EntitiesMapping(EntitiesMapping &&rhs)
 
 void EntitiesMapping::_debug_print_radix_tree() {
   entities_mapping._debug_print_radix_tree();
+}
+
+std::shared_ptr<EntitiesMapping>
+EntitiesMapping::load_from_file(const std::string &previous_mapping_fpath) {
+  std::ifstream ifs(previous_mapping_fpath, std::ios::binary);
+  proto_msg::EntitiesMapping proto_saved;
+  proto_saved.ParseFromIstream(&ifs);
+  return std::make_shared<EntitiesMapping>(proto_saved);
 }

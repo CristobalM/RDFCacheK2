@@ -13,26 +13,33 @@
 
 struct NTParsedResult {
   NTParsedResult();
-  NTParsedResult(EntitiesMapping mapping, PredicatesIndexCache cache);
-  EntitiesMapping entities_mapping;
-  PredicatesIndexCache predicates_index_cache;
+  explicit NTParsedResult(std::shared_ptr<EntitiesMapping> mapping);
+  std::shared_ptr<EntitiesMapping> entities_mapping;
+  std::unique_ptr<PredicatesIndexCache> predicates_index_cache;
 };
 
 class NTParser {
   std::string input_path;
-  EntitiesMapping *previous_mapping = nullptr;
+  std::shared_ptr<EntitiesMapping> previous_mapping = nullptr;
 
   std::unordered_map<std::string, bool> predicates;
   bool has_predicates = false;
 
+  std::vector<std::pair<ulong, ulong>> points_inserted_debug;
+
 public:
-  NTParser(std::string input_path, EntitiesMapping *previous_mapping);
+  NTParser(std::string input_path,
+           std::shared_ptr<EntitiesMapping> previous_mapping);
   NTParser(std::string input_path);
 
   std::unique_ptr<NTParsedResult> parse();
   void set_predicates(std::vector<std::string> &predicates_vec);
 
   bool should_add_predicate(const std::string &predicate);
+
+  void insert_debug(ulong col, ulong row);
+
+  std::vector<std::pair<ulong, ulong>> &get_pairs();
 };
 
 #endif // RDFCACHEK2_NTPARSER_HPP

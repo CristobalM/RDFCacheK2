@@ -52,11 +52,12 @@ public:
   void _debug_print_radix_tree();
 
 
+  static std::shared_ptr<EntitiesMapping> load_from_file(const std::string &previous_mapping_fpath);
+
 private:
   void deserialize_tree(proto_msg::RadixTree &proto_radix_tree);
   void serialize_tree(proto_msg::RadixTree &radix_tree);
-  raxNode * deserialize_node(rax *rax_tree, raxNode *parent_node, const proto_msg::RadixNode &proto_node,
-                             raxNode *child_carry);
+  raxNode *deserialize_node(rax *rax_tree, const proto_msg::RadixNode &proto_node);
   void serialize_node(proto_msg::RadixNode *proto_node, raxNode *rax_node);
 };
 

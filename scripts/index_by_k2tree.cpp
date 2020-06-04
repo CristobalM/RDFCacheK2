@@ -18,10 +18,13 @@ struct parsed_options {
   std::string input_data;
   std::string output_file;
   std::string predicates_to_find_file;
+  std::string previous_mapping_fpath;
   bool has_predicates;
+  bool has_previous_mapping;
 };
 
 void print_help();
+
 parsed_options parse_cmline(int argc, char **argv);
 
 void write_mapping(const std::string &fname,
@@ -31,39 +34,57 @@ std::vector<std::string> read_predicates(const std::string &predicates_file);
 
 int main(int argc, char **argv) {
   auto parsed_cmline = parse_cmline(argc, argv);
+
+  std::cout << "parsed " << std::endl;
+
+  std::shared_ptr<EntitiesMapping> entities_mapping = nullptr;
+
+  if (parsed_cmline.has_previous_mapping) {
+    std::cout << "Previous mapping available... Importing" << std::endl;
+    entities_mapping =
+        EntitiesMapping::load_from_file(parsed_cmline.previous_mapping_fpath);
+    std::cout << "Previous mapping imported" << std::endl;
+  }
+
   switch (parsed_cmline.input_format) {
   case InputFormat::NT:
   default:
-    NTParser nt_parser(parsed_cmline.input_data);
+    std::unique_ptr<NTParser> nt_parser;
+    if (entities_mapping == nullptr) {
+      nt_parser = std::make_unique<NTParser>(parsed_cmline.input_data);
+    } else {
+      nt_parser = std::make_unique<NTParser>(parsed_cmline.input_data,
+                                             entities_mapping);
+    }
     if (parsed_cmline.has_predicates) {
       auto predicates = read_predicates(parsed_cmline.predicates_to_find_file);
-      nt_parser.set_predicates(predicates);
+      nt_parser->set_predicates(predicates);
       std::cout << "setting predicates = True" << std::endl;
     }
-    auto parsed_result = nt_parser.parse();
+    auto parsed_result = nt_parser->parse();
     if (parsed_cmline.generate_mapping) {
       std::cout << "serializing mapping" << std::endl;
       auto serialized_entities_mapping =
-          parsed_result->entities_mapping.serialize();
+          parsed_result->entities_mapping->serialize();
       write_mapping(parsed_cmline.output_file + ".map",
                     *serialized_entities_mapping);
     }
 
     std::cout << "serializing k2trees" << std::endl;
-    parsed_result->predicates_index_cache.dump_to_file(
+    parsed_result->predicates_index_cache->dump_to_file(
         parsed_cmline.output_file);
   }
 }
+
 std::vector<std::string> read_predicates(const std::string &predicates_file) {
   std::vector<std::string> out;
   std::ifstream ifs(predicates_file);
-  if(ifs.fail()){
+  if (ifs.fail()) {
     throw std::runtime_error("File '" + predicates_file + "' not found");
   }
   std::string line;
   while (std::getline(ifs, line)) {
     out.push_back(line);
-    std::cout << "read predicate: '" << line << "'" << std::endl;
   }
   ifs.close();
   return out;
@@ -76,6 +97,7 @@ void print_help() {
       << "--input-data\t(-d)\t\t(string-required)\n"
       << "--output-data\t(-o)\t\t(string-required)\n"
       << "--predicates-input\t(-p)\t\t(string-optional) (if none match all)\n"
+      << "--previous-mapping\t(-m)\t\t(string-optional)\n"
       << std::endl;
 }
 
@@ -83,24 +105,21 @@ void write_mapping(const std::string &fname,
                    proto_msg::EntitiesMapping &mapping) {
   std::fstream outfs(fname, std::ios::out | std::ios::trunc | std::ios::binary);
 
-  std::cout << "write_mapping String serialized size: " << mapping.SerializeAsString().size() << std::endl;
-
-  if(!mapping.SerializeToOstream(&outfs)){
+  if (!mapping.SerializeToOstream(&outfs)) {
     std::cerr << "Failed to serialize Entities Mapping" << std::endl;
   }
-
-
-
 }
 
 parsed_options parse_cmline(int argc, char **argv) {
-  const char short_options[] = "f::gp::d:o:";
+  const char short_options[] = "f::p::m::gd:o:";
   struct option long_options[] = {
       {"input-format", optional_argument, nullptr, 'f'},
-      {"generate-mapping", optional_argument, nullptr, 'g'},
       {"predicates-input", optional_argument, nullptr, 'p'},
+      {"previous-mapping", optional_argument, nullptr, 'm'},
+      {"generate-mapping", optional_argument, nullptr, 'g'},
       {"input-data", required_argument, nullptr, 'd'},
       {"output-data", required_argument, nullptr, 'o'},
+
       {nullptr, 0, nullptr, 0}};
 
   int opt;
@@ -110,9 +129,11 @@ parsed_options parse_cmline(int argc, char **argv) {
   out.input_format = InputFormat::NT;
   out.generate_mapping = false;
   out.has_predicates = false;
+  out.has_previous_mapping = false;
 
   bool has_input = false;
   bool has_output = false;
+
   while ((
       opt = getopt_long(argc, argv, short_options, long_options, &opt_index))) {
     if (opt == -1) {
@@ -121,19 +142,38 @@ parsed_options parse_cmline(int argc, char **argv) {
 
     switch (opt) {
     case 'f':
-      std::cout << "f: " << optarg << std::endl;
-      if (std::strncmp(optarg, "NT", 2 * sizeof(char)) == 0) {
-        out.input_format = InputFormat::NT;
+      if (optarg != nullptr) {
+        std::string format_str(optarg);
+        std::cout << "f: " << format_str << std::endl;
+        if (format_str == "NT") {
+          out.input_format = InputFormat::NT;
+        }
+      } else {
+        std::cout << "No f" << std::endl;
       }
       break;
     case 'g':
       out.generate_mapping = true;
+      std::cout << "g is on!" << std::endl;
       break;
 
     case 'p':
-      std::cout << "p: " << optarg << std::endl;
-      out.predicates_to_find_file = optarg;
-      out.has_predicates = true;
+      if (optarg != nullptr) {
+        out.predicates_to_find_file = optarg;
+        std::cout << "p: " << out.predicates_to_find_file << std::endl;
+        out.has_predicates = true;
+      } else {
+        std::cout << "No p" << std::endl;
+      }
+      break;
+    case 'm':
+      if (optarg != nullptr) {
+        out.previous_mapping_fpath = optarg;
+        std::cout << "m: " << out.previous_mapping_fpath << std::endl;
+        out.has_previous_mapping = true;
+      } else {
+        std::cout << "No m" << std::endl;
+      }
       break;
     case 'd':
       std::cout << "d: " << optarg << std::endl;
@@ -146,6 +186,7 @@ parsed_options parse_cmline(int argc, char **argv) {
       out.output_file = optarg;
       has_output = true;
       break;
+
     case 'h': // to implement
     case '?':
     default:

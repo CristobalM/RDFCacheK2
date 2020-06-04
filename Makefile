@@ -2,15 +2,15 @@
 mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
 current_dir := $(notdir $(patsubst %/,%,$(dir $(mkfile_path))))
 
-all: format proto-build build-libs build
+all: format proto-build build
 
 
 re: clean-all format proto-build build-libs build
 
 
 build-libs:
-	cd lib/c-k2tree-dyn
-	./fetch_deps.sh
+	cd lib/c-k2tree-dyn && ./fetch_deps.shInvalid container_sz
+
 
 clean-libs:
 	cd lib/c-k2tree-dyn && make clean

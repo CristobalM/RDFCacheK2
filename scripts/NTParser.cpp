@@ -1,3 +1,5 @@
+#include <utility>
+
 //
 // Created by Cristobal Miranda, 2020
 //
@@ -8,10 +10,20 @@
 #include <fstream>
 #include <utility>
 
-NTParser::NTParser(std::string input_path, EntitiesMapping *previous_mapping)
-    : input_path(std::move(input_path)), previous_mapping(previous_mapping) {}
+#include "EntitiesMapping.h"
 
-NTParser::NTParser(std::string input_path) : input_path(input_path) {}
+NTParser::NTParser(std::string input_path,
+                   std::shared_ptr<EntitiesMapping> previous_mapping)
+    : input_path(std::move(input_path)),
+      previous_mapping(std::move(previous_mapping)) {}
+
+NTParser::NTParser(std::string input_path)
+    : input_path(input_path),
+      previous_mapping(std::make_shared<EntitiesMapping>()) {}
+
+std::vector<std::pair<ulong, ulong>> &NTParser::get_pairs() {
+  return points_inserted_debug;
+}
 
 Entity::EntityType get_term_type(raptor_term *term) {
   switch (term->type) {
@@ -66,18 +78,21 @@ void statement_handler(void *_ntpair, const raptor_statement *statement) {
 
   pred_cont++;
 
-  auto subject_id = nt_pair->nt_parsed_result->entities_mapping.add_subject(
+  auto subject_id = nt_pair->nt_parsed_result->entities_mapping->add_subject(
       subject_value, get_term_type(subject));
-  auto predicate_id = nt_pair->nt_parsed_result->entities_mapping.add_predicate(
-      predicate_value, get_term_type(predicate));
-  auto object_id = nt_pair->nt_parsed_result->entities_mapping.add_object(
+  auto predicate_id =
+      nt_pair->nt_parsed_result->entities_mapping->add_predicate(
+          predicate_value, get_term_type(predicate));
+  auto object_id = nt_pair->nt_parsed_result->entities_mapping->add_object(
       object_value, get_term_type(object));
 
-  auto &cache = nt_pair->nt_parsed_result->predicates_index_cache;
+  auto &cache = *nt_pair->nt_parsed_result->predicates_index_cache;
   if (!cache.has_predicate(predicate_id)) {
     cache.add_predicate(predicate_id);
   }
-  cache.get_k2tree(predicate_id).insert(subject_id, object_id);
+
+  auto &k2tree = cache.get_k2tree(predicate_id);
+  k2tree.insert(subject_id, object_id);
 }
 
 std::unique_ptr<NTParsedResult> NTParser::parse() {
@@ -88,9 +103,7 @@ std::unique_ptr<NTParsedResult> NTParser::parse() {
   if (previous_mapping == nullptr) {
     result = std::make_unique<NTParsedResult>();
   } else {
-    result = std::make_unique<NTParsedResult>(std::move(*previous_mapping),
-                                              PredicatesIndexCache());
-    previous_mapping = &result->entities_mapping;
+    result = std::make_unique<NTParsedResult>(previous_mapping);
   }
 
   PairNTParserNResult pair_to_pass{};
@@ -136,8 +149,11 @@ bool NTParser::should_add_predicate(const std::string &predicate) {
   return !has_predicates || predicates.find(predicate) != predicates.end();
 }
 
-NTParsedResult::NTParsedResult(EntitiesMapping mapping,
-                               PredicatesIndexCache cache)
+void NTParser::insert_debug(ulong col, ulong row) {
+  points_inserted_debug.emplace_back(col, row);
+}
+
+NTParsedResult::NTParsedResult(std::shared_ptr<EntitiesMapping> mapping)
     : entities_mapping(std::move(mapping)),
-      predicates_index_cache(std::move(cache)) {}
+      predicates_index_cache(std::make_unique<PredicatesIndexCache>()) {}
 NTParsedResult::NTParsedResult() {}
