@@ -25,15 +25,21 @@ class EntitiesMapping {
   unsigned long objects_count;
 
 public:
+
+  struct DeserializedResult {
+    raxNode * deserialized_node;
+    uint32_t child_id;
+  };
+
   EntitiesMapping();
 
   EntitiesMapping(const EntitiesMapping &) = delete;
 
-  EntitiesMapping(EntitiesMapping &&);
+  explicit EntitiesMapping(EntitiesMapping &&);
 
-  EntitiesMapping(proto_msg::EntitiesMapping &input_proto);
+  explicit EntitiesMapping(std::istream &input_stream);
 
-  std::unique_ptr<proto_msg::EntitiesMapping> serialize();
+  void serialize(std::ostream &output_stream);
 
   unsigned long add_subject(const std::string &value,
                             Entity::EntityType entity_type);
@@ -52,19 +58,19 @@ public:
   load_from_file(const std::string &previous_mapping_fpath);
 
 private:
-  void deserialize_tree(proto_msg::RadixTree &proto_radix_tree,
-                        std::istream &input_stream);
-  void serialize_tree(proto_msg::RadixTree &radix_tree,
-                      std::ostream &output_stream);
-  raxNode *deserialize_node(
-      rax *rax_tree, const proto_msg::RadixNode &proto_node,
-      std::map<uint32_t, std::unique_ptr<proto_msg::RadixNode>> &to_deserialize,
-      std::istream &input_stream);
+
+
+  void deserialize(std::istream &input_stream);
+
+  DeserializedResult deserialize_node(const proto_msg::RadixNode &proto_node,
+      std::map<uint32_t, raxNode * > &deserialized);
 
   uint32_t serialize_node(
       proto_msg::RadixNode *proto_node, raxNode *rax_node,
       std::map<uint32_t, std::unique_ptr<proto_msg::RadixNode>> &to_serialize,
       uint32_t &node_counter, std::ostream &output_stream, uint32_t &max_size);
+
+  
 };
 
 #endif // RDFCACHEK2_ENTITIESMAPPING_H

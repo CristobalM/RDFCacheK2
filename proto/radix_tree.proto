@@ -44,11 +44,9 @@ message StoredEntity {
 message ComprNode{
     bytes compressed_data = 1;
     uint32 child_id = 2;
-    // RadixNode child = 2;
 }
 
 message NormalNode{
     bytes children_chars = 1;
     repeated uint32 children_ids = 2;
-    // repeated RadixNode children = 2;
 }

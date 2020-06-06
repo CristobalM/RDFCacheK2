@@ -18,18 +18,8 @@
 #define raxNodeFirstChildPtr(n)                                                \
   ((raxNode **)((n)->data + (n)->size + raxPadding((n)->size)))
 
-EntitiesMapping::EntitiesMapping(proto_msg::EntitiesMapping &input_proto) {
-  deserialize_tree(*input_proto.mutable_entities_mapping());
-  subjects_count = input_proto.subjects_count();
-  predicates_count = input_proto.predicates_count();
-  objects_count = input_proto.objects_count();
-}
-
-std::unique_ptr<proto_msg::EntitiesMapping> EntitiesMapping::serialize() {
-  auto out = std::make_unique<proto_msg::EntitiesMapping>();
-  proto_msg::RadixTree *radix_tree = out->mutable_entities_mapping();
-  serialize_tree(*radix_tree);
-  return out;
+EntitiesMapping::EntitiesMapping(std::istream &input_stream) {
+  deserialize(input_stream);
 }
 
 unsigned long EntitiesMapping::add_subject(const std::string &value,
@@ -111,44 +101,98 @@ bool EntitiesMapping::has_object(const std::string &value) {
 EntitiesMapping::EntitiesMapping()
     : subjects_count(0), predicates_count(0), objects_count(0) {}
 
-void EntitiesMapping::serialize_tree(proto_msg::RadixTree &radix_tree,
-                                     std::ostream &output_stream) {
+void write_u32(std::ostream &output_stream, uint32_t value) {
+  value = htonl(value);
+  output_stream.write(reinterpret_cast<char *>(&value), sizeof(uint32_t));
+}
+
+uint32_t read_u32(std::istream &input_stream) {
+  uint32_t result;
+  input_stream.read(reinterpret_cast<char *>(&result), sizeof(uint32_t));
+  result = ntohl(result);
+  return result;
+}
+
+struct HeaderHolder {
+  uint32_t subjects_count;
+  uint32_t predicates_count;
+  uint32_t objects_count;
+  uint32_t max_size;
+  uint32_t protos_count;
+  uint32_t root_index;
+  uint32_t numele;
+  uint32_t num_nodes;
+};
+
+void write_header(HeaderHolder header_holder, std::ostream &output_stream) {
+  write_u32(output_stream, header_holder.subjects_count);
+  write_u32(output_stream, header_holder.predicates_count);
+  write_u32(output_stream, header_holder.objects_count);
+  write_u32(output_stream, header_holder.max_size);
+  write_u32(output_stream, header_holder.protos_count);
+  write_u32(output_stream, header_holder.root_index);
+  write_u32(output_stream, header_holder.numele);
+  write_u32(output_stream, header_holder.num_nodes);
+}
+
+HeaderHolder read_header(std::istream &input_stream) {
+  HeaderHolder output{};
+  output.subjects_count = read_u32(input_stream);
+  output.predicates_count = read_u32(input_stream);
+  output.objects_count = read_u32(input_stream);
+  output.max_size = read_u32(input_stream);
+  output.protos_count = read_u32(input_stream);
+  output.root_index = read_u32(input_stream);
+  output.numele = read_u32(input_stream);
+  output.num_nodes = read_u32(input_stream);
+  return output;
+}
+
+void EntitiesMapping::serialize(std::ostream &output_stream) {
 
   rax *inner_rt = entities_mapping.get_inner_rt();
 
-  radix_tree.set_numele(inner_rt->numele);
-  radix_tree.set_num_nodes(inner_rt->numnodes);
-  auto root_node = std::make_unique<proto_msg::RadixNode>();
-  auto *root_node_raw = root_node.get();
+  HeaderHolder header{};
+  header.subjects_count = subjects_count;
+  header.predicates_count = predicates_count;
+  header.objects_count = objects_count;
+  header.max_size = 0;     // to fill later
+  header.protos_count = 0; // to fill later
+  header.root_index = 0;   // to fill later
+  header.numele = inner_rt->numele;
+  header.num_nodes = inner_rt->numnodes;
+
   std::map<uint32_t, std::unique_ptr<proto_msg::RadixNode>> to_serialize;
-  uint32_t node_counter = 0;
-  to_serialize[node_counter] = std::move(root_node);
 
-  uint32_t max_size = 0;
-  // Placeholder to fill with the calculated max_size later
-  output_stream.write(reinterpret_cast<char *>(&max_size), sizeof(uint32_t));
+  // Place holder to fix after recursive serialization
+  write_header(header, output_stream);
 
+  auto root_node = std::make_unique<proto_msg::RadixNode>();
+  header.root_index =
+      serialize_node(root_node.get(), inner_rt->head, to_serialize,
+                     header.protos_count, output_stream, header.max_size);
+  to_serialize[header.root_index] = std::move(root_node);
 
-  auto header_str = radix_tree.SerializeAsString();
-  auto header_sz = htonl(header_str.size());
+  std::cout << "protos count write: " << header.protos_count << std::endl;
+  std::cout << "protos max_size write: " << header.max_size << std::endl;
 
-  max_size = std::max(max_size, static_cast<uint32_t>(header_str.size()));
-
-  output_stream.write(reinterpret_cast<char *>(&header_sz), sizeof(uint32_t));
-  output_stream.write(header_str.data(), header_str.size());
-
-  serialize_node(root_node_raw, inner_rt->head, to_serialize, node_counter,
-                 output_stream, max_size);
-
+  // Fix placeholder
   output_stream.seekp(0);
-  max_size = htonl(max_size);
-  output_stream.write(reinterpret_cast<const char *>(&max_size), sizeof(uint32_t));
+  write_header(header, output_stream);
 }
 
 void clear_subtree(
     std::map<uint32_t, std::unique_ptr<proto_msg::RadixNode>> &to_serialize,
     uint32_t root_id) {
+  if (to_serialize.find(root_id) == to_serialize.end()) {
+    return;
+  }
+  auto root_node = std::make_unique<proto_msg::RadixNode>();
+
   auto &root = to_serialize[root_id];
+  if (root == nullptr) {
+    return;
+  }
   if (root->size() == 0) {
     to_serialize.erase(root_id);
     return;
@@ -157,7 +201,7 @@ void clear_subtree(
   if (root->is_compr()) {
     clear_subtree(to_serialize, root->compr_node().child_id());
   } else {
-    for (auto i = 0u; i < root->normal_node().children_ids_size(); i++) {
+    for (int i = 0; i < root->normal_node().children_ids_size(); i++) {
       clear_subtree(to_serialize, root->normal_node().children_ids(i));
     }
   }
@@ -172,8 +216,8 @@ uint32_t EntitiesMapping::serialize_node(
   proto_node->set_is_null(rax_node->isnull);
   proto_node->set_is_compr(rax_node->iscompr);
   proto_node->set_size(rax_node->size);
-
   uint32_t node_id = node_counter++;
+  proto_node->set_node_id(node_id);
 
   if (!rax_node->isnull) {
     if (rax_node->iskey) {
@@ -189,11 +233,10 @@ uint32_t EntitiesMapping::serialize_node(
       proto_node->mutable_compr_node()->set_compressed_data(rax_node->data,
                                                             rax_node->size);
       auto child_node = std::make_unique<proto_msg::RadixNode>();
-      auto *child_node_raw = child_node.get();
-      to_serialize[node_id] = std::move(child_node);
       auto child_id =
-          serialize_node(child_node_raw, *raxNodeFirstChildPtr(rax_node),
-                         to_serialize, node_counter, output_stream);
+          serialize_node(child_node.get(), *raxNodeFirstChildPtr(rax_node),
+                         to_serialize, node_counter, output_stream, max_size);
+      to_serialize[child_id] = std::move(child_node);
       proto_node->mutable_compr_node()->set_child_id(child_id);
 
     } else {
@@ -201,11 +244,11 @@ uint32_t EntitiesMapping::serialize_node(
                                                             rax_node->size);
       for (int i = 0; i < rax_node->size; i++) {
         auto child_node = std::make_unique<proto_msg::RadixNode>();
-        auto *child_node_raw = child_node.get();
-        to_serialize[node_id] = std::move(child_node);
         auto child_id = serialize_node(
-            child_node_raw, *(raxNodeFirstChildPtr(rax_node) + i), to_serialize,
-            node_counter, output_stream);
+            child_node.get(), *(raxNodeFirstChildPtr(rax_node) + i),
+            to_serialize, node_counter, output_stream, max_size);
+        to_serialize[child_id] = std::move(child_node);
+
         proto_node->mutable_normal_node()->add_children_ids(child_id);
       }
     }
@@ -217,51 +260,58 @@ uint32_t EntitiesMapping::serialize_node(
                       sizeof(uint32_t));
   output_stream.write(serialized_string.c_str(), serialized_string.size());
 
-  clear_subtree(to_serialize, node_id);
+  // clear_subtree(to_serialize, node_id);
 
-  max_size = std::max(max_size, static_cast<uint32_t>(serialized_string.size()));
+  max_size =
+      std::max(max_size, static_cast<uint32_t>(serialized_string.size()));
 
   return node_id;
 }
 
-void EntitiesMapping::deserialize_tree(proto_msg::RadixTree &proto_radix_tree,
-                                       std::istream &input_stream) {
+void EntitiesMapping::deserialize(std::istream &input_stream) {
   rax *inner_rt = entities_mapping.get_inner_rt();
-  inner_rt->numele = proto_radix_tree.numele();
-  inner_rt->numnodes = proto_radix_tree.num_nodes();
-  std::map<uint32_t, std::unique_ptr<proto_msg::RadixNode>> to_deserialize;
-
   free(inner_rt->head);
 
-  uint32_t max_size;
-  input_stream.read(reinterpret_cast<char *>(&max_size), sizeof(uint32_t));
-  max_size = ntohl(max_size);
+  std::map<uint32_t, raxNode *> deserialized;
 
-  std::vector<char> buffer(max_size, 0);
+  auto header = read_header(input_stream);
+
+  std::cout << "protos_count read: " << header.protos_count << std::endl;
+  std::cout << "max_size read: " << header.max_size << std::endl;
+
+  std::vector<char> buffer(header.max_size, 0);
   char *buffer_ptr = buffer.data();
 
-  for(;;){
-    uint32_t proto_size;
+  subjects_count = header.subjects_count;
+  objects_count = header.objects_count;
+  predicates_count = header.predicates_count;
+
+  inner_rt->numele = header.numele;
+  inner_rt->numnodes = header.num_nodes;
+
+  uint32_t proto_size;
+  for (uint32_t i = 0; i < header.protos_count; i++) {
     input_stream.read(reinterpret_cast<char *>(&proto_size), sizeof(uint32_t));
     proto_size = ntohl(proto_size);
-
     input_stream.read(buffer_ptr, proto_size);
 
+    proto_msg::RadixNode radix_node;
+    radix_node.ParseFromArray(buffer_ptr, proto_size);
 
+    DeserializedResult deserialized_result =
+        deserialize_node(radix_node, deserialized);
 
+    if (deserialized_result.child_id == header.root_index) {
+      inner_rt->head = deserialized_result.deserialized_node;
+    }
   }
-
-
-  //inner_rt->head = deserialize_node(inner_rt, *root, to_deserialize, input_stream);
 }
 
-raxNode *EntitiesMapping::deserialize_node(
-    rax *rax_tree, const proto_msg::RadixNode &proto_node,
-    std::map<uint32_t, std::unique_ptr<proto_msg::RadixNode>> &to_deserialize,
-    std::istream &input_stream) {
+EntitiesMapping::DeserializedResult
+EntitiesMapping::deserialize_node(const proto_msg::RadixNode &proto_node,
+                                  std::map<uint32_t, raxNode *> &deserialized) {
 
   raxNode *new_node;
-
   size_t node_size;
 
   if (proto_node.has_compr_node()) {
@@ -277,8 +327,7 @@ raxNode *EntitiesMapping::deserialize_node(
     memcpy(new_node->data, proto_node.compr_node().compressed_data().c_str(),
            proto_node.size());
 
-    raxNode *child_node =
-        deserialize_node(rax_tree, proto_node.compr_node().child());
+    raxNode *child_node = deserialized[proto_node.compr_node().child_id()];
 
     memcpy(raxNodeFirstChildPtr(new_node), &child_node, sizeof(raxNode *));
 
@@ -297,12 +346,12 @@ raxNode *EntitiesMapping::deserialize_node(
     new_node->iskey = proto_node.is_key();
     new_node->size = proto_node.size();
 
-    for (int i = 0; i < proto_node.normal_node().children_size(); i++) {
+    for (int i = 0; i < proto_node.normal_node().children_ids_size(); i++) {
 
       new_node->data[i] = proto_node.normal_node().children_chars()[i];
 
-      raxNode *child =
-          deserialize_node(rax_tree, proto_node.normal_node().children(i));
+      raxNode *child = deserialized[proto_node.normal_node().children_ids(i)];
+
       memcpy(raxNodeFirstChildPtr(new_node) + i, &child, sizeof(raxNode *));
     }
 
@@ -326,7 +375,13 @@ raxNode *EntitiesMapping::deserialize_node(
     raxSetData(new_node, entity_stored);
   }
 
-  return new_node;
+  deserialized[proto_node.node_id()] = new_node;
+
+  DeserializedResult result;
+  result.child_id = proto_node.node_id();
+  result.deserialized_node = new_node;
+
+  return result;
 }
 
 EntitiesMapping::EntitiesMapping(EntitiesMapping &&rhs)
@@ -342,7 +397,5 @@ void EntitiesMapping::_debug_print_radix_tree() {
 std::shared_ptr<EntitiesMapping>
 EntitiesMapping::load_from_file(const std::string &previous_mapping_fpath) {
   std::ifstream ifs(previous_mapping_fpath, std::ios::binary);
-  proto_msg::EntitiesMapping proto_saved;
-  proto_saved.ParseFromIstream(&ifs);
-  return std::make_shared<EntitiesMapping>(proto_saved);
+  return std::make_shared<EntitiesMapping>(ifs);
 }

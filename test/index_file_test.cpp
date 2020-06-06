@@ -5,6 +5,18 @@
 #include <EntitiesMapping.h>
 #include <gtest/gtest.h>
 
+TEST(oss, t1) {
+  std::ostringstream oss;
+  std::string hola = "hola hola AEKJEOEIO";
+  oss.write(hola.data(), hola.size());
+  auto r = oss.str();
+  std::istringstream iss(r);
+  std::vector<char> r_data(hola.size(), 0);
+  iss.read(r_data.data(), hola.size());
+  std::string wr(r_data.begin(), r_data.end());
+  std::cout << wr << std::endl;
+}
+
 TEST(index_file_tests_ones, test_name_one_file_test) {
   EntitiesMapping entities_mapping;
 
@@ -17,23 +29,17 @@ TEST(index_file_tests_ones, test_name_one_file_test) {
 
   std::cout << "Added stuff" << std::endl;
 
-  auto serialized = entities_mapping.serialize();
+  std::ostringstream output_stream;
+  entities_mapping.serialize(output_stream);
   std::cout << "Serialized" << std::endl;
-
-  std::cout << serialized->DebugString() << std::endl;
-
-  auto string_serialized = serialized->SerializeAsString();
-  std::cout << "Serialized as str" << std::endl;
 
   entities_mapping._debug_print_radix_tree();
 
-  proto_msg::EntitiesMapping to_deserialize;
-
-  to_deserialize.ParseFromString(string_serialized);
   std::cout << "going to deserialize" << std::endl;
 
-  std::cout << to_deserialize.DebugString() << std::endl;
-  EntitiesMapping deserialized_entities_mapping(to_deserialize);
+  std::istringstream iss(output_stream.str());
+
+  EntitiesMapping deserialized_entities_mapping(iss);
   std::cout << "deserialized" << std::endl;
 
   deserialized_entities_mapping._debug_print_radix_tree();
@@ -49,7 +55,7 @@ TEST(index_file_tests_ones, test_name_one_file_test) {
   ASSERT_TRUE(deserialized_entities_mapping.has_subject("Hola"))
       << "Doesn't have Holanda (subject)";
 
-  std::cout << "Entities Mapping serialized: '" << string_serialized << "'"
+  std::cout << "Entities Mapping serialized: '" << output_stream.str() << "'"
             << std::endl;
 
   entities_mapping._debug_print_radix_tree();
@@ -61,30 +67,27 @@ TEST(index_file_tests_ones, deserialize_twice) {
   entities_mapping.add_object("Hola", Entity::EntityType::LITERAL_ENTITY);
   entities_mapping.add_object("Chao", Entity::EntityType::LITERAL_ENTITY);
 
-  auto serialized = entities_mapping.serialize();
+  std::ostringstream oss;
 
-  auto string_serialized = serialized->SerializeAsString();
+  entities_mapping.serialize(oss);
 
-  proto_msg::EntitiesMapping to_deserialize;
-  to_deserialize.ParseFromString(string_serialized);
+  std::istringstream iss(oss.str());
 
-  EntitiesMapping deserialized(to_deserialize);
+  EntitiesMapping deserialized(iss);
 
-  auto serialized_2 = deserialized.serialize();
-  auto string_serialized_2 = serialized_2->SerializeAsString();
+  std::ostringstream oss2;
 
-  proto_msg::EntitiesMapping to_deserialize_2;
-  to_deserialize_2.ParseFromString(string_serialized_2);
+  deserialized.serialize(oss2);
 
-  EntitiesMapping deserialized_2(to_deserialize_2);
+  std::istringstream iss2(oss2.str());
+
+  EntitiesMapping deserialized_2(iss2);
 
   deserialized_2._debug_print_radix_tree();
 
-  auto serialized_3 = deserialized_2.serialize();
+  std::ostringstream oss3;
 
-  serialized->PrintDebugString();
-  std::cout << "--\n\n" << std::endl;
-  serialized_2->PrintDebugString();
+  deserialized_2.serialize(oss3);
 
   ASSERT_TRUE(deserialized_2.has_object("Hola"))
       << "Doesn't have Hola (object)";

@@ -27,8 +27,7 @@ void print_help();
 
 parsed_options parse_cmline(int argc, char **argv);
 
-void write_mapping(const std::string &fname,
-                   proto_msg::EntitiesMapping &mapping);
+void write_mapping(const std::string &fname, EntitiesMapping &mapping);
 
 std::vector<std::string> read_predicates(const std::string &predicates_file);
 
@@ -64,10 +63,8 @@ int main(int argc, char **argv) {
     auto parsed_result = nt_parser->parse();
     if (parsed_cmline.generate_mapping) {
       std::cout << "serializing mapping" << std::endl;
-      auto serialized_entities_mapping =
-          parsed_result->entities_mapping->serialize();
       write_mapping(parsed_cmline.output_file + ".map",
-                    *serialized_entities_mapping);
+                    *parsed_result->entities_mapping);
     }
 
     std::cout << "serializing k2trees" << std::endl;
@@ -101,13 +98,9 @@ void print_help() {
       << std::endl;
 }
 
-void write_mapping(const std::string &fname,
-                   proto_msg::EntitiesMapping &mapping) {
+void write_mapping(const std::string &fname, EntitiesMapping &mapping) {
   std::fstream outfs(fname, std::ios::out | std::ios::trunc | std::ios::binary);
-
-  if (!mapping.SerializeToOstream(&outfs)) {
-    std::cerr << "Failed to serialize Entities Mapping" << std::endl;
-  }
+  mapping.serialize(outfs);
 }
 
 parsed_options parse_cmline(int argc, char **argv) {
