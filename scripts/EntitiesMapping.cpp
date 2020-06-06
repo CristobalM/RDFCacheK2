@@ -184,15 +184,15 @@ void EntitiesMapping::serialize(std::ostream &output_stream) {
 void clear_subtree(
     std::map<uint32_t, std::unique_ptr<proto_msg::RadixNode>> &to_serialize,
     uint32_t root_id) {
+
   if (to_serialize.find(root_id) == to_serialize.end()) {
     return;
   }
+  
   auto root_node = std::make_unique<proto_msg::RadixNode>();
 
   auto &root = to_serialize[root_id];
-  if (root == nullptr) {
-    return;
-  }
+
   if (root->size() == 0) {
     to_serialize.erase(root_id);
     return;
@@ -260,7 +260,7 @@ uint32_t EntitiesMapping::serialize_node(
                       sizeof(uint32_t));
   output_stream.write(serialized_string.c_str(), serialized_string.size());
 
-  // clear_subtree(to_serialize, node_id);
+  clear_subtree(to_serialize, node_id);
 
   max_size =
       std::max(max_size, static_cast<uint32_t>(serialized_string.size()));
