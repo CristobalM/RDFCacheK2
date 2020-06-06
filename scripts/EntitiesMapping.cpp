@@ -189,8 +189,6 @@ void clear_subtree(
     return;
   }
   
-  auto root_node = std::make_unique<proto_msg::RadixNode>();
-
   auto &root = to_serialize[root_id];
 
   if (root->size() == 0) {
