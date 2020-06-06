@@ -7,25 +7,28 @@ option java_outer_classname = "RadixTreeMsg";
 
 
 message RadixTree{
-    RadixNode root = 1;
+    uint32 root_id = 1;
     uint64 numele = 2;
     uint64 num_nodes = 3;
 }
 
 message RadixNode{
-    bool is_key = 1;
-    bool is_null = 2;
-    bool is_compr = 3;
+    uint32 node_id = 1;
 
-    uint32 size = 4;
+    bool is_key = 2;
+    bool is_null = 3;
+    bool is_compr = 4;
 
+    uint32 size = 5;
+
+    
     oneof body {
-        ComprNode compr_node = 5; // if is_compr = true
-        NormalNode normal_node = 6; // else this
+        ComprNode compr_node = 6; // if is_compr = true
+        NormalNode normal_node = 7; // else this
     }
 
     // This should only have something if is_key = true and is_null = false
-    StoredEntity entity = 7;
+    StoredEntity entity = 8;
 }
 
 message StoredEntity {
@@ -40,10 +43,12 @@ message StoredEntity {
 
 message ComprNode{
     bytes compressed_data = 1;
-    RadixNode child = 2;
+    uint32 child_id = 2;
+    // RadixNode child = 2;
 }
 
 message NormalNode{
     bytes children_chars = 1;
-    repeated RadixNode children = 2;
+    repeated uint32 children_ids = 2;
+    // repeated RadixNode children = 2;
 }

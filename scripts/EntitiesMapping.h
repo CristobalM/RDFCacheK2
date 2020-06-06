@@ -17,8 +17,6 @@ extern "C" {
 #include "Entity.h"
 #include "RadixTree.hpp"
 
-/* Exposes functions in rax.c */
-
 class EntitiesMapping {
   RadixTree<Entity> entities_mapping;
 
@@ -29,7 +27,7 @@ class EntitiesMapping {
 public:
   EntitiesMapping();
 
-  EntitiesMapping(const EntitiesMapping&) = delete;
+  EntitiesMapping(const EntitiesMapping &) = delete;
 
   EntitiesMapping(EntitiesMapping &&);
 
@@ -48,17 +46,25 @@ public:
   bool has_predicate(const std::string &value);
   bool has_object(const std::string &value);
 
-
   void _debug_print_radix_tree();
 
-
-  static std::shared_ptr<EntitiesMapping> load_from_file(const std::string &previous_mapping_fpath);
+  static std::shared_ptr<EntitiesMapping>
+  load_from_file(const std::string &previous_mapping_fpath);
 
 private:
-  void deserialize_tree(proto_msg::RadixTree &proto_radix_tree);
-  void serialize_tree(proto_msg::RadixTree &radix_tree);
-  raxNode *deserialize_node(rax *rax_tree, const proto_msg::RadixNode &proto_node);
-  void serialize_node(proto_msg::RadixNode *proto_node, raxNode *rax_node);
+  void deserialize_tree(proto_msg::RadixTree &proto_radix_tree,
+                        std::istream &input_stream);
+  void serialize_tree(proto_msg::RadixTree &radix_tree,
+                      std::ostream &output_stream);
+  raxNode *deserialize_node(
+      rax *rax_tree, const proto_msg::RadixNode &proto_node,
+      std::map<uint32_t, std::unique_ptr<proto_msg::RadixNode>> &to_deserialize,
+      std::istream &input_stream);
+
+  uint32_t serialize_node(
+      proto_msg::RadixNode *proto_node, raxNode *rax_node,
+      std::map<uint32_t, std::unique_ptr<proto_msg::RadixNode>> &to_serialize,
+      uint32_t &node_counter, std::ostream &output_stream, uint32_t &max_size);
 };
 
 #endif // RDFCACHEK2_ENTITIESMAPPING_H
