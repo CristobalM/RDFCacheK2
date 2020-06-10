@@ -16,6 +16,8 @@ build-libs:
 clean-libs:
 	cd lib/c-k2tree-dyn && make clean
 	cd lib/libxml2-2.9.10 && make clean
+	cd lib/libCSD && make clean-all
+	cd lib/raptor2-2.0.15 && make clean
 
 rebuild-libs: clean-libs build-libs
 

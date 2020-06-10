@@ -28,7 +28,7 @@ if [[ ! -d  ${LIBXML2} ]]; then
     cd ..
 else
     cd ${LIBXML2}  || (echo "cant enter ${LIBXML2} folder" && exit)
-    # ./configure
+    ./configure
     make
     cd ..
 fi
@@ -45,7 +45,7 @@ if [[ ! -d ${RAPTOR} ]]; then
     cd ..
 else
     cd ${RAPTOR} || (echo "${RAPTOR} folder was not created" && exit)
-    # ./configure --enable-parsers="ntriples turtle" --enable-serializers=ntriples --enable-static --disable-shared
+    ./configure --enable-parsers="ntriples turtle" --enable-serializers=ntriples --enable-static --disable-shared
     make
     cd ..
 fi
