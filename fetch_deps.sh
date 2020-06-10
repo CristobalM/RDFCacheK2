@@ -28,7 +28,7 @@ if [[ ! -d  ${LIBXML2} ]]; then
     cd ..
 else
     cd ${LIBXML2}  || (echo "cant enter ${LIBXML2} folder" && exit)
-    ./configure
+    # ./configure
     make
     cd ..
 fi
@@ -45,7 +45,25 @@ if [[ ! -d ${RAPTOR} ]]; then
     cd ..
 else
     cd ${RAPTOR} || (echo "${RAPTOR} folder was not created" && exit)
-    ./configure --enable-parsers="ntriples turtle" --enable-serializers=ntriples --enable-static --disable-shared
+    # ./configure --enable-parsers="ntriples turtle" --enable-serializers=ntriples --enable-static --disable-shared
     make
     cd ..
 fi
+
+
+# Begin libCSD
+LIB_CSD="libCSD"
+if [[ -d ${LIB_CSD} ]]; then
+    cd ${LIB_CSD}
+    git fetch
+    git pull
+else
+    if ! (git clone https://github.com/CristobalM/libCSD) then
+        echo "Couldn't retrieve libCSD repository.. exiting"
+        exit 1
+    fi
+    cd ${LIB_CSD}
+fi
+
+make
+cd ..

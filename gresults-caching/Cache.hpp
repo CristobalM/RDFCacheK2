@@ -6,7 +6,7 @@
 #define RDFCACHEK2_CACHE_HPP
 
 #include "GraphResult.hpp"
-#include <cache_result/CacheResult.hpp>
+#include "cache_result/CacheResult.hpp"
 #include <map>
 #include <request_msg.pb.h>
 #include <string>

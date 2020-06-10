@@ -6,7 +6,7 @@
 #include <cmath>
 #include <request_msg.pb.h>
 
-#include "exceptions.hpp"
+#include <exceptions.hpp>
 
 GraphResult::GraphResult() = default;
 

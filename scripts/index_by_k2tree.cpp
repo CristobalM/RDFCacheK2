@@ -5,7 +5,7 @@
 #include <cstring>
 #include <getopt.h>
 
-#include "NTParser.hpp"
+#include <NTParser.hpp>
 #include <entities_mapping.pb.h>
 #include <fstream>
 #include <iostream>

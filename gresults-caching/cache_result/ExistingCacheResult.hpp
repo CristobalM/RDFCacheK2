@@ -10,7 +10,7 @@
 
 #include "CacheResult.hpp"
 
-#include "GraphResult.hpp"
+#include "../GraphResult.hpp"
 
 using timestamp_t = std::chrono::time_point<std::chrono::high_resolution_clock>;
 

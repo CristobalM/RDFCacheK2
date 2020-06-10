@@ -14,26 +14,19 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 set(CORE_SOURCE_FILES
         core/K2Tree.cpp
-        core/Cache.cpp
-        core/GraphResult.cpp
-        core/cache_result/ExistingCacheResult.cpp
-        core/cache_result/NonExistingCacheResult.cpp
-
         core/PredicatesIndexCache.cpp
+        core/EntitiesMapping.cpp
+        core/NTParser.cpp
         )
 
-set(CORE_HEADER_FILES
-        core/K2Tree.hpp
-        core/Cache.hpp
-        core/GraphResult.hpp
-        core/RDFTriple.hpp
-        core/cache_result/ExistingCacheResult.hpp
-        core/cache_result/CacheResult.hpp
-        core/cache_result/NonExistingCacheResult.hpp
+set(GRAPH_RESULT_CACHING_FILE
+        gresults-caching/GraphResult.cpp
+        gresults-caching/Cache.cpp
+        gresults-caching/cache_result/ExistingCacheResult.cpp
+        gresults-caching/cache_result/NonExistingCacheResult.cpp
+)
 
-        core/PredicatesIndexCache.hpp
-        )
-
+        
 set(NETWORK_SOURCE_FILES
         network/CacheServer.cpp
         network/TCPServerConnection.cpp
@@ -43,14 +36,7 @@ set(NETWORK_SOURCE_FILES
         network/Message.cpp
         )
 
-set(NETWORK_HEADER_FILES
-        network/CacheServer.hpp
-        network/TCPServerConnection.hpp
-        network/ServerTask.hpp
-        network/CacheServerTaskProcessor.hpp
-        network/ServerWorker.hpp
-        network/Message.hpp
-        )
+
 
 set(PROTO_MESSAGES
         proto/generated/entities_mapping.pb.cc
@@ -66,7 +52,7 @@ set(PROTO_MESSAGES
 
 set(PROTO_MESSAGES_PATH ${CMAKE_SOURCE_DIR}/proto/generated)
 
-set(INCLUDES memory core network ${PROTO_MESSAGES_PATH})
+set(INCLUDES memory core network ${PROTO_MESSAGES_PATH} ${CMAKE_SOURCE_DIR}/gresults-caching)
 
 set(K2TREE_PATH ${CMAKE_SOURCE_DIR}/lib/c-k2tree-dyn)
 
@@ -92,6 +78,7 @@ add_library(MemoryManager STATIC
 
 add_library(RDFCacheK2 STATIC ${CORE_SOURCE_FILES})
 add_library(RDFCacheK2_Network STATIC ${NETWORK_SOURCE_FILES})
+add_library(RDFCacheK2_GR STATIC ${GRAPH_RESULT_CACHING_FILE})
 
 add_library(ProtoMessages STATIC ${PROTO_MESSAGES})
 
@@ -124,7 +111,7 @@ set(DEFAULT_LIBS
         ProtoMessages
         ${Protobuf_LIBRARIES})
 
-target_link_libraries(example1 ${DEFAULT_LIBS})
+target_link_libraries(example1 RDFCacheK2_GR ${DEFAULT_LIBS} )
 
 
 # index by k2tree script
@@ -144,9 +131,6 @@ include_directories(${RAPTOR_PATH}/src ${LIBXML_PATH}/include ${RAX_PATH} script
 
 add_executable(index_by_k2tree
         scripts/index_by_k2tree.cpp
-        scripts/NTParser.cpp
-        scripts/EntitiesMapping.cpp
-
         )
 
 set(INDEX_FILE_LIBS ${BASE_LIBS}
@@ -210,6 +194,5 @@ endif()
 add_executable(serialization_test  test/serialization_tests.cpp)
 target_link_libraries(serialization_test ${DEFAULT_LIBS} gtest_main)
 
-add_executable(index_file_test test/index_file_test.cpp
-        scripts/EntitiesMapping.cpp)
+add_executable(index_file_test test/index_file_test.cpp)
 target_link_libraries(index_file_test ${INDEX_FILE_LIBS} gtest_main)

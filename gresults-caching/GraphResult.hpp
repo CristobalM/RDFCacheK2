@@ -12,8 +12,8 @@
 #include <graph_result.pb.h>
 #include <request_msg.pb.h>
 
-#include "K2Tree.hpp"
-#include "RDFTriple.hpp"
+#include <K2Tree.hpp>
+#include <RDFTriple.hpp>
 
 struct GraphResultStats {
   int allocated_u32s;

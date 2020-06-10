@@ -9,7 +9,8 @@ re: clean-all format proto-build build-libs build
 
 
 build-libs:
-	cd lib/c-k2tree-dyn && ./fetch_deps.shInvalid container_sz
+	cd lib/c-k2tree-dyn && ./fetch_deps.sh
+	./fetch_deps.sh
 
 
 clean-libs:

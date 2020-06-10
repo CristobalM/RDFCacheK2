@@ -2,6 +2,7 @@
 // Created by Cristobal Miranda, 2020
 //
 
+#include <Cache.hpp>
 #include <CacheServer.hpp>
 
 int main() {
