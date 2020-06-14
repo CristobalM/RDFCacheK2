@@ -28,17 +28,7 @@ message RadixNode{
     }
 
     // This should only have something if is_key = true and is_null = false
-    StoredEntity entity = 8;
-}
-
-message StoredEntity {
-    // 5 bits (stored in 1 byte):
-    // TTKKK ; TT stores the entity type, KKK the entity kinds
-    bytes entity_type_kind = 1;
-
-    uint64 subject_value = 2;
-    uint64 predicate_value = 3;
-    uint64 object_value = 4;
+    bytes data = 8;
 }
 
 message ComprNode{

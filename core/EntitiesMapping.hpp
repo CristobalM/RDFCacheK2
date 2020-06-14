@@ -2,8 +2,8 @@
 // Created by cristobal on 30-05-20.
 //
 
-#ifndef RDFCACHEK2_ENTITIESMAPPING_H
-#define RDFCACHEK2_ENTITIESMAPPING_H
+#ifndef RDFCACHEK2_ENTITIESMAPPING_HPP
+#define RDFCACHEK2_ENTITIESMAPPING_HPP
 
 #include <entities_mapping.pb.h>
 #include <string>
@@ -14,7 +14,7 @@ extern "C" {
 #include <rax.h>
 }
 
-#include "Entity.h"
+#include "Entity.hpp"
 #include "RadixTree.hpp"
 
 class EntitiesMapping {
@@ -25,9 +25,8 @@ class EntitiesMapping {
   unsigned long objects_count;
 
 public:
-
   struct DeserializedResult {
-    raxNode * deserialized_node;
+    raxNode *deserialized_node;
     uint32_t child_id;
   };
 
@@ -58,19 +57,7 @@ public:
   load_from_file(const std::string &previous_mapping_fpath);
 
 private:
-
-
   void deserialize(std::istream &input_stream);
-
-  DeserializedResult deserialize_node(const proto_msg::RadixNode &proto_node,
-      std::map<uint32_t, raxNode * > &deserialized);
-
-  uint32_t serialize_node(
-      proto_msg::RadixNode *proto_node, raxNode *rax_node,
-      std::map<uint32_t, std::unique_ptr<proto_msg::RadixNode>> &to_serialize,
-      uint32_t &node_counter, std::ostream &output_stream, uint32_t &max_size);
-
-  
 };
 
-#endif // RDFCACHEK2_ENTITIESMAPPING_H
+#endif // RDFCACHEK2_ENTITIESMAPPING_HPP

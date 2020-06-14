@@ -5,7 +5,7 @@
 #ifndef RDFCACHEK2_NTPARSER_HPP
 #define RDFCACHEK2_NTPARSER_HPP
 
-#include "EntitiesMapping.h"
+#include "EntitiesMapping.hpp"
 #include <PredicatesIndexCache.hpp>
 #include <memory>
 #include <string>

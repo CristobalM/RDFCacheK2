@@ -10,7 +10,7 @@
 #include <fstream>
 #include <utility>
 
-#include "EntitiesMapping.h"
+#include "EntitiesMapping.hpp"
 
 NTParser::NTParser(std::string input_path,
                    std::shared_ptr<EntitiesMapping> previous_mapping)

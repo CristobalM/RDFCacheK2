@@ -2,7 +2,7 @@
 // Created by Cristobal Miranda, 2020
 //
 
-#include <EntitiesMapping.h>
+#include <EntitiesMapping.hpp>
 #include <gtest/gtest.h>
 
 TEST(oss, t1) {

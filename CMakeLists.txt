@@ -17,6 +17,7 @@ set(CORE_SOURCE_FILES
         core/PredicatesIndexCache.cpp
         core/EntitiesMapping.cpp
         core/NTParser.cpp
+        core/serialization_util.cpp
         )
 
 set(GRAPH_RESULT_CACHING_FILE
@@ -117,8 +118,6 @@ target_link_libraries(example1 RDFCacheK2_GR ${DEFAULT_LIBS} )
 # index by k2tree script
 
 
-
-
 set(RAPTOR_PATH lib/raptor2-2.0.15)
 set(LIBXML_PATH lib/libxml2-2.9.10)
 set(RAX_PATH plib/rax-31-may-2020-1927550)
@@ -142,6 +141,9 @@ set(INDEX_FILE_LIBS ${BASE_LIBS}
 
 target_link_libraries(index_by_k2tree ${INDEX_FILE_LIBS})
 
+
+add_executable(radix_set_from_ntfile scripts/radix_set_from_ntfile.cpp)
+target_link_libraries(radix_set_from_ntfile ${INDEX_FILE_LIBS})
 
 
 
