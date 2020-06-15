@@ -64,7 +64,7 @@ set(K2TREE_LIBFILE libk2tree_merged_noalloc.a)
 
 add_custom_command(OUTPUT ${K2TREE_LIBFILE}
         COMMAND make
-        COMMAND cp bin/libk2tree_merged_noalloc.a .
+        COMMAND cp bin/libk2tree_merged_noalloc.a ${CMAKE_BINARY_DIR}
         WORKING_DIRECTORY ${K2TREE_PATH}
         )
 add_custom_target(_k2tree_target ALL DEPENDS ${K2TREE_LIBFILE})
@@ -124,7 +124,7 @@ message("RAPTOR INCLUDES: " ${RAPTOR2_INCLUDE_DIR})
 #add_executable(main main.cpp )
 #add_executable(cache_example cache_example.cpp)
 
-add_executable(example1 example/example1.cpp)
+add_executable(start_cache_server_example example/start_cache_server_example.cpp)
 
 set(BASE_LIBS
         RDFCacheK2
@@ -144,7 +144,7 @@ set(DEFAULT_LIBS
         ProtoMessages
         ${Protobuf_LIBRARIES})
 
-target_link_libraries(example1 RDFCacheK2_GR ${DEFAULT_LIBS} )
+target_link_libraries(start_cache_server_example RDFCacheK2_GR ${DEFAULT_LIBS} )
 
 
 # index by k2tree script
@@ -175,9 +175,10 @@ target_link_libraries(radix_set_from_ntfile ${INDEX_FILE_LIBS})
 # Only create test executables if google test is found
 find_package(GTest QUIET)
 if(GTest_FOUND)
+include_directories(${GTEST_INCLUDE_DIRS})
 add_executable(serialization_test  test/serialization_tests.cpp)
-target_link_libraries(serialization_test ${DEFAULT_LIBS} gtest_main)
+target_link_libraries(serialization_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES})
 
 add_executable(index_file_test test/index_file_test.cpp)
-target_link_libraries(index_file_test ${INDEX_FILE_LIBS} gtest_main)
+target_link_libraries(index_file_test ${INDEX_FILE_LIBS} ${GTEST_BOTH_LIBRARIES})
 endif()
