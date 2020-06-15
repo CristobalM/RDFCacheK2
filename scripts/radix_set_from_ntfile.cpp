@@ -19,7 +19,8 @@ parsed_options parse_cmline(int argc, char **argv);
 void print_help();
 void process_nt_file(const std::string &input_file_path,
                      const std::string &output_file_path);
-void statement_handler(void *radix_trees_holder_ptr, const raptor_statement *statement);
+void statement_handler(void *radix_trees_holder_ptr,
+                       const raptor_statement *statement);
 std::string get_term_value(raptor_term *term);
 void print_stats();
 
@@ -38,9 +39,10 @@ struct RadixTreesHolder {
   RadixTree<> &predicates_set;
   RadixTree<> &objects_set;
 
-  RadixTreesHolder(RadixTree<> &subjects_set, RadixTree<> &predicates_set, RadixTree<> &objects_set)
-          : subjects_set(subjects_set), predicates_set(predicates_set), objects_set(objects_set) {}
-
+  RadixTreesHolder(RadixTree<> &subjects_set, RadixTree<> &predicates_set,
+                   RadixTree<> &objects_set)
+      : subjects_set(subjects_set), predicates_set(predicates_set),
+        objects_set(objects_set) {}
 };
 
 int main(int argc, char **argv) {
@@ -62,7 +64,8 @@ void process_nt_file(const std::string &input_file_path,
   raptor_parser *parser = raptor_new_parser(world, "ntriples");
 
   raptor_parser_set_statement_handler(
-      parser, (void *)&trees_holder, (raptor_statement_handler)statement_handler);
+      parser, (void *)&trees_holder,
+      (raptor_statement_handler)statement_handler);
 
   raptor_parser_parse_start(parser, nullptr);
 
@@ -82,32 +85,34 @@ void process_nt_file(const std::string &input_file_path,
 
   {
     std::cout << "Serializing subjects" << std::endl;
-    std::ofstream ofstream_subjects(output_file_path + ".subjects.bin", std::ofstream::binary);
+    std::ofstream ofstream_subjects(output_file_path + ".subjects.bin",
+                                    std::ofstream::binary);
     subjects_set.serialize(ofstream_subjects);
   }
 
   {
     std::cout << "Serializing predicates" << std::endl;
-    std::ofstream ofstream_predicates(output_file_path + ".predicates.bin", std::ofstream::binary);
+    std::ofstream ofstream_predicates(output_file_path + ".predicates.bin",
+                                      std::ofstream::binary);
     predicates_set.serialize(ofstream_predicates);
   }
 
   {
     std::cout << "Serializing objects" << std::endl;
-    std::ofstream ofstream_objects(output_file_path + ".objects.bin", std::ofstream::binary);
+    std::ofstream ofstream_objects(output_file_path + ".objects.bin",
+                                   std::ofstream::binary);
     objects_set.serialize(ofstream_objects);
   }
-
 }
 
 void statement_handler(void *radix_trees_holder_ptr,
                        const raptor_statement *statement) {
-  auto &radix_trees_holder = *reinterpret_cast<RadixTreesHolder *>(radix_trees_holder_ptr);
+  auto &radix_trees_holder =
+      *reinterpret_cast<RadixTreesHolder *>(radix_trees_holder_ptr);
 
   auto &predicates_set = radix_trees_holder.predicates_set;
   auto &subjects_set = radix_trees_holder.subjects_set;
   auto &objects_set = radix_trees_holder.objects_set;
-
 
   raptor_term *predicate = statement->predicate;
   raptor_term *subject = statement->subject;

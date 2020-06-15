@@ -1,7 +1,7 @@
 #include <chrono>
 #include <iostream>
 
-#include "core/K2Tree.hpp"
+#include "K2Tree.hpp"
 
 #include "MemoryManager.hpp"
 

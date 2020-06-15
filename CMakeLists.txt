@@ -75,7 +75,6 @@ set_target_properties(_k2tree_merged_noalloc
         IMPORTED_LOCATION ${K2TREE_PATH}/libk2tree_merged_noalloc.a
         INTERFACE_INCLUDE_DIRECTORIES ${K2TREE_LIB_LOCATION}/include
         )
-message("k2tree loc: " ${K2TREE_PATH}/libk2tree_merged_noalloc.a)
 
 
 
@@ -86,7 +85,7 @@ set(INCLUDES_LIBS
         ${K2TREE_PATH}/lib/c-vector/include
         )
 
-set(LINK_LIBS ${K2TREE_PATH})
+set(LINK_LIBS ${K2TREE_PATH}/bin)
 
 include_directories(${INCLUDES} ${INCLUDES_LIBS})
 link_directories(${LINK_LIBS})
@@ -118,11 +117,7 @@ find_package(LibXml2 REQUIRED)
 include_directories(${LibXml2_INCLUDE_DIRS})
 find_package(Raptor2 REQUIRED)
 include_directories(${RAPTOR2_INCLUDE_DIR})
-message("RAPTOR INCLUDES: " ${RAPTOR2_INCLUDE_DIR})
 
-
-#add_executable(main main.cpp )
-#add_executable(cache_example cache_example.cpp)
 
 add_executable(start_cache_server_example example/start_cache_server_example.cpp)
 

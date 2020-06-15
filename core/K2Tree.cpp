@@ -14,8 +14,6 @@ extern "C" {
 #include "K2Tree.hpp"
 #include "exceptions.hpp"
 
-
-
 bool same_blocks(const struct block *lhs, const struct block *rhs);
 
 bool same_block_frontiers(const block_frontier *lhs, const block_frontier *rhs);
@@ -26,8 +24,6 @@ bool same_block_topologies(const block_topology *lhs,
 bool same_bvs(const bitvector *lhs, const bitvector *rhs);
 
 bool same_vectors(const struct vector &lhs, const struct vector &rhs);
-
-
 
 K2Tree::K2Tree(uint32_t tree_depth) : root(create_block(tree_depth)) {
   init_queries_state(&qs, tree_depth);
