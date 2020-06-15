@@ -16,7 +16,27 @@ set -o history -o histexpand
 mkdir -p lib
 cd lib || (echo "cant enter lib" && exit)
 
+# Begin libCSD
+LIB_CSD="libCSD"
+if [[ -d ${LIB_CSD} ]]; then
+    cd ${LIB_CSD}
+    git fetch
+    git pull
+else
+    if ! (git clone https://github.com/CristobalM/libCSD) then
+        echo "Couldn't retrieve libCSD repository.. exiting"
+        exit 1
+    fi
+    cd ${LIB_CSD}
+fi
 
+make
+cd ..
+
+
+# Deprecated method to fetch libs, instead install with OS package manager
+# Or install in separated steps
+if false
 LIBXML2=libxml2-2.9.10
 LIBXML2_TAR_GZ=${LIBXML2}.tar.gz
 if [[ ! -d  ${LIBXML2} ]]; then
@@ -49,21 +69,4 @@ else
     make
     cd ..
 fi
-
-
-# Begin libCSD
-LIB_CSD="libCSD"
-if [[ -d ${LIB_CSD} ]]; then
-    cd ${LIB_CSD}
-    git fetch
-    git pull
-else
-    if ! (git clone https://github.com/CristobalM/libCSD) then
-        echo "Couldn't retrieve libCSD repository.. exiting"
-        exit 1
-    fi
-    cd ${LIB_CSD}
 fi
-
-make
-cd ..

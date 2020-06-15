@@ -16,16 +16,11 @@ struct parsed_options {
 };
 
 parsed_options parse_cmline(int argc, char **argv);
-
 void print_help();
-
 void process_nt_file(const std::string &input_file_path,
                      const std::string &output_file_path);
-
-void statement_handler(void *radix_tree_ptr, const raptor_statement *statement);
-
+void statement_handler(void *radix_trees_holder_ptr, const raptor_statement *statement);
 std::string get_term_value(raptor_term *term);
-
 void print_stats();
 
 unsigned long bytes_processed = 0;
@@ -38,6 +33,16 @@ unsigned long strings_processed_reset_th = 0;
 
 const unsigned long RESET_TH = 1000000;
 
+struct RadixTreesHolder {
+  RadixTree<> &subjects_set;
+  RadixTree<> &predicates_set;
+  RadixTree<> &objects_set;
+
+  RadixTreesHolder(RadixTree<> &subjects_set, RadixTree<> &predicates_set, RadixTree<> &objects_set)
+          : subjects_set(subjects_set), predicates_set(predicates_set), objects_set(objects_set) {}
+
+};
+
 int main(int argc, char **argv) {
   parsed_options p_options = parse_cmline(argc, argv);
 
@@ -48,12 +53,16 @@ int main(int argc, char **argv) {
 
 void process_nt_file(const std::string &input_file_path,
                      const std::string &output_file_path) {
-  RadixTree<> radix_tree;
+  RadixTree<> subjects_set;
+  RadixTree<> predicates_set;
+  RadixTree<> objects_set;
+
+  RadixTreesHolder trees_holder(subjects_set, predicates_set, objects_set);
   raptor_world *world = raptor_new_world();
   raptor_parser *parser = raptor_new_parser(world, "ntriples");
 
   raptor_parser_set_statement_handler(
-      parser, (void *)&radix_tree, (raptor_statement_handler)statement_handler);
+      parser, (void *)&trees_holder, (raptor_statement_handler)statement_handler);
 
   raptor_parser_parse_start(parser, nullptr);
 
@@ -71,38 +80,60 @@ void process_nt_file(const std::string &input_file_path,
   raptor_free_parser(parser);
   raptor_free_world(world);
 
-  std::ofstream ofstream(output_file_path, std::ofstream::binary);
-  radix_tree.serialize(ofstream);
+  {
+    std::cout << "Serializing subjects" << std::endl;
+    std::ofstream ofstream_subjects(output_file_path + ".subjects.bin", std::ofstream::binary);
+    subjects_set.serialize(ofstream_subjects);
+  }
+
+  {
+    std::cout << "Serializing predicates" << std::endl;
+    std::ofstream ofstream_predicates(output_file_path + ".predicates.bin", std::ofstream::binary);
+    predicates_set.serialize(ofstream_predicates);
+  }
+
+  {
+    std::cout << "Serializing objects" << std::endl;
+    std::ofstream ofstream_objects(output_file_path + ".objects.bin", std::ofstream::binary);
+    objects_set.serialize(ofstream_objects);
+  }
+
 }
 
-void statement_handler(void *radix_tree_ptr,
+void statement_handler(void *radix_trees_holder_ptr,
                        const raptor_statement *statement) {
-  auto &radix_tree = *reinterpret_cast<RadixTree<> *>(radix_tree_ptr);
-  raptor_term *subject = statement->subject;
+  auto &radix_trees_holder = *reinterpret_cast<RadixTreesHolder *>(radix_trees_holder_ptr);
+
+  auto &predicates_set = radix_trees_holder.predicates_set;
+  auto &subjects_set = radix_trees_holder.subjects_set;
+  auto &objects_set = radix_trees_holder.objects_set;
+
+
   raptor_term *predicate = statement->predicate;
+  raptor_term *subject = statement->subject;
   raptor_term *object = statement->object;
 
   auto predicate_value = get_term_value(predicate);
   auto subject_value = get_term_value(subject);
   auto object_value = get_term_value(object);
 
-  auto predicate_lookup = radix_tree.lookup(predicate_value);
+  auto predicate_lookup = predicates_set.lookup(predicate_value);
   if (!predicate_lookup.was_found()) {
-    radix_tree.insert(predicate_value);
+    predicates_set.insert(predicate_value);
     bytes_stored += predicate_value.size();
     unique_strings_processed++;
   }
 
-  auto subject_lookup = radix_tree.lookup(subject_value);
+  auto subject_lookup = subjects_set.lookup(subject_value);
   if (!subject_lookup.was_found()) {
-    radix_tree.insert(subject_value);
+    subjects_set.insert(subject_value);
     bytes_stored += subject_value.size();
     unique_strings_processed++;
   }
 
-  auto object_lookup = radix_tree.lookup(object_value);
+  auto object_lookup = objects_set.lookup(object_value);
   if (!object_lookup.was_found()) {
-    radix_tree.insert(object_value);
+    objects_set.insert(object_value);
     bytes_stored += object_value.size();
     unique_strings_processed++;
   }

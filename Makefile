@@ -66,6 +66,7 @@ bundle-code: clean-all
 	rsync -rv --exclude='ignore_stuff' --exclude='lib/libCSD' --exclude='lib/${RAPTOR2LIB}' --exclude='lib/${XML2LIB}' --exclude=${BUNDLE_DIR} --exclude='build' --exclude='*.tar.gz' --exclude='*.bin.map' --exclude='*.bin' --exclude='*.o' --exclude='cmake-build-debug' --exclude='*.git' --exclude '*.vscode' --exclude '*.idea' . ${BUNDLE_DIR}
 	tar -zcvf ${BUNDLE_DIR}.tar.gz ${BUNDLE_DIR}/
 	cp ${BUNDLE_DIR}.tar.gz docker
+	tar -zcvf RDFCacheK2-docker.tar.gz docker
 
 
 

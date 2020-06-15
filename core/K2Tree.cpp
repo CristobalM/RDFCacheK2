@@ -2,11 +2,19 @@
 // Created by Cristobal Miranda, 2020
 //
 
+extern "C" {
+#include <definitions.h>
+#include <memalloc.h>
+#include <vector.h>
+}
+
 #include <cmath>
 #include <unordered_map>
 
 #include "K2Tree.hpp"
 #include "exceptions.hpp"
+
+
 
 bool same_blocks(const struct block *lhs, const struct block *rhs);
 
@@ -19,11 +27,7 @@ bool same_bvs(const bitvector *lhs, const bitvector *rhs);
 
 bool same_vectors(const struct vector &lhs, const struct vector &rhs);
 
-extern "C" {
-#include <definitions.h>
-#include <memalloc.h>
-#include <vector.h>
-}
+
 
 K2Tree::K2Tree(uint32_t tree_depth) : root(create_block(tree_depth)) {
   init_queries_state(&qs, tree_depth);
