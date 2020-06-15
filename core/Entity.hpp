@@ -46,6 +46,7 @@ struct Entity {
            reinterpret_cast<char *>(&predicate_value), sizeof(uint64_t));
     memcpy(result.data() + sizeof(uint8_t) + 2 * sizeof(uint64_t),
            reinterpret_cast<char *>(&object_value), sizeof(uint64_t));
+    return result;
   }
 
   bool is_subject() { return entity_kinds & _SUBJECT_MASK; }

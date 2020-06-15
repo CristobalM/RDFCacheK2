@@ -11,7 +11,6 @@ extern "C" {
 #include <rax.h>
 }
 
-#include "NoDataEntity.hpp"
 #include "serialization_util.hpp"
 #include <map>
 #include <netinet/in.h>
@@ -20,7 +19,11 @@ extern "C" {
 
 #include <radix_tree.pb.h>
 
+#include <string_view>
+
 const unsigned long DEFAULT_FLUSH_AMOUNT = 1'000'000;
+
+class NoDataEntity {};
 
 template <class DataT = NoDataEntity> class RadixTree {
   rax *inner_rt;
@@ -48,9 +51,12 @@ public:
     }
   };
 
-  RadixTree() : inner_rt(raxNew()) {}
+  RadixTree() : inner_rt(raxNew()) { start_it(); }
 
-  ~RadixTree() { raxFree(inner_rt); }
+  ~RadixTree() {
+    raxFree(inner_rt);
+    stop_it();
+  }
 
   RadixTree(const RadixTree &) = delete;
 
@@ -331,13 +337,27 @@ private:
         memcpy(raxNodeFirstChildPtr(new_node) + i, &child, sizeof(raxNode *));
       }
 
-    } else {
+    }
+    else if(proto_node.is_null()){
+      node_size = sizeof(raxNode) + proto_node.size() +
+                  raxPadding(proto_node.size()) +
+                  sizeof(raxNode *) * proto_node.size();
+      new_node = reinterpret_cast<raxNode *>(malloc(node_size));
+      new_node->isnull = proto_node.is_null();
+      new_node->iscompr = proto_node.is_compr();
+      new_node->iskey = proto_node.is_key();
+      new_node->size = proto_node.size();
+    }
+    else {
       throw std::runtime_error("Unknown node type");
     }
 
     if (!proto_node.data().empty()) {
-      auto *data = add_data(DataT::create_from_bytes_string(proto_node.data()));
-      raxSetData(new_node, data);
+      if constexpr (!std::is_same<DataT, NoDataEntity>::value) {
+        auto *data =
+            add_data(DataT::create_from_bytes_string(proto_node.data()));
+        raxSetData(new_node, data);
+      }
     }
 
     deserialized[proto_node.node_id()] = new_node;
@@ -357,6 +377,73 @@ private:
   constexpr raxNode **raxNodeFirstChildPtr(raxNode *n) {
     return ((raxNode **)((n)->data + (n)->size + raxPadding((n)->size)));
   }
+
+public:
+  class iterator {
+    raxIterator &it;
+    bool valid;
+
+  public:
+    iterator(raxIterator &it) : it(it) {
+      // raxStart(&it, radix_tree);
+      valid = raxNext(&it);
+    }
+    iterator &operator++() {
+      if (!valid) {
+        throw std::runtime_error(
+            "()++ op on RadixTree iterator with invalid value");
+      }
+      valid = raxNext(&it);
+      return *this;
+    }
+    /*
+    iterator operator++(int){
+      iterator retval = *this;
+      (*this)++;
+      return retval;
+    }
+     */
+    bool operator==(iterator other) const {
+      return (!valid && valid == other.valid) ||
+             (it.key_len == other.it.key_len &&
+              strncmp(reinterpret_cast<const char *>(it.key),
+                      reinterpret_cast<const char *>(other.it.key),
+                      it.key_len));
+    }
+    bool operator!=(iterator other) const { return !(*this == other); }
+    std::string_view operator*() {
+      if (!valid) {
+        throw std::runtime_error("Invalid value at operator *()");
+      }
+      return std::string_view(reinterpret_cast<const char *>(it.key), it.key_len);
+    }
+
+    using difference_type = std::ptrdiff_t;
+    using value_type = std::string_view;
+    using pointer = const std::string_view *;
+    using reference = const std::string_view &;
+    using iterator_category = std::input_iterator_tag;
+
+    void endit() { valid = false; }
+  };
+
+  iterator begin() {
+    // raxStart(&_tmp_it, inner_rt);
+    // start_it();
+    raxSeek(&_tmp_it, "^", nullptr, 0);
+    return iterator(_tmp_it);
+  }
+
+  iterator end() {
+    auto out = iterator(_tmp_it);
+    out.endit();
+    return out;
+  }
+
+private:
+  raxIterator _tmp_it;
+  void start_it() { raxStart(&_tmp_it, inner_rt); }
+  void stop_it() { raxStop(&_tmp_it); }
 };
 
 #endif // RDFCACHEK2_RADIXTREE_HPP

@@ -19,6 +19,7 @@ build-libs:
 
 clean-libs:
 	cd lib/c-k2tree-dyn && make clean-all
+	rm -rf lib/c-k2tree-dyn/*.a
 	#cd lib/libxml2-2.9.10 && make clean
 	rm -rf lib/${XML2LIB}
 	#cd lib/libCSD && make clean-all
@@ -68,7 +69,24 @@ clean-bundle:
 bundle-code: clean-all
 	rm -rf ${BUNDLE_DIR} ${BUNDLE_DIR}.tar.gz
 	mkdir -p ${BUNDLE_DIR}
-	rsync -rv --exclude='ignore_stuff' --exclude='lib/libCSD' --exclude='lib/${RAPTOR2LIB}' --exclude='lib/${XML2LIB}' --exclude=${BUNDLE_DIR} --exclude='build' --exclude='*.tar.gz' --exclude='*.bin.map' --exclude='*.bin' --exclude='*.o'  --exclude='*.a' --exclude='*.so' --exclude='cmake-build-debug' --exclude='*.git' --exclude '*.vscode' --exclude '*.idea' . ${BUNDLE_DIR}
+	rsync -rv \
+	--exclude='ignore_stuff' \
+	--exclude='lib/libCSD' \
+	--exclude='lib/${RAPTOR2LIB}' \
+	--exclude='lib/${XML2LIB}' \
+	--exclude=${BUNDLE_DIR} \
+	--exclude='build' \
+	--exclude='*.tar.gz' \
+	--exclude='*.bin.map' \
+	--exclude='*.bin' \
+	--exclude='*.o'  \
+	--exclude='*.a' \
+	--exclude='*.so' \
+	--exclude='cmake-build-debug' \
+	--exclude='*.git' \
+	--exclude '*.vscode' \
+	--exclude '*.idea'\
+	. ${BUNDLE_DIR}
 	tar -zcvf ${BUNDLE_DIR}.tar.gz ${BUNDLE_DIR}/
 	cp ${BUNDLE_DIR}.tar.gz docker
 	tar -zcvf RDFCacheK2-docker.tar.gz docker

@@ -167,6 +167,10 @@ target_link_libraries(index_by_k2tree ${INDEX_FILE_LIBS})
 add_executable(radix_set_from_ntfile scripts/radix_set_from_ntfile.cpp)
 target_link_libraries(radix_set_from_ntfile ${INDEX_FILE_LIBS})
 
+
+add_executable(sample_set scripts/sample_set.cpp)
+target_link_libraries(sample_set ${INDEX_FILE_LIBS})
+
 # Only create test executables if google test is found
 find_package(GTest QUIET)
 if(GTest_FOUND)
