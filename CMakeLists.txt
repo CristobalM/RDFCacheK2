@@ -188,6 +188,9 @@ target_link_libraries(dicts_build_from_sets ${BASE_LIBS})
 add_executable(validate_radix_sets_from_nt scripts/validate_radix_sets_from_nt.cpp)
 target_link_libraries(validate_radix_sets_from_nt ${BASE_LIBS})
 
+add_executable(validate_sd_from_nt scripts/validate_sd_from_nt.cpp)
+target_link_libraries(validate_sd_from_nt ${BASE_LIBS})
+
 
 # Only create test executables if google test is found
 find_package(GTest QUIET)
