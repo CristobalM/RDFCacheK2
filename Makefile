@@ -85,7 +85,7 @@ bundle-code: clean-all
 	--exclude='cmake-build-debug' \
 	--exclude='*.git' \
 	--exclude '*.vscode' \
-	--exclude '*.idea'\
+	--exclude '*.idea' \
 	. ${BUNDLE_DIR}
 	tar -zcvf ${BUNDLE_DIR}.tar.gz ${BUNDLE_DIR}/
 	cp ${BUNDLE_DIR}.tar.gz docker

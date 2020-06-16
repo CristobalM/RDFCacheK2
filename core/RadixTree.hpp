@@ -388,7 +388,7 @@ public:
     }
 
     iterator &operator++() {
-      if(!valid){
+      if (!valid) {
         return *this;
       }
       valid = raxNext(&it) && !raxEOF(&it);
