@@ -30,59 +30,41 @@ void print_help();
 void check_opt(bool value, const std::string &opt_name);
 
 int main(int argc, char **argv) {
-  std::cout << "hola" << std::endl;
   parsed_options parsed = parse_cmline(argc, argv);
-  std::cout << "subjects_radix_set_file_input: " << parsed.subjects_radix_set_file_input << std::endl;
-  std::cout << "predicates_radix_set_file_input: " << parsed.predicates_radix_set_file_input << std::endl;
-  std::cout << "objects_radix_set_file_input: " << parsed.objects_radix_set_file_input << std::endl;
-  RadixTree<> subjects_radix_tree, predicates_radix_tree, objects_radix_tree;
+
+  const int overhead = 10'000'000;
+
 
   {
+    RadixTree<> subjects_radix_tree;
     std::ifstream ifs(parsed.subjects_radix_set_file_input, std::ios::binary);
     subjects_radix_tree.deserialize(ifs);
-  }
-
-  {
-    std::ifstream ifs(parsed.predicates_radix_set_file_input, std::ios::binary);
-    predicates_radix_tree.deserialize(ifs);
-  }
-
-  {
-    std::ifstream ifs(parsed.objects_radix_set_file_input, std::ios::binary);
-    objects_radix_tree.deserialize(ifs);
-  }
-
-
-  RadixIteratorDictString<> it_sub(subjects_radix_tree);
-  RadixIteratorDictString<> it_preds(predicates_radix_tree);
-  RadixIteratorDictString<> it_objs(objects_radix_tree);
-
-  StringDictionaryHASHRPDAC sd_sub(&it_sub, 0, 1000);
-  StringDictionaryHASHRPDAC sd_preds(&it_preds, 0, 1000);
-  StringDictionaryHASHRPDAC sd_objs(&it_objs, 0, 1000);
-
-
-  {
+    RadixIteratorDictString<> it_sub(subjects_radix_tree);
+    StringDictionaryHASHRPDAC sd_sub(&it_sub, 0, overhead);
     std::ofstream ofs(parsed.subjects_sd_file_output);
     sd_sub.save(ofs);
   }
 
   {
+    RadixTree<> predicates_radix_tree;
+    std::ifstream ifs(parsed.predicates_radix_set_file_input, std::ios::binary);
+    predicates_radix_tree.deserialize(ifs);
+    RadixIteratorDictString<> it_preds(predicates_radix_tree);
+    StringDictionaryHASHRPDAC sd_preds(&it_preds, 0, overhead);
     std::ofstream ofs(parsed.predicates_sd_file_output);
     sd_preds.save(ofs);
   }
 
   {
+    RadixTree<> objects_radix_tree;
+    std::ifstream ifs(parsed.objects_radix_set_file_input, std::ios::binary);
+    objects_radix_tree.deserialize(ifs);
+    RadixIteratorDictString<> it_objs(objects_radix_tree);
+    StringDictionaryHASHRPDAC sd_objs(&it_objs, 0, overhead);
     std::ofstream ofs(parsed.objects_sd_file_output);
     sd_objs.save(ofs);
   }
 
-
-
-  /*
-  SDEntitiesMapping<StringDictionaryHASHRPDAC> sd_em(sub_ifs, pred_ifs, obj_ifs);
-  sd_em.save(parsed.subjects_sd_file_output, parsed.predicates_sd_file_output, parsed.objects_sd_file_output);
-   */
 }
 
 parsed_options parse_cmline(int argc, char **argv) {
@@ -101,7 +83,6 @@ parsed_options parse_cmline(int argc, char **argv) {
 
   bool opts_bools[] = {false, false, false, false, false, false};
 
-  std::cout << "going to parse" << std::endl;
   parsed_options out{};
   while ((
           opt = getopt_long(argc, argv, short_options, long_options, &opt_index))) {
@@ -112,33 +93,27 @@ parsed_options parse_cmline(int argc, char **argv) {
 
     switch (opt) {
       case 's':
-        std::cout << "on s" << std::endl;
         out.subjects_radix_set_file_input = optarg;
         opts_bools[0] = true;
         break;
       case 'p':
-        std::cout << "on p" << std::endl;
         out.predicates_radix_set_file_input = optarg;
         opts_bools[1] = true;
         break;
       case 'o':
-        std::cout << "on o" << std::endl;
         out.objects_radix_set_file_input = optarg;
         opts_bools[2] = true;
         break;
 
       case 'S':
-        std::cout << "on S" << std::endl;
         out.subjects_sd_file_output = optarg;
         opts_bools[3] = true;
         break;
       case 'P':
-        std::cout << "on P" << std::endl;
         out.predicates_sd_file_output = optarg;
         opts_bools[4] = true;
         break;
       case 'O':
-        std::cout << "on O" << std::endl;
         out.objects_sd_file_output = optarg;
         opts_bools[5] = true;
         break;
@@ -151,11 +126,9 @@ parsed_options parse_cmline(int argc, char **argv) {
     }
   }
 
-  std::cout << "going to check" << std::endl;
 
   for (int i = 0; i < 6; i++) {
     check_opt(opts_bools[i], long_options[i].name);
-    std::cout << "Checking: " << long_options[i].name << std::endl;
   }
 
   return out;
