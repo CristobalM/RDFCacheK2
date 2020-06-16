@@ -7,13 +7,13 @@
 
 #include "RadixTree.hpp"
 #include <iterators/IteratorDictString.h>
+#include <string_view>
 
 template <class RDataT = NoDataEntity>
 class RadixIteratorDictString : public IteratorDictString {
 
   RadixTree<RDataT> &radix_tree;
   typename RadixTree<RDataT>::iterator it;
-
 public:
   explicit RadixIteratorDictString(RadixTree<RDataT> &radix_tree)
       : radix_tree(radix_tree), it(radix_tree.begin()) {
@@ -28,7 +28,11 @@ public:
     auto &rax_it = it.rax_iterator();
     auto *out = rax_it.key;
     *str_length = rax_it.key_len;
-    return out;
+    auto *held_str = new unsigned char[*str_length];
+    memcpy(held_str, out, *str_length);
+    ++it;
+    //std::cout << std::string_view(reinterpret_cast<const char *>(out), *str_length) << std::endl;
+    return held_str;
   }
 };
 

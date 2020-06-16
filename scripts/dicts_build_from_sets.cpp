@@ -9,7 +9,7 @@
 
 #include <SDEntitiesMapping.hpp>
 
-#include <StringDictionaryHASHRPDAC.h>
+#include <StringDictionaryPFC.h>
 #include <RadixTree.hpp>
 #include <RadixIteratorDictString.hpp>
 
@@ -32,15 +32,16 @@ void check_opt(bool value, const std::string &opt_name);
 int main(int argc, char **argv) {
   parsed_options parsed = parse_cmline(argc, argv);
 
-  const int overhead = 10'000'000;
+  const int bsize = 100;
 
 
   {
     RadixTree<> subjects_radix_tree;
     std::ifstream ifs(parsed.subjects_radix_set_file_input, std::ios::binary);
     subjects_radix_tree.deserialize(ifs);
-    RadixIteratorDictString<> it_sub(subjects_radix_tree);
-    StringDictionaryHASHRPDAC sd_sub(&it_sub, 0, overhead);
+    //RadixIteratorDictString<> it_sub(subjects_radix_tree);
+    auto *it = dynamic_cast<IteratorDictString *>(new RadixIteratorDictString<>(subjects_radix_tree));
+    StringDictionaryPFC sd_sub(it, 100);
     std::ofstream ofs(parsed.subjects_sd_file_output);
     sd_sub.save(ofs);
   }
@@ -49,8 +50,8 @@ int main(int argc, char **argv) {
     RadixTree<> predicates_radix_tree;
     std::ifstream ifs(parsed.predicates_radix_set_file_input, std::ios::binary);
     predicates_radix_tree.deserialize(ifs);
-    RadixIteratorDictString<> it_preds(predicates_radix_tree);
-    StringDictionaryHASHRPDAC sd_preds(&it_preds, 0, overhead);
+    auto *it = dynamic_cast<IteratorDictString *>(new RadixIteratorDictString<>(predicates_radix_tree));
+    StringDictionaryPFC sd_preds(dynamic_cast<IteratorDictString *>(it), 100);
     std::ofstream ofs(parsed.predicates_sd_file_output);
     sd_preds.save(ofs);
   }
@@ -59,8 +60,8 @@ int main(int argc, char **argv) {
     RadixTree<> objects_radix_tree;
     std::ifstream ifs(parsed.objects_radix_set_file_input, std::ios::binary);
     objects_radix_tree.deserialize(ifs);
-    RadixIteratorDictString<> it_objs(objects_radix_tree);
-    StringDictionaryHASHRPDAC sd_objs(&it_objs, 0, overhead);
+    auto *it = dynamic_cast<IteratorDictString *>(new RadixIteratorDictString<>(objects_radix_tree));
+    StringDictionaryPFC sd_objs(dynamic_cast<IteratorDictString *>(it), 100);
     std::ofstream ofs(parsed.objects_sd_file_output);
     sd_objs.save(ofs);
   }
