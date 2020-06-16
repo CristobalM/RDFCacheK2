@@ -5,6 +5,7 @@
 #include <fstream>
 #include <getopt.h>
 #include <iostream>
+#include <string>
 
 #include <RadixTree.hpp>
 

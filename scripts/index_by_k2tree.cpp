@@ -9,6 +9,7 @@
 #include <entities_mapping.pb.h>
 #include <fstream>
 #include <iostream>
+#include <string>
 
 enum InputFormat { NT = 0 };
 

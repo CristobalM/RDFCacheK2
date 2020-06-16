@@ -4,6 +4,7 @@
 #include <fstream>
 #include <getopt.h>
 #include <iostream>
+#include <string>
 
 #include <RadixTree.hpp>
 
@@ -25,10 +26,10 @@ int main(int argc, char **argv) {
   radix_tree.deserialize(ifs);
 
   int count = 0;
-  for(const auto &value: radix_tree){
+  for (const auto &value : radix_tree) {
     std::cout << value << "\n";
     count++;
-    if(count >= parsed.samples){
+    if (count >= parsed.samples) {
       break;
     }
   }

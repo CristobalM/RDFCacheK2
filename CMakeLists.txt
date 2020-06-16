@@ -85,9 +85,16 @@ set(INCLUDES_LIBS
         ${K2TREE_PATH}/lib/c-vector/include
         )
 
-set(LINK_LIBS ${K2TREE_PATH}/bin)
 
-include_directories(${INCLUDES} ${INCLUDES_LIBS})
+set(LIB_CSD_BPATH lib/libCSD)
+set(LIB_CSD_INCLUDES
+        ${LIB_CSD_BPATH}
+        ${LIB_CSD_BPATH}/libcds/includes
+        )
+
+set(LINK_LIBS ${K2TREE_PATH}/bin ${LIB_CSD_BPATH} ${LIB_CSD_BPATH}/libcds/lib)
+
+include_directories(${INCLUDES} ${INCLUDES_LIBS} ${LIB_CSD_INCLUDES})
 link_directories(${LINK_LIBS})
 
 
@@ -127,17 +134,27 @@ set(BASE_LIBS
         MemoryManager
         ProtoMessages
         ${Protobuf_LIBRARIES}
+        CSD
+        cds
+        Rax
+        raptor2
+        xml2
         )
 
 set(DEFAULT_LIBS
-        k2tree_merged_noalloc
         RDFCacheK2
         RDFCacheK2_Network
         k2tree_merged_noalloc
         MemoryManager
         pthread
         ProtoMessages
-        ${Protobuf_LIBRARIES})
+        ${Protobuf_LIBRARIES}
+        CSD
+        cds
+        Rax
+        raptor2
+        xml2
+        )
 
 target_link_libraries(start_cache_server_example RDFCacheK2_GR ${DEFAULT_LIBS} )
 
@@ -154,22 +171,19 @@ if(NOT ${THIRD_PARTY_DEPS_SZ} EQUAL 0)
 endif()
 
 
-set(INDEX_FILE_LIBS ${BASE_LIBS}
-        raptor2
-        xml2
-        Rax
-        ProtoMessages
-        ${Protobuf_LIBRARIES})
 
-target_link_libraries(index_by_k2tree ${INDEX_FILE_LIBS})
+target_link_libraries(index_by_k2tree ${BASE_LIBS})
 
 
 add_executable(radix_set_from_ntfile scripts/radix_set_from_ntfile.cpp)
-target_link_libraries(radix_set_from_ntfile ${INDEX_FILE_LIBS})
+target_link_libraries(radix_set_from_ntfile ${BASE_LIBS})
 
 
 add_executable(sample_set scripts/sample_set.cpp)
-target_link_libraries(sample_set ${INDEX_FILE_LIBS})
+target_link_libraries(sample_set ${BASE_LIBS})
+
+add_executable(dicts_build_from_sets scripts/dicts_build_from_sets.cpp)
+target_link_libraries(dicts_build_from_sets ${BASE_LIBS})
 
 # Only create test executables if google test is found
 find_package(GTest QUIET)
@@ -179,5 +193,5 @@ add_executable(serialization_test  test/serialization_tests.cpp)
 target_link_libraries(serialization_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES})
 
 add_executable(index_file_test test/index_file_test.cpp)
-target_link_libraries(index_file_test ${INDEX_FILE_LIBS} ${GTEST_BOTH_LIBRARIES})
+target_link_libraries(index_file_test ${BASE_LIBS} ${GTEST_BOTH_LIBRARIES})
 endif()

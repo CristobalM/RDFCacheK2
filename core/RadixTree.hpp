@@ -51,11 +51,11 @@ public:
     }
   };
 
-  RadixTree() : inner_rt(raxNew()) { start_it(); }
+  RadixTree() : inner_rt(raxNew()) { init_iterator(); }
 
   ~RadixTree() {
     raxFree(inner_rt);
-    stop_it();
+    clean_iterator();
   }
 
   RadixTree(const RadixTree &) = delete;
@@ -337,8 +337,7 @@ private:
         memcpy(raxNodeFirstChildPtr(new_node) + i, &child, sizeof(raxNode *));
       }
 
-    }
-    else if(proto_node.is_null()){
+    } else if (proto_node.is_null()) {
       node_size = sizeof(raxNode) + proto_node.size() +
                   raxPadding(proto_node.size()) +
                   sizeof(raxNode *) * proto_node.size();
@@ -347,8 +346,7 @@ private:
       new_node->iscompr = proto_node.is_compr();
       new_node->iskey = proto_node.is_key();
       new_node->size = proto_node.size();
-    }
-    else {
+    } else {
       throw std::runtime_error("Unknown node type");
     }
 
@@ -388,21 +386,12 @@ public:
       // raxStart(&it, radix_tree);
       valid = raxNext(&it);
     }
+
     iterator &operator++() {
-      if (!valid) {
-        throw std::runtime_error(
-            "()++ op on RadixTree iterator with invalid value");
-      }
       valid = raxNext(&it);
       return *this;
     }
-    /*
-    iterator operator++(int){
-      iterator retval = *this;
-      (*this)++;
-      return retval;
-    }
-     */
+
     bool operator==(iterator other) const {
       return (!valid && valid == other.valid) ||
              (it.key_len == other.it.key_len &&
@@ -410,12 +399,15 @@ public:
                       reinterpret_cast<const char *>(other.it.key),
                       it.key_len));
     }
+
     bool operator!=(iterator other) const { return !(*this == other); }
+
     std::string_view operator*() {
       if (!valid) {
         throw std::runtime_error("Invalid value at operator *()");
       }
-      return std::string_view(reinterpret_cast<const char *>(it.key), it.key_len);
+      return std::string_view(reinterpret_cast<const char *>(it.key),
+                              it.key_len);
     }
 
     using difference_type = std::ptrdiff_t;
@@ -425,8 +417,14 @@ public:
     using iterator_category = std::input_iterator_tag;
 
     void endit() { valid = false; }
+
+    bool is_valid() const { return valid; }
+
+    raxIterator &rax_iterator() { return it; }
   };
 
+  // Since there is only one iterator by radix tree, a full iteration mustn't be
+  // done in concurrency with another
   iterator begin() {
     // raxStart(&_tmp_it, inner_rt);
     // start_it();
@@ -442,8 +440,9 @@ public:
 
 private:
   raxIterator _tmp_it;
-  void start_it() { raxStart(&_tmp_it, inner_rt); }
-  void stop_it() { raxStop(&_tmp_it); }
+  void init_iterator() { raxStart(&_tmp_it, inner_rt); }
+
+  void clean_iterator() { raxStop(&_tmp_it); }
 };
 
 #endif // RDFCACHEK2_RADIXTREE_HPP

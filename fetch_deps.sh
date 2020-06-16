@@ -31,5 +31,6 @@ else
 fi
 
 make
+make merge
 cd ..
 
