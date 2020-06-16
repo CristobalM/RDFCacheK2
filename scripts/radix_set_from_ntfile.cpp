@@ -71,6 +71,12 @@ void process_nt_file(const std::string &input_file_path,
   raptor_parser_parse_start(parser, nullptr);
 
   std::ifstream ifstream(input_file_path, std::ifstream::binary);
+
+  if(ifstream.fail()){
+    std::cerr << "Error opening NT file " << input_file_path << std::endl;
+    exit(1);
+  }
+
   std::vector<char> buffer(4096, 0);
   while (ifstream.read(buffer.data(), buffer.size())) {
     raptor_parser_parse_chunk(parser,
@@ -168,7 +174,10 @@ std::string get_term_value(raptor_term *term) {
   size_t value_sz;
   value =
       reinterpret_cast<char *>(raptor_term_to_counted_string(term, &value_sz));
-  return std::string(value, value_sz);
+  auto result = std::string(value, value_sz);
+  free(value);
+
+  return result;
 }
 
 parsed_options parse_cmline(int argc, char **argv) {

@@ -46,7 +46,10 @@ std::string get_term_value(raptor_term *term) {
   size_t value_sz;
   value =
       reinterpret_cast<char *>(raptor_term_to_counted_string(term, &value_sz));
-  return std::string(value, value_sz);
+  auto result = std::string(value, value_sz);
+  free(value);
+
+  return result;
 }
 
 struct PairNTParserNResult {
