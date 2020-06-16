@@ -81,7 +81,7 @@ int main(int argc, char **argv) {
   auto pred_sd = std::unique_ptr<StringDictionary>(StringDictionaryPFC::load(pred_ifs));
 
 
-  SDHolder sd_holder(subj_sd.get(), obj_sd.get(), pred_sd.get());
+  SDHolder sd_holder(subj_sd.get(), pred_sd.get(), obj_sd.get());
 
   process_nt_file(sd_holder, nt_ifs);
 
