@@ -86,7 +86,7 @@ public:
         key.size(), reinterpret_cast<void *>(held_ptr), nullptr);
   }
 
-  LookupResult lookup(const std::string &key) {
+  LookupResult lookup(const std::string &key) const {
     void *v_data = raxFind(
         inner_rt,
         reinterpret_cast<unsigned char *>(const_cast<char *>(key.c_str())),

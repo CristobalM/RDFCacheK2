@@ -20,9 +20,9 @@ struct parsed_options {
 };
 
 struct RadixTreesHolder {
-  RadixTree<> &subjects_set;
-  RadixTree<> &predicates_set;
-  RadixTree<> &objects_set;
+  const RadixTree<> &subjects_set;
+  const RadixTree<> &predicates_set;
+  const RadixTree<> &objects_set;
 
   RadixTreesHolder(RadixTree<> &subjects_set, RadixTree<> &predicates_set,
                    RadixTree<> &objects_set)
