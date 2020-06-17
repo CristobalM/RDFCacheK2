@@ -239,7 +239,7 @@ public:
 
     to_serialize.erase(node_id);
 
-    if(serialized_string.size() >= (1u << 16u)){
+    if (serialized_string.size() >= (1u << 16u)) {
       throw std::runtime_error("Serialized string is bigger than 2 bytes");
     }
 

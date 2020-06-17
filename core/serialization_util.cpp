@@ -4,6 +4,8 @@
 
 #include <netinet/in.h>
 
+#include <endian.h>
+
 #include "serialization_util.hpp"
 
 void write_u16(std::ostream &output_stream, uint16_t value) {

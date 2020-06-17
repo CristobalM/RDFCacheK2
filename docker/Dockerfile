@@ -9,7 +9,7 @@ COPY _bundled_code.tar.gz .
 COPY runner.sh .
 
 
-RUN apk add git libprotobuf protoc protobuf-dev make cmake clang bash libc-dev build-base libxml2-dev raptor2-dev
+RUN apk add git libprotobuf protoc protobuf-dev make cmake clang bash libc-dev build-base libxml2-dev raptor2-dev libbsd-dev
 RUN tar -zxvf _bundled_code.tar.gz && \
 cd _bundled_code && \
 make re

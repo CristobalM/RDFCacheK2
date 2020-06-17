@@ -2,8 +2,8 @@
 // Created by Cristobal Miranda, 2020
 //
 
-#include <random>
 #include <gtest/gtest.h>
+#include <random>
 
 #include <K2Tree.hpp>
 
@@ -47,9 +47,10 @@ TEST(u64_network_host, test_one) {
 
   std::mt19937_64 e2(rd());
 
-  std::uniform_int_distribution<long long int> dist(std::llround(std::pow(2,61)), std::llround(std::pow(2,62)));
+  std::uniform_int_distribution<long long int> dist(
+      std::llround(std::pow(2, 61)), std::llround(std::pow(2, 62)));
 
-  for(int i = 0; i < 1'000'000; i++){
+  for (int i = 0; i < 1'000'000; i++) {
     std::ostringstream oss;
     uint64_t val = dist(e2);
     write_u64(oss, val);
