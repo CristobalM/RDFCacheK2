@@ -26,8 +26,8 @@ struct RadixTreesHolder {
 
   RadixTreesHolder(RadixTree<> &subjects_set, RadixTree<> &predicates_set,
                    RadixTree<> &objects_set)
-          : subjects_set(subjects_set), predicates_set(predicates_set),
-            objects_set(objects_set) {}
+      : subjects_set(subjects_set), predicates_set(predicates_set),
+        objects_set(objects_set) {}
 };
 
 parsed_options parse_cmline(int argc, char **argv);
@@ -44,7 +44,6 @@ unsigned long strings_processed_reset_th = 0;
 
 const unsigned long RESET_TH = 1000000;
 
-
 int main(int argc, char **argv) {
   parsed_options p_options = parse_cmline(argc, argv);
 
@@ -53,23 +52,27 @@ int main(int argc, char **argv) {
   std::ifstream obj_ifs(p_options.objects_set_file);
   std::ifstream nt_ifs(p_options.input_nt_file);
 
-  if(sub_ifs.fail()){
-    std::cerr << "Error opening subjects file " << p_options.subjects_set_file << std::endl;
+  if (sub_ifs.fail()) {
+    std::cerr << "Error opening subjects file " << p_options.subjects_set_file
+              << std::endl;
     exit(1);
   }
 
-  if(pred_ifs.fail()){
-    std::cerr << "Error opening predicates file " << p_options.predicates_set_file << std::endl;
+  if (pred_ifs.fail()) {
+    std::cerr << "Error opening predicates file "
+              << p_options.predicates_set_file << std::endl;
     exit(1);
   }
 
-  if(obj_ifs.fail()){
-    std::cerr << "Error opening objects file " << p_options.objects_set_file << std::endl;
+  if (obj_ifs.fail()) {
+    std::cerr << "Error opening objects file " << p_options.objects_set_file
+              << std::endl;
     exit(1);
   }
 
-  if(nt_ifs.fail()){
-    std::cerr << "Error opening NT file " << p_options.input_nt_file << std::endl;
+  if (nt_ifs.fail()) {
+    std::cerr << "Error opening NT file " << p_options.input_nt_file
+              << std::endl;
     exit(1);
   }
 
@@ -86,19 +89,17 @@ int main(int argc, char **argv) {
 
   RadixTreesHolder r_holder(subj_set, pred_set, obj_set);
 
-
   process_nt_file(r_holder, nt_ifs);
 
   return 0;
 }
 
-void process_nt_file(const RadixTreesHolder &r_holder, std::ifstream &nt_ifs){
+void process_nt_file(const RadixTreesHolder &r_holder, std::ifstream &nt_ifs) {
   raptor_world *world = raptor_new_world();
   raptor_parser *parser = raptor_new_parser(world, "ntriples");
 
   raptor_parser_set_statement_handler(
-          parser, (void *)&r_holder,
-          (raptor_statement_handler)statement_handler);
+      parser, (void *)&r_holder, (raptor_statement_handler)statement_handler);
 
   raptor_parser_parse_start(parser, nullptr);
 
@@ -119,7 +120,7 @@ void process_nt_file(const RadixTreesHolder &r_holder, std::ifstream &nt_ifs){
 void statement_handler(void *radix_trees_holder_ptr,
                        const raptor_statement *statement) {
   auto &radix_trees_holder =
-          *reinterpret_cast<RadixTreesHolder *>(radix_trees_holder_ptr);
+      *reinterpret_cast<RadixTreesHolder *>(radix_trees_holder_ptr);
 
   auto &predicates_set = radix_trees_holder.predicates_set;
   auto &subjects_set = radix_trees_holder.subjects_set;
@@ -135,26 +136,29 @@ void statement_handler(void *radix_trees_holder_ptr,
 
   auto predicate_lookup = predicates_set.lookup(predicate_value);
   if (!predicate_lookup.was_found()) {
-    std::cerr << "Predicate '" << predicate_value << "' Not found on predicates set" << std::endl;
+    std::cerr << "Predicate '" << predicate_value
+              << "' Not found on predicates set" << std::endl;
     exit(1);
   }
 
   auto subject_lookup = subjects_set.lookup(subject_value);
   if (!subject_lookup.was_found()) {
-    std::cerr << "Subject '" << subject_value << "' Not found on subjects set" << std::endl;
+    std::cerr << "Subject '" << subject_value << "' Not found on subjects set"
+              << std::endl;
     exit(1);
   }
 
   auto object_lookup = objects_set.lookup(object_value);
   if (!object_lookup.was_found()) {
-    std::cerr << "Object '" << object_value << "' Not found on objects set" << std::endl;
+    std::cerr << "Object '" << object_value << "' Not found on objects set"
+              << std::endl;
     exit(1);
   }
 
   strings_processed += 3;
   strings_processed_reset_th += 3;
   bytes_processed +=
-          predicate_value.size() + subject_value.size() + object_value.size();
+      predicate_value.size() + subject_value.size() + object_value.size();
 
   if (strings_processed_reset_th >= RESET_TH) {
     strings_processed_reset_th %= RESET_TH;
@@ -172,7 +176,7 @@ std::string get_term_value(raptor_term *term) {
   char *value;
   size_t value_sz;
   value =
-          reinterpret_cast<char *>(raptor_term_to_counted_string(term, &value_sz));
+      reinterpret_cast<char *>(raptor_term_to_counted_string(term, &value_sz));
   auto result = std::string(value, value_sz);
   free(value);
 
@@ -180,14 +184,13 @@ std::string get_term_value(raptor_term *term) {
 }
 
 parsed_options parse_cmline(int argc, char **argv) {
-  const char short_options[] = "s:p:o";
+  const char short_options[] = "s:p:o:n:";
   struct option long_options[] = {
-          {"subjects-set-file", required_argument, nullptr, 's'},
-          {"predicates-set-file", required_argument, nullptr, 'p'},
-          {"objects-set-file", required_argument, nullptr, 'o'},
-          {"nt-file", required_argument, nullptr, 'n'},
+      {"subjects-set-file", required_argument, nullptr, 's'},
+      {"predicates-set-file", required_argument, nullptr, 'p'},
+      {"objects-set-file", required_argument, nullptr, 'o'},
+      {"nt-file", required_argument, nullptr, 'n'},
   };
-
 
   int opt, opt_index;
 
@@ -196,36 +199,35 @@ parsed_options parse_cmline(int argc, char **argv) {
   bool has_objects = false;
   bool has_nt = false;
 
-
   parsed_options out{};
   while ((
-          opt = getopt_long(argc, argv, short_options, long_options, &opt_index))) {
+      opt = getopt_long(argc, argv, short_options, long_options, &opt_index))) {
     if (opt == -1) {
       break;
     }
 
     switch (opt) {
-      case 's':
-        out.subjects_set_file = optarg;
-        has_subjects = true;
-        break;
-      case 'p':
-        out.predicates_set_file = optarg;
-        has_predicates = true;
-        break;
-      case 'o':
-        out.objects_set_file = optarg;
-        has_objects = true;
-        break;
-      case 'n':
-        out.input_nt_file = optarg;
-        has_nt = true;
-        break;
-      case 'h': // to implement
-      case '?':
-      default:
-        print_help();
-        break;
+    case 's':
+      out.subjects_set_file = optarg;
+      has_subjects = true;
+      break;
+    case 'p':
+      out.predicates_set_file = optarg;
+      has_predicates = true;
+      break;
+    case 'o':
+      out.objects_set_file = optarg;
+      has_objects = true;
+      break;
+    case 'n':
+      out.input_nt_file = optarg;
+      has_nt = true;
+      break;
+    case 'h': // to implement
+    case '?':
+    default:
+      print_help();
+      break;
     }
   }
 

@@ -7,13 +7,13 @@ option java_outer_classname = "RadixTreeMsg";
 
 
 message RadixTree{
-    uint32 root_id = 1;
+    uint64 root_id = 1;
     uint64 numele = 2;
     uint64 num_nodes = 3;
 }
 
 message RadixNode{
-    uint32 node_id = 1;
+    uint64 node_id = 1;
 
     bool is_key = 2;
     bool is_null = 3;
@@ -33,10 +33,10 @@ message RadixNode{
 
 message ComprNode{
     bytes compressed_data = 1;
-    uint32 child_id = 2;
+    uint64 child_id = 2;
 }
 
 message NormalNode{
     bytes children_chars = 1;
-    repeated uint32 children_ids = 2;
+    repeated uint64 children_ids = 2;
 }

@@ -126,7 +126,7 @@ public:
   void deserialize(std::istream &input_stream) {
     free(inner_rt->head);
 
-    std::map<uint32_t, raxNode *> deserialized;
+    std::map<uint64_t, raxNode *> deserialized;
 
     auto header = read_header(input_stream);
 
@@ -139,13 +139,10 @@ public:
     inner_rt->numele = header.numele;
     inner_rt->numnodes = header.num_nodes;
 
-    uint32_t proto_size;
+    uint16_t proto_size;
     for (uint32_t i = 0; i < header.protos_count; i++) {
-      input_stream.read(reinterpret_cast<char *>(&proto_size),
-                        sizeof(uint32_t));
-      proto_size = ntohl(proto_size);
+      proto_size = read_u16(input_stream);
       input_stream.read(buffer_ptr, proto_size);
-
       proto_msg::RadixNode radix_node;
       radix_node.ParseFromArray(buffer_ptr, proto_size);
 
@@ -172,7 +169,7 @@ public:
     header.numele = inner_rt->numele;
     header.num_nodes = inner_rt->numnodes;
 
-    std::map<uint32_t, std::unique_ptr<proto_msg::RadixNode>> to_serialize;
+    std::map<uint64_t, std::unique_ptr<proto_msg::RadixNode>> to_serialize;
 
     // Place holder to fix after recursive serialization
     auto starting_byte = output_stream.tellp();
@@ -192,15 +189,15 @@ public:
     write_header(header, output_stream);
   }
 
-  uint32_t serialize_node(
+  uint64_t serialize_node(
       proto_msg::RadixNode *proto_node, raxNode *rax_node,
-      std::map<uint32_t, std::unique_ptr<proto_msg::RadixNode>> &to_serialize,
-      uint32_t &node_counter, std::ostream &output_stream, uint32_t &max_size) {
+      std::map<uint64_t, std::unique_ptr<proto_msg::RadixNode>> &to_serialize,
+      uint64_t &node_counter, std::ostream &output_stream, uint16_t &max_size) {
     proto_node->set_is_key(rax_node->iskey);
     proto_node->set_is_null(rax_node->isnull);
     proto_node->set_is_compr(rax_node->iscompr);
     proto_node->set_size(rax_node->size);
-    uint32_t node_id = node_counter++;
+    uint64_t node_id = node_counter++;
     proto_node->set_node_id(node_id);
 
     if (!rax_node->isnull) {
@@ -237,16 +234,17 @@ public:
     }
 
     auto serialized_string = proto_node->SerializeAsString();
-    auto serialized_size =
-        static_cast<uint32_t>(htonl(serialized_string.size()));
-    output_stream.write(reinterpret_cast<const char *>(&serialized_size),
-                        sizeof(uint32_t));
+    write_u16(output_stream, serialized_string.size());
     output_stream.write(serialized_string.c_str(), serialized_string.size());
 
     to_serialize.erase(node_id);
 
+    if(serialized_string.size() >= (1u << 16u)){
+      throw std::runtime_error("Serialized string is bigger than 2 bytes");
+    }
+
     max_size =
-        std::max(max_size, static_cast<uint32_t>(serialized_string.size()));
+        std::max(max_size, static_cast<uint16_t>(serialized_string.size()));
 
     serialized_nodes++;
 
@@ -259,39 +257,39 @@ public:
 
 private:
   struct HeaderHolder {
-    uint32_t max_size;
-    uint32_t protos_count;
-    uint32_t root_index;
-    uint32_t numele;
-    uint32_t num_nodes;
+    uint16_t max_size;
+    uint64_t protos_count;
+    uint64_t root_index;
+    uint64_t numele;
+    uint64_t num_nodes;
   };
 
   struct DeserializedResult {
     raxNode *deserialized_node;
-    uint32_t child_id;
+    uint64_t child_id;
   };
 
   HeaderHolder read_header(std::istream &input_stream) {
     HeaderHolder output{};
-    output.max_size = read_u32(input_stream);
-    output.protos_count = read_u32(input_stream);
-    output.root_index = read_u32(input_stream);
-    output.numele = read_u32(input_stream);
-    output.num_nodes = read_u32(input_stream);
+    output.max_size = read_u16(input_stream);
+    output.protos_count = read_u64(input_stream);
+    output.root_index = read_u64(input_stream);
+    output.numele = read_u64(input_stream);
+    output.num_nodes = read_u64(input_stream);
     return output;
   }
 
   void write_header(HeaderHolder header_holder, std::ostream &output_stream) {
-    write_u32(output_stream, header_holder.max_size);
-    write_u32(output_stream, header_holder.protos_count);
-    write_u32(output_stream, header_holder.root_index);
-    write_u32(output_stream, header_holder.numele);
-    write_u32(output_stream, header_holder.num_nodes);
+    write_u16(output_stream, header_holder.max_size);
+    write_u64(output_stream, header_holder.protos_count);
+    write_u64(output_stream, header_holder.root_index);
+    write_u64(output_stream, header_holder.numele);
+    write_u64(output_stream, header_holder.num_nodes);
   }
 
   DeserializedResult
   deserialize_node(const proto_msg::RadixNode &proto_node,
-                   std::map<uint32_t, raxNode *> &deserialized) {
+                   std::map<uint64_t, raxNode *> &deserialized) {
 
     raxNode *new_node;
     size_t node_size;

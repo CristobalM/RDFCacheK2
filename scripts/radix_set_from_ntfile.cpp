@@ -72,7 +72,7 @@ void process_nt_file(const std::string &input_file_path,
 
   std::ifstream ifstream(input_file_path, std::ifstream::binary);
 
-  if(ifstream.fail()){
+  if (ifstream.fail()) {
     std::cerr << "Error opening NT file " << input_file_path << std::endl;
     exit(1);
   }

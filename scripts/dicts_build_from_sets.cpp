@@ -34,23 +34,27 @@ int main(int argc, char **argv) {
 
   const int bsize = 128;
 
-  std::ifstream ifs_subj(parsed.subjects_radix_set_file_input, std::ios::binary);
-  std::ifstream ifs_pred(parsed.predicates_radix_set_file_input, std::ios::binary);
+  std::ifstream ifs_subj(parsed.subjects_radix_set_file_input,
+                         std::ios::binary);
+  std::ifstream ifs_pred(parsed.predicates_radix_set_file_input,
+                         std::ios::binary);
   std::ifstream ifs_obj(parsed.objects_radix_set_file_input, std::ios::binary);
 
-
-  if(ifs_subj.fail()){
-    std::cerr << "Error opening subjects file " << parsed.subjects_radix_set_file_input << std::endl;
+  if (ifs_subj.fail()) {
+    std::cerr << "Error opening subjects file "
+              << parsed.subjects_radix_set_file_input << std::endl;
     exit(1);
   }
 
-  if(ifs_pred.fail()){
-    std::cerr << "Error opening predicates file " << parsed.predicates_radix_set_file_input << std::endl;
+  if (ifs_pred.fail()) {
+    std::cerr << "Error opening predicates file "
+              << parsed.predicates_radix_set_file_input << std::endl;
     exit(1);
   }
 
-  if(ifs_obj.fail()){
-    std::cerr << "Error opening objects file " << parsed.objects_radix_set_file_input << std::endl;
+  if (ifs_obj.fail()) {
+    std::cerr << "Error opening objects file "
+              << parsed.objects_radix_set_file_input << std::endl;
     exit(1);
   }
 
