@@ -10,6 +10,7 @@
 #include <RadixTree.hpp>
 
 #include <raptor2.h>
+#include <raptor_util.hpp>
 
 struct parsed_options {
   std::string subjects_set_file;
@@ -35,7 +36,6 @@ void print_help();
 void process_nt_file(const RadixTreesHolder &r_holder, std::ifstream &nt_ifs);
 void statement_handler(void *radix_trees_holder_ptr,
                        const raptor_statement *statement);
-std::string get_term_value(raptor_term *term);
 void print_stats();
 
 unsigned long bytes_processed = 0;
@@ -170,17 +170,6 @@ void print_stats() {
   std::cout << "Strings processed: " << strings_processed << "\t"
             << "MBytes processed: " << bytes_processed / 1'000'000 << "\t"
             << std::endl;
-}
-
-std::string get_term_value(raptor_term *term) {
-  char *value;
-  size_t value_sz;
-  value =
-      reinterpret_cast<char *>(raptor_term_to_counted_string(term, &value_sz));
-  auto result = std::string(value, value_sz);
-  free(value);
-
-  return result;
 }
 
 parsed_options parse_cmline(int argc, char **argv) {

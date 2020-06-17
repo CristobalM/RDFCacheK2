@@ -59,7 +59,8 @@ struct PairNTParserNResult {
 
 int pred_cont = 0;
 
-void statement_handler(void *_ntpair, const raptor_statement *statement) {
+void nt_parser_statement_handler(void *_ntpair,
+                                 const raptor_statement *statement) {
   auto *nt_pair = static_cast<PairNTParserNResult *>(_ntpair);
   raptor_term *subject = statement->subject;
   raptor_term *predicate = statement->predicate;
@@ -115,7 +116,7 @@ std::unique_ptr<NTParsedResult> NTParser::parse() {
 
   raptor_parser_set_statement_handler(
       parser, (void *)&pair_to_pass,
-      (raptor_statement_handler)statement_handler);
+      (raptor_statement_handler)nt_parser_statement_handler);
 
   // FILE *stream = fopen(input_path.c_str(), "rb");
 

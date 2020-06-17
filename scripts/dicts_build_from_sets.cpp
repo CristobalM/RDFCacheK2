@@ -97,7 +97,7 @@ int main(int argc, char **argv) {
 }
 
 parsed_options parse_cmline(int argc, char **argv) {
-  const char short_options[] = "s:p:o:S:P:O";
+  const char short_options[] = "s:p:o:S:P:O:";
   struct option long_options[] = {
       {"subjects-radix-set-file-input", required_argument, nullptr, 's'},
       {"predicates-radix-set-file-input", required_argument, nullptr, 'p'},

@@ -21,6 +21,8 @@ set(CORE_SOURCE_FILES
         core/EntitiesMapping.cpp
         core/NTParser.cpp
         core/serialization_util.cpp
+        core/PredicatesCacheManager.cpp
+        core/raptor_util.cpp
         )
 
 set(GRAPH_RESULT_CACHING_FILE
@@ -190,6 +192,12 @@ target_link_libraries(validate_radix_sets_from_nt ${BASE_LIBS})
 
 add_executable(validate_sd_from_nt scripts/validate_sd_from_nt.cpp)
 target_link_libraries(validate_sd_from_nt ${BASE_LIBS})
+
+
+add_executable(index_by_k2tree_with_sd scripts/index_by_k2tree_with_sd.cpp)
+target_link_libraries(index_by_k2tree_with_sd ${BASE_LIBS})
+
+
 
 
 # Only create test executables if google test is found
