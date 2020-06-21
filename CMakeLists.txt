@@ -23,6 +23,8 @@ set(CORE_SOURCE_FILES
         core/serialization_util.cpp
         core/PredicatesCacheManager.cpp
         core/raptor_util.cpp
+        core/QueueIteratorDictString.cpp
+        core/SDFeed.cpp
         )
 
 set(GRAPH_RESULT_CACHING_FILE
@@ -196,6 +198,11 @@ target_link_libraries(validate_sd_from_nt ${BASE_LIBS})
 
 add_executable(index_by_k2tree_with_sd scripts/index_by_k2tree_with_sd.cpp)
 target_link_libraries(index_by_k2tree_with_sd ${BASE_LIBS})
+
+
+add_executable(sd_from_ntfile scripts/sd_from_ntfile.cpp)
+target_link_libraries(sd_from_ntfile ${BASE_LIBS})
+
 
 
 
