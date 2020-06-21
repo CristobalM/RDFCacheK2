@@ -205,6 +205,13 @@ target_link_libraries(sd_from_ntfile ${BASE_LIBS})
 
 
 
+add_executable(split_nt_triples scripts/split_nt_triples.cpp)
+target_link_libraries(split_nt_triples ${BASE_LIBS})
+
+
+
+
+
 
 
 # Only create test executables if google test is found
