@@ -70,16 +70,17 @@ template <class SD> class SDBuildJob : public ISDBuildJob {
   SDFeed &sd_feed;
   std::string output_filename;
 
-
 public:
-
   SDBuildJob(SDFeed &sd_feed, std::string output_filename)
       : sd_feed(sd_feed), output_filename(std::move(output_filename)) {
     sd_feed.set_finished(false);
   }
 
-  void start(){
-    auto *it = dynamic_cast<IteratorDictString*>(new QueueIteratorDictString(&sd_feed));
+  virtual ~SDBuildJob() {}
+
+  void start() {
+    auto *it = dynamic_cast<IteratorDictString *>(
+        new QueueIteratorDictString(&sd_feed));
     thread = std::make_unique<std::thread>(&SDBuildJob<SD>::job, this, it);
   }
 
@@ -99,13 +100,15 @@ constexpr size_t bucket_sz = 4096;
 template <>
 std::unique_ptr<StringDictionary>
 SDBuildJob<StringDictionaryHTFC>::create_sd(IteratorDictString *it) {
-  return std::unique_ptr<StringDictionary>(new StringDictionaryHTFC(it, bucket_sz));
+  return std::unique_ptr<StringDictionary>(
+      new StringDictionaryHTFC(it, bucket_sz));
 }
 
 template <>
 std::unique_ptr<StringDictionary>
 SDBuildJob<StringDictionaryPFC>::create_sd(IteratorDictString *it) {
-  return std::unique_ptr<StringDictionary>(new StringDictionaryPFC(it, bucket_sz));
+  return std::unique_ptr<StringDictionary>(
+      new StringDictionaryPFC(it, bucket_sz));
 }
 
 template <class SD>
@@ -142,10 +145,9 @@ void process_nt_file(const std::string &input_file_path,
   auto subjects_job = start_building_sd<StringDictionaryPFC>(
       subjects_feed, output_file_path + ".subjects.sd");
   auto predicates_job = start_building_sd<StringDictionaryPFC>(
-          predicates_feed, output_file_path + ".predicates.sd");
+      predicates_feed, output_file_path + ".predicates.sd");
   auto objects_job = start_building_sd<StringDictionaryHTFC>(
-          objects_feed, output_file_path + ".objects.sd");
-
+      objects_feed, output_file_path + ".objects.sd");
 
   std::vector<char> buffer(4096, 0);
   while (ifstream.read(buffer.data(), buffer.size())) {

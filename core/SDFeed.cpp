@@ -50,7 +50,7 @@ std::string SDFeed::get_string() {
 
 bool SDFeed::has_finished() {
   std::unique_lock<std::mutex> lk(m);
-  cv.wait(lk, [this] {return !q.empty() || finished; });
+  cv.wait(lk, [this] { return !q.empty() || finished; });
   return this->q.empty() && finished;
 }
 

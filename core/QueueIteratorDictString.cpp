@@ -16,7 +16,7 @@ unsigned char *QueueIteratorDictString::next(uint *str_length) {
     return EMPTY_STRING;
   }
 
-  auto *result = new unsigned char[next_value.size()+1];
+  auto *result = new unsigned char[next_value.size() + 1];
   mempcpy(result, next_value.data(), next_value.size());
   result[next_value.size()] = 0;
   *str_length = next_value.size();
@@ -24,10 +24,7 @@ unsigned char *QueueIteratorDictString::next(uint *str_length) {
   return result;
 }
 
-QueueIteratorDictString::QueueIteratorDictString(SDFeed *source_feed) : source_feed(source_feed) {
+QueueIteratorDictString::QueueIteratorDictString(SDFeed *source_feed)
+    : source_feed(source_feed) {}
 
-}
-
-QueueIteratorDictString::~QueueIteratorDictString() {
-
-}
+QueueIteratorDictString::~QueueIteratorDictString() {}

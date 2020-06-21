@@ -13,7 +13,6 @@ class QueueIteratorDictString : public IteratorDictString {
   SDFeed *source_feed;
 
 public:
-
   virtual ~QueueIteratorDictString() override;
 
   explicit QueueIteratorDictString(SDFeed *source_feed);
