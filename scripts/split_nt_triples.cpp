@@ -104,9 +104,6 @@ void statement_handler(void *fs_holder_ptr, const raptor_statement *statement) {
   if (strings_processed_reset_th >= RESET_TH) {
     strings_processed_reset_th %= RESET_TH;
     print_stats();
-    sub_ofs.flush();
-    pred_ofs.flush();
-    obj_ofs.flush();
   }
 }
 
