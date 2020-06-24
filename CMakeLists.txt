@@ -96,6 +96,7 @@ set(LIB_CSD_INCLUDES
         ${LIB_CSD_BPATH}/libcds/includes
         )
 
+
 set(LINK_LIBS ${K2TREE_PATH}/bin ${LIB_CSD_BPATH} ${LIB_CSD_BPATH}/libcds/lib)
 
 include_directories(${INCLUDES} ${INCLUDES_LIBS} ${LIB_CSD_INCLUDES})
@@ -160,6 +161,14 @@ set(DEFAULT_LIBS
         xml2
         )
 
+
+
+set(LIB_CPPBASE64_PATH lib/cpp-base64)
+add_library(CppBase64 ${LIB_CPPBASE64_PATH}/base64.cpp ${LIB_CPPBASE64_PATH}/base64.h)
+
+
+
+
 target_link_libraries(start_cache_server_example RDFCacheK2_GR ${DEFAULT_LIBS} )
 
 
@@ -179,6 +188,7 @@ endif()
 target_link_libraries(index_by_k2tree ${BASE_LIBS})
 
 
+
 add_executable(radix_set_from_ntfile scripts/radix_set_from_ntfile.cpp)
 target_link_libraries(radix_set_from_ntfile ${BASE_LIBS})
 
@@ -193,7 +203,8 @@ add_executable(validate_radix_sets_from_nt scripts/validate_radix_sets_from_nt.c
 target_link_libraries(validate_radix_sets_from_nt ${BASE_LIBS})
 
 add_executable(validate_sd_from_nt scripts/validate_sd_from_nt.cpp)
-target_link_libraries(validate_sd_from_nt ${BASE_LIBS})
+target_include_directories(validate_sd_from_nt PUBLIC ${LIB_CPPBASE64_PATH})
+target_link_libraries(validate_sd_from_nt ${BASE_LIBS} CppBase64)
 
 
 add_executable(index_by_k2tree_with_sd scripts/index_by_k2tree_with_sd.cpp)
@@ -206,7 +217,15 @@ target_link_libraries(sd_from_ntfile ${BASE_LIBS})
 
 
 add_executable(split_nt_triples scripts/split_nt_triples.cpp)
-target_link_libraries(split_nt_triples ${BASE_LIBS})
+target_include_directories(split_nt_triples PUBLIC ${LIB_CPPBASE64_PATH})
+target_link_libraries(split_nt_triples ${BASE_LIBS} CppBase64)
+
+
+add_executable(sd_from_fileset scripts/sd_from_fileset.cpp)
+target_link_libraries(sd_from_fileset ${BASE_LIBS})
+
+add_executable(print_sd scripts/print_sd.cpp)
+target_link_libraries(print_sd ${BASE_LIBS})
 
 
 

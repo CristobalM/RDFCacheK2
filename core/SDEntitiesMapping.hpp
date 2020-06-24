@@ -10,26 +10,20 @@
 #include <fstream>
 #include <memory>
 
-template <class SD> class SDEntitiesMapping : public ISDManager {
+template <class SDSubjects, class SDPredicates = SDSubjects,
+          class SDObjects = SDSubjects>
+class SDEntitiesMapping : public ISDManager {
   std::unique_ptr<StringDictionary> subjects_dictionary;
   std::unique_ptr<StringDictionary> predicates_dictionary;
   std::unique_ptr<StringDictionary> objects_dictionary;
-
-  std::map<std::string, uint64_t> extra_subjects_mapping;
-  std::map<std::string, uint64_t> extra_predicates_mapping;
-  std::map<std::string, uint64_t> extra_objects_mapping;
-
-  std::map<uint64_t, std::string> extra_subjects_rev_mapping;
-  std::map<uint64_t, std::string> extra_predicates_rev_mapping;
-  std::map<uint64_t, std::string> extra_objects_rev_mapping;
 
 public:
   SDEntitiesMapping(std::ifstream &subjects_dict_ifs,
                     std::ifstream &predicates_dict_ifs,
                     std::ifstream &objects_dict_ifs)
-      : subjects_dictionary(SD::load(subjects_dict_ifs)),
-        predicates_dictionary(SD::load(predicates_dict_ifs)),
-        objects_dictionary(SD::load(objects_dict_ifs)) {}
+      : subjects_dictionary(SDSubjects::load(subjects_dict_ifs)),
+        predicates_dictionary(SDPredicates::load(predicates_dict_ifs)),
+        objects_dictionary(SDObjects::load(objects_dict_ifs)) {}
 
   void save(const std::string &sub_fname, const std::string &pred_fname,
             const std::string &obj_fname) override {

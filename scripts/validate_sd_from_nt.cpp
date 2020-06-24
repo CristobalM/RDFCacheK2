@@ -9,9 +9,12 @@
 
 #include <RadixTree.hpp>
 
+#include <StringDictionaryHTFC.h>
 #include <StringDictionaryPFC.h>
 #include <raptor2.h>
 #include <raptor_util.hpp>
+
+#include <base64.h>
 
 struct parsed_options {
   std::string subjects_sd_file;
@@ -19,6 +22,7 @@ struct parsed_options {
   std::string objects_sd_file;
 
   std::string input_nt_file;
+  bool base64;
 };
 
 struct SDHolder {
@@ -26,10 +30,12 @@ struct SDHolder {
   StringDictionary *predicates_sd;
   StringDictionary *objects_sd;
 
+  bool base64;
+
   SDHolder(StringDictionary *subjects_sd, StringDictionary *predicates_sd,
-           StringDictionary *objects_sd)
+           StringDictionary *objects_sd, bool base64)
       : subjects_sd(subjects_sd), predicates_sd(predicates_sd),
-        objects_sd(objects_sd) {}
+        objects_sd(objects_sd), base64(base64) {}
 };
 
 parsed_options parse_cmline(int argc, char **argv);
@@ -47,6 +53,10 @@ const unsigned long RESET_TH = 1000000;
 
 int main(int argc, char **argv) {
   parsed_options p_options = parse_cmline(argc, argv);
+
+  std::cout << "Subjects file: " << p_options.subjects_sd_file << "\n"
+            << "Predicates file: " << p_options.predicates_sd_file << "\n"
+            << "Objects file: " << p_options.objects_sd_file << std::endl;
 
   std::ifstream sub_ifs(p_options.subjects_sd_file, std::ios::binary);
   std::ifstream pred_ifs(p_options.predicates_sd_file, std::ios::binary);
@@ -79,12 +89,13 @@ int main(int argc, char **argv) {
 
   auto subj_sd =
       std::unique_ptr<StringDictionary>(StringDictionaryPFC::load(sub_ifs));
-  auto obj_sd =
-      std::unique_ptr<StringDictionary>(StringDictionaryPFC::load(obj_ifs));
   auto pred_sd =
       std::unique_ptr<StringDictionary>(StringDictionaryPFC::load(pred_ifs));
+  auto obj_sd =
+      std::unique_ptr<StringDictionary>(StringDictionaryHTFC::load(obj_ifs));
 
-  SDHolder sd_holder(subj_sd.get(), pred_sd.get(), obj_sd.get());
+  SDHolder sd_holder(subj_sd.get(), pred_sd.get(), obj_sd.get(),
+                     p_options.base64);
 
   process_nt_file(sd_holder, nt_ifs);
 
@@ -114,20 +125,41 @@ void process_nt_file(SDHolder &sd_holder, std::ifstream &nt_ifs) {
   raptor_free_world(world);
 }
 
+static inline std::string get_term_b64_cond(raptor_term *t, bool base64) {
+  if (base64) {
+    return base64_encode(get_term_value(t));
+  }
+
+  return get_term_value(t);
+}
+
 void statement_handler(void *sd_holder_ptr, const raptor_statement *statement) {
   auto &sd_holder = *reinterpret_cast<SDHolder *>(sd_holder_ptr);
 
-  auto *predicates_sd = sd_holder.predicates_sd;
   auto *subjects_sd = sd_holder.subjects_sd;
+  auto *predicates_sd = sd_holder.predicates_sd;
   auto *objects_sd = sd_holder.objects_sd;
 
-  raptor_term *predicate = statement->predicate;
   raptor_term *subject = statement->subject;
+  raptor_term *predicate = statement->predicate;
   raptor_term *object = statement->object;
 
-  auto predicate_value = get_term_value(predicate);
-  auto subject_value = get_term_value(subject);
-  auto object_value = get_term_value(object);
+  auto subject_value = get_term_b64_cond(subject, sd_holder.base64);
+  auto predicate_value = get_term_b64_cond(predicate, sd_holder.base64);
+  auto object_value = get_term_b64_cond(object, sd_holder.base64);
+
+  auto temp_val = std::make_unique<unsigned char[]>(subject_value.size() + 1);
+  memcpy(temp_val.get(), subject_value.data(), subject_value.size());
+  temp_val[subject_value.size()] = '\0';
+
+  auto subj_id = subjects_sd->locate(
+      // reinterpret_cast<unsigned char *>(subject_value.data()),
+      temp_val.get(), subject_value.size());
+  if (subj_id == NORESULT) {
+    std::cerr << "Subject '" << subject_value << "' Not found on subjects sd ("
+              << subj_id << ")" << std::endl;
+    exit(1);
+  }
 
   auto pred_id = predicates_sd->locate(
       reinterpret_cast<unsigned char *>(predicate_value.data()),
@@ -135,15 +167,6 @@ void statement_handler(void *sd_holder_ptr, const raptor_statement *statement) {
   if (pred_id == NORESULT) {
     std::cerr << "Predicate '" << predicate_value
               << "' Not found on predicates sd" << std::endl;
-    exit(1);
-  }
-
-  auto subj_id = subjects_sd->locate(
-      reinterpret_cast<unsigned char *>(subject_value.data()),
-      subject_value.size());
-  if (subj_id == NORESULT) {
-    std::cerr << "Subject '" << subject_value << "' Not found on subjects sd"
-              << std::endl;
     exit(1);
   }
 
@@ -174,12 +197,13 @@ void print_stats() {
 }
 
 parsed_options parse_cmline(int argc, char **argv) {
-  const char short_options[] = "s:p:o:n:";
+  const char short_options[] = "s:p:o:n:b";
   struct option long_options[] = {
       {"subjects-set-file", required_argument, nullptr, 's'},
       {"predicates-set-file", required_argument, nullptr, 'p'},
       {"objects-set-file", required_argument, nullptr, 'o'},
       {"nt-file", required_argument, nullptr, 'n'},
+      {"base64", optional_argument, nullptr, 'b'},
   };
 
   int opt, opt_index;
@@ -190,6 +214,9 @@ parsed_options parse_cmline(int argc, char **argv) {
   bool has_nt = false;
 
   parsed_options out{};
+
+  out.base64 = false;
+
   while ((
       opt = getopt_long(argc, argv, short_options, long_options, &opt_index))) {
     if (opt == -1) {
@@ -212,6 +239,9 @@ parsed_options parse_cmline(int argc, char **argv) {
     case 'n':
       out.input_nt_file = optarg;
       has_nt = true;
+      break;
+    case 'b':
+      out.base64 = true;
       break;
     case 'h': // to implement
     case '?':
@@ -253,5 +283,6 @@ void print_help() {
             << "--predicates-sd-file\t(-p)\t\t(string-required)\n"
             << "--objects-sd-file\t(-o)\t\t(string-required)\n"
             << "--nt-file\t(-n)\t\t(string-required)\n"
+            << "--base64\t(-b)\t\t(bool-optional, default=false)\n"
             << std::endl;
 }

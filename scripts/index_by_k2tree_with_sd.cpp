@@ -10,6 +10,7 @@
 #include <SDEntitiesMapping.hpp>
 #include <getopt.h>
 
+#include <StringDictionaryHTFC.h>
 #include <StringDictionaryPFC.h>
 
 #include <raptor2.h>
@@ -44,7 +45,8 @@ int main(int argc, char **argv) {
     std::ifstream ifs_s(parsed.subjects_sd_file, std::ios::binary);
     std::ifstream ifs_p(parsed.predicates_sd_file, std::ios::binary);
     std::ifstream ifs_o(parsed.objects_sd_file, std::ios::binary);
-    isd_manager = std::make_unique<SDEntitiesMapping<StringDictionaryPFC>>(
+    isd_manager = std::make_unique<SDEntitiesMapping<
+        StringDictionaryPFC, StringDictionaryPFC, StringDictionaryHTFC>>(
         ifs_s, ifs_p, ifs_o);
   }
 

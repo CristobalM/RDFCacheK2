@@ -63,6 +63,7 @@ int main(int argc, char **argv) {
 class ISDBuildJob {
 public:
   virtual void wait_until_done() = 0;
+  virtual ~ISDBuildJob() = default;
 };
 
 template <class SD> class SDBuildJob : public ISDBuildJob {
