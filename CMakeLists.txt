@@ -97,7 +97,9 @@ set(LIB_CSD_INCLUDES
         )
 
 
-set(LINK_LIBS ${K2TREE_PATH}/bin ${LIB_CSD_BPATH} ${LIB_CSD_BPATH}/libcds/lib)
+set(LINK_LIBS ${K2TREE_PATH}/bin)
+
+add_subdirectory(${LIB_CSD_BPATH})
 
 include_directories(${INCLUDES} ${INCLUDES_LIBS} ${LIB_CSD_INCLUDES})
 link_directories(${LINK_LIBS})
@@ -223,6 +225,10 @@ target_link_libraries(split_nt_triples ${BASE_LIBS} CppBase64)
 
 add_executable(sd_from_fileset scripts/sd_from_fileset.cpp)
 target_link_libraries(sd_from_fileset ${BASE_LIBS})
+
+
+add_executable(sd_from_fileset_readfull scripts/sd_from_fileset_readfull.cpp)
+target_link_libraries(sd_from_fileset_readfull ${BASE_LIBS})
 
 add_executable(print_sd scripts/print_sd.cpp)
 target_link_libraries(print_sd ${BASE_LIBS})

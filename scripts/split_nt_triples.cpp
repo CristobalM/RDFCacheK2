@@ -20,6 +20,7 @@ struct parsed_options {
   std::string input_file;
   std::string output_file;
   unsigned long buffer_sz;
+  bool base64;
 };
 
 struct FsHolder {
@@ -29,10 +30,12 @@ struct FsHolder {
 
   unsigned long buf_size;
 
+  bool base64;
+
   FsHolder(std::ofstream &sub_ofs, std::ofstream &pred_ofs,
-           std::ofstream &obj_ofs, unsigned long buf_size)
+           std::ofstream &obj_ofs, unsigned long buf_size, bool base64)
       : sub_ofs(sub_ofs), pred_ofs(pred_ofs), obj_ofs(obj_ofs),
-        buf_size(buf_size) {}
+        buf_size(buf_size), base64(base64) {}
 };
 
 parsed_options parse_cmline(int argc, char **argv);
@@ -47,7 +50,7 @@ unsigned long strings_processed_reset_th = 0;
 
 const unsigned long RESET_TH = 1000000;
 
-const unsigned long BUFFER_SZ = 100'000'000;
+const unsigned long BUFFER_SZ = 1024;
 
 int main(int argc, char **argv) {
   parsed_options p_options = parse_cmline(argc, argv);
@@ -68,7 +71,7 @@ int main(int argc, char **argv) {
   pred_ofs.rdbuf()->pubsetbuf(pred_buf.data(), pred_buf.size());
   obj_ofs.rdbuf()->pubsetbuf(obj_buf.data(), obj_buf.size());
 
-  FsHolder fs_holder(sub_ofs, pred_ofs, obj_ofs, p_options.buffer_sz);
+  FsHolder fs_holder(sub_ofs, pred_ofs, obj_ofs, p_options.buffer_sz, p_options.base64);
 
   std::ifstream ifs(p_options.input_file);
   ifs.rdbuf()->pubsetbuf(nt_buf.data(), nt_buf.size());
@@ -101,7 +104,6 @@ void process_nt_file(FsHolder &fs_holder, std::ifstream &nt_ifs) {
   raptor_free_world(world);
 }
 
-std::regex nl_re("\n");
 
 void statement_handler(void *fs_holder_ptr, const raptor_statement *statement) {
   auto &fs_holder = *reinterpret_cast<FsHolder *>(fs_holder_ptr);
@@ -110,41 +112,29 @@ void statement_handler(void *fs_holder_ptr, const raptor_statement *statement) {
   auto &pred_ofs = fs_holder.pred_ofs;
   auto &obj_ofs = fs_holder.obj_ofs;
 
-  raptor_term *predicate = statement->predicate;
   raptor_term *subject = statement->subject;
+  raptor_term *predicate = statement->predicate;
   raptor_term *object = statement->object;
 
   auto subject_value = get_term_value(subject);
   auto predicate_value = get_term_value(predicate);
   auto object_value = get_term_value(object);
 
-  /*
-  std::string
-    subject_value_proc,
-    predicate_value_proc,
-    object_value_proc;
+  bytes_processed +=
+          predicate_value.size() + subject_value.size() + object_value.size();
 
-  strtk::replace_pattern(subject_value, "\n", "\\n", subject_value_proc);
-  strtk::replace_pattern(predicate_value, "\n", "\\n", predicate_value_proc);
-  strtk::replace_pattern(object_value, "\n", "\\n", object_value_proc);
-*/
+  if(fs_holder.base64){
+    subject_value = base64_encode(subject_value);
+    predicate_value = base64_encode(predicate_value);
+    object_value = base64_encode(object_value);
+  }
 
-  // auto subject_value_proc = std::regex_replace(subject_value, nl_re, "\\n");
-  // auto predicate_value_proc = std::regex_replace(predicate_value, nl_re,
-  // "\\n"); auto object_value_proc = std::regex_replace(object_value, nl_re,
-  // "\\n");
-  auto subject_value_proc = base64_encode(subject_value);
-  auto predicate_value_proc = base64_encode(predicate_value);
-  auto object_value_proc = base64_encode(object_value);
-
-  sub_ofs << subject_value_proc << "\n";
-  pred_ofs << predicate_value_proc << "\n";
-  obj_ofs << object_value_proc << "\n";
+  sub_ofs << subject_value << "\n";
+  pred_ofs << predicate_value << "\n";
+  obj_ofs << object_value << "\n";
 
   strings_processed += 3;
   strings_processed_reset_th += 3;
-  bytes_processed +=
-      predicate_value.size() + subject_value.size() + object_value.size();
 
   if (strings_processed_reset_th >= RESET_TH) {
     strings_processed_reset_th %= RESET_TH;
@@ -159,11 +149,13 @@ void print_stats() {
 }
 
 parsed_options parse_cmline(int argc, char **argv) {
-  const char short_options[] = "f:o:B::";
+  const char short_options[] = "f:o:B::b";
   struct option long_options[] = {
       {"input-file", required_argument, nullptr, 'f'},
       {"output-file", required_argument, nullptr, 'o'},
-      {"buffer-size", optional_argument, nullptr, 'B'}};
+      {"buffer-size", optional_argument, nullptr, 'B'},
+      {"base64", optional_argument, nullptr, 'b'}
+  };
 
   int opt, opt_index;
 
@@ -172,6 +164,9 @@ parsed_options parse_cmline(int argc, char **argv) {
   bool has_bsz = false;
 
   parsed_options out{};
+
+  out.base64 = false;
+
   while ((
       opt = getopt_long(argc, argv, short_options, long_options, &opt_index))) {
     if (opt == -1) {
@@ -193,6 +188,9 @@ parsed_options parse_cmline(int argc, char **argv) {
         out.buffer_sz = std::stoul(s);
         has_bsz = true;
       }
+      break;
+    case 'b':
+      out.base64 = true;
       break;
     case 'h': // to implement
     case '?':

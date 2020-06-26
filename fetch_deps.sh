@@ -30,8 +30,6 @@ else
     cd ${LIB_CSD}
 fi
 
-make
-make merge
 cd ..
 
 
