@@ -71,7 +71,8 @@ int main(int argc, char **argv) {
   pred_ofs.rdbuf()->pubsetbuf(pred_buf.data(), pred_buf.size());
   obj_ofs.rdbuf()->pubsetbuf(obj_buf.data(), obj_buf.size());
 
-  FsHolder fs_holder(sub_ofs, pred_ofs, obj_ofs, p_options.buffer_sz, p_options.base64);
+  FsHolder fs_holder(sub_ofs, pred_ofs, obj_ofs, p_options.buffer_sz,
+                     p_options.base64);
 
   std::ifstream ifs(p_options.input_file);
   ifs.rdbuf()->pubsetbuf(nt_buf.data(), nt_buf.size());
@@ -104,7 +105,6 @@ void process_nt_file(FsHolder &fs_holder, std::ifstream &nt_ifs) {
   raptor_free_world(world);
 }
 
-
 void statement_handler(void *fs_holder_ptr, const raptor_statement *statement) {
   auto &fs_holder = *reinterpret_cast<FsHolder *>(fs_holder_ptr);
 
@@ -121,9 +121,9 @@ void statement_handler(void *fs_holder_ptr, const raptor_statement *statement) {
   auto object_value = get_term_value(object);
 
   bytes_processed +=
-          predicate_value.size() + subject_value.size() + object_value.size();
+      predicate_value.size() + subject_value.size() + object_value.size();
 
-  if(fs_holder.base64){
+  if (fs_holder.base64) {
     subject_value = base64_encode(subject_value);
     predicate_value = base64_encode(predicate_value);
     object_value = base64_encode(object_value);
@@ -154,8 +154,7 @@ parsed_options parse_cmline(int argc, char **argv) {
       {"input-file", required_argument, nullptr, 'f'},
       {"output-file", required_argument, nullptr, 'o'},
       {"buffer-size", optional_argument, nullptr, 'B'},
-      {"base64", optional_argument, nullptr, 'b'}
-  };
+      {"base64", optional_argument, nullptr, 'b'}};
 
   int opt, opt_index;
 

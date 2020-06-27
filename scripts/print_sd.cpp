@@ -9,12 +9,19 @@
 
 #include <StringDictionaryHTFC.h>
 #include <StringDictionaryPFC.h>
+#include <StringDictionaryRPDAC.h>
+#include <StringDictionaryHASHRPDAC.h>
 #include <iterators/IteratorDictString.h>
 
 #include <exception>
 
 namespace {
-enum SDType { PFC = 0, HTFC = 1 };
+  enum SDType {
+    PFC = 0,
+    HTFC = 1,
+    HRPDAC = 2,
+    RPDAC = 3,
+  };
 }
 
 struct parsed_options {
@@ -35,12 +42,18 @@ int main(int argc, char **argv) {
   std::unique_ptr<StringDictionary> sd;
 
   switch (parsed.sd_type) {
-  case SDType ::PFC:
-    sd = std::unique_ptr<StringDictionary>(StringDictionaryPFC::load(ifs));
-    break;
-  case SDType ::HTFC:
-    sd = std::unique_ptr<StringDictionary>(StringDictionaryHTFC::load(ifs));
-    break;
+    case SDType::PFC:
+      sd = std::unique_ptr<StringDictionary>(StringDictionaryPFC::load(ifs));
+      break;
+    case SDType::HTFC:
+      sd = std::unique_ptr<StringDictionary>(StringDictionaryHTFC::load(ifs));
+      break;
+    case SDType::HRPDAC:
+      sd = std::unique_ptr<StringDictionary>(StringDictionaryHASHRPDAC::load(ifs));
+      break;
+    case SDType::RPDAC:
+      sd = std::unique_ptr<StringDictionary>(StringDictionaryRPDAC::load(ifs));
+      break;
   }
 
   ifs.close();
@@ -61,9 +74,9 @@ int main(int argc, char **argv) {
 parsed_options parse_cmline(int argc, char **argv) {
   const char short_options[] = "f:o:t::";
   struct option long_options[] = {
-      {"input-file", required_argument, nullptr, 'f'},
-      {"output-file", required_argument, nullptr, 'o'},
-      {"sd-type", optional_argument, nullptr, 't'}};
+          {"input-file",  required_argument, nullptr, 'f'},
+          {"output-file", required_argument, nullptr, 'o'},
+          {"sd-type",     optional_argument, nullptr, 't'}};
 
   int opt, opt_index;
 
@@ -73,39 +86,44 @@ parsed_options parse_cmline(int argc, char **argv) {
 
   parsed_options out{};
   while ((
-      opt = getopt_long(argc, argv, short_options, long_options, &opt_index))) {
+          opt = getopt_long(argc, argv, short_options, long_options, &opt_index))) {
     if (opt == -1) {
       break;
     }
 
     switch (opt) {
-    case 'f':
-      out.input_file = optarg;
-      has_input = true;
-      break;
-    case 'o':
-      out.output_file = optarg;
-      has_output = true;
-      break;
-    case 't':
-      if (optarg) {
-        std::string given_type(optarg);
-        if (given_type == "PFC") {
-          out.sd_type = SDType::PFC;
-        } else if (given_type == "HTFC") {
-          out.sd_type = SDType::HTFC;
-        } else {
-          throw std::runtime_error("Unknown String Dictionary type: " +
-                                   given_type);
+      case 'f':
+        out.input_file = optarg;
+        has_input = true;
+        break;
+      case 'o':
+        out.output_file = optarg;
+        has_output = true;
+        break;
+      case 't':
+        if (optarg) {
+          std::string given_type(optarg);
+          if (given_type == "PFC") {
+            out.sd_type = SDType::PFC;
+          } else if (given_type == "HTFC") {
+            out.sd_type = SDType::HTFC;
+          } else if (given_type == "HRPDAC") {
+            out.sd_type = SDType::HRPDAC;
+          } else if(given_type == "RPDAC"){
+            out.sd_type = SDType ::RPDAC;
+          }
+          else {
+            throw std::runtime_error("Unknown String Dictionary type: " +
+                                     given_type);
+          }
+          has_sd_type = true;
         }
-        has_sd_type = true;
-      }
-      break;
-    case 'h': // to implement
-    case '?':
-    default:
-      print_help();
-      break;
+        break;
+      case 'h': // to implement
+      case '?':
+      default:
+        print_help();
+        break;
     }
   }
 
@@ -131,6 +149,6 @@ parsed_options parse_cmline(int argc, char **argv) {
 void print_help() {
   std::cout << "--input-file\t(-f)\t\t(string-required)\n"
             << "--output-file\t(-o)\t\t(string-required)\n"
-            << "--sd-type\t(-t)\t\t([PFC,HTFC]-optional, default=PFC)\n"
+            << "--sd-type\t(-t)\t\t([PFC,HTFC,HRPDAC,RPDAC]-optional, default=PFC)\n"
             << std::endl;
 }
