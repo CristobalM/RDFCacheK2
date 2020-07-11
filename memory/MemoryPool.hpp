@@ -57,6 +57,12 @@ public:
     items_occupied--;
   }
 
+  void free_all_memory() {
+    buffers.clear();
+    items_occupied = 0;
+    allocation_times = 0;
+  }
+
   size_t get_bytes_occupied() { return sizeof(T) * items_occupied; }
 
   size_t get_items_occupied() { return items_occupied; }
