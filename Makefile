@@ -86,6 +86,7 @@ bundle-code: clean-all
 	--exclude='*.git' \
 	--exclude '*.vscode' \
 	--exclude '*.idea' \
+	--exclude 'build-release' \
 	. ${BUNDLE_DIR}
 	tar -zcvf ${BUNDLE_DIR}.tar.gz ${BUNDLE_DIR}/
 	cp ${BUNDLE_DIR}.tar.gz docker
