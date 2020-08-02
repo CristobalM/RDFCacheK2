@@ -8,6 +8,7 @@
 #include <string>
 
 #include <StringDictionaryHASHRPDAC.h>
+#include <StringDictionaryHASHRPDACBlocks.h>
 #include <StringDictionaryHTFC.h>
 #include <StringDictionaryPFC.h>
 #include <StringDictionaryRPDAC.h>
@@ -21,6 +22,7 @@ enum SDType {
   HTFC = 1,
   HRPDAC = 2,
   RPDAC = 3,
+  HRPDACBlocks = 4,
 };
 }
 
@@ -37,7 +39,7 @@ void print_help();
 int main(int argc, char **argv) {
   parsed_options parsed = parse_cmline(argc, argv);
 
-  std::ifstream ifs(parsed.input_file);
+  std::ifstream ifs(parsed.input_file, std::ios::in | std::ios::binary);
 
   std::unique_ptr<StringDictionary> sd;
 
@@ -54,6 +56,10 @@ int main(int argc, char **argv) {
     break;
   case SDType::RPDAC:
     sd = std::unique_ptr<StringDictionary>(StringDictionaryRPDAC::load(ifs));
+    break;
+  case SDType::HRPDACBlocks:
+    sd = std::unique_ptr<StringDictionary>(
+        StringDictionaryHASHRPDACBlocks::load(ifs));
     break;
   }
 
@@ -73,11 +79,11 @@ int main(int argc, char **argv) {
 }
 
 parsed_options parse_cmline(int argc, char **argv) {
-  const char short_options[] = "f:o:t::";
+  const char short_options[] = "f:o:t:";
   struct option long_options[] = {
       {"input-file", required_argument, nullptr, 'f'},
       {"output-file", required_argument, nullptr, 'o'},
-      {"sd-type", optional_argument, nullptr, 't'}};
+      {"sd-type", required_argument, nullptr, 't'}};
 
   int opt, opt_index;
 
@@ -86,6 +92,7 @@ parsed_options parse_cmline(int argc, char **argv) {
   bool has_sd_type = false;
 
   parsed_options out{};
+  std::string given_type;
   while ((
       opt = getopt_long(argc, argv, short_options, long_options, &opt_index))) {
     if (opt == -1) {
@@ -102,22 +109,23 @@ parsed_options parse_cmline(int argc, char **argv) {
       has_output = true;
       break;
     case 't':
-      if (optarg) {
-        std::string given_type(optarg);
-        if (given_type == "PFC") {
-          out.sd_type = SDType::PFC;
-        } else if (given_type == "HTFC") {
-          out.sd_type = SDType::HTFC;
-        } else if (given_type == "HRPDAC") {
-          out.sd_type = SDType::HRPDAC;
-        } else if (given_type == "RPDAC") {
-          out.sd_type = SDType ::RPDAC;
-        } else {
-          throw std::runtime_error("Unknown String Dictionary type: " +
-                                   given_type);
-        }
-        has_sd_type = true;
+      given_type = optarg;
+      if (given_type == "PFC") {
+        out.sd_type = SDType::PFC;
+      } else if (given_type == "HTFC") {
+        out.sd_type = SDType::HTFC;
+      } else if (given_type == "HRPDAC") {
+        out.sd_type = SDType::HRPDAC;
+      } else if (given_type == "RPDAC") {
+        out.sd_type = SDType ::RPDAC;
+      } else if (given_type == "HRPDACBlocks") {
+        out.sd_type = SDType ::HRPDACBlocks;
+      } else {
+        throw std::runtime_error("Unknown String Dictionary type: " +
+                                 given_type);
       }
+      has_sd_type = true;
+
       break;
     case 'h': // to implement
     case '?':

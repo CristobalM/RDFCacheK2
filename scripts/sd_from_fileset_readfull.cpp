@@ -11,6 +11,7 @@
 #include <vector>
 
 #include <StringDictionaryHASHRPDAC.h>
+#include <StringDictionaryHASHRPDACBlocks.h>
 #include <StringDictionaryHTFC.h>
 #include <StringDictionaryPFC.h>
 #include <StringDictionaryRPDAC.h>
@@ -19,6 +20,8 @@
 #include <iterators/IteratorDictStringPlain.h>
 
 #include <MemoryPool.hpp>
+
+#include <base64.h>
 
 class VecIteratorDictString : public IteratorDictString {
   std::vector<std::string> &v;
@@ -43,6 +46,7 @@ enum SDType {
   HTFC = 1,
   HRPDAC = 2,
   RPDAC = 3,
+  HRPDACBlocks = 4,
 };
 }
 
@@ -50,6 +54,9 @@ struct parsed_options {
   std::string input_file;
   std::string output_file;
   SDType sd_type;
+  bool base64;
+  int thread_count;
+  unsigned long cut_size;
 };
 
 struct BufferedData {
@@ -82,23 +89,28 @@ int main(int argc, char **argv) {
   while (std::getline(ifs, line)) {
     BufferedData bd{};
     // bsd.data = std::make_unique<unsigned char[]>(line.size()+1);
-    if (bytes_used + line.size() + 1 > one_MB) {
+    std::string decoded;
+    if (parsed.base64)
+      decoded = base64_decode(line, true);
+    else
+      decoded = line;
+    if (bytes_used + decoded.size() + 1 > one_MB) {
       current_buffer = pool.request_memory();
       bytes_used_total += bytes_used;
       bytes_used = 0;
     }
     bd.data = reinterpret_cast<unsigned char *>(*current_buffer) + bytes_used;
-    memcpy(bd.data, line.data(), line.size() + 1);
-    bd.size = line.size();
-    bytes_used += line.size() + 1;
+    memcpy(bd.data, decoded.data(), decoded.size() + 1);
+    bd.size = decoded.size();
+    bytes_used += decoded.size() + 1;
     data_holder.push_back(bd);
   }
-  /*
-  std::sort(data_holder.begin(), data_holder.end(), [](const BufferedData &lhs,
-  const BufferedData &rhs){ return strcmp(reinterpret_cast<char *>(lhs.data),
-  reinterpret_cast<char *>(rhs.data)) < 0;
-  });
-   */
+
+  std::sort(data_holder.begin(), data_holder.end(),
+            [](const BufferedData &lhs, const BufferedData &rhs) {
+              return strcmp(reinterpret_cast<char *>(lhs.data),
+                            reinterpret_cast<char *>(rhs.data)) < 0;
+            });
 
   auto buffered_data = put_in_buffer(data_holder);
   pool.free_all_memory();
@@ -118,7 +130,13 @@ int main(int argc, char **argv) {
   case SDType::HRPDAC:
     std::cout << "Creating HASHRPDAC" << std::endl;
     sd =
-        std::make_unique<StringDictionaryHASHRPDAC>(it, buffered_data.size, 32);
+        std::make_unique<StringDictionaryHASHRPDAC>(it, buffered_data.size, 25);
+    break;
+  case SDType::HRPDACBlocks:
+    std::cout << "Creating HASHRPDACBlocks" << std::endl;
+    sd = std::make_unique<StringDictionaryHASHRPDACBlocks>(
+        dynamic_cast<IteratorDictStringPlain *>(it), buffered_data.size, 25,
+        parsed.cut_size, parsed.thread_count);
     break;
   case SDType::RPDAC:
     std::cout << "Creating RPDAC" << std::endl;
@@ -157,17 +175,22 @@ BufferedData put_in_buffer(std::vector<BufferedData> &input_vec) {
 }
 
 parsed_options parse_cmline(int argc, char **argv) {
-  const char short_options[] = "f:o:t::";
+  const char short_options[] = "f:o:t::b::p::c::";
   struct option long_options[] = {
       {"input-file", required_argument, nullptr, 'f'},
       {"output-file", required_argument, nullptr, 'o'},
-      {"sd-type", optional_argument, nullptr, 't'}};
+      {"sd-type", optional_argument, nullptr, 't'},
+      {"base64", optional_argument, nullptr, 'b'},
+      {"thread-count", optional_argument, nullptr, 'p'},
+      {"cut-size", optional_argument, nullptr, 'c'}};
 
   int opt, opt_index;
 
   bool has_input = false;
   bool has_output = false;
   bool has_sd_type = false;
+  bool has_thread_count = false;
+  bool has_cut_size = false;
 
   parsed_options out{};
   while ((
@@ -196,6 +219,8 @@ parsed_options parse_cmline(int argc, char **argv) {
           out.sd_type = SDType::HRPDAC;
         } else if (given_type == "RPDAC") {
           out.sd_type = SDType ::RPDAC;
+        } else if (given_type == "HRPDACBlocks") {
+          out.sd_type = SDType::HRPDACBlocks;
         } else {
           throw std::runtime_error("Unknown String Dictionary type: " +
                                    given_type);
@@ -203,10 +228,26 @@ parsed_options parse_cmline(int argc, char **argv) {
         has_sd_type = true;
       }
       break;
+    case 'b':
+      out.base64 = true;
+      break;
+    case 'p':
+      if (optarg) {
+        out.thread_count = std::stoi(std::string(optarg));
+        has_thread_count = true;
+      }
+      break;
+    case 'c':
+      if (optarg) {
+        out.cut_size = std::stoul(std::string(optarg));
+        has_cut_size = true;
+      }
+      break;
     case 'h': // to implement
     case '?':
     default:
       print_help();
+      exit(1);
       break;
     }
   }
@@ -224,7 +265,23 @@ parsed_options parse_cmline(int argc, char **argv) {
   }
 
   if (!has_sd_type) {
-    out.sd_type = SDType::PFC;
+    std::cerr << "Missing option --sd-type\n" << std::endl;
+    print_help();
+    exit(1);
+  }
+
+  if (!has_thread_count) {
+    out.thread_count = 1;
+  } else {
+    if (out.thread_count < 1) {
+      std::cerr << "Invalid thread count " << out.thread_count << std::endl;
+      print_help();
+      exit(1);
+    }
+  }
+
+  if (!has_cut_size) {
+    out.cut_size = 1UL << 27UL;
   }
 
   return out;
@@ -234,6 +291,8 @@ void print_help() {
   std::cout
       << "--input-file\t(-f)\t\t(string-required)\n"
       << "--output-file\t(-o)\t\t(string-required)\n"
-      << "--sd-type\t(-t)\t\t([PFC,HTFC,HRPDAC,RPDAC]-optional, default=PFC)\n"
+      << "--sd-type\t(-t)\t\t([PFC,HTFC,HRPDAC,RPDAC,HRPDACBlocks]-required)\n"
+      << "--thread-count\t(-p)\t\t(integer >=1 -optional, default=1)\n"
+      << "--cut-size\t(-c)\t\t(integer-optional, default=134217728 bytes)\n"
       << std::endl;
 }
