@@ -12,19 +12,24 @@
 #include <StringDictionaryPFC.h>
 #include <iterators/IteratorDictString.h>
 
+#include <base64.h>
 #include <exception>
 
 class FileSetIteratorDictString : public IteratorDictString {
   std::ifstream &ifs;
   std::string current_line;
+  bool base64;
 
 public:
-  explicit FileSetIteratorDictString(std::ifstream &ifs) : ifs(ifs) {}
+  explicit FileSetIteratorDictString(std::ifstream &ifs, bool base64)
+      : ifs(ifs), base64(base64) {}
 
   bool hasNext() override { return ifs && ifs.peek() != EOF; }
 
   unsigned char *next(uint *str_length) override {
     std::getline(ifs, current_line);
+    if (base64)
+      current_line = base64_decode(current_line, true);
     auto *uchar_val = new unsigned char[current_line.size() + 1];
     *str_length = current_line.size();
     memcpy(uchar_val, current_line.data(), current_line.size());
@@ -41,6 +46,7 @@ struct parsed_options {
   std::string input_file;
   std::string output_file;
   SDType sd_type;
+  bool base64;
 };
 
 parsed_options parse_cmline(int argc, char **argv);
@@ -51,8 +57,8 @@ int main(int argc, char **argv) {
   parsed_options parsed = parse_cmline(argc, argv);
 
   std::ifstream ifs(parsed.input_file);
-  auto *it =
-      dynamic_cast<IteratorDictString *>(new FileSetIteratorDictString(ifs));
+  auto *it = dynamic_cast<IteratorDictString *>(
+      new FileSetIteratorDictString(ifs, parsed.base64));
   std::unique_ptr<StringDictionary> sd;
 
   switch (parsed.sd_type) {
@@ -74,11 +80,13 @@ int main(int argc, char **argv) {
 }
 
 parsed_options parse_cmline(int argc, char **argv) {
-  const char short_options[] = "f:o:t::";
+  const char short_options[] = "f:o:t:b";
   struct option long_options[] = {
       {"input-file", required_argument, nullptr, 'f'},
       {"output-file", required_argument, nullptr, 'o'},
-      {"sd-type", optional_argument, nullptr, 't'}};
+      {"sd-type", required_argument, nullptr, 't'},
+      {"base64", optional_argument, nullptr, 'b'},
+  };
 
   int opt, opt_index;
 
@@ -87,6 +95,8 @@ parsed_options parse_cmline(int argc, char **argv) {
   bool has_sd_type = false;
 
   parsed_options out{};
+  out.base64 = false;
+
   while ((
       opt = getopt_long(argc, argv, short_options, long_options, &opt_index))) {
     if (opt == -1) {
@@ -115,6 +125,9 @@ parsed_options parse_cmline(int argc, char **argv) {
         }
         has_sd_type = true;
       }
+      break;
+    case 'b':
+      out.base64 = true;
       break;
     case 'h': // to implement
     case '?':
@@ -146,6 +159,6 @@ parsed_options parse_cmline(int argc, char **argv) {
 void print_help() {
   std::cout << "--input-file\t(-f)\t\t(string-required)\n"
             << "--output-file\t(-o)\t\t(string-required)\n"
-            << "--sd-type\t(-t)\t\t([PFC,HTFC]-optional, default=PFC)\n"
-            << std::endl;
+            << "--sd-type\t(-t)\t\t([PFC,HTFC]-required)\n"
+            << "--base64\t(-b)(bool-optional,default=false)" << std::endl;
 }

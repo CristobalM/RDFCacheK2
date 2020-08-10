@@ -9,7 +9,7 @@
 
 #include <RadixTree.hpp>
 
-#include <StringDictionaryHTFC.h>
+#include <StringDictionaryHASHRPDACBlocks.h>
 #include <StringDictionaryPFC.h>
 #include <raptor2.h>
 #include <raptor_util.hpp>
@@ -108,8 +108,8 @@ int main(int argc, char **argv) {
       std::unique_ptr<StringDictionary>(StringDictionaryPFC::load(sub_ifs));
   auto pred_sd =
       std::unique_ptr<StringDictionary>(StringDictionaryPFC::load(pred_ifs));
-  auto obj_sd =
-      std::unique_ptr<StringDictionary>(StringDictionaryHTFC::load(obj_ifs));
+  auto obj_sd = std::unique_ptr<StringDictionary>(
+      StringDictionaryHASHRPDACBlocks::load(obj_ifs));
 
   SDHolder sd_holder(subj_sd.get(), pred_sd.get(), obj_sd.get(),
                      p_options.base64, p_options.fail_mode);
@@ -189,11 +189,6 @@ void statement_handler(void *sd_holder_ptr, const raptor_statement *statement) {
   auto subject_value = get_term_b64_cond(subject, sd_holder.base64);
   auto predicate_value = get_term_b64_cond(predicate, sd_holder.base64);
   auto object_value = get_term_b64_cond(object, sd_holder.base64);
-
-  if (subject_value ==
-      "PGh0dHA6Ly93d3cud2lraWRhdGEub3JnL2VudGl0eS9RNzQ5NTEzPg==") {
-    int debug = 0;
-  }
 
   auto subj_id = subjects_sd->locate(
       reinterpret_cast<unsigned char *>(subject_value.data()),

@@ -224,7 +224,8 @@ target_link_libraries(split_nt_triples ${BASE_LIBS} CppBase64)
 
 
 add_executable(sd_from_fileset scripts/sd_from_fileset.cpp)
-target_link_libraries(sd_from_fileset ${BASE_LIBS})
+target_include_directories(sd_from_fileset PUBLIC ${LIB_CPPBASE64_PATH})
+target_link_libraries(sd_from_fileset ${BASE_LIBS} CppBase64)
 
 
 add_executable(sd_from_fileset_readfull scripts/sd_from_fileset_readfull.cpp)
@@ -232,7 +233,8 @@ target_include_directories(sd_from_fileset_readfull PUBLIC ${LIB_CPPBASE64_PATH}
 target_link_libraries(sd_from_fileset_readfull ${BASE_LIBS} CppBase64)
 
 add_executable(print_sd scripts/print_sd.cpp)
-target_link_libraries(print_sd ${BASE_LIBS})
+target_include_directories(print_sd PUBLIC ${LIB_CPPBASE64_PATH})
+target_link_libraries(print_sd ${BASE_LIBS} CppBase64)
 
 
 

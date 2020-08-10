@@ -79,7 +79,6 @@ int main(int argc, char **argv) {
 
   std::vector<BufferedData> data_holder;
 
-  // These memory pool operations are done to clear the read data faster
   static constexpr size_t one_MB = 1'000'000'000;
   using buffer_t = unsigned char[one_MB]; // 1MB
   MemoryPool<buffer_t> pool(1);
@@ -88,7 +87,6 @@ int main(int argc, char **argv) {
   size_t bytes_used_total = 0;
   while (std::getline(ifs, line)) {
     BufferedData bd{};
-    // bsd.data = std::make_unique<unsigned char[]>(line.size()+1);
     std::string decoded;
     if (parsed.base64)
       decoded = base64_decode(line, true);
@@ -122,24 +120,25 @@ int main(int argc, char **argv) {
 
   switch (parsed.sd_type) {
   case SDType::PFC:
+    std::cout << "Creating PFC String Dictionary" << std::endl;
     sd = std::make_unique<StringDictionaryPFC>(it, 3);
     break;
   case SDType::HTFC:
     sd = std::make_unique<StringDictionaryHTFC>(it, 3);
     break;
   case SDType::HRPDAC:
-    std::cout << "Creating HASHRPDAC" << std::endl;
+    std::cout << "Creating HASHRPDAC String Dictionary" << std::endl;
     sd =
         std::make_unique<StringDictionaryHASHRPDAC>(it, buffered_data.size, 25);
     break;
   case SDType::HRPDACBlocks:
-    std::cout << "Creating HASHRPDACBlocks" << std::endl;
+    std::cout << "Creating HASHRPDACBlocks String Dictionary" << std::endl;
     sd = std::make_unique<StringDictionaryHASHRPDACBlocks>(
         dynamic_cast<IteratorDictStringPlain *>(it), buffered_data.size, 25,
         parsed.cut_size, parsed.thread_count);
     break;
   case SDType::RPDAC:
-    std::cout << "Creating RPDAC" << std::endl;
+    std::cout << "Creating RPDAC String Dictionary" << std::endl;
     sd = std::make_unique<StringDictionaryRPDAC>(it);
     break;
   }
@@ -175,7 +174,7 @@ BufferedData put_in_buffer(std::vector<BufferedData> &input_vec) {
 }
 
 parsed_options parse_cmline(int argc, char **argv) {
-  const char short_options[] = "f:o:t::b::p::c::";
+  const char short_options[] = "f:o:t::bp::c::";
   struct option long_options[] = {
       {"input-file", required_argument, nullptr, 'f'},
       {"output-file", required_argument, nullptr, 'o'},

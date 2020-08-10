@@ -2,6 +2,7 @@ cmake-build-debug/
 .idea/
 lib/
 build/
+build-release/
 *.env
 proto/generated/
 proto/java-generated/
