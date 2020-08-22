@@ -98,6 +98,7 @@ void process_nt_file(PredicatesCacheManager &pcm, std::ifstream &nt_ifs) {
                               reinterpret_cast<unsigned char *>(buffer.data()),
                               (size_t)nt_ifs.gcount(), 0);
   }
+  raptor_parser_parse_chunk(parser, NULL, 0, 1);
 
   raptor_free_parser(parser);
   raptor_free_world(world);

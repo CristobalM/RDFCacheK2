@@ -109,6 +109,7 @@ void process_nt_file(const RadixTreesHolder &r_holder, std::ifstream &nt_ifs) {
                               reinterpret_cast<unsigned char *>(buffer.data()),
                               (size_t)nt_ifs.gcount(), 0);
   }
+  raptor_parser_parse_chunk(parser, NULL, 0, 1);
 
   std::cout << "Done. Valid File!\t";
   print_stats();

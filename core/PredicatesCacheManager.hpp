@@ -6,6 +6,7 @@
 #define RDFCACHEK2_PREDICATESCACHEMANAGER_HPP
 
 #include "ISDManager.hpp"
+#include "NaiveDynamicStringDictionary.hpp"
 #include "PredicatesIndexCache.hpp"
 #include <memory>
 #include <string>
@@ -13,6 +14,8 @@
 class PredicatesCacheManager {
   std::unique_ptr<ISDManager> isd_manager;
   std::unique_ptr<PredicatesIndexCache> predicates_index;
+
+  NaiveDynamicStringDictionary extra_dicts;
 
 public:
   PredicatesCacheManager(

@@ -24,6 +24,10 @@ public:
   virtual std::string get_object(uint64_t object_index) = 0;
   virtual std::string get_subject(uint64_t subject_index) = 0;
 
+  virtual unsigned long last_subject_id() = 0;
+  virtual unsigned long last_predicate_id() = 0;
+  virtual unsigned long last_object_id() = 0;
+
   virtual ~ISDManager() = default;
 };
 #endif // RDFCACHEK2_ISDMANAGER_HPP

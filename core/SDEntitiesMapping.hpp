@@ -99,6 +99,18 @@ public:
     delete[] result;
     return s;
   }
+
+  unsigned long last_subject_id() override {
+    return subjects_dictionary->numElements();
+  }
+
+  unsigned long last_predicate_id() override {
+    return predicates_dictionary->numElements();
+  }
+
+  unsigned long last_object_id() override {
+    return objects_dictionary->numElements();
+  }
 };
 
 #endif // RDFCACHEK2_SDENTITIESMAPPING_HPP

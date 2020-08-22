@@ -19,15 +19,27 @@ void PredicatesCacheManager::add_triple(std::string &subject,
   auto object_id = isd_manager->object_index(object);
 
   if (subject_id == NORESULT) {
-    throw std::runtime_error("Subject " + subject + " does not exist");
+    // throw std::runtime_error("Subject " + subject + " does not exist");
+    std::cerr << "Subject " << subject << " does not exist" << std::endl;
+    extra_dicts.add_subject(subject);
+    subject_id =
+        extra_dicts.locate_subject(subject) + isd_manager->last_subject_id();
   }
 
   if (predicate_id == NORESULT) {
-    throw std::runtime_error("Predicate " + predicate + " does not exist");
+    // throw std::runtime_error("Predicate " + predicate + " does not exist");
+    std::cerr << "Predicate " << predicate << " does not exist" << std::endl;
+    extra_dicts.add_predicate(predicate);
+    predicate_id = extra_dicts.locate_predicate(subject) +
+                   isd_manager->last_predicate_id();
   }
 
   if (object_id == NORESULT) {
-    throw std::runtime_error("Object " + object + " does not exist");
+    // throw std::runtime_error("Object " + object + " does not exist");
+    std::cerr << "Object " << object << " does not exist" << std::endl;
+    extra_dicts.add_object(object);
+    object_id =
+        extra_dicts.locate_object(subject) + isd_manager->last_object_id();
   }
 
   if (!predicates_index->has_predicate(predicate_id)) {

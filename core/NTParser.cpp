@@ -129,6 +129,7 @@ std::unique_ptr<NTParsedResult> NTParser::parse() {
                               reinterpret_cast<unsigned char *>(buffer.data()),
                               (size_t)ifstream.gcount(), 0);
   }
+  raptor_parser_parse_chunk(parser, NULL, 0, 1);
 
   // char uri_str[] = "http://www.wikidata.org/entity/";
   // raptor_uri *uri = raptor_new_uri(world, reinterpret_cast<unsigned

@@ -83,6 +83,7 @@ void process_nt_file(const std::string &input_file_path,
                               reinterpret_cast<unsigned char *>(buffer.data()),
                               (size_t)ifstream.gcount(), 0);
   }
+  raptor_parser_parse_chunk(parser, NULL, 0, 1);
 
   std::cout << "Done. \t";
   print_stats();

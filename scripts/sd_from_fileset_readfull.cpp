@@ -57,6 +57,7 @@ struct parsed_options {
   bool base64;
   int thread_count;
   unsigned long cut_size;
+  int bucket_size;
 };
 
 struct BufferedData {
@@ -121,10 +122,10 @@ int main(int argc, char **argv) {
   switch (parsed.sd_type) {
   case SDType::PFC:
     std::cout << "Creating PFC String Dictionary" << std::endl;
-    sd = std::make_unique<StringDictionaryPFC>(it, 3);
+    sd = std::make_unique<StringDictionaryPFC>(it, parsed.bucket_size);
     break;
   case SDType::HTFC:
-    sd = std::make_unique<StringDictionaryHTFC>(it, 3);
+    sd = std::make_unique<StringDictionaryHTFC>(it, parsed.bucket_size);
     break;
   case SDType::HRPDAC:
     std::cout << "Creating HASHRPDAC String Dictionary" << std::endl;
@@ -174,14 +175,15 @@ BufferedData put_in_buffer(std::vector<BufferedData> &input_vec) {
 }
 
 parsed_options parse_cmline(int argc, char **argv) {
-  const char short_options[] = "f:o:t::bp::c::";
+  const char short_options[] = "f:o:t::bp::c::B::";
   struct option long_options[] = {
       {"input-file", required_argument, nullptr, 'f'},
       {"output-file", required_argument, nullptr, 'o'},
       {"sd-type", optional_argument, nullptr, 't'},
       {"base64", optional_argument, nullptr, 'b'},
       {"thread-count", optional_argument, nullptr, 'p'},
-      {"cut-size", optional_argument, nullptr, 'c'}};
+      {"cut-size", optional_argument, nullptr, 'c'},
+      {"bucket-size", optional_argument, nullptr, 'B'}};
 
   int opt, opt_index;
 
@@ -190,6 +192,7 @@ parsed_options parse_cmline(int argc, char **argv) {
   bool has_sd_type = false;
   bool has_thread_count = false;
   bool has_cut_size = false;
+  bool has_bucket_size = false;
 
   parsed_options out{};
   while ((
@@ -242,6 +245,12 @@ parsed_options parse_cmline(int argc, char **argv) {
         has_cut_size = true;
       }
       break;
+    case 'B':
+      if (optarg) {
+        out.bucket_size = std::stoi(std::string(optarg));
+        has_bucket_size = true;
+      }
+      break;
     case 'h': // to implement
     case '?':
     default:
@@ -280,7 +289,11 @@ parsed_options parse_cmline(int argc, char **argv) {
   }
 
   if (!has_cut_size) {
-    out.cut_size = 1UL << 27UL;
+    out.cut_size = 10'000'000;
+  }
+
+  if (!has_bucket_size) {
+    out.bucket_size = 32;
   }
 
   return out;
@@ -292,6 +305,9 @@ void print_help() {
       << "--output-file\t(-o)\t\t(string-required)\n"
       << "--sd-type\t(-t)\t\t([PFC,HTFC,HRPDAC,RPDAC,HRPDACBlocks]-required)\n"
       << "--thread-count\t(-p)\t\t(integer >=1 -optional, default=1)\n"
-      << "--cut-size\t(-c)\t\t(integer-optional, default=134217728 bytes)\n"
+      << "--cut-size\t(-c)\t\t(integer-optional, default=10MB)\n"
+      << "--bucket-size\t(-B)\t\t(integer-optional, default=32)\n"
+      << "--base64\t(-b)\t\t(bool-optional, default=(false))\n"
+
       << std::endl;
 }

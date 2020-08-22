@@ -69,7 +69,8 @@ int main(int argc, char **argv) {
   ifs.close();
 
   std::ofstream ofs(parsed.output_file);
-
+  size_t bytes_now = 0;
+  static constexpr size_t bytes_th = (1L << 20L);
   auto *it = sd->extractTable();
   while (it->hasNext()) {
     unsigned int strlen;
@@ -78,12 +79,19 @@ int main(int argc, char **argv) {
     if (parsed.base64) {
       auto b64_str = base64_encode(s);
       ofs << b64_str << "\n";
+      bytes_now += b64_str.size();
     } else {
       ofs << s << "\n";
+      bytes_now += s.size();
+    }
+
+    if (bytes_now >= bytes_th) {
+      ofs.flush();
     }
 
     delete[] str;
   }
+  delete it;
   return 0;
 }
 

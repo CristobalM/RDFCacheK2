@@ -22,10 +22,14 @@ set(CORE_SOURCE_FILES
         core/NTParser.cpp
         core/serialization_util.cpp
         core/PredicatesCacheManager.cpp
-        core/raptor_util.cpp
-        core/QueueIteratorDictString.cpp
-        core/SDFeed.cpp
+        core/NaiveDynamicStringDictionary.cpp
         )
+
+set(PROC_SOURCE_FILES
+        proc/raptor_util.cpp
+        proc/QueueIteratorDictString.cpp
+        proc/SDFeed.cpp
+)
 
 set(GRAPH_RESULT_CACHING_FILE
         gresults-caching/GraphResult.cpp
@@ -59,7 +63,7 @@ set(PROTO_MESSAGES
 
 set(PROTO_MESSAGES_PATH ${CMAKE_SOURCE_DIR}/proto/generated)
 
-set(INCLUDES memory core network ${PROTO_MESSAGES_PATH} ${CMAKE_SOURCE_DIR}/gresults-caching)
+set(INCLUDES memory core network proc ${PROTO_MESSAGES_PATH} ${CMAKE_SOURCE_DIR}/gresults-caching)
 
 set(K2TREE_PATH ${CMAKE_SOURCE_DIR}/lib/c-k2tree-dyn)
 
@@ -116,6 +120,9 @@ add_library(RDFCacheK2_GR STATIC ${GRAPH_RESULT_CACHING_FILE})
 
 add_library(ProtoMessages STATIC ${PROTO_MESSAGES})
 
+
+add_library(Proc STATIC ${PROC_SOURCE_FILES})
+
 add_dependencies(RDFCacheK2 _k2tree_merged_noalloc)
 
 find_package(Protobuf REQUIRED)
@@ -146,6 +153,15 @@ set(BASE_LIBS
         Rax
         raptor2
         xml2
+        )
+        
+set(PROC_LIBS
+        Proc
+        CSD
+        cds
+        raptor2
+        xml2
+        pthread
         )
 
 set(DEFAULT_LIBS
@@ -214,28 +230,31 @@ target_link_libraries(index_by_k2tree_with_sd ${BASE_LIBS})
 
 
 add_executable(sd_from_ntfile scripts/sd_from_ntfile.cpp)
-target_link_libraries(sd_from_ntfile ${BASE_LIBS})
-
+target_link_libraries(sd_from_ntfile ${PROC_LIBS})
 
 
 add_executable(split_nt_triples scripts/split_nt_triples.cpp)
 target_include_directories(split_nt_triples PUBLIC ${LIB_CPPBASE64_PATH})
-target_link_libraries(split_nt_triples ${BASE_LIBS} CppBase64)
+target_link_libraries(split_nt_triples ${PROC_LIBS} CppBase64)
 
 
 add_executable(sd_from_fileset scripts/sd_from_fileset.cpp)
 target_include_directories(sd_from_fileset PUBLIC ${LIB_CPPBASE64_PATH})
-target_link_libraries(sd_from_fileset ${BASE_LIBS} CppBase64)
+target_link_libraries(sd_from_fileset ${PROC_LIBS} CppBase64)
 
 
 add_executable(sd_from_fileset_readfull scripts/sd_from_fileset_readfull.cpp)
 target_include_directories(sd_from_fileset_readfull PUBLIC ${LIB_CPPBASE64_PATH})
-target_link_libraries(sd_from_fileset_readfull ${BASE_LIBS} CppBase64)
+target_link_libraries(sd_from_fileset_readfull ${PROC_LIBS} CppBase64)
 
 add_executable(print_sd scripts/print_sd.cpp)
 target_include_directories(print_sd PUBLIC ${LIB_CPPBASE64_PATH})
-target_link_libraries(print_sd ${BASE_LIBS} CppBase64)
+target_link_libraries(print_sd ${PROC_LIBS} CppBase64)
 
+
+add_executable(base64_transform scripts/base64_transform.cpp)
+target_include_directories(base64_transform PUBLIC ${LIB_CPPBASE64_PATH})
+target_link_libraries(base64_transform ${PROC_LIBS} CppBase64)
 
 
 
