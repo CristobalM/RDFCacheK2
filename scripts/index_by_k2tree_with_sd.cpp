@@ -10,7 +10,7 @@
 #include <SDEntitiesMapping.hpp>
 #include <getopt.h>
 
-#include <StringDictionaryHTFC.h>
+#include <StringDictionaryHASHRPDACBlocks.h>
 #include <StringDictionaryPFC.h>
 
 #include <raptor2.h>
@@ -42,21 +42,47 @@ int main(int argc, char **argv) {
 
   std::unique_ptr<ISDManager> isd_manager;
   {
-    std::ifstream ifs_s(parsed.subjects_sd_file, std::ios::binary);
-    std::ifstream ifs_p(parsed.predicates_sd_file, std::ios::binary);
-    std::ifstream ifs_o(parsed.objects_sd_file, std::ios::binary);
-    isd_manager = std::make_unique<SDEntitiesMapping<
-        StringDictionaryPFC, StringDictionaryPFC, StringDictionaryHTFC>>(
-        ifs_s, ifs_p, ifs_o);
+    std::ifstream ifs_s(parsed.subjects_sd_file,
+                        std::ios::in | std::ios::binary);
+    std::ifstream ifs_p(parsed.predicates_sd_file,
+                        std::ios::in | std::ios::binary);
+    std::ifstream ifs_o(parsed.objects_sd_file,
+                        std::ios::in | std::ios::binary);
+    if (ifs_s.fail()) {
+      std::cerr << "Failed to open subjects file '" << parsed.subjects_sd_file
+                << "'" << std::endl;
+      return 1;
+    }
+
+    if (ifs_p.fail()) {
+      std::cerr << "Failed to open predicates file '"
+                << parsed.predicates_sd_file << "'" << std::endl;
+      return 1;
+    }
+    if (ifs_o.fail()) {
+      std::cerr << "Failed to open objects file '" << parsed.objects_sd_file
+                << "'" << std::endl;
+      return 1;
+    }
+
+    isd_manager = std::make_unique<
+        SDEntitiesMapping<StringDictionaryPFC, StringDictionaryPFC,
+                          StringDictionaryHASHRPDACBlocks>>(ifs_s, ifs_p,
+                                                            ifs_o);
   }
 
   PredicatesCacheManager cache_manager(std::move(isd_manager));
 
   std::ifstream ifs_nt(parsed.nt_file);
 
+  std::cout << "Processing nt file..." << std::endl;
   process_nt_file(cache_manager, ifs_nt);
 
+  std::cout << "Saving to disk..." << std::endl;
+
   cache_manager.get_predicates_cache().dump_to_file(parsed.output_k2tree);
+  cache_manager.get_dyn_dicts().save("_extra_subjs.bin", "_extra_preds.bin",
+                                     "_extra_obs.bin");
 }
 
 void statement_handler(void *pcm_ptr, const raptor_statement *statement) {

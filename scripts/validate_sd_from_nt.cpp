@@ -130,9 +130,9 @@ int main(int argc, char **argv) {
   if (p_options.fail_mode == LOG) {
 
     fs::path basepath(p_options.log_location);
-    fs::path subj_file_rel("_validate_sd_from_nt.subj.not-found.log");
-    fs::path pred_file_rel("_validate_sd_from_nt.pred.not-found.log");
-    fs::path obj_file_rel("_validate_sd_from_nt.obj.not-found.log");
+    fs::path subj_file_rel("_validate_sd_from_nt.subjects.not-found.log");
+    fs::path pred_file_rel("_validate_sd_from_nt.predicates.not-found.log");
+    fs::path obj_file_rel("_validate_sd_from_nt.objects.not-found.log");
     auto subj_path = basepath / subj_file_rel;
     auto pred_path = basepath / pred_file_rel;
     auto obj_path = basepath / obj_file_rel;

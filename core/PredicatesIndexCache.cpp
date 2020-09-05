@@ -7,6 +7,7 @@
 #include "PredicatesIndexCache.hpp"
 
 #include "predicates_index_cache.pb.h"
+#include "serialization_util.hpp"
 
 PredicatesIndexCache::PredicatesIndexCache() {}
 
@@ -25,32 +26,45 @@ K2Tree &PredicatesIndexCache::get_k2tree(uint64_t predicate_index) {
 }
 
 void PredicatesIndexCache::dump_to_file(const std::string &file_path) {
-  proto_msg::PredicatesIndexCache predicates_index_cache_proto;
-  for (auto &hmap_item : predicates_map) {
-    proto_msg::K2Tree *k2tree = predicates_index_cache_proto.add_k2tree();
-    k2tree->set_predicate_index(hmap_item.first);
-    k2tree->set_tree_depth(hmap_item.second->get_tree_depth());
-    hmap_item.second->produce_proto(k2tree);
-  }
-
   std::fstream outfs(file_path,
                      std::ios::out | std::ios::trunc | std::ios::binary);
-  if (!predicates_index_cache_proto.SerializeToOstream(&outfs)) {
-    std::cerr << "Failed to serialize the predicates index cache" << std::endl;
+
+  auto first_pos = outfs.tellp();
+  write_u32(outfs, 0); // place holder for max size
+  write_u32(outfs, predicates_map.size());
+  uint32_t max_size = 0;
+  for (auto &hmap_item : predicates_map) {
+    proto_msg::K2Tree k2tree;
+    k2tree.set_predicate_index(hmap_item.first);
+    k2tree.set_tree_depth(hmap_item.second->get_tree_depth());
+    hmap_item.second->produce_proto(&k2tree);
+    auto k2tree_serialized = k2tree.SerializeAsString();
+    write_u32(outfs, k2tree_serialized.size());
+    outfs.write(k2tree_serialized.c_str(), k2tree_serialized.size());
+    if (k2tree_serialized.size() > max_size)
+      max_size = k2tree_serialized.size();
   }
+
+  auto curr = outfs.tellp();
+  outfs.seekp(first_pos);
+  write_u32(outfs, max_size);
+  outfs.seekp(curr);
 }
 
 void PredicatesIndexCache::load_dump_file(const std::string &file_path) {
   std::ifstream ifstream(file_path, std::ifstream::binary);
 
-  proto_msg::PredicatesIndexCache predicates_index_cache_proto;
-  predicates_index_cache_proto.ParseFromIstream(&ifstream);
+  uint32_t max_sz = read_u32(ifstream);
+  uint32_t map_sz = read_u32(ifstream);
 
-  for (int i = 0; i < predicates_index_cache_proto.k2tree_size(); i++) {
-    const proto_msg::K2Tree &k2tree = predicates_index_cache_proto.k2tree(i);
+  std::vector<char> buf(max_sz, 0);
+  for (int i = 0; i < map_sz; i++) {
+    uint32_t curr_sz = read_u32(ifstream);
+    ifstream.read(buf.data(), curr_sz);
+    proto_msg::K2Tree k2tree;
+    k2tree.ParseFromArray(buf.data(), curr_sz);
     predicates_map[k2tree.predicate_index()] = std::make_unique<K2Tree>(k2tree);
   }
-
   ifstream.close();
 }
 

@@ -1,6 +1,8 @@
 
 #include "NaiveDynamicStringDictionary.hpp"
 
+#include "serialization_util.hpp"
+
 NaiveDynamicStringDictionary::NaiveDynamicStringDictionary(
     std::vector<std::string> &&subjects_extra,
     std::vector<std::string> &&predicates_extra,
@@ -22,7 +24,7 @@ void NaiveDynamicStringDictionary::serialize_dict(
     size += s.size() + 1;
   }
 
-  ofs.write(reinterpret_cast<char *>(&size), sizeof(uint64_t));
+  write_u64(ofs, size);
   for (auto &s : strings) {
     ofs.write(s.data(), s.size() + 1);
   }
@@ -31,8 +33,7 @@ void NaiveDynamicStringDictionary::serialize_dict(
 std::vector<std::string>
 NaiveDynamicStringDictionary::deserialize_dict(const std::string &fname) {
   std::ifstream ifs(fname, std::ios::in | std::ifstream::binary);
-  uint64_t size;
-  ifs.read(reinterpret_cast<char *>(&size), sizeof(uint64_t));
+  uint64_t size = read_u64(ifs);
   std::vector<char> buffer(size, 0);
   ifs.read(buffer.data(), size);
   std::vector<std::string> out;
@@ -98,30 +99,37 @@ void NaiveDynamicStringDictionary::add_object(std::string object) {
 
 unsigned long
 NaiveDynamicStringDictionary::locate_subject(const std::string &subject) const {
-  return reverse_subjects_extra.at(subject);
+  if (reverse_subjects_extra.find(subject) == reverse_subjects_extra.end())
+    return 0;
+  return reverse_subjects_extra.at(subject) + 1;
 }
 
 unsigned long NaiveDynamicStringDictionary::locate_predicate(
     const std::string &predicate) const {
-  return reverse_predicates_extra.at(predicate);
+  if (reverse_predicates_extra.find(predicate) ==
+      reverse_predicates_extra.end())
+    return 0;
+  return reverse_predicates_extra.at(predicate) + 1;
 }
 
 unsigned long
 NaiveDynamicStringDictionary::locate_object(const std::string &object) const {
-  return reverse_objects_extra.at(object);
+  if (reverse_objects_extra.find(object) == reverse_objects_extra.end())
+    return 0;
+  return reverse_objects_extra.at(object) + 1;
 }
 
 std::string
 NaiveDynamicStringDictionary::extract_subject(unsigned long id) const {
-  return subjects_extra[id];
+  return subjects_extra[id - 1];
 }
 
 std::string
 NaiveDynamicStringDictionary::extract_predicate(unsigned long id) const {
-  return predicates_extra[id];
+  return predicates_extra[id - 1];
 }
 
 std::string
 NaiveDynamicStringDictionary::extract_object(unsigned long id) const {
-  return objects_extra[id];
+  return objects_extra[id - 1];
 }

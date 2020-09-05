@@ -222,6 +222,7 @@ void print_help() {
   std::cout
       << "--input-file\t(-f)\t\t(string-required)\n"
       << "--output-file\t(-o)\t\t(string-required)\n"
-      << "--buffer-size\t(-B)\t\t(integer-optional (bytes), DEFAULT=100MB)\n"
+      << "--buffer-size\t(-B)\t\t(integer-optional (bytes), DEFAULT=1KB)\n"
+      << "--base64\t(-b)\t\t(bool-optional, DEFAULT=false)\n"
       << std::endl;
 }

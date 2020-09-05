@@ -28,6 +28,9 @@ public:
                   std::string &object);
 
   PredicatesIndexCache &get_predicates_cache();
+  NaiveDynamicStringDictionary &get_dyn_dicts();
+
+  void save_all(const std::string &fname);
 };
 
 #endif // RDFCACHEK2_PREDICATESCACHEMANAGER_HPP
