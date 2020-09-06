@@ -19,14 +19,12 @@ set(CORE_SOURCE_FILES
         core/K2Tree.cpp
         core/PredicatesIndexCache.cpp
         core/EntitiesMapping.cpp
-        core/NTParser.cpp
         core/serialization_util.cpp
         core/PredicatesCacheManager.cpp
         core/NaiveDynamicStringDictionary.cpp
         )
 
 set(PROC_SOURCE_FILES
-        proc/raptor_util.cpp
         proc/QueueIteratorDictString.cpp
         proc/SDFeed.cpp
 )
@@ -105,7 +103,16 @@ set(LINK_LIBS ${K2TREE_PATH}/bin)
 
 add_subdirectory(${LIB_CSD_BPATH})
 
-include_directories(${INCLUDES} ${INCLUDES_LIBS} ${LIB_CSD_INCLUDES})
+set(LIB_NTPARSER lib/ntparser)
+set(LIB_NTPARSER_INCLUDES 
+        ${LIB_NTPARSER}/include
+        ${LIB_NTPARSER}/gen
+)
+
+add_subdirectory(${LIB_NTPARSER})
+
+
+include_directories(${INCLUDES} ${INCLUDES_LIBS} ${LIB_CSD_INCLUDES} ${LIB_NTPARSER_INCLUDES})
 link_directories(${LINK_LIBS})
 
 
@@ -128,17 +135,9 @@ add_dependencies(RDFCacheK2 _k2tree_merged_noalloc)
 find_package(Protobuf REQUIRED)
 include_directories(${Protobuf_INCLUDE_DIRS})
 
-# include(3rdparty-libs.cmake)
-
 set(RAX_PATH plib/rax-31-may-2020-1927550)
 add_library(Rax ${RAX_PATH}/rax.c )
 include_directories(${RAX_PATH})
-
-find_package(LibXml2 REQUIRED)
-include_directories(${LibXml2_INCLUDE_DIRS})
-find_package(Raptor2 REQUIRED)
-include_directories(${RAPTOR2_INCLUDE_DIR})
-
 
 add_executable(start_cache_server_example example/start_cache_server_example.cpp)
 
@@ -151,16 +150,12 @@ set(BASE_LIBS
         CSD
         cds
         Rax
-        raptor2
-        xml2
         )
         
 set(PROC_LIBS
         Proc
         CSD
         cds
-        raptor2
-        xml2
         pthread
         )
 
@@ -175,8 +170,6 @@ set(DEFAULT_LIBS
         CSD
         cds
         Rax
-        raptor2
-        xml2
         )
 
 
@@ -185,62 +178,24 @@ set(LIB_CPPBASE64_PATH lib/cpp-base64)
 add_library(CppBase64 ${LIB_CPPBASE64_PATH}/base64.cpp ${LIB_CPPBASE64_PATH}/base64.h)
 
 
-
-
 target_link_libraries(start_cache_server_example RDFCacheK2_GR ${DEFAULT_LIBS} )
-
-
-# index by k2tree script
-
-
-add_executable(index_by_k2tree
-        scripts/index_by_k2tree.cpp
-        )
-
-if(NOT ${THIRD_PARTY_DEPS_SZ} EQUAL 0)
-    add_dependencies(index_by_k2tree ${THIRD_PARTY_DEPS})
-endif()
-
-
-
-target_link_libraries(index_by_k2tree ${BASE_LIBS})
-
-
-
-add_executable(radix_set_from_ntfile scripts/radix_set_from_ntfile.cpp)
-target_link_libraries(radix_set_from_ntfile ${BASE_LIBS})
 
 
 add_executable(sample_set scripts/sample_set.cpp)
 target_link_libraries(sample_set ${BASE_LIBS})
 
-add_executable(dicts_build_from_sets scripts/dicts_build_from_sets.cpp)
-target_link_libraries(dicts_build_from_sets ${BASE_LIBS})
-
-add_executable(validate_radix_sets_from_nt scripts/validate_radix_sets_from_nt.cpp)
-target_link_libraries(validate_radix_sets_from_nt ${BASE_LIBS})
-
 add_executable(validate_sd_from_nt scripts/validate_sd_from_nt.cpp)
 target_include_directories(validate_sd_from_nt PUBLIC ${LIB_CPPBASE64_PATH})
-target_link_libraries(validate_sd_from_nt ${BASE_LIBS} CppBase64)
+target_link_libraries(validate_sd_from_nt ${BASE_LIBS} CppBase64 ntparser)
 
 
 add_executable(index_by_k2tree_with_sd scripts/index_by_k2tree_with_sd.cpp)
-target_link_libraries(index_by_k2tree_with_sd ${BASE_LIBS})
-
-
-add_executable(sd_from_ntfile scripts/sd_from_ntfile.cpp)
-target_link_libraries(sd_from_ntfile ${PROC_LIBS})
+target_link_libraries(index_by_k2tree_with_sd ${BASE_LIBS} ntparser)
 
 
 add_executable(split_nt_triples scripts/split_nt_triples.cpp)
 target_include_directories(split_nt_triples PUBLIC ${LIB_CPPBASE64_PATH})
-target_link_libraries(split_nt_triples ${PROC_LIBS} CppBase64)
-
-
-add_executable(sd_from_fileset scripts/sd_from_fileset.cpp)
-target_include_directories(sd_from_fileset PUBLIC ${LIB_CPPBASE64_PATH})
-target_link_libraries(sd_from_fileset ${PROC_LIBS} CppBase64)
+target_link_libraries(split_nt_triples ${PROC_LIBS} CppBase64 ntparser)
 
 
 add_executable(sd_from_fileset_readfull scripts/sd_from_fileset_readfull.cpp)

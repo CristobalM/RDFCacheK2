@@ -3,17 +3,14 @@
 //
 
 #include <algorithm>
+#include <base64.h>
+#include <cstring>
 #include <fstream>
 #include <getopt.h>
 #include <iostream>
+#include <nt_parser.hpp>
 #include <string>
 #include <vector>
-
-#include <raptor2.h>
-#include <raptor_util.hpp>
-
-#define strtk_no_tr1_or_boost
-#include <base64.h>
 
 struct parsed_options {
   std::string input_file;
@@ -23,9 +20,9 @@ struct parsed_options {
 };
 
 struct FsHolder {
-  std::ofstream &sub_ofs;
-  std::ofstream &pred_ofs;
-  std::ofstream &obj_ofs;
+  std::ofstream &iris_ofs;
+  std::ofstream &blanks_ofs;
+  std::ofstream &literals_ofs;
 
   unsigned long buf_size;
 
@@ -33,15 +30,18 @@ struct FsHolder {
 
   FsHolder(std::ofstream &sub_ofs, std::ofstream &pred_ofs,
            std::ofstream &obj_ofs, unsigned long buf_size, bool base64)
-      : sub_ofs(sub_ofs), pred_ofs(pred_ofs), obj_ofs(obj_ofs),
+      : iris_ofs(iris_ofs), blanks_ofs(blanks_ofs), literals_ofs(literals_ofs),
         buf_size(buf_size), base64(base64) {}
 };
 
 parsed_options parse_cmline(int argc, char **argv);
 void print_help();
 void process_nt_file(FsHolder &fs_holder, std::ifstream &nt_ifs);
-void statement_handler(void *fs_holder_ptr, const raptor_statement *statement);
 void print_stats();
+
+void cond_write_data(char *data, RDFType type, FsHolder &o);
+int cond_write(NTRes &res, FsHolder &o);
+void processor(NTTriple *ntriple, void *fs_holder_ptr);
 
 unsigned long bytes_processed = 0;
 unsigned long strings_processed = 0;
@@ -62,15 +62,15 @@ int main(int argc, char **argv) {
 
   std::vector<char> nt_buf(p_options.buffer_sz, 0);
 
-  std::ofstream sub_ofs(p_options.output_file + ".subjects.txt");
-  std::ofstream pred_ofs(p_options.output_file + ".predicates.txt");
-  std::ofstream obj_ofs(p_options.output_file + ".objects.txt");
+  std::ofstream iris_ofs(p_options.output_file + ".iris.txt");
+  std::ofstream blanks_ofs(p_options.output_file + ".blanks.txt");
+  std::ofstream literals_ofs(p_options.output_file + ".literals.txt");
 
-  sub_ofs.rdbuf()->pubsetbuf(sub_buf.data(), sub_buf.size());
-  pred_ofs.rdbuf()->pubsetbuf(pred_buf.data(), pred_buf.size());
-  obj_ofs.rdbuf()->pubsetbuf(obj_buf.data(), obj_buf.size());
+  iris_ofs.rdbuf()->pubsetbuf(sub_buf.data(), sub_buf.size());
+  blanks_ofs.rdbuf()->pubsetbuf(pred_buf.data(), pred_buf.size());
+  literals_ofs.rdbuf()->pubsetbuf(obj_buf.data(), obj_buf.size());
 
-  FsHolder fs_holder(sub_ofs, pred_ofs, obj_ofs, p_options.buffer_sz,
+  FsHolder fs_holder(iris_ofs, blanks_ofs, literals_ofs, p_options.buffer_sz,
                      p_options.base64);
 
   std::ifstream ifs(p_options.input_file);
@@ -82,56 +82,44 @@ int main(int argc, char **argv) {
 }
 
 void process_nt_file(FsHolder &fs_holder, std::ifstream &nt_ifs) {
-  raptor_world *world = raptor_new_world();
-  raptor_parser *parser = raptor_new_parser(world, "ntriples");
-
-  raptor_parser_set_statement_handler(
-      parser, (void *)&fs_holder, (raptor_statement_handler)statement_handler);
-
-  raptor_parser_parse_start(parser, nullptr);
-
-  std::vector<char> buffer(fs_holder.buf_size, 0);
-  while (nt_ifs.read(buffer.data(), buffer.size())) {
-    raptor_parser_parse_chunk(parser,
-                              reinterpret_cast<unsigned char *>(buffer.data()),
-                              (size_t)nt_ifs.gcount(), 0);
-  }
-  raptor_parser_parse_chunk(parser, NULL, 0, 1);
-
+  NTParser ntparser(&nt_ifs, processor, &fs_holder);
+  ntparser.parse();
   std::cout << "Done!";
   print_stats();
-
-  raptor_free_parser(parser);
-  raptor_free_world(world);
 }
 
-void statement_handler(void *fs_holder_ptr, const raptor_statement *statement) {
-  auto &fs_holder = *reinterpret_cast<FsHolder *>(fs_holder_ptr);
-
-  auto &sub_ofs = fs_holder.sub_ofs;
-  auto &pred_ofs = fs_holder.pred_ofs;
-  auto &obj_ofs = fs_holder.obj_ofs;
-
-  raptor_term *subject = statement->subject;
-  raptor_term *predicate = statement->predicate;
-  raptor_term *object = statement->object;
-
-  auto subject_value = get_term_value(subject);
-  auto predicate_value = get_term_value(predicate);
-  auto object_value = get_term_value(object);
-
-  bytes_processed +=
-      predicate_value.size() + subject_value.size() + object_value.size();
-
-  if (fs_holder.base64) {
-    subject_value = base64_encode(subject_value);
-    predicate_value = base64_encode(predicate_value);
-    object_value = base64_encode(object_value);
+void cond_write_data(char *data, RDFType type, FsHolder &o) {
+  switch (type) {
+  case IRI:
+    o.iris_ofs << data << "\n";
+    break;
+  case LITERAL:
+    o.literals_ofs << data << "\n";
+    break;
+  case BLANK_NODE:
+    o.blanks_ofs << data << "\n";
+    break;
   }
+}
 
-  sub_ofs << subject_value << "\n";
-  pred_ofs << predicate_value << "\n";
-  obj_ofs << object_value << "\n";
+int cond_write(NTRes &res, FsHolder &o) {
+  char *data = res.data;
+
+  if (!o.base64) {
+    cond_write_data(data, res.type, o);
+    return strlen(data);
+  } else {
+    auto encoded = base64_encode(std::string(data));
+    cond_write_data(encoded.data(), res.type, o);
+    return encoded.size();
+  }
+}
+
+void processor(NTTriple *ntriple, void *fs_holder_ptr) {
+  auto &h = *reinterpret_cast<FsHolder *>(fs_holder_ptr);
+  bytes_processed += cond_write(ntriple->subject, h);
+  bytes_processed += cond_write(ntriple->predicate, h);
+  bytes_processed += cond_write(ntriple->object, h);
 
   strings_processed += 3;
   strings_processed_reset_th += 3;

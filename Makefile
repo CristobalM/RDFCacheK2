@@ -3,9 +3,6 @@ mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
 current_dir := $(notdir $(patsubst %/,%,$(dir $(mkfile_path))))
 BUNDLE_DIR = _bundled_code
 
-XML2LIB=libxml2-2.9.10
-RAPTOR2LIB=raptor2-2.0.15
-
 all: format proto-build build-libs build
 
 
@@ -20,12 +17,7 @@ build-libs:
 clean-libs:
 	cd lib/c-k2tree-dyn && make clean-all
 	rm -rf lib/c-k2tree-dyn/*.a
-	#cd lib/libxml2-2.9.10 && make clean
-	rm -rf lib/${XML2LIB}
-	#cd lib/libCSD && make clean-all
 	rm -rf lib/libCSD
-	#cd lib/raptor2-2.0.15 && make clean
-	rm -rf lib/${RAPTOR2LIB}
 
 rebuild-libs: clean-libs build-libs
 
