@@ -28,8 +28,8 @@ struct FsHolder {
 
   bool base64;
 
-  FsHolder(std::ofstream &sub_ofs, std::ofstream &pred_ofs,
-           std::ofstream &obj_ofs, unsigned long buf_size, bool base64)
+  FsHolder(std::ofstream &iris_ofs, std::ofstream &blanks_ofs,
+           std::ofstream &literals_ofs, unsigned long buf_size, bool base64)
       : iris_ofs(iris_ofs), blanks_ofs(blanks_ofs), literals_ofs(literals_ofs),
         buf_size(buf_size), base64(base64) {}
 };
