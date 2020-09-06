@@ -5,13 +5,16 @@ BUNDLE_DIR = _bundled_code
 
 all: format proto-build build-libs build
 
+all-debug: format proto-build build-libs-debug build-debug
 
 re: clean-all all
 
+re-debug: clean-all all-debug
 
 build-libs:
 	cd lib/c-k2tree-dyn && make
 	./fetch_deps.sh
+	cd lib/ntparser/gen && make
 
 
 clean-libs:
@@ -26,6 +29,18 @@ build:
 	mkdir -p build
 	cd build && \
 	cmake .. && \
+	make -j4
+
+build-libs-debug:
+	cd lib/c-k2tree-dyn && make debug-build
+	./fetch_deps.sh
+	cd lib/ntparser/gen && make
+
+
+build-debug:
+	mkdir -p build
+	cd build && \
+	cmake -DCMAKE_BUILD_TYPE=Debug .. && \
 	make -j4
 
 

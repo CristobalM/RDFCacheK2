@@ -54,27 +54,29 @@ const unsigned long BUFFER_SZ = 1024;
 int main(int argc, char **argv) {
   parsed_options p_options = parse_cmline(argc, argv);
 
-  std::cout << "Buffer Size: " << p_options.buffer_sz << std::endl;
+  // std::cout << "Buffer Size: " << p_options.buffer_sz << std::endl;
 
+  /*
   std::vector<char> sub_buf(p_options.buffer_sz, 0);
   std::vector<char> pred_buf(p_options.buffer_sz, 0);
   std::vector<char> obj_buf(p_options.buffer_sz, 0);
 
   std::vector<char> nt_buf(p_options.buffer_sz, 0);
+  */
 
-  std::ofstream iris_ofs(p_options.output_file + ".iris.txt");
-  std::ofstream blanks_ofs(p_options.output_file + ".blanks.txt");
-  std::ofstream literals_ofs(p_options.output_file + ".literals.txt");
+  std::ofstream iris_ofs(p_options.output_file + ".iris.txt", std::ios::out);
+  std::ofstream blanks_ofs(p_options.output_file + ".blanks.txt", std::ios::out);
+  std::ofstream literals_ofs(p_options.output_file + ".literals.txt", std::ios::out);
 
-  iris_ofs.rdbuf()->pubsetbuf(sub_buf.data(), sub_buf.size());
-  blanks_ofs.rdbuf()->pubsetbuf(pred_buf.data(), pred_buf.size());
-  literals_ofs.rdbuf()->pubsetbuf(obj_buf.data(), obj_buf.size());
+  // iris_ofs.rdbuf()->pubsetbuf(sub_buf.data(), sub_buf.size());
+  // blanks_ofs.rdbuf()->pubsetbuf(pred_buf.data(), pred_buf.size());
+  // literals_ofs.rdbuf()->pubsetbuf(obj_buf.data(), obj_buf.size());
 
   FsHolder fs_holder(iris_ofs, blanks_ofs, literals_ofs, p_options.buffer_sz,
                      p_options.base64);
 
-  std::ifstream ifs(p_options.input_file);
-  ifs.rdbuf()->pubsetbuf(nt_buf.data(), nt_buf.size());
+  std::ifstream ifs(p_options.input_file, std::ios::in);
+  // ifs.rdbuf()->pubsetbuf(nt_buf.data(), nt_buf.size());
 
   process_nt_file(fs_holder, ifs);
 
@@ -102,24 +104,24 @@ void cond_write_data(char *data, RDFType type, FsHolder &o) {
   }
 }
 
-int cond_write(NTRes &res, FsHolder &o) {
-  char *data = res.data;
+int cond_write(NTRes *res, FsHolder &o) {
+  char *data = res->data;
 
   if (!o.base64) {
-    cond_write_data(data, res.type, o);
+    cond_write_data(data, res->type, o);
     return strlen(data);
   } else {
     auto encoded = base64_encode(std::string(data));
-    cond_write_data(encoded.data(), res.type, o);
+    cond_write_data(encoded.data(), res->type, o);
     return encoded.size();
   }
 }
 
 void processor(NTTriple *ntriple, void *fs_holder_ptr) {
   auto &h = *reinterpret_cast<FsHolder *>(fs_holder_ptr);
-  bytes_processed += cond_write(ntriple->subject, h);
-  bytes_processed += cond_write(ntriple->predicate, h);
-  bytes_processed += cond_write(ntriple->object, h);
+  bytes_processed += cond_write(&ntriple->subject, h);
+  bytes_processed += cond_write(&ntriple->predicate, h);
+  bytes_processed += cond_write(&ntriple->object, h);
 
   strings_processed += 3;
   strings_processed_reset_th += 3;

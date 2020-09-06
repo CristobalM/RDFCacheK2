@@ -195,7 +195,7 @@ target_link_libraries(index_by_k2tree_with_sd ${BASE_LIBS} ntparser)
 
 add_executable(split_nt_triples scripts/split_nt_triples.cpp)
 target_include_directories(split_nt_triples PUBLIC ${LIB_CPPBASE64_PATH})
-target_link_libraries(split_nt_triples ${PROC_LIBS} CppBase64 ntparser)
+target_link_libraries(split_nt_triples ntparser CppBase64 )
 
 
 add_executable(sd_from_fileset_readfull scripts/sd_from_fileset_readfull.cpp)
