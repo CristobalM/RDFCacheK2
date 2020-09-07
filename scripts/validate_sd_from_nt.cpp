@@ -7,6 +7,7 @@
 #include <getopt.h>
 #include <iostream>
 #include <string>
+#include <filesystem>
 
 #include <StringDictionaryHASHRPDACBlocks.h>
 #include <StringDictionaryPFC.h>
