@@ -10,106 +10,106 @@
 #include <fstream>
 #include <memory>
 
-template <class SDSubjects, class SDPredicates = SDSubjects,
-          class SDObjects = SDSubjects>
+template <class SDIRIS, class SDBlanks,
+          class SDLiterals>
 class SDEntitiesMapping : public ISDManager {
-  std::unique_ptr<StringDictionary> subjects_dictionary;
-  std::unique_ptr<StringDictionary> predicates_dictionary;
-  std::unique_ptr<StringDictionary> objects_dictionary;
+  std::unique_ptr<StringDictionary> iris_dictionary;
+  std::unique_ptr<StringDictionary> blanks_dictionary;
+  std::unique_ptr<StringDictionary> literals_dictionary;
 
 public:
-  SDEntitiesMapping(std::ifstream &subjects_dict_ifs,
-                    std::ifstream &predicates_dict_ifs,
-                    std::ifstream &objects_dict_ifs)
-      : subjects_dictionary(SDSubjects::load(subjects_dict_ifs)),
-        predicates_dictionary(SDPredicates::load(predicates_dict_ifs)),
-        objects_dictionary(SDObjects::load(objects_dict_ifs)) {}
+  SDEntitiesMapping(std::ifstream &iris_dict_ifs,
+                    std::ifstream &blanks_dict_ifs,
+                    std::ifstream &literals_dict_ifs)
+      : iris_dictionary(SDIRIS::load(iris_dict_ifs)),
+        blanks_dictionary(SDBlanks::load(blanks_dict_ifs)),
+        literals_dictionary(SDLiterals::load(literals_dict_ifs)) {}
 
-  void save(const std::string &sub_fname, const std::string &pred_fname,
-            const std::string &obj_fname) override {
+  void save(const std::string &iris_fname, const std::string &blanks_fname,
+            const std::string &literals_fname) override {
     {
-      std::ofstream ofs(sub_fname, std::ofstream::binary);
-      subjects_dictionary->save(ofs);
+      std::ofstream ofs(iris_fname, std::ofstream::binary);
+      iris_dictionary->save(ofs);
     }
 
     {
-      std::ofstream ofs(pred_fname, std::ofstream::binary);
-      predicates_dictionary->save(ofs);
+      std::ofstream ofs(blanks_fname, std::ofstream::binary);
+      blanks_dictionary->save(ofs);
     }
 
     {
-      std::ofstream ofs(obj_fname, std::ofstream::binary);
-      objects_dictionary->save(ofs);
+      std::ofstream ofs(literals_fname, std::ofstream::binary);
+      literals_dictionary->save(ofs);
     }
   }
 
-  uint64_t predicate_index(std::string &predicate) override {
-    return predicates_dictionary->locate(
-        reinterpret_cast<unsigned char *>(predicate.data()), predicate.size());
+  uint64_t blanks_index(std::string &blank) override {
+    return blanks_dictionary->locate(
+        reinterpret_cast<unsigned char *>(blank.data()), blank.size());
   }
 
-  uint64_t object_index(std::string &object) override {
-    return objects_dictionary->locate(
-        reinterpret_cast<unsigned char *>(object.data()), object.size());
+  uint64_t literals_index(std::string &literal) override {
+    return literals_dictionary->locate(
+        reinterpret_cast<unsigned char *>(literal.data()), literal.size());
   }
 
-  uint64_t subject_index(std::string &subject) override {
-    return subjects_dictionary->locate(
-        reinterpret_cast<unsigned char *>(subject.data()), subject.size());
+  uint64_t iris_index(std::string &iri) override {
+    return iris_dictionary->locate(
+        reinterpret_cast<unsigned char *>(iri.data()), iri.size());
   }
 
-  bool has_predicate_index(std::string &predicate) override {
-    auto result = predicate_index(predicate);
+  bool has_blanks_index(std::string &blank) override {
+    auto result = blanks_index(blank);
     return result != NORESULT;
   }
 
-  bool has_object_index(std::string &object) override {
-    auto result = object_index(object);
+  bool has_literals_index(std::string &literal) override {
+    auto result = literals_index(literal);
     return result != NORESULT;
   }
 
-  bool has_subject_index(std::string &subject) override {
-    auto result = subject_index(subject);
+  bool iris_index(std::string &iri) override {
+    auto result = iris_index(iri);
     return result != NORESULT;
   }
 
-  std::string get_predicate(uint64_t predicate_index) override {
+  std::string get_blank(uint64_t blanks_index) override {
     unsigned int result_sz;
     unsigned char *result =
-        predicates_dictionary->extract(predicate_index, &result_sz);
+        blanks_dictionary->extract(blanks_index, &result_sz);
     std::string s(reinterpret_cast<char *>(result), result_sz);
     delete[] result;
     return s;
   }
 
-  std::string get_object(uint64_t object_index) override {
+  std::string get_literal(uint64_t literals_index) override {
     unsigned int result_sz;
     unsigned char *result =
-        objects_dictionary->extract(object_index, &result_sz);
+        literals_dictionary->extract(literals_index, &result_sz);
     std::string s(reinterpret_cast<char *>(result), result_sz);
     delete[] result;
     return s;
   }
 
-  std::string get_subject(uint64_t subject_index) override {
+  std::string get_iri(uint64_t iris_index) override {
     unsigned int result_sz;
     unsigned char *result =
-        subjects_dictionary->extract(subject_index, &result_sz);
+        iris_dictionary->extract(iris_index, &result_sz);
     std::string s(reinterpret_cast<char *>(result), result_sz);
     delete[] result;
     return s;
   }
 
-  unsigned long last_subject_id() override {
-    return subjects_dictionary->numElements();
+  unsigned long last_iri_id() override {
+    return iris_dictionary->numElements();
   }
 
-  unsigned long last_predicate_id() override {
-    return predicates_dictionary->numElements();
+  unsigned long last_blank_id() override {
+    return blanks_dictionary->numElements();
   }
 
-  unsigned long last_object_id() override {
-    return objects_dictionary->numElements();
+  unsigned long last_literal_id() override {
+    return literals_dictionary->numElements();
   }
 };
 
