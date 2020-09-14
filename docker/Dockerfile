@@ -1,4 +1,4 @@
-FROM alpine:3.12.0
+FROM debian:buster-slim
 
 ENV CC clang
 ENV CXX clang++
@@ -11,15 +11,24 @@ COPY _bundled_code.tar.gz .
 COPY runner.sh .
 
 RUN echo "Debug = $debug"
-RUN apk add git libprotobuf protoc protobuf-dev make cmake clang bash libc-dev build-base libbsd-dev flex bison
+RUN apt-get update && apt-get install -y \
+ git libprotobuf-dev libprotoc-dev protobuf-compiler \
+ make clang clang-format bash linux-libc-dev libbsd-dev \
+ flex bison wget tar rsync
+RUN CMAKE_PRE=https://github.com/Kitware/CMake/releases/download/v3.18.2/ &&\
+ CMAKE_NAME=cmake-3.18.2-Linux-x86_64 && \
+ wget ${CMAKE_PRE}${CMAKE_NAME}.tar.gz && \
+ tar -zxvf ${CMAKE_NAME}.tar.gz && \
+ rsync -rv ${CMAKE_NAME}/ /usr/
+
 RUN if [ $debug = "FALSE" ]; then \
 echo "ON NORMAL BUILD" && \
 tar -zxvf _bundled_code.tar.gz && \
 cd _bundled_code && \
-make re-debug \
+make re \
 ;else \
 echo "ON DEBUG BUILD" && \
-apk add gdb && \
+apt-get install -y gdb vim && \
 tar -zxvf _bundled_code.tar.gz && \
 cd _bundled_code && \
 make re-debug \

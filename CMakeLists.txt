@@ -186,7 +186,7 @@ target_link_libraries(sample_set ${BASE_LIBS})
 
 add_executable(validate_sd_from_nt scripts/validate_sd_from_nt.cpp)
 target_include_directories(validate_sd_from_nt PUBLIC ${LIB_CPPBASE64_PATH})
-target_link_libraries(validate_sd_from_nt ${BASE_LIBS} CppBase64 ntparser)
+target_link_libraries(validate_sd_from_nt ${BASE_LIBS} CppBase64 ntparser stdc++fs)
 
 
 add_executable(index_by_k2tree_with_sd scripts/index_by_k2tree_with_sd.cpp)
