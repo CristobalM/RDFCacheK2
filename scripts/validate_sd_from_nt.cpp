@@ -7,7 +7,6 @@
 #include <getopt.h>
 #include <iostream>
 #include <string>
-#include <filesystem>
 
 #include <StringDictionaryHASHRPDACBlocks.h>
 #include <StringDictionaryPFC.h>
@@ -135,10 +134,10 @@ int main(int argc, char **argv) {
 
     fail_iris = std::make_unique<std::fstream>(iris_path.string(),
                                                std::ios::out | std::ios::trunc);
-    fail_blanks = std::make_unique<std::fstream>(blanks_path.string(),
-                                               std::ios::out | std::ios::trunc);
-    fail_literals = std::make_unique<std::fstream>(literals_path.string(),
-                                              std::ios::out | std::ios::trunc);
+    fail_blanks = std::make_unique<std::fstream>(
+        blanks_path.string(), std::ios::out | std::ios::trunc);
+    fail_literals = std::make_unique<std::fstream>(
+        literals_path.string(), std::ios::out | std::ios::trunc);
     sd_holder.fail_iris = fail_iris.get();
     sd_holder.fail_blanks = fail_blanks.get();
     sd_holder.fail_literals = fail_literals.get();
@@ -161,7 +160,6 @@ void process_nt_file(SDHolder &sd_holder, std::ifstream &nt_ifs) {
   }
 
   print_stats();
-
 }
 
 static inline std::string get_term_b64_cond(NTRes *res, bool base64) {
@@ -190,9 +188,8 @@ void not_found_res_handler(unsigned long result, unsigned long &fail_counter,
         std::cerr << "LITERAL";
         break;
       }
-      std::cerr << " '" << target_string
-                << "' Not found on string dictionary" <<
-          std::endl;
+      std::cerr << " '" << target_string << "' Not found on string dictionary"
+                << std::endl;
       exit(1);
     case LOG:
       if (sd_holder.encode_b64output) {
@@ -206,21 +203,25 @@ void not_found_res_handler(unsigned long result, unsigned long &fail_counter,
   }
 }
 
-unsigned long cond_locate(SDHolder &sd_holder, std::string &data, RDFType type ) {
+unsigned long cond_locate(SDHolder &sd_holder, std::string &data,
+                          RDFType type) {
   auto *udata = reinterpret_cast<unsigned char *>(data.data());
   unsigned long result;
   switch (type) {
   case IRI:
     result = sd_holder.iris_sd->locate(udata, data.size());
-    not_found_res_handler(result, failed_iris, IRI, data, sd_holder.fail_mode, sd_holder);
+    not_found_res_handler(result, failed_iris, IRI, data, sd_holder.fail_mode,
+                          sd_holder);
     return result;
   case BLANK_NODE:
     result = sd_holder.blanks_sd->locate(udata, data.size());
-    not_found_res_handler(result, failed_blanks, BLANK_NODE, data, sd_holder.fail_mode, sd_holder);
+    not_found_res_handler(result, failed_blanks, BLANK_NODE, data,
+                          sd_holder.fail_mode, sd_holder);
     return result;
   case LITERAL:
     result = sd_holder.literals_sd->locate(udata, data.size());
-    not_found_res_handler(result, failed_literals, LITERAL, data, sd_holder.fail_mode, sd_holder);
+    not_found_res_handler(result, failed_literals, LITERAL, data,
+                          sd_holder.fail_mode, sd_holder);
     return result;
     break;
   }
@@ -236,18 +237,15 @@ void processor(NTTriple *ntriple, void *sd_holder_ptr) {
   cond_locate(sd_holder, predicate, ntriple->predicate.type);
   cond_locate(sd_holder, object, ntriple->object.type);
 
-
   strings_processed += 3;
   strings_processed_reset_th += 3;
-  bytes_processed +=
-      subject.size() + predicate.size() + object.size();
+  bytes_processed += subject.size() + predicate.size() + object.size();
 
   if (strings_processed_reset_th >= RESET_TH) {
     strings_processed_reset_th %= RESET_TH;
     print_stats();
   }
 }
-
 
 void print_stats() {
   std::cout << "Strings processed: " << strings_processed << "\t"

@@ -4,56 +4,81 @@
 
 #include "PredicatesCacheManager.hpp"
 #include <StringDictionary.h>
+#include <chrono>
 
 PredicatesCacheManager::PredicatesCacheManager(
     std::unique_ptr<ISDManager> &&isd_manager,
     std::unique_ptr<PredicatesIndexCache> &&predicates_index)
     : isd_manager(std::move(isd_manager)),
-      predicates_index(std::move(predicates_index)) {}
+      predicates_index(std::move(predicates_index)), measured_time_sd_lookup(0),
+      measured_time_k2insert(0) {}
 
-void PredicatesCacheManager::add_triple(std::string &subject,
-                                        std::string &predicate,
-                                        std::string &object) {
-  auto subject_id = isd_manager->subject_index(subject);
-  auto predicate_id = isd_manager->predicate_index(predicate);
-  auto object_id = isd_manager->object_index(object);
-
-  if (subject_id == NORESULT) {
-    std::cerr << "Subject " << subject << " does not exist" << std::endl;
-    subject_id = extra_dicts.locate_subject(subject);
-    if (subject_id == 0) {
-      extra_dicts.add_subject(subject);
-      subject_id = extra_dicts.locate_subject(subject);
-    }
-    subject_id = subject_id + isd_manager->last_subject_id() - 1;
+uint64_t PredicatesCacheManager::get_resource_index(RDFResource &resource) {
+  switch (resource.resource_type) {
+  case RDF_TYPE_IRI:
+    return isd_manager->iris_index(resource.value);
+  case RDF_TYPE_BLANK:
+    return isd_manager->blanks_index(resource.value);
+  case RDF_TYPE_LITERAL:
+    return isd_manager->literals_index(resource.value);
   }
+  return NORESULT;
+}
 
-  if (predicate_id == NORESULT) {
-    std::cerr << "Predicate " << predicate << " does not exist" << std::endl;
-    predicate_id = extra_dicts.locate_predicate(predicate);
-    if (predicate_id == 0) {
-      extra_dicts.add_predicate(predicate);
-      predicate_id = extra_dicts.locate_predicate(predicate);
+void PredicatesCacheManager::handle_not_found(unsigned long &resource_id,
+                                              RDFResource &resource) {
+  if (resource_id == NORESULT) {
+    std::string res_type_name;
+    switch (resource.resource_type) {
+    case RDF_TYPE_IRI:
+      res_type_name = "IRI";
+      break;
+    case RDF_TYPE_BLANK:
+      res_type_name = "BLANK_NODE";
+      break;
+    case RDF_TYPE_LITERAL:
+      res_type_name = "LITERAL";
+      break;
+    default:
+      res_type_name = "UNKNOWN";
     }
-    predicate_id = predicate_id + isd_manager->last_predicate_id() - 1;
+    std::cerr << "Resource " << resource.value << " of type " << res_type_name
+              << " does not exist" << std::endl;
+    resource_id = extra_dicts.locate_resource(resource);
+    if (resource_id == 0) {
+      extra_dicts.add_resource(resource);
+      resource_id = extra_dicts.locate_resource(resource);
+    }
+    resource_id = resource_id + isd_manager->last_id();
   }
+}
 
-  if (object_id == NORESULT) {
-    std::cerr << "Object " << object << " does not exist" << std::endl;
-    object_id = extra_dicts.locate_object(object);
-    if (object_id == 0) {
-      extra_dicts.add_object(object);
-      object_id = extra_dicts.locate_object(object);
-    }
-    object_id = object_id + isd_manager->last_object_id() - 1;
-  }
+void PredicatesCacheManager::add_triple(RDFTripleResource &rdf_triple) {
+  auto start = std::chrono::high_resolution_clock::now();
+  auto subject_id = get_resource_index(rdf_triple.subject);
+  auto predicate_id = get_resource_index(rdf_triple.predicate);
+  auto object_id = get_resource_index(rdf_triple.object);
+
+  handle_not_found(subject_id, rdf_triple.subject);
+  handle_not_found(predicate_id, rdf_triple.predicate);
+  handle_not_found(object_id, rdf_triple.object);
 
   if (!predicates_index->has_predicate(predicate_id)) {
     predicates_index->add_predicate(predicate_id);
   }
 
   auto &k2tree = predicates_index->get_k2tree(predicate_id);
+
+  measured_time_sd_lookup +=
+      std::chrono::duration_cast<std::chrono::nanoseconds>(
+          std::chrono::high_resolution_clock::now() - start)
+          .count();
+  start = std::chrono::high_resolution_clock::now();
   k2tree.insert(subject_id, object_id);
+  measured_time_k2insert +=
+      std::chrono::duration_cast<std::chrono::nanoseconds>(
+          std::chrono::high_resolution_clock::now() - start)
+          .count();
 }
 
 PredicatesIndexCache &PredicatesCacheManager::get_predicates_cache() {

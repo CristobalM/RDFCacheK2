@@ -10,8 +10,28 @@
 #include <fstream>
 #include <memory>
 
-template <class SDIRIS, class SDBlanks,
-          class SDLiterals>
+namespace {
+uint64_t _offset_index_cond(uint64_t index, uint64_t offset) {
+  if (index > 0)
+    return index + offset;
+  return 0;
+}
+
+std::string _pop_string_from_ucarr(unsigned char *data, size_t size) {
+  std::string result(reinterpret_cast<char *>(data), size);
+  delete[] data;
+  return result;
+}
+
+std::string _extract_from_sd(StringDictionary *sd, uint64_t index) {
+  unsigned int string_size;
+  unsigned char *data = sd->extract(index, &string_size);
+  return _pop_string_from_ucarr(data, string_size);
+}
+
+} // namespace
+
+template <class SDIRIS, class SDBlanks, class SDLiterals>
 class SDEntitiesMapping : public ISDManager {
   std::unique_ptr<StringDictionary> iris_dictionary;
   std::unique_ptr<StringDictionary> blanks_dictionary;
@@ -44,13 +64,17 @@ public:
   }
 
   uint64_t blanks_index(std::string &blank) override {
-    return blanks_dictionary->locate(
-        reinterpret_cast<unsigned char *>(blank.data()), blank.size());
+    return _offset_index_cond(
+        blanks_dictionary->locate(
+            reinterpret_cast<unsigned char *>(blank.data()), blank.size()),
+        iris_dictionary->numElements());
   }
 
   uint64_t literals_index(std::string &literal) override {
-    return literals_dictionary->locate(
-        reinterpret_cast<unsigned char *>(literal.data()), literal.size());
+    return _offset_index_cond(
+        literals_dictionary->locate(
+            reinterpret_cast<unsigned char *>(literal.data()), literal.size()),
+        iris_dictionary->numElements() + blanks_dictionary->numElements());
   }
 
   uint64_t iris_index(std::string &iri) override {
@@ -68,7 +92,7 @@ public:
     return result != NORESULT;
   }
 
-  bool iris_index(std::string &iri) override {
+  bool has_iris_index(std::string &iri) override {
     auto result = iris_index(iri);
     return result != NORESULT;
   }
@@ -93,11 +117,31 @@ public:
 
   std::string get_iri(uint64_t iris_index) override {
     unsigned int result_sz;
-    unsigned char *result =
-        iris_dictionary->extract(iris_index, &result_sz);
+    unsigned char *result = iris_dictionary->extract(iris_index, &result_sz);
     std::string s(reinterpret_cast<char *>(result), result_sz);
     delete[] result;
     return s;
+  }
+
+  RDFResource get_resource(uint64_t index) override {
+    RDFResourceType res_type;
+    std::string data;
+    if (index <= iris_dictionary->numElements()) {
+
+      res_type = RDF_TYPE_IRI;
+      data = _extract_from_sd(iris_dictionary.get(), index);
+    } else if (index <= iris_dictionary->numElements() +
+                            blanks_dictionary->numElements()) {
+      res_type = RDF_TYPE_BLANK;
+      data = _extract_from_sd(blanks_dictionary.get(),
+                              index - iris_dictionary->numElements());
+    } else {
+      res_type = RDF_TYPE_LITERAL;
+      data = _extract_from_sd(literals_dictionary.get(),
+                              index - iris_dictionary->numElements() -
+                                  blanks_dictionary->numElements());
+    }
+    return RDFResource(std::move(data), res_type);
   }
 
   unsigned long last_iri_id() override {
@@ -110,6 +154,11 @@ public:
 
   unsigned long last_literal_id() override {
     return literals_dictionary->numElements();
+  }
+
+  unsigned long last_id() override {
+    return iris_dictionary->numElements() + blanks_dictionary->numElements() +
+           literals_dictionary->numElements();
   }
 };
 

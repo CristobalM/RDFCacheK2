@@ -1,20 +1,20 @@
 
-#include "NaiveDynamicStringDictionary.hpp"
+#include <cassert>
 
+#include "NaiveDynamicStringDictionary.hpp"
 #include "serialization_util.hpp"
 
 NaiveDynamicStringDictionary::NaiveDynamicStringDictionary(
-    std::vector<std::string> &&subjects_extra,
-    std::vector<std::string> &&predicates_extra,
-    std::vector<std::string> &&objects_extra,
-    std::unordered_map<std::string, unsigned long> &&reverse_subjects_extra,
-    std::unordered_map<std::string, unsigned long> &&reverse_predicates_extra,
-    std::unordered_map<std::string, unsigned long> &&reverse_objects_extra)
-    : subjects_extra(subjects_extra), predicates_extra(predicates_extra),
-      objects_extra(objects_extra),
-      reverse_subjects_extra(reverse_subjects_extra),
-      reverse_predicates_extra(reverse_predicates_extra),
-      reverse_objects_extra(reverse_objects_extra) {}
+    std::vector<std::string> &&iris_extra,
+    std::vector<std::string> &&blanks_extra,
+    std::vector<std::string> &&literals_extra,
+    std::unordered_map<std::string, unsigned long> &&reverse_iris_extra,
+    std::unordered_map<std::string, unsigned long> &&reverse_blanks_extra,
+    std::unordered_map<std::string, unsigned long> &&reverse_literals_extra)
+    : iris_extra(iris_extra), blanks_extra(blanks_extra),
+      literals_extra(literals_extra), reverse_iris_extra(reverse_iris_extra),
+      reverse_blanks_extra(reverse_blanks_extra),
+      reverse_literals_extra(reverse_literals_extra) {}
 
 void NaiveDynamicStringDictionary::serialize_dict(
     std::vector<std::string> &strings, const std::string &fname) {
@@ -58,78 +58,133 @@ NaiveDynamicStringDictionary::create_reverse(std::vector<std::string> &input) {
   return out;
 }
 
-void NaiveDynamicStringDictionary::save(const std::string &sub_fname,
-                                        const std::string &pred_fname,
-                                        const std::string &obj_fname) {
-  serialize_dict(subjects_extra, sub_fname);
-  serialize_dict(predicates_extra, pred_fname);
-  serialize_dict(objects_extra, obj_fname);
+void NaiveDynamicStringDictionary::save(const std::string &iris_fname,
+                                        const std::string &blanks_fname,
+                                        const std::string &literals_fname) {
+  serialize_dict(iris_extra, iris_fname);
+  serialize_dict(blanks_extra, blanks_fname);
+  serialize_dict(literals_extra, literals_fname);
 }
 
 NaiveDynamicStringDictionary
-NaiveDynamicStringDictionary::load(const std::string &sub_fname,
-                                   const std::string &pred_fname,
-                                   const std::string &obj_fname) {
-  auto subjects = deserialize_dict(sub_fname);
-  auto reverse_subjects = create_reverse(subjects);
-  auto predicates = deserialize_dict(pred_fname);
-  auto reverse_predicates = create_reverse(predicates);
-  auto objects = deserialize_dict(obj_fname);
-  auto reverse_objects = create_reverse(objects);
+NaiveDynamicStringDictionary::load(const std::string &iris_fname,
+                                   const std::string &blanks_fname,
+                                   const std::string &literals_fname) {
+  auto iris = deserialize_dict(iris_fname);
+  auto reverse_iris = create_reverse(iris);
+  auto blanks = deserialize_dict(blanks_fname);
+  auto reverse_blanks = create_reverse(blanks);
+  auto literals = deserialize_dict(literals_fname);
+  auto reverse_literals = create_reverse(literals);
   return NaiveDynamicStringDictionary(
-      std::move(subjects), std::move(predicates), std::move(objects),
-      std::move(reverse_subjects), std::move(reverse_predicates),
-      std::move(reverse_objects));
+      std::move(iris), std::move(blanks), std::move(literals),
+      std::move(reverse_iris), std::move(reverse_blanks),
+      std::move(reverse_literals));
 }
 
-void NaiveDynamicStringDictionary::add_subject(std::string subject) {
-  reverse_subjects_extra[subject] = subjects_extra.size();
-  subjects_extra.push_back(std::move(subject));
+void NaiveDynamicStringDictionary::add_iri(std::string iri) {
+  reverse_iris_extra[iri] = iris_extra.size();
+  iris_extra.push_back(std::move(iri));
 }
 
-void NaiveDynamicStringDictionary::add_predicate(std::string predicate) {
-  reverse_predicates_extra[predicate] = predicates_extra.size();
-  predicates_extra.push_back(std::move(predicate));
+void NaiveDynamicStringDictionary::add_blank(std::string blank) {
+  reverse_blanks_extra[blank] = blanks_extra.size();
+  blanks_extra.push_back(std::move(blank));
 }
 
-void NaiveDynamicStringDictionary::add_object(std::string object) {
-  reverse_objects_extra[object] = objects_extra.size();
-  objects_extra.push_back(std::move(object));
-}
-
-unsigned long
-NaiveDynamicStringDictionary::locate_subject(const std::string &subject) const {
-  if (reverse_subjects_extra.find(subject) == reverse_subjects_extra.end())
-    return 0;
-  return reverse_subjects_extra.at(subject) + 1;
-}
-
-unsigned long NaiveDynamicStringDictionary::locate_predicate(
-    const std::string &predicate) const {
-  if (reverse_predicates_extra.find(predicate) ==
-      reverse_predicates_extra.end())
-    return 0;
-  return reverse_predicates_extra.at(predicate) + 1;
+void NaiveDynamicStringDictionary::add_literal(std::string literal) {
+  reverse_literals_extra[literal] = literals_extra.size();
+  literals_extra.push_back(std::move(literal));
 }
 
 unsigned long
-NaiveDynamicStringDictionary::locate_object(const std::string &object) const {
-  if (reverse_objects_extra.find(object) == reverse_objects_extra.end())
+NaiveDynamicStringDictionary::locate_iri(const std::string &iri) const {
+  if (reverse_iris_extra.find(iri) == reverse_iris_extra.end())
     return 0;
-  return reverse_objects_extra.at(object) + 1;
+  return reverse_iris_extra.at(iri) + 1;
+}
+
+unsigned long
+NaiveDynamicStringDictionary::locate_blank(const std::string &blank) const {
+  if (reverse_blanks_extra.find(blank) == reverse_blanks_extra.end())
+    return 0;
+  return reverse_blanks_extra.at(blank) + 1 + reverse_iris_extra.size();
+}
+
+unsigned long
+NaiveDynamicStringDictionary::locate_literal(const std::string &literal) const {
+  if (reverse_literals_extra.find(literal) == reverse_literals_extra.end())
+    return 0;
+  return reverse_literals_extra.at(literal) + reverse_blanks_extra.size() + 1 +
+         reverse_iris_extra.size();
+}
+
+std::string NaiveDynamicStringDictionary::extract_iri(unsigned long id) const {
+  auto next_id = id - 1;
+  assert(id > 0 && next_id >= 0 && next_id < iris_extra.size());
+  return iris_extra[next_id];
 }
 
 std::string
-NaiveDynamicStringDictionary::extract_subject(unsigned long id) const {
-  return subjects_extra[id - 1];
+NaiveDynamicStringDictionary::extract_blank(unsigned long id) const {
+  auto next_id = id - 1 - iris_extra.size();
+  assert(id >= iris_extra.size() + 1 && next_id >= 0 &&
+         next_id < blanks_extra.size());
+  return blanks_extra[next_id];
 }
 
 std::string
-NaiveDynamicStringDictionary::extract_predicate(unsigned long id) const {
-  return predicates_extra[id - 1];
+NaiveDynamicStringDictionary::extract_literal(unsigned long id) const {
+  auto next_id = id - 1 - iris_extra.size() - blanks_extra.size();
+  assert(id >= iris_extra.size() + blanks_extra.size() + 1 && next_id >= 0 &&
+         next_id < literals_extra.size());
+  return literals_extra[next_id];
 }
 
-std::string
-NaiveDynamicStringDictionary::extract_object(unsigned long id) const {
-  return objects_extra[id - 1];
+unsigned long NaiveDynamicStringDictionary::locate_resource(
+    const RDFResource &resource) const {
+  switch (resource.resource_type) {
+  case RDF_TYPE_IRI:
+    return locate_iri(resource.value);
+  case RDF_TYPE_BLANK:
+    return locate_blank(resource.value);
+  case RDF_TYPE_LITERAL:
+    return locate_literal(resource.value);
+  default:
+    return 0;
+  }
+}
+
+RDFResource
+NaiveDynamicStringDictionary::extract_resource(unsigned long id) const {
+  assert(id > 0);
+  std::string value;
+  RDFResourceType res_type;
+
+  if (id <= iris_extra.size()) {
+    value = extract_iri(id);
+    res_type = RDF_TYPE_IRI;
+  } else if (id <= iris_extra.size() + blanks_extra.size()) {
+    value = extract_blank(id);
+    res_type = RDF_TYPE_BLANK;
+  } else {
+    value = extract_literal(id);
+    res_type = RDF_TYPE_LITERAL;
+  }
+
+  return RDFResource(std::move(value), res_type);
+}
+
+void NaiveDynamicStringDictionary::add_resource(RDFResource &resource) {
+  switch (resource.resource_type) {
+  case RDF_TYPE_IRI:
+    add_iri(resource.value);
+    break;
+  case RDF_TYPE_BLANK:
+    add_blank(resource.value);
+    break;
+  case RDF_TYPE_LITERAL:
+    add_literal(resource.value);
+    break;
+  }
 }

@@ -65,8 +65,10 @@ int main(int argc, char **argv) {
   */
 
   std::ofstream iris_ofs(p_options.output_file + ".iris.txt", std::ios::out);
-  std::ofstream blanks_ofs(p_options.output_file + ".blanks.txt", std::ios::out);
-  std::ofstream literals_ofs(p_options.output_file + ".literals.txt", std::ios::out);
+  std::ofstream blanks_ofs(p_options.output_file + ".blanks.txt",
+                           std::ios::out);
+  std::ofstream literals_ofs(p_options.output_file + ".literals.txt",
+                             std::ios::out);
 
   // iris_ofs.rdbuf()->pubsetbuf(sub_buf.data(), sub_buf.size());
   // blanks_ofs.rdbuf()->pubsetbuf(pred_buf.data(), pred_buf.size());

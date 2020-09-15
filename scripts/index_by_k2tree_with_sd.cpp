@@ -4,9 +4,11 @@
 
 #include <fstream>
 #include <iostream>
+#include <memory>
 #include <string>
 
 #include <PredicatesCacheManager.hpp>
+#include <RDFTriple.hpp>
 #include <SDEntitiesMapping.hpp>
 #include <getopt.h>
 
@@ -42,20 +44,20 @@ int main(int argc, char **argv) {
   std::unique_ptr<ISDManager> isd_manager;
   {
     std::ifstream ifs_iris(parsed.iris_sd_file,
-                        std::ios::in | std::ios::binary);
+                           std::ios::in | std::ios::binary);
     std::ifstream ifs_blanks(parsed.blanks_sd_file,
-                        std::ios::in | std::ios::binary);
+                             std::ios::in | std::ios::binary);
     std::ifstream ifs_literals(parsed.literals_sd_file,
-                        std::ios::in | std::ios::binary);
+                               std::ios::in | std::ios::binary);
     if (ifs_iris.fail()) {
-      std::cerr << "Failed to open iris file '" << parsed.iris_sd_file
-                << "'" << std::endl;
+      std::cerr << "Failed to open iris file '" << parsed.iris_sd_file << "'"
+                << std::endl;
       return 1;
     }
 
     if (ifs_blanks.fail()) {
-      std::cerr << "Failed to open blanks file '"
-                << parsed.blanks_sd_file << "'" << std::endl;
+      std::cerr << "Failed to open blanks file '" << parsed.blanks_sd_file
+                << "'" << std::endl;
       return 1;
     }
     if (ifs_literals.fail()) {
@@ -66,8 +68,8 @@ int main(int argc, char **argv) {
 
     isd_manager = std::make_unique<
         SDEntitiesMapping<StringDictionaryPFC, StringDictionaryPFC,
-                          StringDictionaryHASHRPDACBlocks>>(ifs_iris, ifs_blanks,
-                                                            ifs_literals);
+                          StringDictionaryHASHRPDACBlocks>>(
+        ifs_iris, ifs_blanks, ifs_literals);
   }
 
   PredicatesCacheManager cache_manager(std::move(isd_manager));
@@ -84,16 +86,36 @@ int main(int argc, char **argv) {
                                      "_extra_literals.bin");
 }
 
+RDFResource resource_from_nres(NTRes *nres) {
+  RDFResourceType res_type;
+  switch (nres->type) {
+  case IRI:
+    res_type = RDF_TYPE_IRI;
+    break;
+  case BLANK_NODE:
+    res_type = RDF_TYPE_BLANK;
+    break;
+  case LITERAL:
+    res_type = RDF_TYPE_LITERAL;
+    break;
+  }
+  return RDFResource(std::string(nres->data), res_type);
+}
+
 void processor(NTTriple *ntriple, void *pcm_ptr) {
   auto &pcm = *reinterpret_cast<PredicatesCacheManager *>(pcm_ptr);
-  std::string subject(ntriple->subject.data);
-  std::string predicate(ntriple->predicate.data);
-  std::string object(ntriple->object.data);
-  pcm.add_triple(subject, predicate, object);
+  RDFResource object = resource_from_nres(&ntriple->object);
+  RDFTripleResource rdf_triple(resource_from_nres(&ntriple->subject),
+                               resource_from_nres(&ntriple->predicate),
+                               resource_from_nres(&ntriple->object));
+
+  pcm.add_triple(rdf_triple);
 
   strings_processed += 3;
   strings_processed_reset_th += 3;
-  bytes_processed += predicate.size() + subject.size() + object.size();
+  bytes_processed += rdf_triple.subject.value.size() +
+                     rdf_triple.predicate.value.size() +
+                     rdf_triple.object.value.size();
 
   if (strings_processed_reset_th >= RESET_TH) {
     strings_processed_reset_th %= RESET_TH;
@@ -104,23 +126,25 @@ void processor(NTTriple *ntriple, void *pcm_ptr) {
 void process_nt_file(PredicatesCacheManager &pcm, std::ifstream &nt_ifs) {
   NTParser ntparser(&nt_ifs, processor, &pcm);
   ntparser.parse();
+  std::cout << "Total time inserting into k2tree: " <<  pcm.measured_time_k2insert << " ns \n"
+  << "Total time on string dictionary lookup: " << pcm.measured_time_sd_lookup << " ns" << std::endl;
 }
 
 parsed_options parse_cmline(int argc, char **argv) {
-  const char short_options[] = "i:l:b:n:k:";
+  const char short_options[] = "i:b:l:n:k:";
   struct option long_options[] = {
       {"iris-sd-file", required_argument, nullptr, 'i'},
-      {"blanks-sd-file", required_argument, nullptr, 'l'},
-      {"literals-sd-file", required_argument, nullptr, 'b'},
+      {"blanks-sd-file", required_argument, nullptr, 'b'},
+      {"literals-sd-file", required_argument, nullptr, 'l'},
       {"nt-file", required_argument, nullptr, 'n'},
       {"output-k2tree", required_argument, nullptr, 'k'},
   };
 
   int opt, opt_index;
 
-  bool has_subjects = false;
-  bool has_predicates = false;
-  bool has_objects = false;
+  bool has_iris = false;
+  bool has_blanks = false;
+  bool has_literals = false;
   bool has_nt = false;
   bool has_output = false;
 
@@ -134,15 +158,15 @@ parsed_options parse_cmline(int argc, char **argv) {
     switch (opt) {
     case 'i':
       out.iris_sd_file = optarg;
-      has_subjects = true;
-      break;
-    case 'l':
-      out.blanks_sd_file = optarg;
-      has_predicates = true;
+      has_iris = true;
       break;
     case 'b':
+      out.blanks_sd_file = optarg;
+      has_blanks = true;
+      break;
+    case 'l':
       out.literals_sd_file = optarg;
-      has_objects = true;
+      has_literals = true;
       break;
     case 'n':
       out.nt_file = optarg;
@@ -160,19 +184,19 @@ parsed_options parse_cmline(int argc, char **argv) {
     }
   }
 
-  if (!has_subjects) {
+  if (!has_iris) {
     std::cerr << "Missing option --iris-sd-file\n" << std::endl;
     print_help();
     exit(1);
   }
 
-  if (!has_predicates) {
+  if (!has_blanks) {
     std::cerr << "Missing option --blanks-sd-file\n" << std::endl;
     print_help();
     exit(1);
   }
 
-  if (!has_objects) {
+  if (!has_literals) {
     std::cerr << "Missing option --literals-sd-file\n" << std::endl;
     print_help();
     exit(1);
@@ -195,8 +219,8 @@ parsed_options parse_cmline(int argc, char **argv) {
 
 void print_help() {
   std::cout << "--iris-sd-file\t(-i)\t\t(string-required)\n"
-            << "--blanks-sd-file\t(-l)\t\t(string-required)\n"
-            << "--literals-sd-file\t(-b)\t\t(string-required)\n"
+            << "--blanks-sd-file\t(-b)\t\t(string-required)\n"
+            << "--literals-sd-file\t(-l)\t\t(string-required)\n"
             << "--nt-file\t(-n)\t\t(string-required)\n"
             << "--output-k2tree\t(-k)\t\t(string-required)\n"
             << std::endl;

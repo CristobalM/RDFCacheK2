@@ -6,6 +6,8 @@
 #define RDFCACHEK2_RDFTRIPLE_HPP
 
 #include <cstdint>
+#include <memory>
+#include <string>
 
 struct RDFTriple {
   uint64_t subject;
@@ -19,33 +21,49 @@ enum RDFResourceType {
   RDF_TYPE_LITERAL = 2,
 };
 
-struct RDFResource{
+struct RDFResource {
   std::string value;
   RDFResourceType resource_type;
-  RDFResource(
-    std::string &&value,
-    RDFResourceType resource_type
-  ):
-  value(std::move(value)),
-  resource_type(resource_type) {}
-  RDFResource(
-    const std::string &value,
-    RDFResourceType resource_type
-  ):
-  value(value),
-  resource_type(resource_type) {}
+  RDFResource(std::string &&value, RDFResourceType resource_type)
+      : value(std::move(value)), resource_type(resource_type) {}
+  RDFResource(const std::string &value, RDFResourceType resource_type)
+      : value(value), resource_type(resource_type) {}
 };
 
-struct RDFResourceReference{
+struct RDFResourceReference {
   const std::string &value;
   RDFResourceType resource_type;
 
-  RDFResourceReference(
-    const std::string &value,
-    RDFResourceType resource_type
-  ):
-  value(value),
-  resource_type(resource_type){}
+  RDFResourceReference(const std::string &value, RDFResourceType resource_type)
+      : value(value), resource_type(resource_type) {}
+
+  RDFResourceReference(const RDFResource &resource)
+      : value(resource.value), resource_type(resource.resource_type) {}
+};
+
+struct RDFTripleResource {
+  RDFResource subject;
+  RDFResource predicate;
+  RDFResource object;
+  RDFTripleResource(RDFResource &&subject, RDFResource &&predicate,
+                    RDFResource &&object)
+      : subject(std::move(subject)), predicate(std::move(predicate)),
+        object(std::move(object)) {}
+};
+
+struct RDFTripleResourceReference {
+  RDFResourceReference subject;
+  RDFResourceReference predicate;
+  RDFResourceReference object;
+  RDFTripleResourceReference(RDFResourceReference subject,
+                       RDFResourceReference predicate,
+                       RDFResourceReference object)
+      : subject(subject), predicate(predicate), object(object) {}
+
+  RDFTripleResourceReference(const RDFTripleResource &rdf_triple_resource)
+      : subject(rdf_triple_resource.subject),
+        predicate(rdf_triple_resource.predicate),
+        object(rdf_triple_resource.object) {}
 };
 
 #endif // RDFCACHEK2_RDFTRIPLE_HPP
