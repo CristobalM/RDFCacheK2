@@ -56,8 +56,8 @@ struct RDFTripleResourceReference {
   RDFResourceReference predicate;
   RDFResourceReference object;
   RDFTripleResourceReference(RDFResourceReference subject,
-                       RDFResourceReference predicate,
-                       RDFResourceReference object)
+                             RDFResourceReference predicate,
+                             RDFResourceReference object)
       : subject(subject), predicate(predicate), object(object) {}
 
   RDFTripleResourceReference(const RDFTripleResource &rdf_triple_resource)

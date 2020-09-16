@@ -7,15 +7,17 @@ template <typename T> struct FSNode {
   T *item;
   FSNode *top, *down;
   FSNode *left, *right;
-  FSNode(T *item)
-      : item(item), top(nullptr), down(nullptr), left(nullptr), right(nullptr) {
-  }
+  unsigned long id;
+  FSNode(T *item, unsigned long id)
+      : item(item), top(nullptr), down(nullptr), left(nullptr), right(nullptr),
+        id(id) {}
 };
 
-template <typename T> struct VerticalQueue{
+template <typename T> struct VerticalQueue {
   using node_t = FSNode<T>;
   node_t *tail, *head;
-  VerticalQueue() : tail(nullptr), head(nullptr) {}
+  size_t vsize;
+  VerticalQueue() : tail(nullptr), head(nullptr), vsize(0) {}
 };
 
 template <typename T> class FourSidedQueue {
@@ -24,7 +26,9 @@ template <typename T> class FourSidedQueue {
   node_t *tail, *head;
   size_t qsize;
 
-  using vm_t = std::unordered_map<unsigned long, VerticalQueue>; // vertical mapping type
+  using vm_t = std::unordered_map<unsigned long,
+                                  VerticalQueue<T>>; // vertical mapping type
+  using lg_t = std::lock_guard<std::mutex>;
   vm_t vertical_q;
   std::mutex m;
 
@@ -35,19 +39,95 @@ public:
 
   FourSidedQueue(FourSidedQueue &&other) { auto lg = acquire_other(other); }
   ~FourSidedQueue() {}
-  
+
   FourSidedQueue &operator=(FourSidedQueue &&rhs) {
     auto lg = acquire_other(rhs);
   }
 
-  T *pop_front_vertical(unsigned long id){
-    std::lock_guard lg(m);
-    
+  bool is_vertical_empty(unsigned long id) {
+    lg_t lg(m);
+    if (!has_vertical_q(id))
+      return true;
+    auto &vq = vertical_q[id];
+    return !vq.head && !vq.tail;
+  }
 
+  size_t vertical_size(unsigned long id) {
+    lg_t lg(m);
+    if (!has_vertical_q(id))
+      return 0;
+    auto &vq = vertical_q[id];
+    return vq.vsize;
+  }
+
+  T *pop_front_vertical(unsigned long id) {
+    lg_t lg(m);
+    if (!has_vertical_q(id))
+      return nullptr;
+    auto &vq = vertical_q[id];
+    if (!vq.head)
+      return nullptr;
+    T *result = vq.head->item;
+    node_t *next_head = vq.head->down;
+    if (next_head)
+      next_head->top = nullptr;
+    remove_from_horizontal_queue(vq.head);
+    delete vq.head;
+    vq.head = next_head;
+    if (!next_head)
+      vq.tail = nullptr;
+    qsize--;
+    vq.vsize--;
+    return result;
+  }
+
+  T &front_vertical(unsigned long id) {
+    lg_t lg(m);
+    assert(has_vertical_q(id));
+    auto &vq = vertical_q[id];
+    return *vq.head.item;
+  }
+
+  T *pop_back_vertical(unsigned long id) {
+    lg_t lg(m);
+    if (!has_vertical_q(id))
+      return nullptr;
+    auto &vq = vertical_q[id];
+    if (!vq.tail)
+      return nullptr;
+    T *result = vq.tail->item;
+    node_t *next_tail = vq.tail->top;
+    if (next_tail)
+      next_tail->down = nullptr;
+    remove_from_horizontal_queue(vq.tail);
+    delete vq.tail;
+    vq.tail = next_tail;
+    if (!next_tail)
+      vq.head = nullptr;
+    qsize--;
+    vq.vsize--;
+    return result;
+  }
+
+  T &back_vertical(unsigned long id) {
+    lg_t lg(m);
+    assert(has_vertical_q(id));
+    auto &vq = vertical_q[id];
+    return *vq.tail.item;
+  }
+
+  void push_front(T *item, unsigned long id) {
+    lg_t lg(m);
+    node_t *node = new node_t(item, id);
+    horizontal_push_front(node);
+    vertical_push_front(node);
+    qsize++;
   }
 
   T *pop_front() {
-    std::lock_guard lg(m);
+    lg_t lg(m);
+    if (!head)
+      return nullptr;
     T *result = head->item;
     node_t *next_head = head->left;
     if (next_head)
@@ -55,23 +135,131 @@ public:
     remove_from_vertical_queue(head);
     delete head;
     head = next_head;
+    if (!next_head)
+      tail = nullptr;
+    qsize--;
     return result;
   }
 
   T &front() {
-    std::lock_guard lg(m);
+    lg_t lg(m);
+    assert(head != nullptr);
     T *result = head->item;
-    return *item;
+    return *result;
   }
 
-  void push_front(T *item, unsigned long id) {
-    std::lock_guard lg(m);
-    node_t *node = new node_t(item);
-    horizontal_push_front(node);
-    vertical_push_front(node, id);
+  void push_back(T *item, unsigned long id) {
+    lg_t lg(m);
+    node_t *node = new node_t(item, id);
+    horizontal_push_back(node);
+    vertical_push_back(node);
+    qsize++;
   }
 
-  void horizontal_push_front(node_t *node){
+  T *pop_back() {
+    lg_t lg(m);
+    T *result = tail->item;
+    node_t *next_tail = tail->right;
+    if (next_tail)
+      next_tail->left = nullptr;
+    remove_from_vertical_queue(tail);
+    delete tail;
+    tail = next_tail;
+    if (!next_tail)
+      head = nullptr;
+    qsize--;
+    return result;
+  }
+
+  T &back() {
+    lg_t lg(m);
+    T *result = tail->item;
+    return *result;
+  }
+
+  size_t size() {
+    lg_t lg(m);
+    return qsize;
+  }
+
+  bool empty() {
+    lg_t lg(m);
+    return qsize == 0;
+  }
+
+  lg_t acquire_other(FourSidedQueue &other) { return std::lock_guard(other.m); }
+
+private:
+  void create_vertical_queue_if_not_exist(unsigned long id) {
+    if (!has_vertical_q(id)) {
+      vertical_q[id] = VerticalQueue<T>();
+    }
+  }
+
+  void remove_from_vertical_queue(node_t *node) {
+    node_t *top = node->top;
+    node_t *down = node->down;
+    assert(has_vertical_q(node->id));
+    auto &vq = vertical_q[node->id];
+    vq.vsize--;
+    if (top)
+      top->down = node->down;
+    else {
+      vq.head = down;
+    }
+    if (down)
+      down->top = node->top;
+    else {
+      vq.tail = top;
+    }
+  }
+
+  void remove_from_horizontal_queue(node_t *node) {
+    node_t *left = node->left;
+    node_t *right = node->right;
+    if (left)
+      left->right = right;
+    else {
+      tail = right;
+    }
+    if (right)
+      right->left = left;
+    else {
+      head = left;
+    }
+  }
+
+  void vertical_push_front(node_t *node) {
+    create_vertical_queue_if_not_exist(node->id);
+    VerticalQueue<T> &vq = vertical_q[node->id];
+    vq.vsize++;
+    if (!vq.tail)
+      vq.tail = node;
+    if (!vq.head)
+      vq.head = node;
+    else {
+      node->down = vq.head;
+      vq.head->top = node;
+      vq.head = node;
+    }
+  }
+
+  void vertical_push_back(node_t *node) {
+    create_vertical_queue_if_not_exist(node->id);
+    VerticalQueue<T> &vq = vertical_q[node->id];
+    vq.vsize++;
+    if (!vq.tail)
+      vq.tail = node;
+    else {
+      node->top = vq.tail;
+      vq.tail->down = node;
+      vq.tail = node;
+    }
+    if (!vq.head)
+      vq.head = node;
+  }
+
+  void horizontal_push_front(node_t *node) {
     if (!tail)
       tail = node;
     if (!head)
@@ -83,51 +271,7 @@ public:
     }
   }
 
-  void create_vertical_queue_if_not_exist(unsigned long id){
-    if(vertical_q.find(id) == vertical_q.end()){
-      vertical_q[id] = vm_t();
-    }
-  }
-
-  void vertical_push_front(node_t *node, unsigned long id){
-    create_vertical_queue_if_not_exist(id);
-    vm_t &vq = vertical_q[id];
-    if(!vq.tail) vq.tail = node;
-    if(!vq.head) vq.head = node;
-    else{
-      node->down = vq.head;
-      vq.head->top = node;
-      vq.head = node;
-    }
-  }
-
-
-  T *pop_back() {
-    std::lock_guard lg(m);
-    T *result = tail->item;
-    node_t *next_tail = tail->right;
-    if (next_tail)
-      next_tail->left = nullptr;
-    remove_from_vertical_queue(tail);
-    delete tail;
-    tail = next_tail;
-    return result;
-  }
-
-  T &back() {
-    std::lock_guard lg(m);
-    T *result = tail->item;
-    return *result;
-  }
-
-  void push_back(T *item, unsigned long id) {
-    std::lock_guard lg(m);
-    node_t *node = new node_t(item);
-    horizontal_push_back(node);
-    vertical_push_back(node, id);
-  }
-
-  void horizontal_push_back(node_t *node){
+  void horizontal_push_back(node_t *node) {
     if (!tail)
       tail = node;
     else {
@@ -139,35 +283,7 @@ public:
       head = node;
   }
 
-
-  void vertical_push_back(node_t *node, unsigned long id){
-    create_vertical_queue_if_not_exist(id);
-    vm_t &vq = vertical_q[id];
-    if(!vq.tail) vq.tail = node;
-    else{
-      node->top = vq.tail;
-      vq.tail->down = node;
-      vq.tail = node;
-    }
-    if(!vq.head) vq.head = node;
-  }
-
-
-  size_t size() {
-    std::lock_guard lg(m);
-    return qsize;
-  }
-
-  std::lock_guard acquire_other(FourSidedQueue &other) {
-    return std::lock_guard(other.m);
-  }
-
-  void remove_from_vertical_queue(node_t *node) {
-    node_t *top = node->top;
-    node_t *down = node->down;
-    if (top)
-      top->down = node->down;
-    if (down)
-      down->top = node->top;
+  bool has_vertical_q(unsigned long id) {
+    return vertical_q.find(id) != vertical_q.end();
   }
 };

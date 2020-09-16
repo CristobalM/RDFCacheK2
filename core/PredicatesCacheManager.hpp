@@ -15,7 +15,7 @@
 class PredicatesCacheManager {
   std::unique_ptr<ISDManager> isd_manager;
   std::unique_ptr<PredicatesIndexCache> predicates_index;
-  
+
   NaiveDynamicStringDictionary extra_dicts;
 
 public:

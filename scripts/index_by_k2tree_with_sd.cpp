@@ -126,8 +126,10 @@ void processor(NTTriple *ntriple, void *pcm_ptr) {
 void process_nt_file(PredicatesCacheManager &pcm, std::ifstream &nt_ifs) {
   NTParser ntparser(&nt_ifs, processor, &pcm);
   ntparser.parse();
-  std::cout << "Total time inserting into k2tree: " <<  pcm.measured_time_k2insert << " ns \n"
-  << "Total time on string dictionary lookup: " << pcm.measured_time_sd_lookup << " ns" << std::endl;
+  std::cout << "Total time inserting into k2tree: "
+            << pcm.measured_time_k2insert << " ns \n"
+            << "Total time on string dictionary lookup: "
+            << pcm.measured_time_sd_lookup << " ns" << std::endl;
 }
 
 parsed_options parse_cmline(int argc, char **argv) {

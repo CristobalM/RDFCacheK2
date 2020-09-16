@@ -225,4 +225,7 @@ target_link_libraries(serialization_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES}
 
 add_executable(index_file_test test/index_file_test.cpp)
 target_link_libraries(index_file_test ${BASE_LIBS} ${GTEST_BOTH_LIBRARIES})
+
+add_executable(four_sided_queue_test test/four_sided_queue_test.cpp)
+target_link_libraries(four_sided_queue_test ${BASE_LIBS} ${GTEST_BOTH_LIBRARIES})
 endif()
