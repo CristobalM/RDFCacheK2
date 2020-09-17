@@ -25,6 +25,17 @@ struct parsed_options {
   std::string nt_file;
 
   std::string output_k2tree;
+
+  int workers_pool_size;
+  unsigned long max_insertion_queue_size;
+};
+
+struct PCMBuilderHolder {
+  PredicatesCacheManager &pcm;
+  PredicatesIndexCacheBuilder &pcb;
+  PCMBuilderHolder(PredicatesCacheManager &pcm,
+                   PredicatesIndexCacheBuilder &pcb)
+      : pcm(pcm), pcb(pcb) {}
 };
 
 unsigned long bytes_processed = 0;
@@ -34,9 +45,9 @@ const unsigned long RESET_TH = 1000000;
 
 parsed_options parse_cmline(int argc, char **argv);
 void print_help();
-void process_nt_file(PredicatesCacheManager &pcm, std::ifstream &nt_ifs);
+void process_nt_file(PCMBuilderHolder &pcm, std::ifstream &nt_ifs);
 void print_stats();
-void processor(NTTriple *ntriple, void *pcm_ptr);
+void processor(NTTriple *ntriple, void *pcmb_holder);
 
 int main(int argc, char **argv) {
   parsed_options parsed = parse_cmline(argc, argv);
@@ -73,11 +84,14 @@ int main(int argc, char **argv) {
   }
 
   PredicatesCacheManager cache_manager(std::move(isd_manager));
+  PredicatesIndexCacheBuilder pcbuilder(parsed.workers_pool_size,
+                                        parsed.max_insertion_queue_size);
 
+  PCMBuilderHolder pcmb_holder(cache_manager, pcbuilder);
   std::ifstream ifs_nt(parsed.nt_file);
 
   std::cout << "Processing nt file..." << std::endl;
-  process_nt_file(cache_manager, ifs_nt);
+  process_nt_file(pcmb_holder, ifs_nt);
 
   std::cout << "Saving to disk..." << std::endl;
 
@@ -102,14 +116,16 @@ RDFResource resource_from_nres(NTRes *nres) {
   return RDFResource(std::string(nres->data), res_type);
 }
 
-void processor(NTTriple *ntriple, void *pcm_ptr) {
-  auto &pcm = *reinterpret_cast<PredicatesCacheManager *>(pcm_ptr);
+void processor(NTTriple *ntriple, void *pcmb_holder) {
+  auto &pcmb = *reinterpret_cast<PCMBuilderHolder *>(pcmb_holder);
   RDFResource object = resource_from_nres(&ntriple->object);
   RDFTripleResource rdf_triple(resource_from_nres(&ntriple->subject),
                                resource_from_nres(&ntriple->predicate),
                                resource_from_nres(&ntriple->object));
 
-  pcm.add_triple(rdf_triple);
+  auto &pcm = pcmb.pcm;
+  auto &pcb = pcmb.pcb;
+  pcm.add_triple(rdf_triple, pcb);
 
   strings_processed += 3;
   strings_processed_reset_th += 3;
@@ -123,23 +139,27 @@ void processor(NTTriple *ntriple, void *pcm_ptr) {
   }
 }
 
-void process_nt_file(PredicatesCacheManager &pcm, std::ifstream &nt_ifs) {
-  NTParser ntparser(&nt_ifs, processor, &pcm);
+void process_nt_file(PCMBuilderHolder &pcmb_holder, std::ifstream &nt_ifs) {
+  NTParser ntparser(&nt_ifs, processor, &pcmb_holder);
   ntparser.parse();
+  pcmb_holder.pcb.wait_workers();
+  pcmb_holder.pcm.replace_index_cache(pcmb_holder.pcb.get());
   std::cout << "Total time inserting into k2tree: "
-            << pcm.measured_time_k2insert << " ns \n"
+            << pcmb_holder.pcb.get_measured_insertion_time() << " ns \n"
             << "Total time on string dictionary lookup: "
-            << pcm.measured_time_sd_lookup << " ns" << std::endl;
+            << pcmb_holder.pcm.measured_time_sd_lookup << " ns" << std::endl;
 }
 
 parsed_options parse_cmline(int argc, char **argv) {
-  const char short_options[] = "i:b:l:n:k:";
+  const char short_options[] = "i:b:l:n:k:w::q::";
   struct option long_options[] = {
       {"iris-sd-file", required_argument, nullptr, 'i'},
       {"blanks-sd-file", required_argument, nullptr, 'b'},
       {"literals-sd-file", required_argument, nullptr, 'l'},
       {"nt-file", required_argument, nullptr, 'n'},
       {"output-k2tree", required_argument, nullptr, 'k'},
+      {"worker-pool-size", optional_argument, nullptr, 'w'},
+      {"max-insertion-queue-size", optional_argument, nullptr, 'q'},
   };
 
   int opt, opt_index;
@@ -149,6 +169,8 @@ parsed_options parse_cmline(int argc, char **argv) {
   bool has_literals = false;
   bool has_nt = false;
   bool has_output = false;
+  bool has_worker_pool_size = false;
+  bool has_max_insertion_queue_size = false;
 
   parsed_options out{};
   while ((
@@ -177,6 +199,18 @@ parsed_options parse_cmline(int argc, char **argv) {
     case 'k':
       out.output_k2tree = optarg;
       has_output = true;
+      break;
+    case 'w':
+      if (optarg) {
+        out.workers_pool_size = std::stoi(std::string(optarg));
+        has_worker_pool_size = true;
+      }
+      break;
+    case 'q':
+      if (optarg) {
+        out.max_insertion_queue_size = std::stoul(std::string(optarg));
+        has_max_insertion_queue_size = true;
+      }
       break;
     case 'h': // to implement
     case '?':
@@ -214,6 +248,15 @@ parsed_options parse_cmline(int argc, char **argv) {
     std::cerr << "Missing option --output-k2tree\n" << std::endl;
     print_help();
     exit(1);
+  }
+
+  if (!has_worker_pool_size) {
+    out.workers_pool_size = PredicatesCacheManager::DEFAULT_WORKER_POOL_SZ;
+  }
+
+  if (!has_max_insertion_queue_size) {
+    out.max_insertion_queue_size =
+        PredicatesCacheManager::DEFAULT_MAX_QUEUE_SIZE;
   }
 
   return out;

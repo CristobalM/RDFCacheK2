@@ -33,12 +33,18 @@ struct K2TreeStats {
 
 class K2Tree {
   struct block *root;
-  struct queries_state qs;
+  struct queries_state *qs;
 
 public:
   explicit K2Tree(uint32_t tree_depth);
   K2Tree(uint32_t tree_depth, uint32_t max_node_count);
   explicit K2Tree(struct block *root);
+
+  K2Tree(const K2Tree &other) = delete;
+  K2Tree &operator=(K2Tree &rhs) = delete;
+
+  K2Tree(K2Tree &&other);
+  K2Tree &operator=(K2Tree &&rhs);
 
   ~K2Tree() noexcept(false);
 

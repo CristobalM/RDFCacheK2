@@ -10,8 +10,8 @@ PredicatesCacheManager::PredicatesCacheManager(
     std::unique_ptr<ISDManager> &&isd_manager,
     std::unique_ptr<PredicatesIndexCache> &&predicates_index)
     : isd_manager(std::move(isd_manager)),
-      predicates_index(std::move(predicates_index)), measured_time_sd_lookup(0),
-      measured_time_k2insert(0) {}
+      predicates_index(std::move(predicates_index)),
+      measured_time_sd_lookup(0) {}
 
 uint64_t PredicatesCacheManager::get_resource_index(RDFResource &resource) {
   switch (resource.resource_type) {
@@ -63,22 +63,36 @@ void PredicatesCacheManager::add_triple(RDFTripleResource &rdf_triple) {
   handle_not_found(predicate_id, rdf_triple.predicate);
   handle_not_found(object_id, rdf_triple.object);
 
+  measured_time_sd_lookup +=
+      std::chrono::duration_cast<std::chrono::nanoseconds>(
+          std::chrono::high_resolution_clock::now() - start)
+          .count();
+
   if (!predicates_index->has_predicate(predicate_id)) {
     predicates_index->add_predicate(predicate_id);
   }
+  predicates_index->get_k2tree(predicate_id).insert(subject_id, object_id);
 
-  auto &k2tree = predicates_index->get_k2tree(predicate_id);
+  // predicates_index->insert_point(subject_id, predicate_id, object_id);
+}
+
+void PredicatesCacheManager::add_triple(RDFTripleResource &rdf_triple,
+                                        PredicatesIndexCacheBuilder &builder) {
+  auto start = std::chrono::high_resolution_clock::now();
+  auto subject_id = get_resource_index(rdf_triple.subject);
+  auto predicate_id = get_resource_index(rdf_triple.predicate);
+  auto object_id = get_resource_index(rdf_triple.object);
+
+  handle_not_found(subject_id, rdf_triple.subject);
+  handle_not_found(predicate_id, rdf_triple.predicate);
+  handle_not_found(object_id, rdf_triple.object);
 
   measured_time_sd_lookup +=
       std::chrono::duration_cast<std::chrono::nanoseconds>(
           std::chrono::high_resolution_clock::now() - start)
           .count();
-  start = std::chrono::high_resolution_clock::now();
-  k2tree.insert(subject_id, object_id);
-  measured_time_k2insert +=
-      std::chrono::duration_cast<std::chrono::nanoseconds>(
-          std::chrono::high_resolution_clock::now() - start)
-          .count();
+
+  builder.insert_point(subject_id, predicate_id, object_id);
 }
 
 PredicatesIndexCache &PredicatesCacheManager::get_predicates_cache() {
@@ -92,10 +106,15 @@ PredicatesCacheManager::PredicatesCacheManager(
 
 void PredicatesCacheManager::save_all(const std::string &fname) {
   predicates_index->dump_to_file("k2ts-" + fname);
-  isd_manager->save("subjects-sd-" + fname, "predicates-sd-" + fname,
-                    "objects-sd-" + fname);
+  isd_manager->save("iris-sd-" + fname, "blanks-sd-" + fname,
+                    "literals-sd-" + fname);
 }
 
 NaiveDynamicStringDictionary &PredicatesCacheManager::get_dyn_dicts() {
   return extra_dicts;
+}
+
+void PredicatesCacheManager::replace_index_cache(
+    std::unique_ptr<PredicatesIndexCache> &&predicates_index) {
+  predicates_index = std::move(predicates_index);
 }

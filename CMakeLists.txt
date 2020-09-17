@@ -190,7 +190,11 @@ target_link_libraries(validate_sd_from_nt ${BASE_LIBS} CppBase64 ntparser stdc++
 
 
 add_executable(index_by_k2tree_with_sd scripts/index_by_k2tree_with_sd.cpp)
-target_link_libraries(index_by_k2tree_with_sd ${BASE_LIBS} ntparser)
+target_link_libraries(index_by_k2tree_with_sd ${BASE_LIBS} ntparser )
+
+
+add_executable(print_k2trees scripts/print_k2trees.cpp)
+target_link_libraries(print_k2trees ${BASE_LIBS} pthread)
 
 
 add_executable(split_nt_triples scripts/split_nt_triples.cpp)
@@ -212,9 +216,7 @@ target_include_directories(base64_transform PUBLIC ${LIB_CPPBASE64_PATH})
 target_link_libraries(base64_transform ${PROC_LIBS} CppBase64)
 
 
-
-
-
+add_executable(four_sided_queue_example example/four_sided_queue_example.cpp)
 
 # Only create test executables if google test is found
 find_package(GTest QUIET)
@@ -227,5 +229,5 @@ add_executable(index_file_test test/index_file_test.cpp)
 target_link_libraries(index_file_test ${BASE_LIBS} ${GTEST_BOTH_LIBRARIES})
 
 add_executable(four_sided_queue_test test/four_sided_queue_test.cpp)
-target_link_libraries(four_sided_queue_test ${BASE_LIBS} ${GTEST_BOTH_LIBRARIES})
+target_link_libraries(four_sided_queue_test ${GTEST_BOTH_LIBRARIES} pthread)
 endif()

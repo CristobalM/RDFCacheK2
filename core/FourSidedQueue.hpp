@@ -1,14 +1,17 @@
+#ifndef RDFCACHEK2_FOUR_SIDED_QUEUE_HPP
+#define RDFCACHEK2_FOUR_SIDED_QUEUE_HPP
 
+#include <cassert>
 #include <cstddef>
 #include <mutex>
 #include <unordered_map>
 
 template <typename T> struct FSNode {
-  T *item;
+  T item;
   FSNode *top, *down;
   FSNode *left, *right;
   unsigned long id;
-  FSNode(T *item, unsigned long id)
+  FSNode(T item, unsigned long id)
       : item(item), top(nullptr), down(nullptr), left(nullptr), right(nullptr),
         id(id) {}
 };
@@ -35,21 +38,37 @@ template <typename T> class FourSidedQueue {
 public:
   FourSidedQueue() : tail(nullptr), head(nullptr), qsize(0) {}
   FourSidedQueue(const FourSidedQueue &other) = delete;
-  FourSidedQueue &operator=(const FourSidedQueue &rhs) = delete;
 
-  FourSidedQueue(FourSidedQueue &&other) { auto lg = acquire_other(other); }
-  ~FourSidedQueue() {}
+  FourSidedQueue(FourSidedQueue &&other) {
+    auto lg = acquire_other(other);
+    std::swap(tail, other.tail);
+    std::swap(head, other.head);
+    qsize = 0;
+    std::swap(qsize, other.size);
+    std::swap(vertical_q, other.vertical_q);
+  }
+
+  ~FourSidedQueue() {
+    node_t *current = tail;
+    while (current) {
+      node_t *next = current->right;
+      delete current;
+      current = next;
+    }
+  }
 
   FourSidedQueue &operator=(FourSidedQueue &&rhs) {
     auto lg = acquire_other(rhs);
+    std::swap(tail, rhs.tail);
+    std::swap(head, rhs.head);
+    qsize = 0;
+    std::swap(qsize, rhs.size);
+    std::swap(vertical_q, rhs.vertical_q);
   }
 
   bool is_vertical_empty(unsigned long id) {
     lg_t lg(m);
-    if (!has_vertical_q(id))
-      return true;
-    auto &vq = vertical_q[id];
-    return !vq.head && !vq.tail;
+    return _is_vertical_empty(id);
   }
 
   size_t vertical_size(unsigned long id) {
@@ -60,42 +79,29 @@ public:
     return vq.vsize;
   }
 
-  T *pop_front_vertical(unsigned long id) {
+  T pop_next(unsigned long id) {
     lg_t lg(m);
-    if (!has_vertical_q(id))
-      return nullptr;
-    auto &vq = vertical_q[id];
-    if (!vq.head)
-      return nullptr;
-    T *result = vq.head->item;
-    node_t *next_head = vq.head->down;
-    if (next_head)
-      next_head->top = nullptr;
-    remove_from_horizontal_queue(vq.head);
-    delete vq.head;
-    vq.head = next_head;
-    if (!next_head)
-      vq.tail = nullptr;
-    qsize--;
-    vq.vsize--;
-    return result;
+    return _pop_next(id);
+  }
+
+  T pop_front_vertical(unsigned long id) {
+    lg_t lg(m);
+    return _pop_front_vertical(id);
   }
 
   T &front_vertical(unsigned long id) {
     lg_t lg(m);
     assert(has_vertical_q(id));
     auto &vq = vertical_q[id];
-    return *vq.head.item;
+    return vq.head.item;
   }
 
-  T *pop_back_vertical(unsigned long id) {
+  T pop_back_vertical(unsigned long id) {
     lg_t lg(m);
-    if (!has_vertical_q(id))
-      return nullptr;
+    assert(has_vertical_q(id));
     auto &vq = vertical_q[id];
-    if (!vq.tail)
-      return nullptr;
-    T *result = vq.tail->item;
+    assert(vq.tail);
+    T result = vq.tail->item;
     node_t *next_tail = vq.tail->top;
     if (next_tail)
       next_tail->down = nullptr;
@@ -113,10 +119,10 @@ public:
     lg_t lg(m);
     assert(has_vertical_q(id));
     auto &vq = vertical_q[id];
-    return *vq.tail.item;
+    return vq.tail.item;
   }
 
-  void push_front(T *item, unsigned long id) {
+  void push_front(T item, unsigned long id) {
     lg_t lg(m);
     node_t *node = new node_t(item, id);
     horizontal_push_front(node);
@@ -124,31 +130,19 @@ public:
     qsize++;
   }
 
-  T *pop_front() {
+  T pop_front() {
     lg_t lg(m);
-    if (!head)
-      return nullptr;
-    T *result = head->item;
-    node_t *next_head = head->left;
-    if (next_head)
-      next_head->right = nullptr;
-    remove_from_vertical_queue(head);
-    delete head;
-    head = next_head;
-    if (!next_head)
-      tail = nullptr;
-    qsize--;
-    return result;
+    return _pop_front();
   }
 
   T &front() {
     lg_t lg(m);
     assert(head != nullptr);
-    T *result = head->item;
-    return *result;
+    T result = head->item;
+    return result;
   }
 
-  void push_back(T *item, unsigned long id) {
+  void push_back(T item, unsigned long id) {
     lg_t lg(m);
     node_t *node = new node_t(item, id);
     horizontal_push_back(node);
@@ -156,9 +150,9 @@ public:
     qsize++;
   }
 
-  T *pop_back() {
+  T pop_back() {
     lg_t lg(m);
-    T *result = tail->item;
+    T result = tail->item;
     node_t *next_tail = tail->right;
     if (next_tail)
       next_tail->left = nullptr;
@@ -173,8 +167,8 @@ public:
 
   T &back() {
     lg_t lg(m);
-    T *result = tail->item;
-    return *result;
+    T result = tail->item;
+    return result;
   }
 
   size_t size() {
@@ -190,6 +184,52 @@ public:
   lg_t acquire_other(FourSidedQueue &other) { return std::lock_guard(other.m); }
 
 private:
+  T _pop_next(unsigned long id) {
+    if (!_is_vertical_empty(id))
+      return _pop_front_vertical(id);
+    return _pop_front();
+  }
+
+  bool _is_vertical_empty(unsigned long id) {
+    if (!has_vertical_q(id))
+      return true;
+    auto &vq = vertical_q[id];
+    return !vq.head || !vq.tail;
+  }
+
+  T _pop_front_vertical(unsigned long id) {
+    assert(has_vertical_q(id));
+    auto &vq = vertical_q[id];
+    assert(vq.head);
+    T result = vq.head->item;
+    node_t *next_head = vq.head->down;
+    if (next_head)
+      next_head->top = nullptr;
+    remove_from_horizontal_queue(vq.head);
+    delete vq.head;
+    vq.head = next_head;
+    if (!next_head)
+      vq.tail = nullptr;
+    qsize--;
+    vq.vsize--;
+    return result;
+  }
+
+  T _pop_front() {
+    assert(head);
+    T result = head->item;
+    node_t *next_head = head->left;
+    if (next_head)
+      next_head->right = nullptr;
+    remove_from_vertical_queue(head);
+    delete head;
+    head = next_head;
+    if (!next_head)
+      tail = nullptr;
+    qsize--;
+    return result;
+  }
+
   void create_vertical_queue_if_not_exist(unsigned long id) {
     if (!has_vertical_q(id)) {
       vertical_q[id] = VerticalQueue<T>();
@@ -287,3 +327,5 @@ private:
     return vertical_q.find(id) != vertical_q.end();
   }
 };
+
+#endif

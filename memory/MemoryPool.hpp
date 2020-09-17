@@ -6,6 +6,7 @@
 #define RDFCACHEK2_MEMORYPOOL_HPP
 
 #include <memory>
+#include <mutex>
 #include <queue>
 #include <stdexcept>
 #include <vector>
@@ -21,6 +22,10 @@ template <class T> class MemoryPool {
   size_t items_occupied;
   size_t allocation_times;
 
+  std::mutex m;
+
+  using lg_t = std::lock_guard<std::mutex>;
+
 public:
   explicit MemoryPool(size_t pool_block_capacity)
       : pool_block_capacity(pool_block_capacity), items_occupied(0),
@@ -31,6 +36,7 @@ public:
   }
 
   T *request_memory() {
+    lg_t lg(m);
     ensure_enough_capacity();
     auto next_item_pos = item_queue.top();
     item_queue.pop();
@@ -49,6 +55,7 @@ public:
   }
 
   void free_memory(T *ptr) {
+    lg_t lg(m);
     size_t buffer_index = find_owner_buffer(ptr);
     auto *buffer = reinterpret_cast<T *>(buffers[buffer_index].get());
     size_t offset = ptr - buffer;
@@ -58,30 +65,48 @@ public:
   }
 
   void free_all_memory() {
+    lg_t lg(m);
     buffers.clear();
     items_occupied = 0;
     allocation_times = 0;
   }
 
-  size_t get_bytes_occupied() { return sizeof(T) * items_occupied; }
+  size_t get_bytes_occupied() {
+    lg_t lg(m);
+    return sizeof(T) * items_occupied;
+  }
 
-  size_t get_items_occupied() { return items_occupied; }
+  size_t get_items_occupied() {
+    lg_t lg(m);
+    return items_occupied;
+  }
 
   size_t get_bytes_allocated() {
+    lg_t lg(m);
     return sizeof(T) * buffers.size() * pool_block_capacity;
   }
 
-  size_t get_items_allocated() { return buffers.size() * pool_block_capacity; }
+  size_t get_items_allocated() {
+    lg_t lg(m);
+    return buffers.size() * pool_block_capacity;
+  }
 
   float get_usage_rate() {
+    lg_t lg(m);
+
     return (float)get_items_occupied() / (float)get_items_allocated();
   }
 
   float get_bytes_usage_rate() {
+    lg_t lg(m);
+
     return (float)get_bytes_occupied() / (float)get_bytes_allocated();
   }
 
-  size_t get_times_allocated() { return allocation_times; }
+  size_t get_times_allocated() {
+    lg_t lg(m);
+    return allocation_times;
+  }
 
 private:
   void ensure_enough_capacity() {

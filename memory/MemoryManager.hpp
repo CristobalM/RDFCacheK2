@@ -22,11 +22,14 @@ extern "C" {
 
 #include "MemoryPool.hpp"
 
+#include <mutex>
 #include <string>
 
 class MemoryManager {
 
   uint64_t current_index;
+
+  std::mutex m;
 
 protected:
   MemoryManager();

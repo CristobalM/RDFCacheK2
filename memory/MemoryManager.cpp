@@ -77,6 +77,9 @@ std::string MemoryManager::memory_usage() {
 
   return ss.str();
 }
-uint64_t MemoryManager::new_block_index() { return current_index++; }
+uint64_t MemoryManager::new_block_index() {
+  std::lock_guard<std::mutex> lg(m);
+  return current_index++;
+}
 
 MemoryManager MemoryManager::_instance;
