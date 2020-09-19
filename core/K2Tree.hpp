@@ -19,6 +19,7 @@ extern "C" {
 #include <vector>
 
 #include <k2tree.pb.h>
+#include <mutex>
 #include <request_msg.pb.h>
 
 struct K2TreeStats {
@@ -33,7 +34,7 @@ struct K2TreeStats {
 
 class K2Tree {
   struct block *root;
-  struct queries_state *qs;
+  std::unique_ptr<struct queries_state> qs;
 
 public:
   explicit K2Tree(uint32_t tree_depth);

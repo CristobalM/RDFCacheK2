@@ -8,7 +8,11 @@
 #include <unordered_map>
 
 template <typename T> class MapOfQueues {
-  std::unordered_map<unsigned long, std::deque<T>> map;
+public:
+  using map_t = std::unordered_map<unsigned long, std::deque<T>>;
+
+private:
+  map_t map;
   std::mutex m;
 
   using lg_t = std::lock_guard<std::mutex>;
@@ -17,6 +21,8 @@ template <typename T> class MapOfQueues {
 
 public:
   MapOfQueues() : total_size(0) {}
+
+  map_t &get_map() { return map; }
 
   void push_back(T item, unsigned long id) {
     lg_t lg(m);
@@ -68,6 +74,12 @@ public:
   size_t size_at(unsigned long id) {
     lg_t lg(m);
     return _size_at(id);
+  }
+
+  void clear() {
+    lg_t lg(m);
+    map.clear();
+    total_size = 0;
   }
 
 private:

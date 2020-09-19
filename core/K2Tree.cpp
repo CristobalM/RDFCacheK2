@@ -27,8 +27,8 @@ bool same_bvs(const bitvector *lhs, const bitvector *rhs);
 bool same_vectors(const struct vector &lhs, const struct vector &rhs);
 
 K2Tree::K2Tree(uint32_t tree_depth) : root(create_block(tree_depth)) {
-  qs = new struct queries_state;
-  init_queries_state(qs, tree_depth);
+  qs = std::make_unique<struct queries_state>();
+  init_queries_state(qs.get(), tree_depth);
 }
 
 K2Tree::K2Tree(uint32_t tree_depth, uint32_t max_node_count)
@@ -37,8 +37,8 @@ K2Tree::K2Tree(uint32_t tree_depth, uint32_t max_node_count)
 }
 
 K2Tree::K2Tree(struct block *root) : root(root) {
-  qs = new struct queries_state;
-  init_queries_state(qs, root->tree_depth);
+  qs = std::make_unique<struct queries_state>();
+  init_queries_state(qs.get(), root->tree_depth);
 }
 
 K2Tree::K2Tree(K2Tree &&other) {
@@ -53,6 +53,7 @@ K2Tree &K2Tree::operator=(K2Tree &&rhs) {
   qs = nullptr;
   std::swap(root, rhs.root);
   std::swap(qs, rhs.qs);
+  return *this;
 }
 
 K2Tree::~K2Tree() noexcept(false) {
@@ -65,17 +66,16 @@ K2Tree::~K2Tree() noexcept(false) {
           std::to_string(err_check));
   }
   if (qs) {
-    err_check = finish_queries_state(qs);
+    err_check = finish_queries_state(qs.get());
     if (err_check)
       throw std::runtime_error(
           "finish_queries_state: ERROR WHILE FREEING MEMORY, CODE = " +
           std::to_string(err_check));
-    delete qs;
   }
 }
 
 void K2Tree::insert(unsigned long col, unsigned long row) {
-  int err_check = insert_point(root, col, row, qs);
+  int err_check = insert_point(root, col, row, qs.get());
   if (err_check)
     throw std::runtime_error("insert: CANT INSERT POINT " +
                              std::to_string(col) + ", " + std::to_string(row) +
@@ -84,7 +84,7 @@ void K2Tree::insert(unsigned long col, unsigned long row) {
 
 bool K2Tree::has(unsigned long col, unsigned long row) {
   int result;
-  int err_check = has_point(root, col, row, qs, &result);
+  int err_check = has_point(root, col, row, qs.get(), &result);
   if (err_check)
     throw std::runtime_error("has: ERROR WHILE SEARCHING POINT " +
                              std::to_string(col) + ", " + std::to_string(row) +
@@ -100,7 +100,7 @@ std::vector<std::pair<unsigned long, unsigned long>> K2Tree::scan_points() {
     throw std::runtime_error("scan_points: CAN'T INITIALIZE VECTOR, CODE: " +
                              std::to_string(err_check));
 
-  err_check = naive_scan_points(root, qs, &result);
+  err_check = naive_scan_points(root, qs.get(), &result);
   if (err_check) {
     free_vector(&result);
     throw std::runtime_error("scan_points: CODE: " + std::to_string(err_check));
@@ -121,7 +121,6 @@ std::vector<std::pair<unsigned long, unsigned long>> K2Tree::scan_points() {
 
 void serialize_block(struct block *b, std::vector<uint64_t> &children_ids,
                      proto_msg::K2Tree *to_feed) {
-
   proto_msg::Block *block = to_feed->add_blocks();
 
   uint32_t block_index = b->block_index;
@@ -249,11 +248,11 @@ K2Tree::K2Tree(const proto_msg::K2Tree &k2tree_proto) {
     b->root = root;
   }
 
-  init_queries_state(qs, tree_depth);
+  qs = std::make_unique<struct queries_state>();
+  init_queries_state(qs.get(), tree_depth);
 }
 
 void rec_occup_ratio_count(struct block *b, K2TreeStats &k2tree_stats) {
-
   k2tree_stats.allocated_u32s += b->bt->bv->container_size;
   k2tree_stats.nodes_count += b->bt->nodes_count;
   k2tree_stats.containers_sz_sum += sizeof(struct block) +

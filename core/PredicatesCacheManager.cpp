@@ -116,5 +116,5 @@ NaiveDynamicStringDictionary &PredicatesCacheManager::get_dyn_dicts() {
 
 void PredicatesCacheManager::replace_index_cache(
     std::unique_ptr<PredicatesIndexCache> &&predicates_index) {
-  predicates_index = std::move(predicates_index);
+  this->predicates_index = std::move(predicates_index);
 }

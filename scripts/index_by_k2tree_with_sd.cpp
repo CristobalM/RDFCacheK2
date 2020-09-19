@@ -142,7 +142,7 @@ void processor(NTTriple *ntriple, void *pcmb_holder) {
 void process_nt_file(PCMBuilderHolder &pcmb_holder, std::ifstream &nt_ifs) {
   NTParser ntparser(&nt_ifs, processor, &pcmb_holder);
   ntparser.parse();
-  pcmb_holder.pcb.wait_workers();
+  pcmb_holder.pcb.finish();
   pcmb_holder.pcm.replace_index_cache(pcmb_holder.pcb.get());
   std::cout << "Total time inserting into k2tree: "
             << pcmb_holder.pcb.get_measured_insertion_time() << " ns \n"
