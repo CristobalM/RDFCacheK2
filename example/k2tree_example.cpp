@@ -27,7 +27,7 @@ int main() {
          << endl;
 
     start = chrono::steady_clock::now();
-    auto scanned_points = k2tree.scan_points();
+    auto scanned_points = k2tree.get_all_points();
     end = chrono::steady_clock::now();
 
     cout << "scanned points amount: " << scanned_points.size() << endl;

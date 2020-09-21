@@ -230,4 +230,7 @@ target_link_libraries(index_file_test ${BASE_LIBS} ${GTEST_BOTH_LIBRARIES})
 
 add_executable(four_sided_queue_test test/four_sided_queue_test.cpp)
 target_link_libraries(four_sided_queue_test ${GTEST_BOTH_LIBRARIES} pthread)
+
+add_executable(k2tree_tests test/k2tree_tests.cpp)
+target_link_libraries(k2tree_tests  ${DEFAULT_LIBS}  ${GTEST_BOTH_LIBRARIES} pthread)
 endif()

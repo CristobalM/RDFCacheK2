@@ -30,7 +30,7 @@ std::vector<RDFTriple> GraphResult::scan_points() {
   for (auto &hmap_item : predicates_indexes) {
     ulong predicate_index = hmap_item.first;
     K2Tree &k2tree = *hmap_item.second;
-    auto scanned_points = k2tree.scan_points();
+    auto scanned_points = k2tree.get_all_points();
     for (auto pair_result : scanned_points) {
       result.push_back(
           {pair_result.first, predicate_index, pair_result.second});

@@ -92,7 +92,7 @@ bool K2Tree::has(unsigned long col, unsigned long row) {
   return result == 1;
 }
 
-std::vector<std::pair<unsigned long, unsigned long>> K2Tree::scan_points() {
+std::vector<std::pair<unsigned long, unsigned long>> K2Tree::get_all_points() {
   struct vector result {};
   int err_check;
   err_check = init_vector_with_capacity(&result, sizeof(unsigned long), 1024);
@@ -117,6 +117,37 @@ std::vector<std::pair<unsigned long, unsigned long>> K2Tree::scan_points() {
   free_vector(&result);
 
   return out;
+}
+
+void K2Tree::scan_points(point_reporter_fun_t fun_reporter,
+                         void *report_state) {
+  int err_check =
+      scan_points_interactively(root, qs.get(), fun_reporter, report_state);
+  if (err_check) {
+    throw std::runtime_error("scan_points (interactive): CODE: " +
+                             std::to_string(err_check));
+  }
+}
+
+void K2Tree::traverse_row(unsigned long row, point_reporter_fun_t fun_reporter,
+                          void *report_state) {
+  int err_check =
+      report_row_interactively(root, row, qs.get(), fun_reporter, report_state);
+  if (err_check) {
+    throw std::runtime_error("traverse_row (interactive): CODE: " +
+                             std::to_string(err_check));
+  }
+}
+
+void K2Tree::traverse_column(unsigned long column,
+                             point_reporter_fun_t fun_reporter,
+                             void *report_state) {
+  int err_check = report_column_interactively(root, column, qs.get(),
+                                              fun_reporter, report_state);
+  if (err_check) {
+    throw std::runtime_error("traverse_column (interactive): CODE: " +
+                             std::to_string(err_check));
+  }
 }
 
 void serialize_block(struct block *b, std::vector<uint64_t> &children_ids,
@@ -284,7 +315,7 @@ K2TreeStats K2Tree::k2tree_stats() {
 
   rec_occup_ratio_count(root, result);
 
-  auto scanned_points = scan_points();
+  auto scanned_points = get_all_points();
   result.number_of_points = scanned_points.size();
 
   return result;

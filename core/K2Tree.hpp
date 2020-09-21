@@ -54,7 +54,13 @@ public:
 
   unsigned long get_tree_depth();
 
-  std::vector<std::pair<unsigned long, unsigned long>> scan_points();
+  std::vector<std::pair<unsigned long, unsigned long>> get_all_points();
+
+  void scan_points(point_reporter_fun_t fun_reporter, void *report_state);
+  void traverse_row(unsigned long row, point_reporter_fun_t fun_reporter,
+                    void *report_state);
+  void traverse_column(unsigned long column, point_reporter_fun_t fun_reporter,
+                       void *report_state);
 
   K2TreeStats k2tree_stats();
 

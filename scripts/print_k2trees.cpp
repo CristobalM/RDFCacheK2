@@ -31,7 +31,7 @@ int main(int argc, char **argv) {
   auto predicates_indexes = pic.get_predicates_ids();
   for (auto id : predicates_indexes) {
     auto &k2tree = pic.get_k2tree(id);
-    auto scanned_points = k2tree.scan_points();
+    auto scanned_points = k2tree.get_all_points();
     for (auto &scanned_point : scanned_points) {
       ofs << scanned_point.first << "," << id << "," << scanned_point.second
           << "\n";
