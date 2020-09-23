@@ -31,6 +31,8 @@ public:
   explicit PredicatesCacheManager(std::unique_ptr<ISDManager> &&isd_manager);
 
   void add_triple(RDFTripleResource &rdf_triple);
+  void add_triple(RDFTripleResource &&rdf_triple);
+  
   void add_triple(RDFTripleResource &rdf_triple,
                   PredicatesIndexCacheBuilder &builder);
 

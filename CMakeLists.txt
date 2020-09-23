@@ -23,6 +23,7 @@ set(CORE_SOURCE_FILES
         core/PredicatesCacheManager.cpp
         core/NaiveDynamicStringDictionary.cpp
         core/ResultTable.cpp
+        core/EmptyISDManager.cpp
         )
 
 set(PROC_SOURCE_FILES
@@ -228,6 +229,9 @@ target_link_libraries(serialization_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES}
 
 add_executable(k2tree_serialization_test  test/k2tree_serialization_test.cpp)
 target_link_libraries(k2tree_serialization_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES})
+
+add_executable(predicates_cache_manager_test  test/predicates_cache_manager_test.cpp)
+target_link_libraries(predicates_cache_manager_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES})
 
 add_executable(index_file_test test/index_file_test.cpp)
 target_link_libraries(index_file_test ${BASE_LIBS} ${GTEST_BOTH_LIBRARIES})

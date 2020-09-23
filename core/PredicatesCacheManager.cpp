@@ -52,7 +52,9 @@ void PredicatesCacheManager::handle_not_found(unsigned long &resource_id,
     resource_id = resource_id + isd_manager->last_id();
   }
 }
-
+void PredicatesCacheManager::add_triple(RDFTripleResource &&rdf_triple){
+  add_triple(rdf_triple);
+}
 void PredicatesCacheManager::add_triple(RDFTripleResource &rdf_triple) {
   auto start = std::chrono::high_resolution_clock::now();
   auto subject_id = get_resource_index(rdf_triple.subject);
