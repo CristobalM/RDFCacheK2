@@ -55,6 +55,8 @@ public:
   unsigned long get_tree_depth();
 
   std::vector<std::pair<unsigned long, unsigned long>> get_all_points();
+  std::vector<unsigned long> get_row(unsigned long row);
+  std::vector<unsigned long> get_column(unsigned long row);
 
   void scan_points(point_reporter_fun_t fun_reporter, void *report_state);
   void traverse_row(unsigned long row, point_reporter_fun_t fun_reporter,
@@ -70,6 +72,9 @@ public:
   K2Tree(proto_msg::CacheFeedFullK2TreeRequest &cache_feed_full_k2tree_request);
 
   bool same_as(const K2Tree &other);
+
+  void write_to_ostream(std::ostream &os);
+  static K2Tree read_from_istream(std::istream &is);
 };
 
 #endif // RDFCACHEK2_K2TREE_HPP

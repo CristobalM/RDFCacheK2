@@ -17,4 +17,9 @@ uint32_t read_u32(std::istream &input_stream);
 void write_u64(std::ostream &output_stream, uint64_t value);
 uint64_t read_u64(std::istream &input_stream);
 
+void write_u32_array(std::ostream &output_stream, uint32_t *array,
+                     uint32_t array_size);
+std::unique_ptr<uint32_t[]> read_u32_array(std::istream &input_stream,
+                                           uint32_t *array_size);
+
 #endif // RDFCACHEK2_SERIALIZATION_UTIL_HPP

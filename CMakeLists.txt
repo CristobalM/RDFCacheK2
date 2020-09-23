@@ -22,6 +22,7 @@ set(CORE_SOURCE_FILES
         core/serialization_util.cpp
         core/PredicatesCacheManager.cpp
         core/NaiveDynamicStringDictionary.cpp
+        core/ResultTable.cpp
         )
 
 set(PROC_SOURCE_FILES
@@ -225,6 +226,9 @@ include_directories(${GTEST_INCLUDE_DIRS})
 add_executable(serialization_test  test/serialization_tests.cpp)
 target_link_libraries(serialization_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES})
 
+add_executable(k2tree_serialization_test  test/k2tree_serialization_test.cpp)
+target_link_libraries(k2tree_serialization_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES})
+
 add_executable(index_file_test test/index_file_test.cpp)
 target_link_libraries(index_file_test ${BASE_LIBS} ${GTEST_BOTH_LIBRARIES})
 
@@ -233,4 +237,7 @@ target_link_libraries(four_sided_queue_test ${GTEST_BOTH_LIBRARIES} pthread)
 
 add_executable(k2tree_tests test/k2tree_tests.cpp)
 target_link_libraries(k2tree_tests  ${DEFAULT_LIBS}  ${GTEST_BOTH_LIBRARIES} pthread)
+
+add_executable(result_table_test test/result_table_test.cpp)
+target_link_libraries(result_table_test  ${DEFAULT_LIBS}  ${GTEST_BOTH_LIBRARIES} pthread)
 endif()
