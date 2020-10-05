@@ -22,6 +22,8 @@ extern "C" {
 #include <mutex>
 #include <request_msg.pb.h>
 
+#include "ResultTable.hpp"
+
 struct K2TreeStats {
   int allocated_u32s;
   int nodes_count;
@@ -63,6 +65,9 @@ public:
                     void *report_state);
   void traverse_column(unsigned long column, point_reporter_fun_t fun_reporter,
                        void *report_state);
+
+  ResultTable column_as_table(unsigned long column);
+  ResultTable row_as_table(unsigned long row);
 
   K2TreeStats k2tree_stats();
 

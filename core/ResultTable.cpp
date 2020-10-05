@@ -12,9 +12,15 @@ ResultTable::ResultTable(unsigned long first_column_header,
   }
 }
 
+ResultTable::ResultTable(unsigned long first_column_header,
+                         std::list<vul_t> &&initial_list)
+    : data(std::move(initial_list)) {
+  headers.push_back(first_column_header);
+}
+
 void ResultTable::join_with(unsigned long left_column_index,
                             unsigned long right_column_index,
-                            ResultTable &&right) {
+                            ResultTable &right, bool outer) {
 
   auto lit = data.begin();
   auto rit = right.data.begin();
@@ -28,7 +34,10 @@ void ResultTable::join_with(unsigned long left_column_index,
     auto &l = *lit;
     auto &r = *rit;
 
-    if (l[left_column_index] == r[right_column_index]) {
+    auto lval = l[left_column_index];
+    auto rval = r[right_column_index];
+
+    if (lval == rval) {
       for (size_t i = 0; i < right_column_index; i++) {
         l.push_back(r[i]);
       }
@@ -38,10 +47,13 @@ void ResultTable::join_with(unsigned long left_column_index,
       }
       lit++;
       rit++;
-    } else if (l < r) {
+    } else if (lval < rval) {
       auto curr = lit;
       lit++;
-      data.erase(curr);
+      if (!outer)
+        data.erase(curr);
+      else
+        l.push_back(0);
     } else {
       rit++;
     }
@@ -52,6 +64,18 @@ void ResultTable::join_with(unsigned long left_column_index,
     lit++;
     data.erase(curr);
   }
+}
+
+void ResultTable::left_outer_join_with(unsigned long left_column_index,
+                                       unsigned long right_index,
+                                       ResultTable &right) {
+  join_with(left_column_index, right_index, right, true);
+}
+
+void ResultTable::left_inner_join_with(unsigned long left_column_index,
+                                       unsigned long right_index,
+                                       ResultTable &right) {
+  join_with(left_column_index, right_index, right, false);
 }
 
 std::list<std::vector<unsigned long>> &ResultTable::get_data() { return data; }

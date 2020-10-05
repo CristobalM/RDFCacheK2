@@ -50,7 +50,8 @@ void PredicatesIndexCache::load_dump_file(const std::string &file_path) {
 
   for (uint32_t i = 0; i < map_sz; i++) {
     uint64_t predicate_index = read_u64(ifstream);
-    predicates_map[predicate_index] = std::make_unique<K2Tree>(K2Tree::read_from_istream(ifstream));
+    predicates_map[predicate_index] =
+        std::make_unique<K2Tree>(K2Tree::read_from_istream(ifstream));
   }
   ifstream.close();
 }

@@ -517,6 +517,36 @@ bool K2Tree::same_as(const K2Tree &other) {
   return same_blocks(root, other.root);
 }
 
+ResultTable K2Tree::column_as_table(unsigned long column) {
+  std::list<std::vector<unsigned long>> data;
+
+  traverse_column(
+      column,
+      [](unsigned long col, unsigned long row, void *_data) {
+        auto &data =
+            *reinterpret_cast<std::list<std::vector<unsigned long>> *>(_data);
+        data.push_back({row});
+      },
+      &data);
+
+  return ResultTable(column, std::move(data));
+}
+
+ResultTable K2Tree::row_as_table(unsigned long row) {
+  std::list<std::vector<unsigned long>> data;
+
+  traverse_row(
+      row,
+      [](unsigned long col, unsigned long row, void *_data) {
+        auto &data =
+            *reinterpret_cast<std::list<std::vector<unsigned long>> *>(_data);
+        data.push_back({col});
+      },
+      &data);
+
+  return ResultTable(row, std::move(data));
+}
+
 bool same_blocks(const struct block *lhs, const struct block *rhs) {
   auto fields_result = lhs->block_depth == rhs->block_depth &&
                        lhs->tree_depth == rhs->tree_depth &&
