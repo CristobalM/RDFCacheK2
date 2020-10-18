@@ -49,17 +49,18 @@ std::vector<unsigned long> get_k2tree_band(unsigned long band_index,
 
 K2Tree::K2Tree(uint32_t tree_depth) : root(create_block(tree_depth)) {
   qs = std::make_unique<struct queries_state>();
-  init_queries_state(qs.get(), tree_depth);
+  init_queries_state(qs.get(), tree_depth, root->max_node_count);
 }
 
-K2Tree::K2Tree(uint32_t tree_depth, uint32_t max_node_count)
-    : K2Tree(tree_depth) {
+K2Tree::K2Tree(uint32_t tree_depth, uint32_t max_node_count) :root(create_block(tree_depth)){
+  qs = std::make_unique<struct queries_state>();
   root->max_node_count = max_node_count;
+  init_queries_state(qs.get(), tree_depth, root->max_node_count);
 }
 
 K2Tree::K2Tree(struct block *root) : root(root) {
   qs = std::make_unique<struct queries_state>();
-  init_queries_state(qs.get(), root->tree_depth);
+  init_queries_state(qs.get(), root->tree_depth, root->max_node_count);
 }
 
 K2Tree::K2Tree(K2Tree &&other) {
@@ -456,7 +457,7 @@ K2Tree::K2Tree(const proto_msg::K2Tree &k2tree_proto) {
   }
 
   qs = std::make_unique<struct queries_state>();
-  init_queries_state(qs.get(), tree_depth);
+  init_queries_state(qs.get(), tree_depth, root->max_node_count);
 }
 
 void rec_occup_ratio_count(struct block *b, K2TreeStats &k2tree_stats) {
