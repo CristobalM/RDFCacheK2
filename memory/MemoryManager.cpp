@@ -11,8 +11,8 @@ const size_t default_pool_block_sz = 512;
 
 MemoryManager::MemoryManager()
     : current_index(0), blocks(649880), block_topologies(649880),
-      block_frontiers(649880), vectors(1299760), bitvectors(649880),
-      containers_32(1299760), containers_64(default_pool_block_sz),
+      block_frontiers(649880), bitvectors(649880), containers_32(1299760),
+      containers_64(default_pool_block_sz),
       containers_128(default_pool_block_sz),
       containers_256(default_pool_block_sz),
       containers_512(default_pool_block_sz),
@@ -40,7 +40,6 @@ std::string MemoryManager::memory_usage() {
 
   report_pool_memory_usage(ss, blocks, "blocks");
   report_pool_memory_usage(ss, block_topologies, "block_topologies");
-  report_pool_memory_usage(ss, vectors, "vectors");
   report_pool_memory_usage(ss, bitvectors, "bitvectors");
   report_pool_memory_usage(ss, containers_32, "containers_32");
   report_pool_memory_usage(ss, containers_64, "containers_64");
@@ -51,7 +50,6 @@ std::string MemoryManager::memory_usage() {
 
   size_t total_bytes_occupied =
       blocks.get_bytes_occupied() + block_topologies.get_bytes_occupied() +
-      vectors.get_bytes_occupied() + bitvectors.get_bytes_occupied() +
       containers_32.get_bytes_occupied() + containers_64.get_bytes_occupied() +
       containers_128.get_bytes_occupied() +
       containers_256.get_bytes_occupied() +
@@ -60,8 +58,7 @@ std::string MemoryManager::memory_usage() {
 
   size_t total_bytes_allocated =
       blocks.get_bytes_allocated() + block_topologies.get_bytes_allocated() +
-      vectors.get_bytes_allocated() + bitvectors.get_bytes_allocated() +
-      containers_32.get_bytes_allocated() +
+      bitvectors.get_bytes_allocated() + containers_32.get_bytes_allocated() +
       containers_64.get_bytes_allocated() +
       containers_128.get_bytes_allocated() +
       containers_256.get_bytes_allocated() +

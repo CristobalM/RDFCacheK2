@@ -1,5 +1,5 @@
 #include "EmptyISDManager.hpp"
-
+#include <stdexcept>
 void EmptyISDManager::save(const std::string &sub_fname,
                            const std::string &pred_fname,
                            const std::string &obj_fname) {}

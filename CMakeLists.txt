@@ -67,25 +67,6 @@ set(INCLUDES memory core network proc ${PROTO_MESSAGES_PATH} ${CMAKE_SOURCE_DIR}
 
 set(K2TREE_PATH ${CMAKE_SOURCE_DIR}/lib/c-k2tree-dyn)
 
-
-set(K2TREE_LIBFILE libk2tree_merged_noalloc.a)
-
-add_custom_command(OUTPUT ${K2TREE_LIBFILE}
-        COMMAND make
-        COMMAND cp bin/libk2tree_merged_noalloc.a ${CMAKE_BINARY_DIR}
-        WORKING_DIRECTORY ${K2TREE_PATH}
-        )
-add_custom_target(_k2tree_target ALL DEPENDS ${K2TREE_LIBFILE})
-add_library(_k2tree_merged_noalloc STATIC IMPORTED GLOBAL)
-add_dependencies(_k2tree_merged_noalloc _k2tree_target)
-set_target_properties(_k2tree_merged_noalloc
-        PROPERTIES
-        IMPORTED_LOCATION ${K2TREE_PATH}/libk2tree_merged_noalloc.a
-        INTERFACE_INCLUDE_DIRECTORIES ${K2TREE_LIB_LOCATION}/include
-        )
-
-
-
 set(INCLUDES_LIBS
         ${K2TREE_PATH}/include
         ${K2TREE_PATH}/lib/c-bitvector/include
@@ -114,6 +95,9 @@ set(LIB_NTPARSER_INCLUDES
 add_subdirectory(${LIB_NTPARSER})
 
 
+add_subdirectory(${K2TREE_PATH})
+
+
 include_directories(${INCLUDES} ${INCLUDES_LIBS} ${LIB_CSD_INCLUDES} ${LIB_NTPARSER_INCLUDES})
 link_directories(${LINK_LIBS})
 
@@ -132,7 +116,8 @@ add_library(ProtoMessages STATIC ${PROTO_MESSAGES})
 
 add_library(Proc STATIC ${PROC_SOURCE_FILES})
 
-add_dependencies(RDFCacheK2 _k2tree_merged_noalloc)
+# add_dependencies(RDFCacheK2 _k2tree_merged_noalloc)
+add_dependencies(RDFCacheK2 k2dyn)
 
 find_package(Protobuf REQUIRED)
 include_directories(${Protobuf_INCLUDE_DIRS})
@@ -145,7 +130,7 @@ add_executable(start_cache_server_example example/start_cache_server_example.cpp
 
 set(BASE_LIBS
         RDFCacheK2
-        k2tree_merged_noalloc
+        k2dyn
         MemoryManager
         ProtoMessages
         ${Protobuf_LIBRARIES}
@@ -164,7 +149,7 @@ set(PROC_LIBS
 set(DEFAULT_LIBS
         RDFCacheK2
         RDFCacheK2_Network
-        k2tree_merged_noalloc
+        k2dyn
         MemoryManager
         pthread
         ProtoMessages
@@ -223,6 +208,7 @@ add_executable(four_sided_queue_example example/four_sided_queue_example.cpp)
 # Only create test executables if google test is found
 find_package(GTest QUIET)
 if(GTest_FOUND)
+enable_testing()
 include_directories(${GTEST_INCLUDE_DIRS})
 add_executable(serialization_test  test/serialization_tests.cpp)
 target_link_libraries(serialization_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES})
@@ -244,4 +230,12 @@ target_link_libraries(k2tree_tests  ${DEFAULT_LIBS}  ${GTEST_BOTH_LIBRARIES} pth
 
 add_executable(result_table_test test/result_table_test.cpp)
 target_link_libraries(result_table_test  ${DEFAULT_LIBS}  ${GTEST_BOTH_LIBRARIES} pthread)
+
+add_test(NAME serialization_test COMMAND ./serialization_test)
+add_test(NAME k2tree_serialization_test COMMAND ./k2tree_serialization_test)
+add_test(NAME predicates_cache_manager_test COMMAND ./predicates_cache_manager_test)
+add_test(NAME index_file_test COMMAND ./index_file_test)
+add_test(NAME four_sided_queue_test COMMAND ./four_sided_queue_test)
+add_test(NAME k2tree_tests COMMAND ./k2tree_tests)
+add_test(NAME result_table_test COMMAND ./result_table_test)
 endif()

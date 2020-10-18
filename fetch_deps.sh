@@ -64,3 +64,22 @@ else
 fi
 
 cd ..
+
+git submodule update --init --recursive
+git pull --recurse-submodules
+LIB_CK2TREE="c-k2tree-dyn"
+if [[ -d ${LIB_CK2TREE} ]]; then
+    cd ${LIB_CK2TREE}
+    git fetch
+    git pull
+else
+    if ! (git clone https://github.com/CristobalM/${LIB_CK2TREE}) then
+        echo "Couldn't retrieve ${LIB_CK2TREE} repository.. exiting"
+        exit 1
+    fi
+    cd ${LIB_NTPARSER}
+fi
+
+./fetch_deps.sh
+
+cd ..

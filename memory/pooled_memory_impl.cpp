@@ -38,10 +38,6 @@ struct bitvector *k2tree_alloc_bitvector(void) {
   return MemoryManager::instance().bitvectors.request_memory();
 }
 
-struct vector *k2tree_alloc_vector(void) {
-  return MemoryManager::instance().vectors.request_memory();
-}
-
 struct u32array_alloc k2tree_alloc_u32array(int size) {
   if (size > 1024) {
     throw std::runtime_error(
@@ -113,11 +109,6 @@ int k2tree_free_block_frontier(struct block_frontier *bf) {
 
 int k2tree_free_bitvector(struct bitvector *bv) {
   MemoryManager::instance().bitvectors.free_memory(bv);
-  return 0;
-}
-
-int k2tree_free_vector(struct vector *v) {
-  MemoryManager::instance().vectors.free_memory(v);
   return 0;
 }
 
