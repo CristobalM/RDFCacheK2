@@ -18,9 +18,7 @@ extern "C" {
 #include <string>
 #include <vector>
 
-#include <k2tree.pb.h>
 #include <mutex>
-#include <request_msg.pb.h>
 
 #include "ResultTable.hpp"
 
@@ -41,7 +39,7 @@ class K2Tree {
 public:
   explicit K2Tree(uint32_t tree_depth);
   K2Tree(uint32_t tree_depth, uint32_t max_node_count);
-  explicit K2Tree(struct block *root);
+  K2Tree(struct block *root, uint32_t tree_depth, uint32_t nodes_in_block);
 
   K2Tree(const K2Tree &other) = delete;
   K2Tree &operator=(K2Tree &rhs) = delete;
@@ -66,15 +64,12 @@ public:
   void traverse_column(unsigned long column, point_reporter_fun_t fun_reporter,
                        void *report_state);
 
+  struct k2tree_measurement measure_in_memory_size();
+
   ResultTable column_as_table(unsigned long column);
   ResultTable row_as_table(unsigned long row);
 
   K2TreeStats k2tree_stats();
-
-  void produce_proto(proto_msg::K2Tree *to_feed);
-
-  K2Tree(const proto_msg::K2Tree &k2tree_proto);
-  K2Tree(proto_msg::CacheFeedFullK2TreeRequest &cache_feed_full_k2tree_request);
 
   bool same_as(const K2Tree &other);
 

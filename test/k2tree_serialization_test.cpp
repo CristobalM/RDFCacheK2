@@ -74,4 +74,19 @@ TEST(k2tree_serialization_custom, test1) {
           << "point (" << i << ", " << j << ") not found";
     }
   }
+  for (int i = cols; i < 700; i++) {
+    for (int j = 0; j < 700; j++) {
+      ASSERT_FALSE(other_k2tree.has(i, j))
+          << "point (" << i << ", " << j << ") exists and shouldn't";
+    }
+  }
+  for (int i = 0; i < 700; i++) {
+    for (int j = rows; j < 700; j++) {
+      ASSERT_FALSE(other_k2tree.has(i, j))
+          << "point (" << i << ", " << j << ") exists and shouldn't";
+    }
+  }
+
+  ASSERT_FALSE(other_k2tree.has(1 << 30, 1 << 30))
+      << "point (" << 1 << 30 << ", " << 1 << 30 << ") exists and shouldn't";
 }

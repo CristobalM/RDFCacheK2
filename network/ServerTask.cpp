@@ -94,10 +94,12 @@ void process_cache_retrieve(ServerTask &server_task, Message &message) {
   cache_response.mutable_cache_retrieve_response()->set_has_result_stored(
       exists);
   if (exists) {
+    /*
     auto &cache_graph_result = cache.get_graph_result(label);
     cache_graph_result.produce_proto(
         cache_response.mutable_cache_retrieve_response()
             ->mutable_graph_result());
+    */
   }
   send_response(client_fd, cache_response);
 }

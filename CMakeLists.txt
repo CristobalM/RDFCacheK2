@@ -42,7 +42,7 @@ set(GRAPH_RESULT_CACHING_FILE
 set(NETWORK_SOURCE_FILES
         network/CacheServer.cpp
         network/TCPServerConnection.cpp
-        network/ServerTask.cpp
+        #network/ServerTask.cpp
         network/CacheServerTaskProcessor.cpp
         network/ServerWorker.cpp
         network/Message.cpp
@@ -103,13 +103,12 @@ link_directories(${LINK_LIBS})
 
 
 add_library(MemoryManager STATIC
-        memory/pooled_memory_impl.cpp
         memory/MemoryManager.cpp
         )
 
 add_library(RDFCacheK2 STATIC ${CORE_SOURCE_FILES})
-add_library(RDFCacheK2_Network STATIC ${NETWORK_SOURCE_FILES})
-add_library(RDFCacheK2_GR STATIC ${GRAPH_RESULT_CACHING_FILE})
+#add_library(RDFCacheK2_Network STATIC ${NETWORK_SOURCE_FILES})
+#add_library(RDFCacheK2_GR STATIC ${GRAPH_RESULT_CACHING_FILE})
 
 add_library(ProtoMessages STATIC ${PROTO_MESSAGES})
 
@@ -126,7 +125,7 @@ set(RAX_PATH plib/rax-31-may-2020-1927550)
 add_library(Rax ${RAX_PATH}/rax.c )
 include_directories(${RAX_PATH})
 
-add_executable(start_cache_server_example example/start_cache_server_example.cpp)
+#add_executable(start_cache_server_example example/start_cache_server_example.cpp)
 
 set(BASE_LIBS
         RDFCacheK2
@@ -148,7 +147,7 @@ set(PROC_LIBS
 
 set(DEFAULT_LIBS
         RDFCacheK2
-        RDFCacheK2_Network
+        #RDFCacheK2_Network
         k2dyn
         MemoryManager
         pthread
@@ -165,7 +164,7 @@ set(LIB_CPPBASE64_PATH lib/cpp-base64)
 add_library(CppBase64 ${LIB_CPPBASE64_PATH}/base64.cpp ${LIB_CPPBASE64_PATH}/base64.h)
 
 
-target_link_libraries(start_cache_server_example RDFCacheK2_GR ${DEFAULT_LIBS} )
+# target_link_libraries(start_cache_server_example RDFCacheK2_GR ${DEFAULT_LIBS} )
 
 
 add_executable(sample_set scripts/sample_set.cpp)
@@ -239,3 +238,7 @@ add_test(NAME four_sided_queue_test COMMAND ./four_sided_queue_test)
 add_test(NAME k2tree_tests COMMAND ./k2tree_tests)
 add_test(NAME result_table_test COMMAND ./result_table_test)
 endif()
+
+
+add_executable(k2tree_size_benchmark benchmarks/k2tree_size_benchmark.cpp)
+target_link_libraries(k2tree_size_benchmark ${BASE_LIBS})

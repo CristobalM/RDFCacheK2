@@ -9,11 +9,10 @@
 #include <unordered_map>
 #include <utility>
 
-#include <graph_result.pb.h>
-#include <request_msg.pb.h>
-
 #include <K2Tree.hpp>
 #include <RDFTriple.hpp>
+
+#include <request_msg.pb.h>
 
 struct GraphResultStats {
   int allocated_u32s;
@@ -32,7 +31,6 @@ class GraphResult {
 
 public:
   GraphResult();
-  GraphResult(proto_msg::CacheFeedRequest &cache_feed_request);
 
   static const ulong MAX_ASSOCIATION_DEPTH_DEFAULT = 32;
 
@@ -47,8 +45,6 @@ public:
   std::vector<RDFTriple> scan_points();
 
   GraphResultStats graph_result_stats();
-
-  void produce_proto(proto_msg::GraphResult *graph_result);
 
   ulong predicates_count();
 };

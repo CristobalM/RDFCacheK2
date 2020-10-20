@@ -30,7 +30,7 @@ public:
   Cache();
 
   bool result_exists(const std::string &label);
-  bool feed(proto_msg::CacheFeedRequest cache_feed_request);
+  // bool feed(proto_msg::CacheFeedRequest cache_feed_request);
   GraphResult &get_graph_result(const std::string &label);
 
   int results_stored();

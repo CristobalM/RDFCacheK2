@@ -52,16 +52,6 @@ void GraphResult::insert_predicate(ulong predicate_index) {
   insert_predicate(predicate_index, MAX_ASSOCIATION_DEPTH_DEFAULT);
 }
 
-GraphResult::GraphResult(proto_msg::CacheFeedRequest &cache_feed_request) {
-  for (const proto_msg::RDFTriple &rdf_triple :
-       cache_feed_request.rdf_triples()) {
-    if (!has_predicate(rdf_triple.predicate())) {
-      insert_predicate(rdf_triple.predicate());
-    }
-    insert_triple(rdf_triple);
-  }
-}
-
 bool GraphResult::has_predicate(ulong predicate_index) {
   return predicates_indexes.find(predicate_index) != predicates_indexes.end();
 }
@@ -69,16 +59,6 @@ bool GraphResult::has_predicate(ulong predicate_index) {
 void GraphResult::insert_triple(const proto_msg::RDFTriple &rdf_triple) {
   insert_triple(rdf_triple.subject(), rdf_triple.predicate(),
                 rdf_triple.object());
-}
-
-void GraphResult::produce_proto(proto_msg::GraphResult *graph_result) {
-  for (auto &hmap_item : predicates_indexes) {
-    auto predicate = (uint64_t)hmap_item.first;
-    graph_result->add_predicates(predicate);
-    auto &k2tree_ptr = predicates_indexes[predicate];
-    proto_msg::K2Tree *k2tree_proto = graph_result->add_k2trees();
-    k2tree_ptr->produce_proto(k2tree_proto);
-  }
 }
 
 GraphResultStats GraphResult::graph_result_stats() {

@@ -32,9 +32,10 @@ public:
 
   void wait_workers();
 
-  void feed_full_k2tree(
-      proto_msg::CacheFeedFullK2TreeRequest &cache_feed_full_k2tree_request);
-
+  /*
+    void feed_full_k2tree(
+        proto_msg::CacheFeedFullK2TreeRequest &cache_feed_full_k2tree_request);
+  */
   bool has_predicate(uint64_t predicate_index);
   void add_predicate(uint64_t predicate_index);
   K2Tree &get_k2tree(uint64_t predicate_index);

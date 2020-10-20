@@ -14,11 +14,13 @@
 
 PredicatesIndexCache::PredicatesIndexCache() {}
 
+/*
 void PredicatesIndexCache::feed_full_k2tree(
     proto_msg::CacheFeedFullK2TreeRequest &cache_feed_full_k2tree_request) {
   predicates_map[cache_feed_full_k2tree_request.predicate_index()] =
       std::make_unique<K2Tree>(cache_feed_full_k2tree_request);
 }
+*/
 
 bool PredicatesIndexCache::has_predicate(uint64_t predicate_index) {
   return predicates_map.find(predicate_index) != predicates_map.end();
