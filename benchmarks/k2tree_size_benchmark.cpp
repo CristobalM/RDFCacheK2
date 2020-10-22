@@ -33,7 +33,7 @@ BenchmarkResult space_benchmark_random_insertion_by_depth_and_node_count(
 int main(void) {
 
   unsigned long points_count = 1 << 25;
-  unsigned long treedepth = 30;
+  unsigned long treedepth = 16;
   unsigned long side = 1 << treedepth;
   unsigned long side_count =
       std::min((unsigned long)std::sqrt(points_count), side);

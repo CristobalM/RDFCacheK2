@@ -10,15 +10,24 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
 endif()
 
-set(CMAKE_CXX_FLAGS "-Wall -Wextra")
+#set(CMAKE_CXX_FLAGS "-Wall -Wextra")
+set(CMAKE_C_FLAGS "-Wall -Wextra -std=c99 -pedantic -Wmissing-prototypes -Wstrict-prototypes -Wold-style-definition -Werror")
+set(CMAKE_CXX_FLAGS "-Wall -Wextra -std=c++17 -pedantic -Werror")
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+
+
+add_definitions(-DLIGHT_FIELDS)
+
+
+#set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -fsanitize=address")
+#set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address")
+#set(CMAKE_LINKER_FLAGS_DEBUG "-fsanitize=address")
 
 
 set(CORE_SOURCE_FILES
         core/K2Tree.cpp
         core/PredicatesIndexCache.cpp
-        core/EntitiesMapping.cpp
         core/serialization_util.cpp
         core/PredicatesCacheManager.cpp
         core/NaiveDynamicStringDictionary.cpp
@@ -69,8 +78,7 @@ set(K2TREE_PATH ${CMAKE_SOURCE_DIR}/lib/c-k2tree-dyn)
 
 set(INCLUDES_LIBS
         ${K2TREE_PATH}/include
-        ${K2TREE_PATH}/lib/c-bitvector/include
-        ${K2TREE_PATH}/lib/c-queue/include
+        ${K2TREE_PATH}/bitvector/include
         ${K2TREE_PATH}/lib/c-vector/include
         )
 
@@ -121,9 +129,7 @@ add_dependencies(RDFCacheK2 k2dyn)
 find_package(Protobuf REQUIRED)
 include_directories(${Protobuf_INCLUDE_DIRS})
 
-set(RAX_PATH plib/rax-31-may-2020-1927550)
-add_library(Rax ${RAX_PATH}/rax.c )
-include_directories(${RAX_PATH})
+
 
 #add_executable(start_cache_server_example example/start_cache_server_example.cpp)
 
@@ -135,7 +141,6 @@ set(BASE_LIBS
         ${Protobuf_LIBRARIES}
         CSD
         cds
-        Rax
         )
         
 set(PROC_LIBS
@@ -155,7 +160,6 @@ set(DEFAULT_LIBS
         ${Protobuf_LIBRARIES}
         CSD
         cds
-        Rax
         )
 
 
@@ -165,10 +169,6 @@ add_library(CppBase64 ${LIB_CPPBASE64_PATH}/base64.cpp ${LIB_CPPBASE64_PATH}/bas
 
 
 # target_link_libraries(start_cache_server_example RDFCacheK2_GR ${DEFAULT_LIBS} )
-
-
-add_executable(sample_set scripts/sample_set.cpp)
-target_link_libraries(sample_set ${BASE_LIBS})
 
 add_executable(validate_sd_from_nt scripts/validate_sd_from_nt.cpp)
 target_include_directories(validate_sd_from_nt PUBLIC ${LIB_CPPBASE64_PATH})
@@ -204,6 +204,11 @@ target_link_libraries(base64_transform ${PROC_LIBS} CppBase64)
 
 add_executable(four_sided_queue_example example/four_sided_queue_example.cpp)
 
+
+add_executable(k2tree_example example/k2tree_example.cpp)
+target_link_libraries(k2tree_example ${BASE_LIBS} )
+
+
 # Only create test executables if google test is found
 find_package(GTest QUIET)
 if(GTest_FOUND)
@@ -218,9 +223,6 @@ target_link_libraries(k2tree_serialization_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIB
 add_executable(predicates_cache_manager_test  test/predicates_cache_manager_test.cpp)
 target_link_libraries(predicates_cache_manager_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES})
 
-add_executable(index_file_test test/index_file_test.cpp)
-target_link_libraries(index_file_test ${BASE_LIBS} ${GTEST_BOTH_LIBRARIES})
-
 add_executable(four_sided_queue_test test/four_sided_queue_test.cpp)
 target_link_libraries(four_sided_queue_test ${GTEST_BOTH_LIBRARIES} pthread)
 
@@ -233,7 +235,6 @@ target_link_libraries(result_table_test  ${DEFAULT_LIBS}  ${GTEST_BOTH_LIBRARIES
 add_test(NAME serialization_test COMMAND ./serialization_test)
 add_test(NAME k2tree_serialization_test COMMAND ./k2tree_serialization_test)
 add_test(NAME predicates_cache_manager_test COMMAND ./predicates_cache_manager_test)
-add_test(NAME index_file_test COMMAND ./index_file_test)
 add_test(NAME four_sided_queue_test COMMAND ./four_sided_queue_test)
 add_test(NAME k2tree_tests COMMAND ./k2tree_tests)
 add_test(NAME result_table_test COMMAND ./result_table_test)

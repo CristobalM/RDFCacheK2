@@ -3,8 +3,6 @@
 
 #include "K2Tree.hpp"
 
-#include "MemoryManager.hpp"
-
 using namespace std;
 
 int main() {
@@ -42,16 +40,7 @@ int main() {
     cout << "Elapsed time milliseconds scanning : "
          << chrono::duration_cast<chrono::milliseconds>(end - start).count()
          << endl;
-
-    cout << "memory usage before cleanup:" << endl;
-    cout << MemoryManager::instance().memory_usage() << endl;
   }
-
-  cout << "memory usage after cleanup:" << endl;
-  cout << MemoryManager::instance().memory_usage() << endl;
-
-  int catch_me;
-  std::cin >> catch_me;
 
   return 0;
 }

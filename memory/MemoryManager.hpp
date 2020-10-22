@@ -7,12 +7,8 @@
 
 extern "C" {
 #include <bitvector.h>
-#include <vector.h>
 
 #include <block.h>
-#include <block_frontier.h>
-#include <block_topology.h>
-
 #include <memalloc.h>
 
 #include <definitions.h>
@@ -38,9 +34,6 @@ protected:
 
 public:
   MemoryPool<struct block> blocks;
-  MemoryPool<struct block_topology> block_topologies;
-  MemoryPool<struct block_frontier> block_frontiers;
-  MemoryPool<struct bitvector> bitvectors;
   MemoryPool<uint32_t[32]> containers_32;
   MemoryPool<uint32_t[64]> containers_64;
   MemoryPool<uint32_t[128]> containers_128;

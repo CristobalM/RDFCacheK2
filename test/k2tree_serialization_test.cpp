@@ -16,7 +16,7 @@ bool sort_pair(const std::pair<ul, ul> &lhs, const std::pair<ul, ul> &rhs) {
 }
 
 TEST(k2tree_serialization_custom, test1) {
-  K2Tree k2Tree(32, 1024);
+  K2Tree k2Tree(32, 128);
 
   int cols = 300;
   int rows = 300;
@@ -28,37 +28,20 @@ TEST(k2tree_serialization_custom, test1) {
     }
   }
 
-  std::cout << "done inserting" << std::endl;
-
-  std::cout << "scanning" << std::endl;
   auto first_points = k2Tree.get_all_points();
-  std::cout << "done scanning" << std::endl;
   std::sort(first_points.begin(), first_points.end(), sort_pair);
 
-  std::cerr << "first points" << std::endl;
-  for (auto &f : first_points) {
-    std::cerr << "(" << f.first << ", " << f.second << ")" << std::endl;
-  }
-
   std::ostringstream oss;
-  std::cout << "serializing" << std::endl;
   k2Tree.write_to_ostream(oss);
-  std::cout << "done serializing" << std::endl;
 
   auto serialized = oss.str();
 
   std::istringstream iss(serialized);
 
-  std::cout << "deserializing" << std::endl;
   K2Tree other_k2tree = K2Tree::read_from_istream(iss);
-  std::cout << "done deserializing" << std::endl;
 
   auto second_points = other_k2tree.get_all_points();
   std::sort(second_points.begin(), second_points.end(), sort_pair);
-  std::cerr << "second points" << std::endl;
-  for (auto &f : second_points) {
-    std::cerr << "(" << f.first << ", " << f.second << ")" << std::endl;
-  }
 
   ASSERT_EQ(first_points.size(), second_points.size())
       << "k2trees have different size";

@@ -28,12 +28,11 @@ enum BandType {
 
 bool same_blocks(const struct block *lhs, const struct block *rhs);
 
-bool same_block_frontiers(const block_frontier *lhs, const block_frontier *rhs);
+bool same_block_frontiers(const struct block *lhs, const struct block *rhs);
 
-bool same_block_topologies(const block_topology *lhs,
-                           const block_topology *rhs);
+bool same_block_topologies(const struct block *lhs, const struct block *rhs);
 
-bool same_bvs(const bitvector *lhs, const bitvector *rhs);
+bool same_bvs(const struct block *lhs, const struct block *rhs);
 
 bool same_vectors(const struct vector_uint32_t &lhs,
                   const struct vector_uint32_t &rhs);
@@ -46,6 +45,8 @@ std::vector<unsigned long> get_k2tree_band(unsigned long band_index,
                                            BandType band_type,
                                            struct block *root,
                                            struct queries_state *qs);
+
+void adjust_blocks(std::list<struct block *> &blocks);
 
 K2Tree::K2Tree(uint32_t tree_depth) : root(create_block()) {
   qs = std::make_unique<struct queries_state>();
@@ -197,38 +198,64 @@ void fill_vector_with_coordinates(std::vector<unsigned long> &target,
 }
 
 void write_block_to_ostream(struct block *b, std::ostream &os) {
+  uint16_t nodes_count = b->nodes_count;
+  uint16_t children = b->children;
+  uint16_t container_size = b->container_size;
 
-  uint32_t block_depth = b->block_depth;
-  uint32_t topology_sz = b->bt.bv.size_in_bits;
-  uint32_t frontier_sz = b->bf.frontier.nof_items;
-  uint32_t container_sz = b->bt.bv.container_size;
+  write_u16(os, nodes_count);
+  write_u16(os, children);
+  write_u16(os, container_size);
 
-  write_u32(os, block_depth);
-  write_u32(os, topology_sz);
-  write_u32(os, frontier_sz);
-  write_u32(os, container_sz);
-
-  struct vector_uint32_t *frontier_preorders = &b->bf.frontier;
-  for (uint32_t i = 0; i < frontier_sz; i++) {
-    uint32_t current_preorder = frontier_preorders->data[i];
-    write_u32(os, current_preorder);
+  NODES_BV_T *frontier_preorders = b->preorders;
+  for (uint32_t i = 0; i < children; i++) {
+    uint16_t current_preorder = frontier_preorders[i];
+    write_u16(os, current_preorder);
   }
 
-  uint32_t *data = b->bt.bv.container;
+  uint32_t *data = b->container;
 
-  for (int i = 0; i < (int)container_sz; i++) {
+  for (int i = 0; i < (int)container_size; i++) {
     uint32_t current_sub_block = data[i];
     write_u32(os, current_sub_block);
   }
 }
 
+struct block *read_block_from_istream(std::istream &is) {
+  uint16_t nodes_count = read_u16(is);
+  uint16_t children = read_u16(is);
+  uint16_t container_size = read_u16(is);
+
+  struct block *new_block = create_block();
+
+  init_block_topology(new_block, nodes_count);
+  init_block_frontier_with_capacity(new_block, children);
+
+  new_block->children = children;
+
+  for (uint32_t j = 0; j < children; j++) {
+    uint16_t frontier_element = read_u16(is);
+    new_block->preorders[j] = frontier_element;
+  }
+
+  new_block->container_size = container_size;
+
+  uint32_t *container = k2tree_alloc_u32array((int)new_block->container_size);
+  new_block->container = reinterpret_cast<BVCTYPE *>(container);
+  for (uint32_t sub_block_i = 0; sub_block_i < container_size; sub_block_i++) {
+    new_block->container[sub_block_i] = read_u32(is);
+  }
+  new_block->nodes_count = nodes_count;
+
+  return new_block;
+}
+
 uint32_t traverse_tree_write_to_ostream(struct block *b, std::ostream &os) {
-  struct vector_block_ptr_t &child_blocks = b->bf.blocks;
+  struct block **child_blocks = b->children_blocks;
 
   uint32_t blocks_counted = 1;
 
-  for (int i = 0; i < child_blocks.nof_items; i++) {
-    struct block *current_child_block = child_blocks.data[i];
+  for (int i = 0; i < b->children; i++) {
+    struct block *current_child_block = child_blocks[i];
     blocks_counted += traverse_tree_write_to_ostream(current_child_block, os);
   }
 
@@ -237,10 +264,10 @@ uint32_t traverse_tree_write_to_ostream(struct block *b, std::ostream &os) {
 }
 
 void K2Tree::write_to_ostream(std::ostream &os) {
-  write_u32(os, qs->treedepth);
+  write_u16(os, qs->max_nodes_count);
+  write_u16(os, qs->treedepth);
   auto start_pos = os.tellp();
   write_u32(os, 0);
-  write_u32(os, qs->max_nodes_count);
   uint32_t blocks_count = traverse_tree_write_to_ostream(root, os);
   auto curr_pos = os.tellp();
   os.seekp(start_pos);
@@ -248,59 +275,10 @@ void K2Tree::write_to_ostream(std::ostream &os) {
   os.seekp(curr_pos);
 }
 
-struct block *read_block_from_istream(std::istream &is, uint32_t tree_depth) {
-  uint32_t block_depth = read_u32(is);
-  uint32_t topology_sz = read_u32(is);
-  uint32_t frontier_sz = read_u32(is);
-  uint32_t container_sz = read_u32(is);
-
-  struct block *new_block = k2tree_alloc_block();
-  struct block_topology *new_block_topology = &new_block->bt;
-  struct bitvector *bv = &new_block_topology->bv;
-  struct block_frontier *new_block_frontier = &new_block->bf;
-
-  init_block_topology(new_block_topology, topology_sz / 4);
-  init_block_frontier_with_capacity(new_block_frontier, frontier_sz);
-
-  new_block_frontier->frontier.nof_items = frontier_sz;
-  new_block_frontier->blocks.nof_items = frontier_sz;
-
-  for (uint32_t j = 0; j < frontier_sz; j++) {
-    uint32_t frontier_element = read_u32(is);
-    new_block_frontier->frontier.data[j] = frontier_element;
-  }
-
-  bv->container_size = container_sz;
-
-  uint32_t *container = k2tree_alloc_u32array((int)bv->container_size);
-  bv->container = reinterpret_cast<BVCTYPE *>(container);
-  for (uint32_t sub_block_i = 0; sub_block_i < container_sz; sub_block_i++) {
-    bv->container[sub_block_i] = read_u32(is);
-  }
-  bv->size_in_bits = topology_sz;
-
-  new_block->block_depth = block_depth;
-
-  return new_block;
-}
-
-void adjust_blocks(std::list<struct block *> &blocks) {
-
-  auto pointer = blocks.rbegin();
-  struct block *current_block = *pointer;
-  pointer++;
-  int frontier_sz = current_block->bf.frontier.nof_items;
-  for (int i = frontier_sz - 1; i >= 0; i--) {
-    struct block *current_child = *pointer;
-    current_block->bf.blocks.data[i] = current_child;
-    blocks.erase(--(pointer.base()));
-  }
-}
-
 K2Tree K2Tree::read_from_istream(std::istream &is) {
-  uint32_t tree_depth = read_u32(is);
+  uint16_t max_node_count = read_u16(is);
+  uint16_t tree_depth = read_u16(is);
   uint32_t blocks_count = read_u32(is);
-  uint32_t max_node_count = read_u32(is);
 
   if (blocks_count == 0) {
     throw std::runtime_error(
@@ -311,7 +289,7 @@ K2Tree K2Tree::read_from_istream(std::istream &is) {
   struct block *current_block;
 
   for (uint32_t i = 0; i < blocks_count; i++) {
-    current_block = read_block_from_istream(is, tree_depth);
+    current_block = read_block_from_istream(is);
     blocks_to_adjust.push_back(current_block);
     adjust_blocks(blocks_to_adjust);
   }
@@ -319,20 +297,31 @@ K2Tree K2Tree::read_from_istream(std::istream &is) {
   return K2Tree(current_block, tree_depth, max_node_count);
 }
 
-void rec_occup_ratio_count(struct block *b, K2TreeStats &k2tree_stats) {
-  k2tree_stats.allocated_u32s += b->bt.bv.container_size;
-  k2tree_stats.nodes_count += b->bt.nodes_count;
-  k2tree_stats.containers_sz_sum += sizeof(struct block) +
-                                    sizeof(struct block_topology) +
-                                    sizeof(struct block_frontier);
+void adjust_blocks(std::list<struct block *> &blocks) {
 
-  k2tree_stats.frontier_data += b->bf.frontier.nof_items * sizeof(uint32_t);
-  k2tree_stats.blocks_data += b->bf.blocks.nof_items * sizeof(struct block *);
+  auto pointer = blocks.rbegin();
+  struct block *current_block = *pointer;
+  pointer++;
+  int frontier_sz = current_block->children;
+  for (int i = frontier_sz - 1; i >= 0; i--) {
+    struct block *current_child = *pointer;
+    current_block->children_blocks[i] = current_child;
+    blocks.erase(--(pointer.base()));
+  }
+}
+
+void rec_occup_ratio_count(struct block *b, K2TreeStats &k2tree_stats) {
+  k2tree_stats.allocated_u32s += b->container_size;
+  k2tree_stats.nodes_count += b->nodes_count;
+  k2tree_stats.containers_sz_sum += sizeof(struct block);
+
+  k2tree_stats.frontier_data += b->children * sizeof(uint32_t);
+  k2tree_stats.blocks_data += b->children * sizeof(struct block *);
   k2tree_stats.blocks_counted += 1;
 
-  struct vector_block_ptr_t children = b->bf.blocks;
-  for (int i = 0; i < children.nof_items; i++) {
-    struct block *child_block = children.data[i];
+  struct block **children = b->children_blocks;
+  for (int i = 0; i < b->children; i++) {
+    struct block *child_block = children[i];
     rec_occup_ratio_count(child_block, k2tree_stats);
   }
 }
@@ -392,21 +381,19 @@ ResultTable K2Tree::row_as_table(unsigned long row) {
 }
 
 bool same_blocks(const struct block *lhs, const struct block *rhs) {
-  auto fields_result = lhs->block_depth == rhs->block_depth;
-  auto bf_result = same_block_frontiers(&lhs->bf, &rhs->bf);
-  auto bt_result = same_block_topologies(&lhs->bt, &rhs->bt);
-  auto result = fields_result && bf_result && bt_result;
+  auto bf_result = same_block_frontiers(lhs, rhs);
+  auto bt_result = same_block_topologies(lhs, rhs);
+  auto result = bf_result && bt_result;
   return result;
 }
 
-bool same_block_topologies(const block_topology *lhs,
-                           const block_topology *rhs) {
-  return lhs->nodes_count == rhs->nodes_count && same_bvs(&lhs->bv, &rhs->bv);
+bool same_block_topologies(const struct block *lhs, const struct block *rhs) {
+  return lhs->nodes_count == rhs->nodes_count && same_bvs(lhs, rhs);
 }
 
-bool same_bvs(const bitvector *lhs, const bitvector *rhs) {
+bool same_bvs(const struct block *lhs, const struct block *rhs) {
   if (!(lhs->container_size == rhs->container_size &&
-        lhs->size_in_bits == rhs->size_in_bits)) {
+        lhs->nodes_count == rhs->nodes_count)) {
     return false;
   }
 
@@ -418,38 +405,23 @@ bool same_bvs(const bitvector *lhs, const bitvector *rhs) {
   return true;
 }
 
-bool same_block_frontiers(const block_frontier *lhs,
-                          const block_frontier *rhs) {
-  if (!same_vectors(lhs->frontier, rhs->frontier)) {
-    return false;
-  }
-  if (lhs->blocks.nof_items != rhs->blocks.nof_items) {
+bool same_block_frontiers(const struct block *lhs, const struct block *rhs) {
+
+  if (lhs->children != rhs->children) {
     return false;
   }
 
-  for (int i = 0; i < lhs->blocks.nof_items; i++) {
+  for (int i = 0; i < lhs->children; i++) {
+    if (lhs->preorders[i] != rhs->preorders[i])
+      return false;
+  }
 
-    struct block *lhs_ptr = lhs->blocks.data[i];
-    struct block *rhs_ptr = rhs->blocks.data[i];
-
-    if (!same_blocks(lhs_ptr, rhs_ptr)) {
+  for (int i = 0; i < lhs->children; i++) {
+    if (!same_blocks(lhs->children_blocks[i], rhs->children_blocks[i])) {
       return false;
     }
   }
 
-  return true;
-}
-
-bool same_vectors(const struct vector_uint32_t &lhs,
-                  const struct vector_uint32_t &rhs) {
-  if (lhs.nof_items != rhs.nof_items) {
-    return false;
-  }
-
-  for (int i = 0; i < lhs.nof_items; i++) {
-    if (lhs.data[i] != rhs.data[i])
-      return false;
-  }
   return true;
 }
 

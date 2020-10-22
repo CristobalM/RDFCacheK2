@@ -1,27 +1,26 @@
 #include "EmptyISDManager.hpp"
 #include <stdexcept>
-void EmptyISDManager::save(const std::string &sub_fname,
-                           const std::string &pred_fname,
-                           const std::string &obj_fname) {}
+void EmptyISDManager::save(const std::string &, const std::string &,
+                           const std::string &) {}
 
-uint64_t EmptyISDManager::blanks_index(std::string &blank) { return 0; }
-uint64_t EmptyISDManager::literals_index(std::string &literal) { return 0; }
-uint64_t EmptyISDManager::iris_index(std::string &iri) { return 0; }
+uint64_t EmptyISDManager::blanks_index(std::string &) { return 0; }
+uint64_t EmptyISDManager::literals_index(std::string &) { return 0; }
+uint64_t EmptyISDManager::iris_index(std::string &) { return 0; }
 
-bool EmptyISDManager::has_blanks_index(std::string &blank) { return false; }
-bool EmptyISDManager::has_literals_index(std::string &literal) { return false; }
-bool EmptyISDManager::has_iris_index(std::string &iri) { return false; }
+bool EmptyISDManager::has_blanks_index(std::string &) { return false; }
+bool EmptyISDManager::has_literals_index(std::string &) { return false; }
+bool EmptyISDManager::has_iris_index(std::string &) { return false; }
 
-std::string EmptyISDManager::get_blank(uint64_t _blanks_index) {
+std::string EmptyISDManager::get_blank(uint64_t) {
   throw std::runtime_error("Not implemented");
 }
-std::string EmptyISDManager::get_literal(uint64_t _literals_index) {
+std::string EmptyISDManager::get_literal(uint64_t) {
   throw std::runtime_error("Not implemented");
 }
-std::string EmptyISDManager::get_iri(uint64_t _iris_index) {
+std::string EmptyISDManager::get_iri(uint64_t) {
   throw std::runtime_error("Not implemented");
 }
-RDFResource EmptyISDManager::get_resource(uint64_t index) {
+RDFResource EmptyISDManager::get_resource(uint64_t) {
   throw std::runtime_error("Not implemented");
 }
 

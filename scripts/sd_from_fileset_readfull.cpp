@@ -166,10 +166,9 @@ BufferedData put_in_buffer(std::vector<BufferedData> &input_vec) {
     pos += bd.size + 1;
   }
 
-  BufferedData out{
-      .data = data,
-      .size = buffer_sz,
-  };
+  BufferedData out{};
+  out.data = data;
+  out.size = buffer_sz;
 
   return out;
 }
