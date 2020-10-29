@@ -11,7 +11,7 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 #set(CMAKE_CXX_FLAGS "-Wall -Wextra")
-set(CMAKE_C_FLAGS "-Wall -Wextra -std=c99 -pedantic -Wmissing-prototypes -Wstrict-prototypes -Wold-style-definition -Werror")
+set(CMAKE_C_FLAGS "-Wall -Wextra -std=c99 -pedantic -Wmissing-prototypes -Wstrict-prototypes -Wold-style-definition")
 set(CMAKE_CXX_FLAGS "-Wall -Wextra -std=c++17 -pedantic -Werror")
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
@@ -33,6 +33,7 @@ set(CORE_SOURCE_FILES
         core/NaiveDynamicStringDictionary.cpp
         core/ResultTable.cpp
         core/EmptyISDManager.cpp
+        core/block_serialization.cpp
         )
 
 set(PROC_SOURCE_FILES
@@ -78,7 +79,6 @@ set(K2TREE_PATH ${CMAKE_SOURCE_DIR}/lib/c-k2tree-dyn)
 
 set(INCLUDES_LIBS
         ${K2TREE_PATH}/include
-        ${K2TREE_PATH}/bitvector/include
         ${K2TREE_PATH}/lib/c-vector/include
         )
 

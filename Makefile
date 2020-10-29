@@ -12,14 +12,11 @@ re: clean-all all
 re-debug: clean-all all-debug
 
 build-libs:
-	cd lib/c-k2tree-dyn && make
 	./fetch_deps.sh
 	cd lib/ntparser/gen && make
 
 
 clean-libs:
-	cd lib/c-k2tree-dyn && make clean-all
-	rm -rf lib/c-k2tree-dyn/*.a
 	rm -rf lib/libCSD
 
 rebuild-libs: clean-libs build-libs
@@ -32,7 +29,6 @@ build:
 	make -j4
 
 build-libs-debug:
-	cd lib/c-k2tree-dyn && make debug-build
 	./fetch_deps.sh
 	cd lib/ntparser/gen && make
 

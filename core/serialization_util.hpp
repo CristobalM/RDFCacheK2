@@ -7,6 +7,7 @@
 
 #include <cstdint>
 #include <fstream>
+#include <memory>
 
 void write_u16(std::ostream &output_stream, uint16_t value);
 uint16_t read_u16(std::istream &input_stream);
