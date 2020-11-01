@@ -5,6 +5,7 @@
 #include <fstream>
 #include <iostream>
 #include <memory>
+#include <stdexcept>
 #include <string>
 
 #include <PredicatesCacheManager.hpp>
@@ -112,6 +113,9 @@ RDFResource resource_from_nres(NTRes *nres) {
   case LITERAL:
     res_type = RDF_TYPE_LITERAL;
     break;
+  default:
+    throw std::runtime_error("Invalid resource type " +
+                             std::to_string(nres->type));
   }
   return RDFResource(std::string(nres->data), res_type);
 }

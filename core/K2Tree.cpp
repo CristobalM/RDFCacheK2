@@ -14,8 +14,8 @@ extern "C" {
 #include <unordered_map>
 
 #include "K2Tree.hpp"
-#include "exceptions.hpp"
 #include "block_serialization.hpp"
+#include "exceptions.hpp"
 
 namespace {
 
@@ -45,7 +45,6 @@ std::vector<unsigned long> get_k2tree_band(unsigned long band_index,
                                            BandType band_type,
                                            struct block *root,
                                            struct queries_state *qs);
-
 
 K2Tree::K2Tree(uint32_t tree_depth) : root(create_block()) {
   qs = std::make_unique<struct queries_state>();
@@ -196,7 +195,6 @@ void fill_vector_with_coordinates(std::vector<unsigned long> &target,
   }
 }
 
-
 void K2Tree::write_to_ostream(std::ostream &os) {
   k2tree_data data;
   data.root = root;
@@ -204,7 +202,6 @@ void K2Tree::write_to_ostream(std::ostream &os) {
   data.treedepth = qs->treedepth;
   write_tree_to_ostream(data, os);
 }
-
 
 K2Tree K2Tree::read_from_istream(std::istream &is) {
   auto data = read_tree_from_istream(is);
@@ -281,51 +278,6 @@ ResultTable K2Tree::row_as_table(unsigned long row) {
   return ResultTable(row, std::move(data));
 }
 
-bool same_blocks(const struct block *lhs, const struct block *rhs) {
-  auto bf_result = same_block_frontiers(lhs, rhs);
-  auto bt_result = same_block_topologies(lhs, rhs);
-  auto result = bf_result && bt_result;
-  return result;
-}
-
-bool same_block_topologies(const struct block *lhs, const struct block *rhs) {
-  return lhs->nodes_count == rhs->nodes_count && same_bvs(lhs, rhs);
-}
-
-bool same_bvs(const struct block *lhs, const struct block *rhs) {
-  if (!(lhs->container_size == rhs->container_size &&
-        lhs->nodes_count == rhs->nodes_count)) {
-    return false;
-  }
-
-  for (uint32_t i = 0; i < lhs->container_size; i++) {
-    if (lhs->container[i] != rhs->container[i]) {
-      return false;
-    }
-  }
-  return true;
-}
-
-bool same_block_frontiers(const struct block *lhs, const struct block *rhs) {
-
-  if (lhs->children != rhs->children) {
-    return false;
-  }
-
-  for (int i = 0; i < lhs->children; i++) {
-    if (lhs->preorders[i] != rhs->preorders[i])
-      return false;
-  }
-
-  for (int i = 0; i < lhs->children; i++) {
-    if (!same_blocks(lhs->children_blocks[i], rhs->children_blocks[i])) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
 std::vector<unsigned long> get_k2tree_band(unsigned long band_index,
                                            BandType band_type,
                                            struct block *root,
@@ -374,5 +326,3 @@ std::vector<unsigned long> get_k2tree_band(unsigned long band_index,
 struct k2tree_measurement K2Tree::measure_in_memory_size() {
   return measure_tree_size(root);
 }
-
-

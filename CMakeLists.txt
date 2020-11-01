@@ -34,6 +34,7 @@ set(CORE_SOURCE_FILES
         core/ResultTable.cpp
         core/EmptyISDManager.cpp
         core/block_serialization.cpp
+        core/K2TreeMixed.cpp
         )
 
 set(PROC_SOURCE_FILES
@@ -79,7 +80,6 @@ set(K2TREE_PATH ${CMAKE_SOURCE_DIR}/lib/c-k2tree-dyn)
 
 set(INCLUDES_LIBS
         ${K2TREE_PATH}/include
-        ${K2TREE_PATH}/lib/c-vector/include
         )
 
 
@@ -232,14 +232,21 @@ target_link_libraries(k2tree_tests  ${DEFAULT_LIBS}  ${GTEST_BOTH_LIBRARIES} pth
 add_executable(result_table_test test/result_table_test.cpp)
 target_link_libraries(result_table_test  ${DEFAULT_LIBS}  ${GTEST_BOTH_LIBRARIES} pthread)
 
+add_executable(k2tree_mixed_test test/k2tree_mixed_test.cpp)
+target_link_libraries(k2tree_mixed_test  ${DEFAULT_LIBS}  ${GTEST_BOTH_LIBRARIES} pthread)
+
 add_test(NAME serialization_test COMMAND ./serialization_test)
 add_test(NAME k2tree_serialization_test COMMAND ./k2tree_serialization_test)
 add_test(NAME predicates_cache_manager_test COMMAND ./predicates_cache_manager_test)
 add_test(NAME four_sided_queue_test COMMAND ./four_sided_queue_test)
 add_test(NAME k2tree_tests COMMAND ./k2tree_tests)
 add_test(NAME result_table_test COMMAND ./result_table_test)
+add_test(NAME k2tree_mixed_test COMMAND ./k2tree_mixed_test)
 endif()
 
 
 add_executable(k2tree_size_benchmark benchmarks/k2tree_size_benchmark.cpp)
 target_link_libraries(k2tree_size_benchmark ${BASE_LIBS})
+
+add_executable(k2tree_mixed_benchmark benchmarks/k2tree_mixed_benchmark.cpp)
+target_link_libraries(k2tree_mixed_benchmark ${BASE_LIBS})

@@ -21,16 +21,7 @@ extern "C" {
 #include <mutex>
 
 #include "ResultTable.hpp"
-
-struct K2TreeStats {
-  int allocated_u32s;
-  int nodes_count;
-  int containers_sz_sum;
-  int frontier_data;
-  int blocks_data;
-  int number_of_points;
-  int blocks_counted;
-};
+#include "k2tree_stats.hpp"
 
 class K2Tree {
   struct block *root;

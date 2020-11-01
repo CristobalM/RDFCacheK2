@@ -120,24 +120,28 @@ NaiveDynamicStringDictionary::locate_literal(const std::string &literal) const {
 }
 
 std::string NaiveDynamicStringDictionary::extract_iri(unsigned long id) const {
-  auto next_id = id - 1;
-  assert(id > 0 && next_id >= 0 && next_id < iris_extra.size());
+  long next_id = static_cast<long>(id) - 1;
+  assert(id > 0 && next_id >= 0 && next_id < (long)iris_extra.size());
   return iris_extra[next_id];
 }
 
 std::string
 NaiveDynamicStringDictionary::extract_blank(unsigned long id) const {
-  auto next_id = id - 1 - iris_extra.size();
-  assert(id >= iris_extra.size() + 1 && next_id >= 0 &&
-         next_id < blanks_extra.size());
+  long long_id = static_cast<long>(id);
+  long next_id = long_id - 1 - static_cast<long>(iris_extra.size());
+  assert(long_id >= static_cast<long>(iris_extra.size() + 1) && next_id >= 0 &&
+         next_id < static_cast<long>(blanks_extra.size()));
   return blanks_extra[next_id];
 }
 
 std::string
 NaiveDynamicStringDictionary::extract_literal(unsigned long id) const {
-  auto next_id = id - 1 - iris_extra.size() - blanks_extra.size();
-  assert(id >= iris_extra.size() + blanks_extra.size() + 1 && next_id >= 0 &&
-         next_id < literals_extra.size());
+  long long_id = static_cast<long>(id);
+  long next_id = long_id - 1 - static_cast<long>(iris_extra.size()) -
+                 static_cast<long>(blanks_extra.size());
+  assert(long_id >=
+             static_cast<long>(iris_extra.size() + blanks_extra.size() + 1) &&
+         next_id >= 0 && next_id < static_cast<long>(literals_extra.size()));
   return literals_extra[next_id];
 }
 

@@ -1,13 +1,13 @@
-extern "C"{
-    #include <block.h>
-    #include <memalloc.h>
+extern "C" {
+#include <block.h>
+#include <memalloc.h>
 }
 #include <stdexcept>
 
 #include "block_serialization.hpp"
 #include "serialization_util.hpp"
 
-k2tree_data read_tree_from_istream(std::istream &is){ 
+k2tree_data read_tree_from_istream(std::istream &is) {
   uint16_t max_node_count = read_u16(is);
   uint16_t treedepth = read_u16(is);
   uint32_t blocks_count = read_u32(is);
@@ -85,7 +85,7 @@ void write_block_to_ostream(struct block *b, std::ostream &os) {
   }
 }
 
-void write_tree_to_ostream(k2tree_data data, std::ostream &os){
+void write_tree_to_ostream(k2tree_data data, std::ostream &os) {
   write_u16(os, data.max_node_count);
   write_u16(os, data.treedepth);
   auto start_pos = os.tellp();
@@ -121,4 +121,49 @@ void adjust_blocks(std::list<struct block *> &blocks) {
     current_block->children_blocks[i] = current_child;
     blocks.erase(--(pointer.base()));
   }
+}
+
+bool same_blocks(const struct block *lhs, const struct block *rhs) {
+  auto bf_result = same_block_frontiers(lhs, rhs);
+  auto bt_result = same_block_topologies(lhs, rhs);
+  auto result = bf_result && bt_result;
+  return result;
+}
+
+bool same_block_topologies(const struct block *lhs, const struct block *rhs) {
+  return lhs->nodes_count == rhs->nodes_count && same_bvs(lhs, rhs);
+}
+
+bool same_bvs(const struct block *lhs, const struct block *rhs) {
+  if (!(lhs->container_size == rhs->container_size &&
+        lhs->nodes_count == rhs->nodes_count)) {
+    return false;
+  }
+
+  for (uint32_t i = 0; i < lhs->container_size; i++) {
+    if (lhs->container[i] != rhs->container[i]) {
+      return false;
+    }
+  }
+  return true;
+}
+
+bool same_block_frontiers(const struct block *lhs, const struct block *rhs) {
+
+  if (lhs->children != rhs->children) {
+    return false;
+  }
+
+  for (int i = 0; i < lhs->children; i++) {
+    if (lhs->preorders[i] != rhs->preorders[i])
+      return false;
+  }
+
+  for (int i = 0; i < lhs->children; i++) {
+    if (!same_blocks(lhs->children_blocks[i], rhs->children_blocks[i])) {
+      return false;
+    }
+  }
+
+  return true;
 }
