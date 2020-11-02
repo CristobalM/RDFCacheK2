@@ -14,19 +14,11 @@
 
 PredicatesIndexCache::PredicatesIndexCache() {}
 
-/*
-void PredicatesIndexCache::feed_full_k2tree(
-    proto_msg::CacheFeedFullK2TreeRequest &cache_feed_full_k2tree_request) {
-  predicates_map[cache_feed_full_k2tree_request.predicate_index()] =
-      std::make_unique<K2Tree>(cache_feed_full_k2tree_request);
-}
-*/
-
 bool PredicatesIndexCache::has_predicate(uint64_t predicate_index) {
   return predicates_map.find(predicate_index) != predicates_map.end();
 }
 
-K2Tree &PredicatesIndexCache::get_k2tree(uint64_t predicate_index) {
+K2TreeMixed &PredicatesIndexCache::get_k2tree(uint64_t predicate_index) {
   return *predicates_map[predicate_index];
 }
 
@@ -53,13 +45,13 @@ void PredicatesIndexCache::load_dump_file(const std::string &file_path) {
   for (uint32_t i = 0; i < map_sz; i++) {
     uint64_t predicate_index = read_u64(ifstream);
     predicates_map[predicate_index] =
-        std::make_unique<K2Tree>(K2Tree::read_from_istream(ifstream));
+        std::make_unique<K2TreeMixed>(K2TreeMixed::read_from_istream(ifstream));
   }
   ifstream.close();
 }
 
 void PredicatesIndexCache::add_predicate(uint64_t predicate_index) {
-  predicates_map[predicate_index] = std::make_unique<K2Tree>(32, 1024);
+  predicates_map[predicate_index] = std::make_unique<K2TreeMixed>(32, 256, 10);
 }
 
 std::vector<unsigned long> PredicatesIndexCache::get_predicates_ids() {
@@ -72,7 +64,7 @@ std::vector<unsigned long> PredicatesIndexCache::get_predicates_ids() {
 }
 
 PredicatesIndexCache::PredicatesIndexCache(
-    std::unordered_map<uint64_t, std::unique_ptr<K2Tree>> &&predicates_map)
+    std::unordered_map<uint64_t, std::unique_ptr<K2TreeMixed>> &&predicates_map)
     : predicates_map(std::move(predicates_map)) {}
 
 PredicatesIndexCache::predicates_map_t &
@@ -149,7 +141,7 @@ std::unique_ptr<PredicatesIndexCache> PredicatesIndexCacheBuilder::get() {
   return std::make_unique<PredicatesIndexCache>(std::move(predicates_map));
 }
 
-K2Tree &PredicatesIndexCacheBuilder::get_k2tree(uint64_t predicate_index) {
+K2TreeMixed &PredicatesIndexCacheBuilder::get_k2tree(uint64_t predicate_index) {
   return *predicates_map[predicate_index];
 }
 
@@ -158,7 +150,7 @@ bool PredicatesIndexCacheBuilder::has_predicate(uint64_t predicate_index) {
 }
 
 void PredicatesIndexCacheBuilder::add_predicate(uint64_t predicate_index) {
-  predicates_map[predicate_index] = std::make_unique<K2Tree>(32, 1024);
+  predicates_map[predicate_index] = std::make_unique<K2TreeMixed>(32, 256, 10);
 }
 
 void PredicatesIndexCacheBuilder::finish() {

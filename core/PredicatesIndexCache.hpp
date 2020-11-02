@@ -15,12 +15,12 @@
 
 #include <request_msg.pb.h>
 
-#include "K2Tree.hpp"
+#include "K2TreeMixed.hpp"
 
 class PredicatesIndexCache {
 public:
   using predicates_map_t =
-      std::unordered_map<uint64_t, std::unique_ptr<K2Tree>>;
+      std::unordered_map<uint64_t, std::unique_ptr<K2TreeMixed>>;
 
 private:
   predicates_map_t predicates_map;
@@ -28,7 +28,7 @@ private:
 public:
   PredicatesIndexCache();
   PredicatesIndexCache(
-      std::unordered_map<uint64_t, std::unique_ptr<K2Tree>> &&k2tree_map);
+      std::unordered_map<uint64_t, std::unique_ptr<K2TreeMixed>> &&k2tree_map);
 
   void wait_workers();
 
@@ -38,7 +38,7 @@ public:
   */
   bool has_predicate(uint64_t predicate_index);
   void add_predicate(uint64_t predicate_index);
-  K2Tree &get_k2tree(uint64_t predicate_index);
+  K2TreeMixed &get_k2tree(uint64_t predicate_index);
 
   std::vector<unsigned long> get_predicates_ids();
 
@@ -72,7 +72,7 @@ public:
   void add_predicate(uint64_t predicate_index);
 
   std::unique_ptr<PredicatesIndexCache> get();
-  K2Tree &get_k2tree(uint64_t predicate_index);
+  K2TreeMixed &get_k2tree(uint64_t predicate_index);
 
 private:
   void insert_batch();

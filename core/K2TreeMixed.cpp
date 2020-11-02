@@ -138,7 +138,7 @@ bool same_k2node(struct k2node *lhs, struct k2node *rhs, uint32_t current_depth,
   if (current_depth < cut_depth) {
     for (int i = 0; i < 4; i++) {
       if ((bool)lhs->k2subtree.children[i] !=
-          (bool)lhs->k2subtree.children[i]) {
+          (bool)rhs->k2subtree.children[i]) {
         return false;
       }
     }

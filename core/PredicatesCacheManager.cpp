@@ -74,8 +74,6 @@ void PredicatesCacheManager::add_triple(RDFTripleResource &rdf_triple) {
     predicates_index->add_predicate(predicate_id);
   }
   predicates_index->get_k2tree(predicate_id).insert(subject_id, object_id);
-
-  // predicates_index->insert_point(subject_id, predicate_id, object_id);
 }
 
 void PredicatesCacheManager::add_triple(RDFTripleResource &rdf_triple,

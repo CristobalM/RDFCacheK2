@@ -86,6 +86,7 @@ bundle-code: # clean-all
 	--include 'network/***' \
 	--include 'plib/***' \
 	--include 'proc/***' \
+	--include 'benchmarks/***' \
 	--include 'proto/' \
 	--include 'proto/*.proto' \
 	--include 'scripts/***' \
