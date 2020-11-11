@@ -1,0 +1,92 @@
+syntax = "proto3";
+package proto_msg;
+
+
+option java_package = "com.github.cristobalm.proto";
+option java_outer_classname = "SparqlTreeMessage";
+
+message SparqlTree {
+  SparqlNode root = 1;
+}
+
+message SparqlNode {
+  oneof node {
+    ProjectNode project_node = 1;
+    LeftJoinNode left_join_node = 2;
+    BGPNode bgp_node = 3;
+    TripleNode triple_node = 4;
+    ExprNode expr_node = 5;
+  }
+}
+
+message ExprNode {
+  oneof expr {
+    FunctionNode function_node = 1;
+    string variable_node = 2;
+    RDFTerm constant_node = 3;
+  }
+}
+
+message FunctionNode{
+  FunctionOP function_op = 1;
+  repeated ExprNode exprs = 2;
+}
+
+message ProjectNode{
+  repeated string vars = 1;
+  SparqlNode sub_op = 2;
+}
+
+message LeftJoinNode{
+  SparqlNode left_node = 1;
+  SparqlNode right_node = 2;
+  repeated ExprNode expr_list = 3;
+}
+
+message BGPNode{
+  repeated TripleNode triple = 1;
+}
+
+message TripleNode{
+  RDFTerm subject = 1;
+  RDFTerm predicate = 2;
+  RDFTerm object = 3;
+}
+
+message RDFTerm {
+  TermType term_type = 1;
+  BasicType basic_type = 2;
+  string term_value = 3;
+}
+
+enum TermType{
+  IRI = 0;
+  LITERAL = 1;
+  BLANK_NODE = 2;
+  VARIABLE = 3;
+}
+
+enum BasicType{
+  NUMBER = 0;
+  STRING = 1;
+  BOOLEAN = 2;
+  DATE = 3;
+  TIME = 4;
+}
+
+enum FunctionOP{
+  LT = 0;
+  LTE = 1;
+  GT = 2;
+  GTE = 3;
+  EQ = 4;
+  NEQ = 5;
+  PLUS = 6;
+  MINUS = 7;
+  MULTIPLY = 8;
+  DIVIDE = 9; 
+  OR = 10;
+  AND = 11;
+  NOT = 12;
+  IN = 13;
+}
