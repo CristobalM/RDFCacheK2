@@ -1,5 +1,4 @@
 syntax = "proto3";
-
 import "message_type.proto";
 import  "graph_result.proto";
 

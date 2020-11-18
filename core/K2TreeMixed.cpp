@@ -4,6 +4,8 @@
 #include "serialization_util.hpp"
 #include <algorithm>
 #include <vector>
+#include <stdexcept>
+
 
 K2TreeMixed::K2TreeMixed(uint32_t treedepth)
     : K2TreeMixed(treedepth, MAX_NODES_IN_BLOCK) {}
@@ -279,4 +281,28 @@ K2TreeMixed K2TreeMixed::read_from_istream(std::istream &is) {
   struct k2node *root = deserialize_k2node_tree(is, containers, 0, cut_depth,
                                                 current_node_location);
   return K2TreeMixed(root, k2tree_depth, max_nodes_count, cut_depth);
+}
+
+std::vector<unsigned long> K2TreeMixed::sip_join_k2trees(const std::vector<K2TreeMixed *> &trees, std::vector<struct sip_ipoint> &join_coordinates){  
+  if(trees.size() != join_coordinates.size()){
+    throw std::runtime_error("Trees amount differ from join coordinates amount " + trees.size() + " != " + join_coordinates.size());
+  }
+
+  std::vector<struct k2node *> root_nodes(trees.size());
+  std::vector<struct k2qstate *> states(trees.size());
+
+  for(size_t i = 0; i < trees.size(); i++){
+    root_nodes[i] = trees[i]->root;
+    states[i] = trees[i]->st.get();
+  }
+
+  struct k2node_sip_input sip_input;
+  sip_input.nodes = root_nodes.data();
+  sip_input.sts = states.data();
+  sip_input.join_coords = join_coordinates.data();
+  sip_input.join_size = join_coordinates.size();
+
+  
+
+
 }

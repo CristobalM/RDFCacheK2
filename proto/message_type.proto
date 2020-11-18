@@ -12,4 +12,5 @@ enum MessageType {
     CACHE_FEED = 2;
     CACHE_RETRIEVE = 3;
     CONNECTION_END = 4;
+    RUN_QUERY = 5;
 }

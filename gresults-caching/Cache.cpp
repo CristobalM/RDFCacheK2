@@ -2,61 +2,83 @@
 // Created by Cristobal Miranda, 2020
 //
 
+#include <stdexcept>
+#include <string>
+#include <unordered_map>
+
 #include "Cache.hpp"
 
-Cache::Cache() {}
+Cache::Cache(std::unique_ptr<PredicatesCacheManager> &&cache_manager)
+    : cache_manager(std::move(cache_manager)) {}
 
-bool Cache::result_exists(const std::string &label) {
-  return results_map.find(label) != results_map.end();
+static void process_project_node(const proto_msg::ProjectNode &project_node, ResultTable &result, Cache::cm_t &cm){
+
 }
 
-GraphResult &Cache::get_graph_result(const std::string &label) {
-  return results_map[label];
-}
+static void process_bgp_node(const proto_msg::BGPNode &bgp_node, ResultTable &result, Cache::cm_t &cm){
+  std::unordered_map<std::string, K2TreeMixed *> k2trees_map;
+  std::vector<K2TreeMixed *> trees(bgp_node.triple_size);
+  std::vector<struct sip_ipoint> join_coordinates(bgp_node.triple_size);
 
-/*
-bool Cache::feed(proto_msg::CacheFeedRequest cache_feed_request) {
-  auto &query_label = cache_feed_request.query_label();
-  results_map[query_label] = GraphResult(cache_feed_request);
-  return true;
-}
-*/
+  for(size_t i = 0; i < bgp_node.triple_size; i++){
+    const auto &triple = bgp_node.triple().at(i);
+    auto predicate_type = triple.predicate().term_type();
+    if(predicate_type != proto_msg::TermType::IRI){
+      throw std::runtime_error("Operation not supported, predicate is not an IRI");
+    }
 
-int Cache::results_stored() { return results_map.size(); }
+    const std::string &predicate_value = triple.predicate().term_value();
 
-ulong Cache::predicates_stored() {
-  ulong result = 0;
-  for (auto &hmap_item : results_map) {
-    result += hmap_item.second.predicates_count();
+    if(k2trees_map.find(predicate_value) == k2trees_map.end()){
+      k2trees_map[predicate_value] = &cm->get_tree_by_predicate_name(predicate_value);
+    }
+
+    trees[i] = k2trees_map[predicate_value];
+
+    if(triple.subject().term_type() == proto_msg::TermType::VARIABLE){
+      
+    }
+    
+
+    // K2TreeMixed &predicate_tree = *k2trees_map[predicate_value];
   }
-  return result;
 }
 
-CacheStats Cache::cache_stats() {
-  CacheStats result{};
-  result.nodes_count = 0;
-  result.allocated_u32s = 0;
-  result.containers_sz_sum = 0;
-  result.frontier_data = 0;
-  result.blocks_data = 0;
-  result.max_points_k2 = 0;
-  result.number_of_points_avg = 0;
-  result.blocks_counted = 0;
+static void process_expr_node(const proto_msg::ExprNode &expr_node, ResultTable &result, Cache::cm_t &cm){
+}
 
-  for (auto &hmap_item : results_map) {
-    GraphResultStats gstats = hmap_item.second.graph_result_stats();
-    result.nodes_count += gstats.nodes_count;
-    result.allocated_u32s += gstats.allocated_u32s;
-    result.containers_sz_sum += gstats.containers_sz_sum;
-    result.frontier_data += gstats.frontier_data;
-    result.blocks_data += gstats.blocks_data;
-    result.max_points_k2 = std::max(gstats.max_points_k2, result.max_points_k2);
-    result.number_of_points_avg += gstats.number_of_points;
-    result.blocks_counted += gstats.blocks_counted;
-  }
-  if (results_map.size() > 0) {
-    result.number_of_points_avg /= results_map.size();
-  }
+static void process_left_join_node(const proto_msg::LeftJoinNode &left_join_node, ResultTable &result, Cache::cm_t &cm){
+}
 
-  return result;
+static void process_triple_node(const proto_msg::TripleNode &triple_node, ResultTable &result, Cache::cm_t &cm){
+}
+
+void process_node(const proto_msg::SparqlNode &node, ResultTable &result, Cache::cm_t &cm){
+  switch(node.node_case()){
+    case proto_msg::SparqlNode::NodeCase::kProjectNode:
+    process_project_node(node.project_node(), result, cm);
+    break;
+    case proto_msg::SparqlNode::NodeCase::kBgpNode:
+    process_bgp_node(node.bgp_node(), result, cm);
+    break;
+    case proto_msg::SparqlNode::NodeCase::kExprNode:
+    process_expr_node(node.expr_node(), result, cm);
+    break;
+    case proto_msg::SparqlNode::NodeCase::kLeftJoinNode:
+    process_left_join_node(node.left_join_node(), result, cm);
+    break;
+    case proto_msg::SparqlNode::NodeCase::kTripleNode:
+    process_triple_node(node.triple_node(), result, cm);
+    break;
+    case proto_msg::SparqlNode::NodeCase::NODE_NOT_SET:
+    default:
+    throw std::runtime_error("Unknown SparqlNode : " + std::to_string(node.node_case()));
+    break;
+  }
+}
+
+QueryResult Cache::run_query(const proto_msg::SparqlTree &query_tree) {
+  ResultTable result;
+  process_node(query_tree.root(), result, cache_manager);
+  return QueryResult(std::move(result));
 }

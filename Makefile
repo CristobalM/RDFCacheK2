@@ -51,7 +51,8 @@ proto-build:
 		./proto/response_msg.proto \
 		./proto/predicates_index_cache.proto \
 		./proto/entities_mapping.proto \
-		./proto/radix_tree.proto
+		./proto/radix_tree.proto \
+		./proto/sparql_tree.proto
 
 proto-clean:
 	rm -rf ./proto/generated

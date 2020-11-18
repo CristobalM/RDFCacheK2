@@ -15,6 +15,8 @@ class ResultTable {
   lvul_t data;
 
 public:
+  ResultTable();
+
   ResultTable(unsigned long first_column_header,
               std::vector<unsigned long> &&first_column);
 

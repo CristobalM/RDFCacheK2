@@ -1,6 +1,6 @@
 syntax = "proto3";
 import "message_type.proto";
-
+import "sparql_tree.proto";
 package proto_msg;
 
 
@@ -11,37 +11,18 @@ message CacheRequest{
     MessageType request_type = 1;
 
     oneof response {
-        CacheCheckRequest cache_check_request = 2;
-        CacheFeedRequest cache_feed_request = 3;
-        CacheRetrieveRequest cache_retrieve_request = 4;
-        ConnectionEndRequest connection_end_request = 5;
-
-        CacheFeedFullK2TreeRequest cache_feed_full_k2tree_request = 6;
-
+        ConnectionEndRequest connection_end_request = 1;
+        CacheRunQueryAlgebra cache_run_query_algebra = 2;
     }
-}
-
-message CacheCheckRequest{
-    string query_label = 1;
-}
-
-message CacheFeedRequest{
-    string query_label = 1;
-    repeated RDFTriple rdf_triples = 2;
-}
-
-message CacheRetrieveRequest{
-    string query_label = 1;
 }
 
 message ConnectionEndRequest{
     bool end = 1;
 }
 
-message CacheFeedFullK2TreeRequest{
-    uint64 predicate_index = 1;
-    uint64 tree_depth = 2;
-    repeated SubjectObjectPair subject_object_pair = 3;
+
+message CacheRunQueryAlgebra{
+    SparqlTree sparql_tree = 1;
 }
 
 message SubjectObjectPair{

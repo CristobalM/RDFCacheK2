@@ -3,13 +3,14 @@
 //
 
 #include <iostream>
+#include <sstream>
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <unistd.h>
 
+
 #include "ServerTask.hpp"
 
-#include <MemoryManager.hpp>
 #include <graph_result.pb.h>
 #include <message_type.pb.h>
 #include <response_msg.pb.h>
@@ -28,80 +29,20 @@ void send_response(int socket_client_fd,
   send(socket_client_fd, result.data(), result.size() * sizeof(char), 0);
 }
 
-void process_cache_check(ServerTask &server_task, Message &message) {
-  int client_fd = server_task.get_client_socket_fd();
-  auto &cache = server_task.get_cache();
 
-  auto &label = message.get_cache_request().cache_check_request().query_label();
-  bool exists = cache.result_exists(label);
 
-  proto_msg::CacheResponse cache_response;
-  cache_response.set_response_type(proto_msg::MessageType::CACHE_CHECK);
-  cache_response.mutable_cache_check_response()->set_has_result_stored(exists);
 
-  send_response(client_fd, cache_response);
+proto_msg::CacheResponse create_response_from_query_result(QueryResult &query_result){
+
 }
 
-void process_cache_feed(ServerTask &server_task, Message &message) {
-  int client_fd = server_task.get_client_socket_fd();
+void process_cache_query(ServerTask &server_task, Message &message){
   auto &cache = server_task.get_cache();
-
-  auto &feed_data = message.get_cache_request().cache_feed_request();
-  auto feed_result = cache.feed(feed_data);
-
-  proto_msg::CacheResponse cache_response;
-  cache_response.set_response_type(proto_msg::MessageType::CACHE_FEED);
-  cache_response.mutable_cache_feed_response()->set_data_was_stored(
-      feed_result);
-
-  send_response(client_fd, cache_response);
-
-  std::cout << MemoryManager::instance().memory_usage() << std::endl;
-  std::cout << "Results stored: " << cache.results_stored() << std::endl;
-  std::cout << "Predicates stored: " << cache.predicates_stored() << std::endl;
-  CacheStats cache_stats = cache.cache_stats();
-  std::cout << "U32s allocated: " << cache_stats.allocated_u32s << std::endl;
-  std::cout << "Nodes count: " << cache_stats.nodes_count << std::endl;
-
-  float nodes_bytes = (float)cache_stats.nodes_count / 2;
-
-  float occupation_ratio_topology =
-      nodes_bytes / ((float)cache_stats.allocated_u32s * 4);
-  std::cout << "Total Occupation ratio topology: " << occupation_ratio_topology
-            << std::endl;
-
-  std::cout << "Size in struct stuff " << cache_stats.containers_sz_sum
-            << std::endl;
-
-  std::cout << "Frontier data  sz: " << cache_stats.frontier_data << std::endl;
-  std::cout << "Blocks ptr data  sz: " << cache_stats.blocks_data << std::endl;
-  std::cout << "Number of points: " << cache_stats.number_of_points_avg
-            << std::endl;
-  std::cout << "max_points_k2:  " << cache_stats.max_points_k2 << std::endl;
-  std::cout << "Blocks counted: " << cache_stats.blocks_counted << std::endl;
-}
-
-void process_cache_retrieve(ServerTask &server_task, Message &message) {
+  auto &tree = message.get_cache_request().cache_run_query_algebra().sparql_tree();
+  auto query_result = cache.run_query(tree);
+  auto response = create_response_from_query_result(query_result);
   int client_fd = server_task.get_client_socket_fd();
-  auto &cache = server_task.get_cache();
-
-  auto &label =
-      message.get_cache_request().cache_retrieve_request().query_label();
-  bool exists = cache.result_exists(label);
-
-  proto_msg::CacheResponse cache_response;
-  cache_response.set_response_type(proto_msg::MessageType::CACHE_RETRIEVE);
-  cache_response.mutable_cache_retrieve_response()->set_has_result_stored(
-      exists);
-  if (exists) {
-    /*
-    auto &cache_graph_result = cache.get_graph_result(label);
-    cache_graph_result.produce_proto(
-        cache_response.mutable_cache_retrieve_response()
-            ->mutable_graph_result());
-    */
-  }
-  send_response(client_fd, cache_response);
+  send_response(client_fd, response);
 }
 
 void process_connection_end(ServerTask &server_task, Message &) {
@@ -144,6 +85,7 @@ bool read_nbytes_from_socket(int client_socket_fd, char *read_buffer,
     }
   }
 }
+
 
 void ServerTask::process() {
 
@@ -191,17 +133,9 @@ void ServerTask::process() {
     switch (message.request_type()) {
     case proto_msg::MessageType::UNKNOWN:
       break;
-    case proto_msg::MessageType::CACHE_CHECK:
-      std::cout << "Request of type CACHE_CHECK" << std::endl;
-      process_cache_check(*this, message);
-      break;
-    case proto_msg::MessageType::CACHE_FEED:
-      std::cout << "Request of type CACHE_FEED" << std::endl;
-      process_cache_feed(*this, message);
-      break;
-    case proto_msg::MessageType::CACHE_RETRIEVE:
-      std::cout << "Request of type CACHE_RETRIEVE" << std::endl;
-      process_cache_retrieve(*this, message);
+    case proto_msg::MessageType::RUN_QUERY:
+      std::cout << "Request of type RUN_QUERY" << std::endl;
+      process_cache_query(*this, message);
       break;
     case proto_msg::MessageType::CONNECTION_END:
       std::cout << "Request of type CONNECTION_END" << std::endl;

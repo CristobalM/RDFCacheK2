@@ -40,6 +40,9 @@ public:
   replace_index_cache(std::unique_ptr<PredicatesIndexCache> &&predicates_index);
 
   PredicatesIndexCache &get_predicates_cache();
+
+  K2TreeMixed &get_tree_by_predicate_name(const std::string &predicate_name);
+
   NaiveDynamicStringDictionary &get_dyn_dicts();
 
   void save_all(const std::string &fname);

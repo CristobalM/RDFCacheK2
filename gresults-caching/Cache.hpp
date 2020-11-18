@@ -5,11 +5,15 @@
 #ifndef RDFCACHEK2_CACHE_HPP
 #define RDFCACHEK2_CACHE_HPP
 
-#include "GraphResult.hpp"
-#include "cache_result/CacheResult.hpp"
-#include <map>
-#include <request_msg.pb.h>
+
 #include <string>
+#include <memory>
+
+#include <request_msg.pb.h>
+
+#include <PredicatesCacheManager.hpp>
+#include "QueryResult.hpp"
+
 
 struct CacheStats {
   int allocated_u32s;
@@ -23,21 +27,17 @@ struct CacheStats {
   int blocks_counted;
 };
 
+
 class Cache {
-  std::map<std::string, GraphResult> results_map;
-
+  std::unique_ptr<PredicatesCacheManager> cache_manager;
 public:
-  Cache();
-
-  bool result_exists(const std::string &label);
-  // bool feed(proto_msg::CacheFeedRequest cache_feed_request);
-  GraphResult &get_graph_result(const std::string &label);
-
-  int results_stored();
-
-  ulong predicates_stored();
+  using cm_t = std::unique_ptr<PredicatesCacheManager>;
+  Cache(std::unique_ptr<PredicatesCacheManager> &&cache_manager);
 
   CacheStats cache_stats();
+
+  QueryResult run_query(const proto_msg::SparqlTree &query_tree);
+
 };
 
 #endif // RDFCACHEK2_CACHE_HPP

@@ -2,6 +2,8 @@
 
 #include "ResultTable.hpp"
 
+ResultTable::ResultTable(){}
+
 ResultTable::ResultTable(unsigned long first_column_header,
                          std::vector<unsigned long> &&first_column) {
   headers.push_back(first_column_header);
