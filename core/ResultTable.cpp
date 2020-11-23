@@ -1,4 +1,5 @@
 #include <memory>
+#include <stdexcept>
 
 #include "ResultTable.hpp"
 
@@ -81,3 +82,16 @@ void ResultTable::left_inner_join_with(unsigned long left_column_index,
 }
 
 std::list<std::vector<unsigned long>> &ResultTable::get_data() { return data; }
+
+
+size_t ResultTable::rows_size() const {
+  return data.size();
+};
+
+
+unsigned long ResultTable::get_actual_index(unsigned long virtual_index){
+  for(size_t i = 0; i < headers.size(); i++)
+    if(headers[i] == virtual_index)
+      return i;
+  throw std::runtime_error("Virtual index " + std::to_string(virtual_index) + " not found on headers list");
+}

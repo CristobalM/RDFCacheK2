@@ -126,3 +126,28 @@ K2TreeMixed & PredicatesCacheManager::get_tree_by_predicate_name(const std::stri
   auto index = get_resource_index(resource);
   return predicates_index->get_k2tree(index);
 }
+
+
+
+
+unsigned long PredicatesCacheManager::get_iri_index(const std::string &value){
+  auto index = isd_manager->iris_index(value);
+  if(index == 0){
+    return extra_dicts.locate_iri(value);
+  }
+  return index;
+}
+unsigned long PredicatesCacheManager::get_literal_index(const std::string &value){
+auto index = isd_manager->literals_index(value);
+  if(index == 0){
+    return extra_dicts.locate_literal(value);
+  }
+  return index;
+}
+unsigned long PredicatesCacheManager::get_blank_index(const std::string &value){
+auto index = isd_manager->blanks_index(value);
+  if(index == 0){
+    return extra_dicts.locate_blank(value);
+  }
+  return index;
+}

@@ -5,16 +5,14 @@
 #include <unordered_map>
 #include <vector>
 
-class ResultTable {
+struct ResultTable {
   using vul_t = std::vector<unsigned long>;
   using lvul_t = std::list<vul_t>;
   using map_t = std::unordered_map<unsigned long, unsigned long>;
 
   vul_t headers;
-  map_t headers_map;
   lvul_t data;
 
-public:
   ResultTable();
 
   ResultTable(unsigned long first_column_header,
@@ -31,9 +29,12 @@ public:
 
   lvul_t &get_data();
 
-private:
+  size_t rows_size() const;
+
   void join_with(unsigned long left_column_index, unsigned long right_index,
                  ResultTable &right, bool outer_join);
+
+  unsigned long get_actual_index(unsigned long virtual_index);
 };
 
 #endif

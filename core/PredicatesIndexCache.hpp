@@ -47,6 +47,7 @@ public:
   void dump_to_file(const std::string &file_path);
 
   void load_dump_file(const std::string &file_path);
+
 };
 
 class PredicatesIndexCacheBuilder {
