@@ -202,14 +202,12 @@ VarIndexManager &vim
 ){
   std::shared_ptr<ResultTable> smaller, bigger;
   const std::string *smaller_var, *bigger_var;
-  bool is_smaller_subject;
   if(table_one->rows_size() < table_two->rows_size()){
     smaller = table_one;
     bigger = table_two;
 
     smaller_var = &two_var_group_item.first.first;
     bigger_var = &two_var_group_item.first.second;
-    is_smaller_subject = true;
   }
   else{
     smaller = table_two;
@@ -217,24 +215,39 @@ VarIndexManager &vim
 
     smaller_var = &two_var_group_item.first.second;
     bigger_var = &two_var_group_item.first.first;
-    is_smaller_subject = false;
   }
 
   unsigned long smaller_index = vim.var_indexes[*smaller_var];
   unsigned long smaller_real_index = smaller->get_actual_index(smaller_index);
+  
+
+  unsigned long bigger_index = vim.var_indexes[*bigger_var];
+  unsigned long bigger_real_index = bigger->get_actual_index(bigger_index);
+
   for(const auto &row: smaller->data){
 
-    unsigned long current_cord = row.at(smaller_real_index);
-    std::vector<unsigned long> retrieved;
-    
-    if(is_smaller_subject){
-      retrieved = 
+    unsigned long current_cord_smaller = row.at(smaller_real_index);
+    for(Triple &triple : two_var_group_item.second){
+      std::vector<unsigned long> retrieved;
+      if(triple.subject.value == *smaller_var){
+        retrieved = k2trees_map[triple.predicate.value]->get_row(current_cord_smaller);
+      }
+      else{
+        // is object
+        retrieved = k2trees_map[triple.predicate.value]->get_column(current_cord_smaller);
+      }
+      bigger->left_join_with_vector(bigger_real_index, retrieved, false);
+
     }
+
   }
-
-
   
-return std::make_shared<ResultTable>(0, std::vector<unsigned long>());
+  std::unordered_map<std::string, std::shared_ptr<ResultTable>> partial_results;
+
+  partial_results[*smaller_var] = smaller;
+  partial_results[*bigger_var] = bigger;
+
+  return cross_product_partial_results(partial_results, cm, vim);
 }
 
 static std::shared_ptr<ResultTable> join_table_with_trees(

@@ -21,7 +21,7 @@ ResultTable::ResultTable(unsigned long first_column_header,
   headers.push_back(first_column_header);
 }
 
-void ResultTable::join_with(unsigned long left_column_index,
+void ResultTable::left_join_with(unsigned long left_column_index,
                             unsigned long right_column_index,
                             ResultTable &right, bool outer) {
 
@@ -56,7 +56,8 @@ void ResultTable::join_with(unsigned long left_column_index,
       if (!outer)
         data.erase(curr);
       else
-        l.push_back(0);
+        for(size_t i = 0; i < right.headers.size() - 1; i++);
+          l.push_back(0);
     } else {
       rit++;
     }
@@ -64,21 +65,59 @@ void ResultTable::join_with(unsigned long left_column_index,
 
   while (lit != data.end()) {
     auto curr = lit;
+    auto &l = *lit;
     lit++;
-    data.erase(curr);
+    if(!outer)
+      data.erase(curr);
+    else
+      for(size_t i = 0; i < right.headers.size() - 1; i++);
+        l.push_back(0);
+  }
+}
+
+
+void ResultTable::left_join_with_vector(unsigned long left_column_index, std::vector<unsigned long> &vec, bool outer){
+  auto lit = data.begin();
+  auto rit = vec.begin();
+
+  while (lit != data.end() && rit != vec.end()) {
+    auto &l = *lit;
+
+    auto lval = l[left_column_index];
+    auto rval = *rit;
+
+    if (lval == rval) {
+      lit++;
+      rit++;
+    } else if (lval < rval) {
+      auto curr = lit;
+      lit++;
+      if (!outer)
+        data.erase(curr);
+    } else {
+      rit++;
+    }
+  }
+
+  while (lit != data.end()) {
+    auto curr = lit;
+    auto &l = *lit;
+    lit++;
+    if(!outer)
+      data.erase(curr);
   }
 }
 
 void ResultTable::left_outer_join_with(unsigned long left_column_index,
                                        unsigned long right_index,
                                        ResultTable &right) {
-  join_with(left_column_index, right_index, right, true);
+  left_join_with(left_column_index, right_index, right, true);
 }
 
 void ResultTable::left_inner_join_with(unsigned long left_column_index,
                                        unsigned long right_index,
                                        ResultTable &right) {
-  join_with(left_column_index, right_index, right, false);
+  left_join_with(left_column_index, right_index, right, false);
 }
 
 std::list<std::vector<unsigned long>> &ResultTable::get_data() { return data; }

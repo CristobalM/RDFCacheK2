@@ -302,7 +302,12 @@ std::vector<unsigned long> K2TreeMixed::sip_join_k2trees(const std::vector<K2Tre
   sip_input.join_coords = join_coordinates.data();
   sip_input.join_size = join_coordinates.size();
 
+  std::vector<unsigned long> result;
   
+  k2node_sip_join(sip_input, [](unsigned long coord, void *report_state){
+    auto &result  = *reinterpret_cast<std::vector<unsigned long> *>(report_state);
+    result.push_back(coord);
+  }, &result);
 
-
+  return result;
 }
