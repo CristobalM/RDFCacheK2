@@ -285,7 +285,7 @@ K2TreeMixed K2TreeMixed::read_from_istream(std::istream &is) {
 
 std::vector<unsigned long> K2TreeMixed::sip_join_k2trees(const std::vector<K2TreeMixed *> &trees, std::vector<struct sip_ipoint> &join_coordinates){  
   if(trees.size() != join_coordinates.size()){
-    throw std::runtime_error("Trees amount differ from join coordinates amount " + trees.size() + " != " + join_coordinates.size());
+    throw std::runtime_error("Trees amount differ from join coordinates amount " + std::to_string(trees.size()) + " != " + std::to_string(join_coordinates.size()));
   }
 
   std::vector<struct k2node *> root_nodes(trees.size());

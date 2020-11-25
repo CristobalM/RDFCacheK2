@@ -101,7 +101,6 @@ void ResultTable::left_join_with_vector(unsigned long left_column_index, std::ve
 
   while (lit != data.end()) {
     auto curr = lit;
-    auto &l = *lit;
     lit++;
     if(!outer)
       data.erase(curr);

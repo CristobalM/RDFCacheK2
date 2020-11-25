@@ -51,7 +51,7 @@ struct hash_pair {
 static std::unordered_map<std::string, K2TreeMixed *> get_k2trees_map_by_predicate_value(const proto_msg::BGPNode &bgp_node, Cache::cm_t &cm){
   std::unordered_map<std::string, K2TreeMixed *> k2trees_map;
 
-  for(size_t i = 0; i < bgp_node.triple_size(); i++){
+  for(int i = 0; i < bgp_node.triple_size(); i++){
     const auto &triple = bgp_node.triple().at(i);
     auto predicate_type = triple.predicate().term_type();
     if(predicate_type != proto_msg::TermType::IRI){
@@ -78,7 +78,7 @@ std::unordered_map<std::pair<std::string, std::string>, std::vector<Triple>, has
   std::unordered_map<std::pair<std::string, std::string>, std::vector<Triple>, hash_pair> two_var_groups;
 
 
-  for(size_t i = 0; i < bgp_node.triple_size(); i++){
+  for(int i = 0; i < bgp_node.triple_size(); i++){
     const auto &triple = bgp_node.triple().at(i);
 
     if(triple.subject().term_type() == proto_msg::TermType::VARIABLE && 
@@ -190,12 +190,43 @@ static std::shared_ptr<ResultTable> join_single_var_group(
   return std::make_shared<ResultTable>(vim.var_indexes[var_name], std::move(join_result));
 }
 
+static std::shared_ptr<ResultTable> cross_product_partial_results(
+  std::unordered_map<std::string, std::shared_ptr<ResultTable>> &partial_results
+){
+  if(partial_results.size() == 0) throw std::runtime_error("cross_product_partial_results: no results");
+  if(partial_results.size() == 1) return partial_results[partial_results.begin()->first];
+
+  auto it_left = partial_results.begin();
+  auto left_table = it_left->second;
+  auto second = std::next(it_left);
+
+  for(auto it = second; it != partial_results.end(); it++){
+    const auto &var_name = it->first;
+    auto table = it->second;
+
+    for(auto right_header: table->headers){
+      left_table->headers.push_back(right_header);
+    }
+
+    for(auto &left_row: left_table->data){
+      for(auto &right_row: table->data){
+        for(auto right_val: right_row){
+          left_row.push_back(right_val);
+        }
+      }
+    }
+    partial_results[var_name] = left_table;
+  }
+
+  return left_table;
+}
+
+
 static std::shared_ptr<ResultTable> join_two_tables_with_trees(
 std::shared_ptr<ResultTable> &table_one,
 std::shared_ptr<ResultTable> &table_two,
 const std::pair<std::pair<std::string, std::string>, std::vector<Triple>> &two_var_group_item,
 std::unordered_map<std::string, K2TreeMixed *> &k2trees_map,
-Cache::cm_t &cm,
 VarIndexManager &vim
 ){
   std::shared_ptr<ResultTable> smaller, bigger;
@@ -245,14 +276,13 @@ VarIndexManager &vim
   partial_results[*smaller_var] = smaller;
   partial_results[*bigger_var] = bigger;
 
-  return cross_product_partial_results(partial_results, cm, vim);
+  return cross_product_partial_results(partial_results);
 }
 
 static std::shared_ptr<ResultTable> join_table_with_trees(
 std::shared_ptr<ResultTable> &table,
 const std::pair<std::pair<std::string, std::string>, std::vector<Triple>> &two_var_group_item,
 std::unordered_map<std::string, K2TreeMixed *> &k2trees_map,
-Cache::cm_t &cm,
 VarIndexManager &vim
 ){
 
@@ -296,7 +326,6 @@ static std::shared_ptr<ResultTable> join_two_var_group(
   const std::string &var_two,
   const std::vector<Triple> &triples,
   std::unordered_map<std::string, K2TreeMixed *> &k2trees_map,
-  Cache::cm_t &cm,
   VarIndexManager &vim
 ){
 
@@ -361,46 +390,20 @@ static std::shared_ptr<ResultTable> join_two_var_group(
   return table;
 }
 
-static std::shared_ptr<ResultTable> cross_product_partial_results(
-  std::unordered_map<std::string, std::shared_ptr<ResultTable>> &partial_results,
-  Cache::cm_t &cm, 
-  VarIndexManager &vim
-){
-  if(partial_results.size() == 0) throw std::runtime_error("cross_product_partial_results: no results");
-  if(partial_results.size() == 1) return partial_results[partial_results.begin()->first];
-
-  auto it_left = partial_results.begin();
-  const auto &first_var_name = it_left->first;
-  auto left_table = it_left->second;
-  auto second = std::next(it_left);
-
-  for(auto it = second; it != partial_results.end(); it++){
-    const auto &var_name = it->first;
-    auto table = it->second;
-
-    for(auto right_header: table->headers){
-      left_table->headers.push_back(right_header);
-    }
-
-    for(auto &left_row: left_table->data){
-      for(auto &right_row: table->data){
-        for(auto right_val: right_row){
-          left_row.push_back(right_val);
-        }
-      }
-    }
-    partial_results[var_name] = left_table;
-  }
-
-  return left_table;
-}
 
 
-static void process_project_node(const proto_msg::ProjectNode &project_node, std::shared_ptr<ResultTable> &result, Cache::cm_t &cm){
+
+static std::shared_ptr<ResultTable> process_project_node(const proto_msg::ProjectNode &project_node, Cache::cm_t &cm,  VarIndexManager &vim){
   std::vector<std::string> vars;
   for(int i = 0; i < project_node.vars_size(); i++){
     vars.push_back(project_node.vars(i));
   }
+
+  for(const auto &var: vars){
+    vim.assign_index_if_not_found(var);
+  }
+
+
 }
 
 static std::shared_ptr<ResultTable> process_bgp_node(
@@ -409,8 +412,6 @@ static std::shared_ptr<ResultTable> process_bgp_node(
   VarIndexManager &vim){
   std::vector<struct sip_ipoint> join_coordinates(bgp_node.triple_size());
 
-  std::unordered_map<std::string, std::vector<Triple>> one_var_groups;
-  std::unordered_map<std::pair<std::string, std::string>, std::vector<Triple>, hash_pair> two_var_groups;
 
   auto k2trees_map = get_k2trees_map_by_predicate_value(bgp_node, cm);
   auto groups = group_triple_nodes(bgp_node);
@@ -420,7 +421,7 @@ static std::shared_ptr<ResultTable> process_bgp_node(
   std::unordered_map<std::string, std::shared_ptr<ResultTable>> partial_results;
   for(const auto &item : one_var_groups){
     vim.assign_index_if_not_found(item.first);
-    partial_results[item.first] = std::make_shared<ResultTable>(join_single_var_group(item.first, item.second, k2trees_map, cm, vim));
+    partial_results[item.first] = join_single_var_group(item.first, item.second, k2trees_map, cm, vim);
   }
 
   for(const auto &item_pair : two_var_groups){
@@ -435,10 +436,10 @@ static std::shared_ptr<ResultTable> process_bgp_node(
       auto &partial_result_two = partial_results[item_pair.first.second];
       std::shared_ptr<ResultTable> result;
       if(&partial_result_one != &partial_result_two){
-        result = join_two_tables_with_trees(partial_result_one, partial_result_two, item_pair, k2trees_map, cm, vim):
+        result = join_two_tables_with_trees(partial_result_one, partial_result_two, item_pair, k2trees_map, vim);
       }
       else{
-        result = join_table_with_trees(partial_result_one, item_pair, k2trees_map, cm, vim);
+        result = join_table_with_trees(partial_result_one, item_pair, k2trees_map, vim);
       }
 
       partial_results[item_pair.first.first] = result;
@@ -447,43 +448,42 @@ static std::shared_ptr<ResultTable> process_bgp_node(
     else if(partial_results.find(item_pair.first.first) != partial_results.end()){
       // The first variable only is in a single var table
       auto &partial_result = partial_results[item_pair.first.first];
-      partial_result = join_table_with_trees(partial_result, item_pair, k2trees_map, cm, vim);
+      partial_result = join_table_with_trees(partial_result, item_pair, k2trees_map, vim);
       partial_results[item_pair.first.second] = partial_result;
     }
     else if(partial_results.find(item_pair.first.second) != partial_results.end()){
       // The second variable only is in a single var table
       auto &partial_result = partial_results[item_pair.first.second];
-      partial_result = join_table_with_trees(partial_result, item_pair, k2trees_map, cm, vim);
+      partial_result = join_table_with_trees(partial_result, item_pair, k2trees_map, vim);
       partial_results[item_pair.first.first] = partial_result;
     }
     else{
       // None of the variables is in a single var table
-      partial_results[item_pair.first.first] = join_two_var_group(item_pair.first.first, item_pair.first.second, item_pair.second, k2trees_map, cm, vim);
+      partial_results[item_pair.first.first] = join_two_var_group(item_pair.first.first, item_pair.first.second, item_pair.second, k2trees_map, vim);
       partial_results[item_pair.first.second] = partial_results[item_pair.first.first];
     }
   }
 
-  return cross_product_partial_results(partial_results, cm, vim);
+  return cross_product_partial_results(partial_results);
 }
 
-static void process_expr_node(const proto_msg::ExprNode &expr_node, std::shared_ptr<ResultTable> &result, Cache::cm_t &cm){
+static void process_expr_node(const proto_msg::ExprNode &, std::shared_ptr<ResultTable> &, Cache::cm_t &){
 }
 
-static void process_left_join_node(const proto_msg::LeftJoinNode &left_join_node, std::shared_ptr<ResultTable> &result, Cache::cm_t &cm){
+static void process_left_join_node(const proto_msg::LeftJoinNode &, std::shared_ptr<ResultTable> &, Cache::cm_t &){
 }
 
-static void process_triple_node(const proto_msg::TripleNode &triple_node, std::shared_ptr<ResultTable> &result, Cache::cm_t &cm){
+static void process_triple_node(const proto_msg::TripleNode &, std::shared_ptr<ResultTable> &, Cache::cm_t &){
 }
 
-void process_node(const proto_msg::SparqlNode &node, std::shared_ptr<ResultTable> &result, Cache::cm_t &cm, VarIndexManager &vim){
+std::shared_ptr<ResultTable> process_node(const proto_msg::SparqlNode &node, Cache::cm_t &cm, VarIndexManager &vim){
   if(node.node_case() != proto_msg::SparqlNode::NodeCase::kProjectNode)
     throw std::runtime_error("(process_node) Expected ProjectNode, but got: " + std::to_string(node.node_case()));
-  process_project_node(node.project_node(), result, cm);
+  return process_project_node(node.project_node(), cm, vim);
 }
 
 QueryResult Cache::run_query(const proto_msg::SparqlTree &query_tree) {
-  auto result = std::make_shared<ResultTable>();
   VarIndexManager vim;
-  process_node(query_tree.root(), result, cache_manager, vim);
+  auto result = process_node(query_tree.root(), cache_manager, vim);
   return QueryResult(result);
 }

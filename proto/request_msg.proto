@@ -11,8 +11,8 @@ message CacheRequest{
     MessageType request_type = 1;
 
     oneof response {
-        ConnectionEndRequest connection_end_request = 1;
-        CacheRunQueryAlgebra cache_run_query_algebra = 2;
+        ConnectionEndRequest connection_end_request = 2;
+        CacheRunQueryAlgebra cache_run_query_algebra = 3;
     }
 }
 

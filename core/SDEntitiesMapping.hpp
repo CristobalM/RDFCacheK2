@@ -63,36 +63,36 @@ public:
     }
   }
 
-  uint64_t blanks_index(std::string &blank) override {
+  uint64_t blanks_index(const std::string &blank) override {
     return _offset_index_cond(
         blanks_dictionary->locate(
-            reinterpret_cast<unsigned char *>(blank.data()), blank.size()),
+            reinterpret_cast<unsigned char *>(const_cast<char *>(blank.data())), blank.size()),
         iris_dictionary->numElements());
   }
 
-  uint64_t literals_index(std::string &literal) override {
+  uint64_t literals_index(const std::string &literal) override {
     return _offset_index_cond(
         literals_dictionary->locate(
-            reinterpret_cast<unsigned char *>(literal.data()), literal.size()),
+            reinterpret_cast<unsigned char *>(const_cast<char *>(literal.data())), literal.size()),
         iris_dictionary->numElements() + blanks_dictionary->numElements());
   }
 
-  uint64_t iris_index(std::string &iri) override {
+  uint64_t iris_index(const std::string &iri) override {
     return iris_dictionary->locate(
-        reinterpret_cast<unsigned char *>(iri.data()), iri.size());
+        reinterpret_cast<unsigned char *>(const_cast<char *>(iri.data())), iri.size());
   }
 
-  bool has_blanks_index(std::string &blank) override {
+  bool has_blanks_index(const std::string &blank) override {
     auto result = blanks_index(blank);
     return result != NORESULT;
   }
 
-  bool has_literals_index(std::string &literal) override {
+  bool has_literals_index(const std::string &literal) override {
     auto result = literals_index(literal);
     return result != NORESULT;
   }
 
-  bool has_iris_index(std::string &iri) override {
+  bool has_iris_index(const std::string &iri) override {
     auto result = iris_index(iri);
     return result != NORESULT;
   }

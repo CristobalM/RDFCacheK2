@@ -116,7 +116,7 @@ add_library(MemoryManager STATIC
 
 add_library(RDFCacheK2 STATIC ${CORE_SOURCE_FILES})
 #add_library(RDFCacheK2_Network STATIC ${NETWORK_SOURCE_FILES})
-#add_library(RDFCacheK2_GR STATIC ${GRAPH_RESULT_CACHING_FILE})
+add_library(RDFCacheK2_GR STATIC ${GRAPH_RESULT_CACHING_FILE})
 
 add_library(ProtoMessages STATIC ${PROTO_MESSAGES})
 

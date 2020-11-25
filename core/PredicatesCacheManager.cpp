@@ -120,9 +120,7 @@ void PredicatesCacheManager::replace_index_cache(
 }
 
 K2TreeMixed & PredicatesCacheManager::get_tree_by_predicate_name(const std::string &predicate_name){
-  RDFResource resource;
-  resource.resource_type = RDF_TYPE_IRI;
-  resource.value = predicate_name;
+  RDFResource resource(predicate_name, RDF_TYPE_IRI);
   auto index = get_resource_index(resource);
   return predicates_index->get_k2tree(index);
 }
