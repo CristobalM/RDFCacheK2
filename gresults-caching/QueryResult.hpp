@@ -4,11 +4,11 @@
 #include <ResultTable.hpp>
 
 class QueryResult{
-  ResultTable result_table;
+  std::shared_ptr<ResultTable> result_table;
 
   public:
 
-  explicit QueryResult(ResultTable &&result_table);
+  explicit QueryResult(std::shared_ptr<ResultTable> &result_table);
 
   ResultTable &table();
 };

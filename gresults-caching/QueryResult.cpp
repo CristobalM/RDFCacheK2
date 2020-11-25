@@ -3,11 +3,11 @@
 #include "QueryResult.hpp"
 
 
-QueryResult::QueryResult(ResultTable &&result_table)
-: result_table(std::move(result_table))
+QueryResult::QueryResult(std::shared_ptr<ResultTable> &result_table)
+: result_table(result_table)
 {
 }
 
 ResultTable & QueryResult::table(){
-  return result_table;
+  return *result_table;
 }

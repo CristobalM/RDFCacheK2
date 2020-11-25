@@ -134,3 +134,11 @@ unsigned long ResultTable::get_actual_index(unsigned long virtual_index){
       return i;
   throw std::runtime_error("Virtual index " + std::to_string(virtual_index) + " not found on headers list");
 }
+
+
+ void ResultTable::add_row(std::vector<unsigned long> &&row){
+    data.push_back(std::move(row));
+  }
+
+ResultTable::ResultTable(std::vector<unsigned long> &&headers) : headers(std::move(headers)){
+}

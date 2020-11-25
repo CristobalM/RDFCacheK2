@@ -15,6 +15,8 @@ struct ResultTable {
 
   ResultTable();
 
+  ResultTable(std::vector<unsigned long> &&headers);
+
   ResultTable(unsigned long first_column_header,
               std::vector<unsigned long> &&first_column);
 
@@ -37,6 +39,8 @@ struct ResultTable {
   void left_join_with_vector(unsigned long left_column_index, std::vector<unsigned long> &vec, bool outer_join);
 
   unsigned long get_actual_index(unsigned long virtual_index);
+
+  void add_row(std::vector<unsigned long> &&row);
 };
 
 #endif
