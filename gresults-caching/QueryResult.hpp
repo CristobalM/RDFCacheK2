@@ -1,6 +1,8 @@
 #ifndef _QUERY_RESULT_HPP_
 #define _QUERY_RESULT_HPP_
 
+#include <memory>
+
 #include <ResultTable.hpp>
 
 class QueryResult {

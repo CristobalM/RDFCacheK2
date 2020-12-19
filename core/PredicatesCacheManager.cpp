@@ -14,14 +14,22 @@ PredicatesCacheManager::PredicatesCacheManager(
       measured_time_sd_lookup(0) {}
 
 uint64_t PredicatesCacheManager::get_resource_index(RDFResource &resource) {
+  unsigned long index;
   switch (resource.resource_type) {
   case RDF_TYPE_IRI:
-    return isd_manager->iris_index(resource.value);
+    index = isd_manager->iris_index(resource.value);
+    if(index == NORESULT) return extra_dicts.locate_iri(resource.value);
+    break;
   case RDF_TYPE_BLANK:
-    return isd_manager->blanks_index(resource.value);
+    index = isd_manager->blanks_index(resource.value);
+    if(index == NORESULT) return extra_dicts.locate_blank(resource.value);
+    break;
   case RDF_TYPE_LITERAL:
-    return isd_manager->literals_index(resource.value);
+    index = isd_manager->literals_index(resource.value);
+    if(index == NORESULT) return extra_dicts.locate_literal(resource.value);
+    break;
   }
+
   return NORESULT;
 }
 
@@ -123,6 +131,7 @@ K2TreeMixed &PredicatesCacheManager::get_tree_by_predicate_name(
     const std::string &predicate_name) {
   RDFResource resource(predicate_name, RDF_TYPE_IRI);
   auto index = get_resource_index(resource);
+  if(index == NORESULT) throw std::runtime_error("Predicate with name " + predicate_name + " was not found in predicates cache manager");
   return predicates_index->get_k2tree(index);
 }
 

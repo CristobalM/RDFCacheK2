@@ -11,6 +11,8 @@
 
 #include "Cache.hpp"
 
+
+
 Cache::Cache(std::unique_ptr<PredicatesCacheManager> &&cache_manager)
     : cache_manager(std::move(cache_manager)) {}
 
@@ -47,10 +49,87 @@ struct hash_pair {
   }
 };
 
-static std::unordered_map<std::string, K2TreeMixed *>
+struct VarIndexManager {
+  std::unordered_map<std::string, unsigned long> var_indexes;
+  unsigned long current_index;
+  VarIndexManager() : current_index(0) {}
+
+  void assign_index_if_not_found(const std::string &var_name) {
+    if (var_indexes.find(var_name) == var_indexes.end()) {
+      var_indexes[var_name] = current_index++;
+    }
+  }
+};
+
+// prototypes
+
+std::shared_ptr<ResultTable>
+process_join_node(const proto_msg::SparqlNode &join_node, Cache::cm_t &cm,
+                  VarIndexManager &vim);
+
+std::shared_ptr<ResultTable>
+process_bgp_node(const proto_msg::BGPNode &bgp_node, Cache::cm_t &cm,
+                 VarIndexManager &vim);
+
+std::unordered_map<std::string, K2TreeMixed *>
+get_k2trees_map_by_predicate_value(const proto_msg::BGPNode &bgp_node,
+                                   Cache::cm_t &cm);
+
+std::pair<std::unordered_map<std::string, std::vector<Triple>>,
+  std::unordered_map<std::pair<std::string, std::string>,
+                                  std::vector<Triple>, hash_pair>>
+group_triple_nodes(const proto_msg::BGPNode &bgp_node);
+
+unsigned long get_index_from_term(const Term &term, Cache::cm_t &cm);
+
+std::shared_ptr<ResultTable> join_single_var_group(
+    const std::string &var_name, const std::vector<Triple> &triples,
+    std::unordered_map<std::string, K2TreeMixed *> &k2trees_map,
+    Cache::cm_t &cm, VarIndexManager &vim);
+
+std::shared_ptr<ResultTable> cross_product_partial_results(
+    std::unordered_map<std::string, std::shared_ptr<ResultTable>>
+        &partial_results);
+
+std::shared_ptr<ResultTable> cross_product_partial_results(
+    std::unordered_map<std::string, std::shared_ptr<ResultTable>>
+        &partial_results);
+
+std::shared_ptr<ResultTable> join_table_with_trees(
+    std::shared_ptr<ResultTable> &table,
+    const std::pair<std::pair<std::string, std::string>, std::vector<Triple>>
+        &two_var_group_item,
+    std::unordered_map<std::string, K2TreeMixed *> &k2trees_map,
+    VarIndexManager &vim);
+
+std::shared_ptr<ResultTable>
+join_two_var_group(const std::string &var_one, const std::string &var_two,
+                   const std::vector<Triple> &triples,
+                   std::unordered_map<std::string, K2TreeMixed *> &k2trees_map,
+                   VarIndexManager &vim);
+
+void process_expr_node(const proto_msg::ExprNode &,
+                              std::shared_ptr<ResultTable> &, Cache::cm_t &);
+
+std::shared_ptr<ResultTable>
+process_left_join_node(const proto_msg::LeftJoinNode &left_join_node,
+                       Cache::cm_t &cm, VarIndexManager &vim);
+
+
+std::shared_ptr<ResultTable>
+process_project_node(const proto_msg::ProjectNode &project_node,
+                     Cache::cm_t &cm, VarIndexManager &vim);
+
+
+void process_triple_node(const proto_msg::TripleNode &,
+                                std::shared_ptr<ResultTable> &, Cache::cm_t &);
+// definitions
+
+std::unordered_map<std::string, K2TreeMixed *>
 get_k2trees_map_by_predicate_value(const proto_msg::BGPNode &bgp_node,
                                    Cache::cm_t &cm) {
   std::unordered_map<std::string, K2TreeMixed *> k2trees_map;
+
 
   for (int i = 0; i < bgp_node.triple_size(); i++) {
     const auto &triple = bgp_node.triple().at(i);
@@ -71,7 +150,8 @@ get_k2trees_map_by_predicate_value(const proto_msg::BGPNode &bgp_node,
   return k2trees_map;
 }
 
-static std::pair<std::unordered_map<std::string, std::vector<Triple>>,
+
+std::pair<std::unordered_map<std::string, std::vector<Triple>>,
                  std::unordered_map<std::pair<std::string, std::string>,
                                     std::vector<Triple>, hash_pair>>
 group_triple_nodes(const proto_msg::BGPNode &bgp_node) {
@@ -140,19 +220,9 @@ unsigned long get_index_from_term(const Term &term, Cache::cm_t &cm) {
   return result;
 }
 
-struct VarIndexManager {
-  std::unordered_map<std::string, unsigned long> var_indexes;
-  unsigned long current_index;
-  VarIndexManager() : current_index(0) {}
 
-  void assign_index_if_not_found(const std::string &var_name) {
-    if (var_indexes.find(var_name) == var_indexes.end()) {
-      var_indexes[var_name] = current_index++;
-    }
-  }
-};
 
-static std::shared_ptr<ResultTable> join_single_var_group(
+std::shared_ptr<ResultTable> join_single_var_group(
     const std::string &var_name, const std::vector<Triple> &triples,
     std::unordered_map<std::string, K2TreeMixed *> &k2trees_map,
     Cache::cm_t &cm, VarIndexManager &vim) {
@@ -180,7 +250,7 @@ static std::shared_ptr<ResultTable> join_single_var_group(
                                        std::move(join_result));
 }
 
-static std::shared_ptr<ResultTable> cross_product_partial_results(
+std::shared_ptr<ResultTable> cross_product_partial_results(
     std::unordered_map<std::string, std::shared_ptr<ResultTable>>
         &partial_results) {
   if (partial_results.size() == 0)
@@ -213,7 +283,7 @@ static std::shared_ptr<ResultTable> cross_product_partial_results(
   return left_table;
 }
 
-static std::shared_ptr<ResultTable> join_two_tables_with_trees(
+std::shared_ptr<ResultTable> join_two_tables_with_trees(
     std::shared_ptr<ResultTable> &table_one,
     std::shared_ptr<ResultTable> &table_two,
     const std::pair<std::pair<std::string, std::string>, std::vector<Triple>>
@@ -267,7 +337,7 @@ static std::shared_ptr<ResultTable> join_two_tables_with_trees(
   return cross_product_partial_results(partial_results);
 }
 
-static std::shared_ptr<ResultTable> join_table_with_trees(
+std::shared_ptr<ResultTable> join_table_with_trees(
     std::shared_ptr<ResultTable> &table,
     const std::pair<std::pair<std::string, std::string>, std::vector<Triple>>
         &two_var_group_item,
@@ -307,7 +377,7 @@ static std::shared_ptr<ResultTable> join_table_with_trees(
   return table;
 }
 
-static std::shared_ptr<ResultTable>
+std::shared_ptr<ResultTable>
 join_two_var_group(const std::string &var_one, const std::string &var_two,
                    const std::vector<Triple> &triples,
                    std::unordered_map<std::string, K2TreeMixed *> &k2trees_map,
@@ -378,7 +448,7 @@ join_two_var_group(const std::string &var_one, const std::string &var_two,
   return table;
 }
 
-static std::shared_ptr<ResultTable>
+std::shared_ptr<ResultTable>
 process_join_node(const proto_msg::SparqlNode &join_node, Cache::cm_t &cm,
                   VarIndexManager &vim) {
 
@@ -395,37 +465,12 @@ process_join_node(const proto_msg::SparqlNode &join_node, Cache::cm_t &cm,
     throw std::runtime_error("Unsupported nodetype on process_join_node: " +
                              std::to_string(join_node.node_case()));
   }
+
+  return result_table;
 }
 
-static std::shared_ptr<ResultTable>
-process_project_node(const proto_msg::ProjectNode &project_node,
-                     Cache::cm_t &cm, VarIndexManager &vim) {
-  std::vector<std::string> vars;
-  for (int i = 0; i < project_node.vars_size(); i++) {
-    vars.push_back(project_node.vars(i));
-  }
 
-  for (const auto &var : vars) {
-    vim.assign_index_if_not_found(var);
-  }
-
-  std::shared_ptr<ResultTable> result_table;
-
-  switch (project_node.sub_op().node_case()) {
-  case proto_msg::SparqlNode::NodeCase::kBgpNode:
-    result_table = process_bgp_node(project_node.sub_op().bgp_node(), cm, vim);
-    break;
-  case proto_msg::SparqlNode::NodeCase::kLeftJoinNode:
-    result_table =
-        process_left_join_node(project_node.sub_op().left_join_node(), cm, vim);
-    break;
-  default:
-    throw std::runtime_error("Unsupported nodetype on process_project_node: " +
-                             std::to_string(project_node.sub_op().node_case()));
-  }
-}
-
-static std::shared_ptr<ResultTable>
+std::shared_ptr<ResultTable>
 process_bgp_node(const proto_msg::BGPNode &bgp_node, Cache::cm_t &cm,
                  VarIndexManager &vim) {
   std::vector<struct sip_ipoint> join_coordinates(bgp_node.triple_size());
@@ -490,12 +535,15 @@ process_bgp_node(const proto_msg::BGPNode &bgp_node, Cache::cm_t &cm,
   return cross_product_partial_results(partial_results);
 }
 
-static void process_expr_node(const proto_msg::ExprNode &,
+
+
+void process_expr_node(const proto_msg::ExprNode &,
                               std::shared_ptr<ResultTable> &, Cache::cm_t &) {}
 
-static std::shared_ptr<ResultTable>
+std::shared_ptr<ResultTable>
 process_left_join_node(const proto_msg::LeftJoinNode &left_join_node,
                        Cache::cm_t &cm, VarIndexManager &vim) {
+  // TODO: FIX
   auto left_result = process_join_node(left_join_node.left_node(), cm, vim);
   const auto right_type = left_join_node.right_node().node_case();
   if (right_type == proto_msg::SparqlNode::NodeCase::kBgpNode) {
@@ -503,8 +551,10 @@ process_left_join_node(const proto_msg::LeftJoinNode &left_join_node,
     auto k2trees_map = get_k2trees_map_by_predicate_value(bgp_node, cm);
     for (int i = 0; i < bgp_node.triple_size(); i++) {
       const auto &current_triple = bgp_node.triple(i);
+      /*
       K2TreeMixed *current_k2tree =
           k2trees_map[current_triple.subject().term_value()];
+          */
       auto subject_is_var =
           current_triple.subject().term_type() == proto_msg::TermType::VARIABLE;
       auto object_is_var =
@@ -529,9 +579,41 @@ process_left_join_node(const proto_msg::LeftJoinNode &left_join_node,
         "process_left_join_node: unexpected right node type: " +
         std::to_string(right_type));
   }
+
+  return left_result;
 }
 
-static void process_triple_node(const proto_msg::TripleNode &,
+std::shared_ptr<ResultTable>
+process_project_node(const proto_msg::ProjectNode &project_node,
+                     Cache::cm_t &cm, VarIndexManager &vim) {
+  std::vector<std::string> vars;
+  for (int i = 0; i < project_node.vars_size(); i++) {
+    vars.push_back(project_node.vars(i));
+  }
+
+  for (const auto &var : vars) {
+    vim.assign_index_if_not_found(var);
+  }
+
+  std::shared_ptr<ResultTable> result_table;
+
+  switch (project_node.sub_op().node_case()) {
+  case proto_msg::SparqlNode::NodeCase::kBgpNode:
+    result_table = process_bgp_node(project_node.sub_op().bgp_node(), cm, vim);
+    break;
+  case proto_msg::SparqlNode::NodeCase::kLeftJoinNode:
+    result_table =
+        process_left_join_node(project_node.sub_op().left_join_node(), cm, vim);
+    break;
+  default:
+    throw std::runtime_error("Unsupported nodetype on process_project_node: " +
+                             std::to_string(project_node.sub_op().node_case()));
+  }
+  return result_table;
+}
+
+
+void process_triple_node(const proto_msg::TripleNode &,
                                 std::shared_ptr<ResultTable> &, Cache::cm_t &) {
 }
 
@@ -544,7 +626,7 @@ std::shared_ptr<ResultTable> process_node(const proto_msg::SparqlNode &node,
   return process_project_node(node.project_node(), cm, vim);
 }
 
-QueryResult Cache::run_query(const proto_msg::SparqlTree &query_tree) {
+QueryResult Cache::run_query(proto_msg::SparqlTree const &query_tree) {
   VarIndexManager vim;
   auto result = process_node(query_tree.root(), cache_manager, vim);
   return QueryResult(result);

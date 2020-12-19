@@ -34,7 +34,7 @@ public:
 
   CacheStats cache_stats();
 
-  QueryResult run_query(const proto_msg::SparqlTree &query_tree);
+  QueryResult run_query(proto_msg::SparqlTree const &query_tree);
 };
 
 #endif // RDFCACHEK2_CACHE_HPP

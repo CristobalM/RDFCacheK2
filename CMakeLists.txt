@@ -45,6 +45,7 @@ set(PROC_SOURCE_FILES
 set(GRAPH_RESULT_CACHING_FILE
         gresults-caching/GraphResult.cpp
         gresults-caching/Cache.cpp
+        gresults-caching/QueryResult.cpp
         gresults-caching/cache_result/ExistingCacheResult.cpp
         gresults-caching/cache_result/NonExistingCacheResult.cpp
 )
@@ -70,6 +71,7 @@ set(PROTO_MESSAGES
         proto/generated/request_msg.pb.cc
         proto/generated/response_msg.pb.cc
         proto/generated/radix_tree.pb.cc
+        proto/generated/sparql_tree.pb.cc
         )
 
 set(PROTO_MESSAGES_PATH ${CMAKE_SOURCE_DIR}/proto/generated)
@@ -114,9 +116,9 @@ add_library(MemoryManager STATIC
         memory/MemoryManager.cpp
         )
 
-add_library(RDFCacheK2 STATIC ${CORE_SOURCE_FILES})
+add_library(RDFCacheK2 STATIC ${CORE_SOURCE_FILES} ${GRAPH_RESULT_CACHING_FILE})
 #add_library(RDFCacheK2_Network STATIC ${NETWORK_SOURCE_FILES})
-add_library(RDFCacheK2_GR STATIC ${GRAPH_RESULT_CACHING_FILE})
+#add_library(RDFCacheK2_GR STATIC ${GRAPH_RESULT_CACHING_FILE})
 
 add_library(ProtoMessages STATIC ${PROTO_MESSAGES})
 
@@ -125,6 +127,8 @@ add_library(Proc STATIC ${PROC_SOURCE_FILES})
 
 # add_dependencies(RDFCacheK2 _k2tree_merged_noalloc)
 add_dependencies(RDFCacheK2 k2dyn)
+
+#add_dependencies(RDFCacheK2_GR RDFCacheK2)
 
 find_package(Protobuf REQUIRED)
 include_directories(${Protobuf_INCLUDE_DIRS})
@@ -234,6 +238,9 @@ target_link_libraries(result_table_test  ${DEFAULT_LIBS}  ${GTEST_BOTH_LIBRARIES
 
 add_executable(k2tree_mixed_test test/k2tree_mixed_test.cpp)
 target_link_libraries(k2tree_mixed_test  ${DEFAULT_LIBS}  ${GTEST_BOTH_LIBRARIES} pthread)
+
+add_executable(query_proc_tests test/query_proc_tests.cpp)
+target_link_libraries(query_proc_tests ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} pthread)
 
 add_test(NAME serialization_test COMMAND ./serialization_test)
 add_test(NAME k2tree_serialization_test COMMAND ./k2tree_serialization_test)

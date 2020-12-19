@@ -43,6 +43,7 @@ struct ResultTable {
   unsigned long get_actual_index(unsigned long virtual_index);
 
   void add_row(std::vector<unsigned long> &&row);
+
 };
 
 #endif
