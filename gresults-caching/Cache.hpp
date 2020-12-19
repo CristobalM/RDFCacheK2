@@ -5,15 +5,13 @@
 #ifndef RDFCACHEK2_CACHE_HPP
 #define RDFCACHEK2_CACHE_HPP
 
-
-#include <string>
 #include <memory>
+#include <string>
 
 #include <request_msg.pb.h>
 
-#include <PredicatesCacheManager.hpp>
 #include "QueryResult.hpp"
-
+#include <PredicatesCacheManager.hpp>
 
 struct CacheStats {
   int allocated_u32s;
@@ -27,9 +25,9 @@ struct CacheStats {
   int blocks_counted;
 };
 
-
 class Cache {
   std::unique_ptr<PredicatesCacheManager> cache_manager;
+
 public:
   using cm_t = std::unique_ptr<PredicatesCacheManager>;
   Cache(std::unique_ptr<PredicatesCacheManager> &&cache_manager);
@@ -37,7 +35,6 @@ public:
   CacheStats cache_stats();
 
   QueryResult run_query(const proto_msg::SparqlTree &query_tree);
-
 };
 
 #endif // RDFCACHEK2_CACHE_HPP

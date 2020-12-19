@@ -39,9 +39,9 @@ public:
   void insert(unsigned long col, unsigned long row);
   bool has(unsigned long col, unsigned long row);
 
-  static std::vector<unsigned long> sip_join_k2trees(
-    const std::vector<K2TreeMixed *> &trees,
-    std::vector<struct sip_ipoint> &join_coordinates);
+  static std::vector<unsigned long>
+  sip_join_k2trees(const std::vector<K2TreeMixed *> &trees,
+                   std::vector<struct sip_ipoint> &join_coordinates);
 
   unsigned long get_tree_depth();
 

@@ -3,15 +3,13 @@
 
 #include <ResultTable.hpp>
 
-class QueryResult{
+class QueryResult {
   std::shared_ptr<ResultTable> result_table;
 
-  public:
-
+public:
   explicit QueryResult(std::shared_ptr<ResultTable> &result_table);
 
   ResultTable &table();
 };
 
-
-#endif 
+#endif

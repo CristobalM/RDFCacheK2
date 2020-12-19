@@ -47,7 +47,6 @@ public:
 
   void save_all(const std::string &fname);
 
-
   unsigned long get_iri_index(const std::string &value);
   unsigned long get_literal_index(const std::string &value);
   unsigned long get_blank_index(const std::string &value);

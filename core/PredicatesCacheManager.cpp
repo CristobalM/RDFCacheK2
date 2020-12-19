@@ -119,32 +119,32 @@ void PredicatesCacheManager::replace_index_cache(
   this->predicates_index = std::move(predicates_index);
 }
 
-K2TreeMixed & PredicatesCacheManager::get_tree_by_predicate_name(const std::string &predicate_name){
+K2TreeMixed &PredicatesCacheManager::get_tree_by_predicate_name(
+    const std::string &predicate_name) {
   RDFResource resource(predicate_name, RDF_TYPE_IRI);
   auto index = get_resource_index(resource);
   return predicates_index->get_k2tree(index);
 }
 
-
-
-
-unsigned long PredicatesCacheManager::get_iri_index(const std::string &value){
+unsigned long PredicatesCacheManager::get_iri_index(const std::string &value) {
   auto index = isd_manager->iris_index(value);
-  if(index == 0){
+  if (index == 0) {
     return extra_dicts.locate_iri(value);
   }
   return index;
 }
-unsigned long PredicatesCacheManager::get_literal_index(const std::string &value){
-auto index = isd_manager->literals_index(value);
-  if(index == 0){
+unsigned long
+PredicatesCacheManager::get_literal_index(const std::string &value) {
+  auto index = isd_manager->literals_index(value);
+  if (index == 0) {
     return extra_dicts.locate_literal(value);
   }
   return index;
 }
-unsigned long PredicatesCacheManager::get_blank_index(const std::string &value){
-auto index = isd_manager->blanks_index(value);
-  if(index == 0){
+unsigned long
+PredicatesCacheManager::get_blank_index(const std::string &value) {
+  auto index = isd_manager->blanks_index(value);
+  if (index == 0) {
     return extra_dicts.locate_blank(value);
   }
   return index;

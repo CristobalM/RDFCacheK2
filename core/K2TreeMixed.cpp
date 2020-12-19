@@ -3,9 +3,8 @@
 #include "block_serialization.hpp"
 #include "serialization_util.hpp"
 #include <algorithm>
-#include <vector>
 #include <stdexcept>
-
+#include <vector>
 
 K2TreeMixed::K2TreeMixed(uint32_t treedepth)
     : K2TreeMixed(treedepth, MAX_NODES_IN_BLOCK) {}
@@ -283,15 +282,20 @@ K2TreeMixed K2TreeMixed::read_from_istream(std::istream &is) {
   return K2TreeMixed(root, k2tree_depth, max_nodes_count, cut_depth);
 }
 
-std::vector<unsigned long> K2TreeMixed::sip_join_k2trees(const std::vector<K2TreeMixed *> &trees, std::vector<struct sip_ipoint> &join_coordinates){  
-  if(trees.size() != join_coordinates.size()){
-    throw std::runtime_error("Trees amount differ from join coordinates amount " + std::to_string(trees.size()) + " != " + std::to_string(join_coordinates.size()));
+std::vector<unsigned long> K2TreeMixed::sip_join_k2trees(
+    const std::vector<K2TreeMixed *> &trees,
+    std::vector<struct sip_ipoint> &join_coordinates) {
+  if (trees.size() != join_coordinates.size()) {
+    throw std::runtime_error(
+        "Trees amount differ from join coordinates amount " +
+        std::to_string(trees.size()) +
+        " != " + std::to_string(join_coordinates.size()));
   }
 
   std::vector<struct k2node *> root_nodes(trees.size());
   std::vector<struct k2qstate *> states(trees.size());
 
-  for(size_t i = 0; i < trees.size(); i++){
+  for (size_t i = 0; i < trees.size(); i++) {
     root_nodes[i] = trees[i]->root;
     states[i] = trees[i]->st.get();
   }
@@ -303,11 +307,15 @@ std::vector<unsigned long> K2TreeMixed::sip_join_k2trees(const std::vector<K2Tre
   sip_input.join_size = join_coordinates.size();
 
   std::vector<unsigned long> result;
-  
-  k2node_sip_join(sip_input, [](unsigned long coord, void *report_state){
-    auto &result  = *reinterpret_cast<std::vector<unsigned long> *>(report_state);
-    result.push_back(coord);
-  }, &result);
+
+  k2node_sip_join(
+      sip_input,
+      [](unsigned long coord, void *report_state) {
+        auto &result =
+            *reinterpret_cast<std::vector<unsigned long> *>(report_state);
+        result.push_back(coord);
+      },
+      &result);
 
   return result;
 }

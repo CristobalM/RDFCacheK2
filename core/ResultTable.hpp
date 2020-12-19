@@ -33,10 +33,12 @@ struct ResultTable {
 
   size_t rows_size() const;
 
-  void left_join_with(unsigned long left_column_index, unsigned long right_index,
-                 ResultTable &right, bool outer_join);
+  void left_join_with(unsigned long left_column_index,
+                      unsigned long right_index, ResultTable &right,
+                      bool outer_join);
 
-  void left_join_with_vector(unsigned long left_column_index, std::vector<unsigned long> &vec, bool outer_join);
+  void left_join_with_vector(unsigned long left_column_index,
+                             std::vector<unsigned long> &vec, bool outer_join);
 
   unsigned long get_actual_index(unsigned long virtual_index);
 

@@ -3,7 +3,7 @@
 
 #include "ResultTable.hpp"
 
-ResultTable::ResultTable(){}
+ResultTable::ResultTable() {}
 
 ResultTable::ResultTable(unsigned long first_column_header,
                          std::vector<unsigned long> &&first_column) {
@@ -22,8 +22,8 @@ ResultTable::ResultTable(unsigned long first_column_header,
 }
 
 void ResultTable::left_join_with(unsigned long left_column_index,
-                            unsigned long right_column_index,
-                            ResultTable &right, bool outer) {
+                                 unsigned long right_column_index,
+                                 ResultTable &right, bool outer) {
 
   auto lit = data.begin();
   auto rit = right.data.begin();
@@ -56,8 +56,9 @@ void ResultTable::left_join_with(unsigned long left_column_index,
       if (!outer)
         data.erase(curr);
       else
-        for(size_t i = 0; i < right.headers.size() - 1; i++);
-          l.push_back(0);
+        for (size_t i = 0; i < right.headers.size() - 1; i++)
+          ;
+      l.push_back(0);
     } else {
       rit++;
     }
@@ -67,16 +68,18 @@ void ResultTable::left_join_with(unsigned long left_column_index,
     auto curr = lit;
     auto &l = *lit;
     lit++;
-    if(!outer)
+    if (!outer)
       data.erase(curr);
     else
-      for(size_t i = 0; i < right.headers.size() - 1; i++);
-        l.push_back(0);
+      for (size_t i = 0; i < right.headers.size() - 1; i++)
+        ;
+    l.push_back(0);
   }
 }
 
-
-void ResultTable::left_join_with_vector(unsigned long left_column_index, std::vector<unsigned long> &vec, bool outer){
+void ResultTable::left_join_with_vector(unsigned long left_column_index,
+                                        std::vector<unsigned long> &vec,
+                                        bool outer) {
   auto lit = data.begin();
   auto rit = vec.begin();
 
@@ -102,7 +105,7 @@ void ResultTable::left_join_with_vector(unsigned long left_column_index, std::ve
   while (lit != data.end()) {
     auto curr = lit;
     lit++;
-    if(!outer)
+    if (!outer)
       data.erase(curr);
   }
 }
@@ -121,23 +124,19 @@ void ResultTable::left_inner_join_with(unsigned long left_column_index,
 
 std::list<std::vector<unsigned long>> &ResultTable::get_data() { return data; }
 
+size_t ResultTable::rows_size() const { return data.size(); };
 
-size_t ResultTable::rows_size() const {
-  return data.size();
-};
-
-
-unsigned long ResultTable::get_actual_index(unsigned long virtual_index){
-  for(size_t i = 0; i < headers.size(); i++)
-    if(headers[i] == virtual_index)
+unsigned long ResultTable::get_actual_index(unsigned long virtual_index) {
+  for (size_t i = 0; i < headers.size(); i++)
+    if (headers[i] == virtual_index)
       return i;
-  throw std::runtime_error("Virtual index " + std::to_string(virtual_index) + " not found on headers list");
+  throw std::runtime_error("Virtual index " + std::to_string(virtual_index) +
+                           " not found on headers list");
 }
 
-
- void ResultTable::add_row(std::vector<unsigned long> &&row){
-    data.push_back(std::move(row));
-  }
-
-ResultTable::ResultTable(std::vector<unsigned long> &&headers) : headers(std::move(headers)){
+void ResultTable::add_row(std::vector<unsigned long> &&row) {
+  data.push_back(std::move(row));
 }
+
+ResultTable::ResultTable(std::vector<unsigned long> &&headers)
+    : headers(std::move(headers)) {}

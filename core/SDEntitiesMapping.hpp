@@ -66,20 +66,23 @@ public:
   uint64_t blanks_index(const std::string &blank) override {
     return _offset_index_cond(
         blanks_dictionary->locate(
-            reinterpret_cast<unsigned char *>(const_cast<char *>(blank.data())), blank.size()),
+            reinterpret_cast<unsigned char *>(const_cast<char *>(blank.data())),
+            blank.size()),
         iris_dictionary->numElements());
   }
 
   uint64_t literals_index(const std::string &literal) override {
     return _offset_index_cond(
-        literals_dictionary->locate(
-            reinterpret_cast<unsigned char *>(const_cast<char *>(literal.data())), literal.size()),
+        literals_dictionary->locate(reinterpret_cast<unsigned char *>(
+                                        const_cast<char *>(literal.data())),
+                                    literal.size()),
         iris_dictionary->numElements() + blanks_dictionary->numElements());
   }
 
   uint64_t iris_index(const std::string &iri) override {
     return iris_dictionary->locate(
-        reinterpret_cast<unsigned char *>(const_cast<char *>(iri.data())), iri.size());
+        reinterpret_cast<unsigned char *>(const_cast<char *>(iri.data())),
+        iri.size());
   }
 
   bool has_blanks_index(const std::string &blank) override {

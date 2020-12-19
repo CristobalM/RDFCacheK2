@@ -3,11 +3,10 @@
 //
 
 #include <iostream>
-#include <sstream>
 #include <netinet/in.h>
+#include <sstream>
 #include <sys/socket.h>
 #include <unistd.h>
-
 
 #include "ServerTask.hpp"
 
@@ -29,16 +28,13 @@ void send_response(int socket_client_fd,
   send(socket_client_fd, result.data(), result.size() * sizeof(char), 0);
 }
 
+proto_msg::CacheResponse
+create_response_from_query_result(QueryResult &query_result) {}
 
-
-
-proto_msg::CacheResponse create_response_from_query_result(QueryResult &query_result){
-
-}
-
-void process_cache_query(ServerTask &server_task, Message &message){
+void process_cache_query(ServerTask &server_task, Message &message) {
   auto &cache = server_task.get_cache();
-  auto &tree = message.get_cache_request().cache_run_query_algebra().sparql_tree();
+  auto &tree =
+      message.get_cache_request().cache_run_query_algebra().sparql_tree();
   auto query_result = cache.run_query(tree);
   auto response = create_response_from_query_result(query_result);
   int client_fd = server_task.get_client_socket_fd();
@@ -85,7 +81,6 @@ bool read_nbytes_from_socket(int client_socket_fd, char *read_buffer,
     }
   }
 }
-
 
 void ServerTask::process() {
 
