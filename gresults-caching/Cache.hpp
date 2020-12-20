@@ -35,6 +35,7 @@ public:
   CacheStats cache_stats();
 
   QueryResult run_query(proto_msg::SparqlTree const &query_tree);
+  std::string extract_resource(unsigned long index);
 };
 
 #endif // RDFCACHEK2_CACHE_HPP

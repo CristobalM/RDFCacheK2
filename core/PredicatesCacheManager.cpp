@@ -18,17 +18,17 @@ uint64_t PredicatesCacheManager::get_resource_index(RDFResource &resource) {
   switch (resource.resource_type) {
   case RDF_TYPE_IRI:
     index = isd_manager->iris_index(resource.value);
-    if(index == NORESULT) return extra_dicts.locate_iri(resource.value);
     break;
   case RDF_TYPE_BLANK:
     index = isd_manager->blanks_index(resource.value);
-    if(index == NORESULT) return extra_dicts.locate_blank(resource.value);
     break;
   case RDF_TYPE_LITERAL:
     index = isd_manager->literals_index(resource.value);
-    if(index == NORESULT) return extra_dicts.locate_literal(resource.value);
     break;
   }
+
+  if (index == NORESULT)
+    return extra_dicts.locate_resource(resource.value) + isd_manager->last_id();
 
   return NORESULT;
 }
@@ -52,10 +52,10 @@ void PredicatesCacheManager::handle_not_found(unsigned long &resource_id,
     }
     std::cerr << "Resource " << resource.value << " of type " << res_type_name
               << " does not exist" << std::endl;
-    resource_id = extra_dicts.locate_resource(resource);
+    resource_id = extra_dicts.locate_resource(resource.value);
     if (resource_id == 0) {
-      extra_dicts.add_resource(resource);
-      resource_id = extra_dicts.locate_resource(resource);
+      extra_dicts.add_resource(resource.value);
+      resource_id = extra_dicts.locate_resource(resource.value);
     }
     resource_id = resource_id + isd_manager->last_id();
   }
@@ -131,14 +131,16 @@ K2TreeMixed &PredicatesCacheManager::get_tree_by_predicate_name(
     const std::string &predicate_name) {
   RDFResource resource(predicate_name, RDF_TYPE_IRI);
   auto index = get_resource_index(resource);
-  if(index == NORESULT) throw std::runtime_error("Predicate with name " + predicate_name + " was not found in predicates cache manager");
+  if (index == NORESULT)
+    throw std::runtime_error("Predicate with name " + predicate_name +
+                             " was not found in predicates cache manager");
   return predicates_index->get_k2tree(index);
 }
 
 unsigned long PredicatesCacheManager::get_iri_index(const std::string &value) {
   auto index = isd_manager->iris_index(value);
   if (index == 0) {
-    return extra_dicts.locate_iri(value);
+    return extra_dicts.locate_resource(value) + isd_manager->last_id();
   }
   return index;
 }
@@ -146,7 +148,7 @@ unsigned long
 PredicatesCacheManager::get_literal_index(const std::string &value) {
   auto index = isd_manager->literals_index(value);
   if (index == 0) {
-    return extra_dicts.locate_literal(value);
+    return extra_dicts.locate_resource(value) + isd_manager->last_id();
   }
   return index;
 }
@@ -154,7 +156,13 @@ unsigned long
 PredicatesCacheManager::get_blank_index(const std::string &value) {
   auto index = isd_manager->blanks_index(value);
   if (index == 0) {
-    return extra_dicts.locate_blank(value);
+    return extra_dicts.locate_resource(value) + isd_manager->last_id();
   }
   return index;
+}
+
+std::string PredicatesCacheManager::extract_resource(unsigned long index) {
+  if (index <= isd_manager->last_id())
+    return isd_manager->get_resource(index).value;
+  return extra_dicts.extract_resource(index - isd_manager->last_id());
 }

@@ -4,14 +4,17 @@
 #include <memory>
 
 #include <ResultTable.hpp>
+#include "VarIndexManager.hpp"
 
 class QueryResult {
   std::shared_ptr<ResultTable> result_table;
+  VarIndexManager vim;
 
 public:
-  explicit QueryResult(std::shared_ptr<ResultTable> &result_table);
+  explicit QueryResult(std::shared_ptr<ResultTable> &result_table, VarIndexManager &&vim);
 
   ResultTable &table();
+  VarIndexManager &get_vim();
 };
 
 #endif

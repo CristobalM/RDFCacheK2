@@ -38,6 +38,28 @@ TEST(k2tree_mixed_test, exhaustive_validation) {
   }
 }
 
+TEST(k2tree_mixed_test, can_sip_join) {
+  std::set<std::pair<unsigned long, unsigned long>> points_to_insert = {
+      {0, 3}, {2, 1}, {123, 321}, {44, 41}, {33, 21}, {6, 9}, {5, 3}, {100, 3}};
+
+  unsigned long treedepth = 10;
+  K2TreeMixed tree(treedepth, 255, 5);
+  for (auto point : points_to_insert) {
+    tree.insert(point.first, point.second);
+  }
+  std::vector<K2TreeMixed *> trees_to_join = {&tree};
+  std::vector<struct sip_ipoint> coords;
+  struct sip_ipoint first;
+  first.coord = 3;
+  first.coord_type = ROW_COORD;
+  coords.push_back(first);
+  auto result = K2TreeMixed::sip_join_k2trees(trees_to_join, coords);
+  ASSERT_EQ(result.size(), 3);
+  ASSERT_EQ(result[0], 0);
+  ASSERT_EQ(result[1], 5);
+  ASSERT_EQ(result[2], 100);
+}
+
 TEST(k2tree_mixed_test, can_serialize) {
   std::set<std::pair<unsigned long, unsigned long>> points_to_insert = {
       {0, 3}, {2, 1}, {123, 321}, {44, 41}, {33, 21}, {6, 9}};

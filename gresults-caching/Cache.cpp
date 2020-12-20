@@ -11,6 +11,8 @@
 
 #include "Cache.hpp"
 
+#include "VarIndexManager.hpp"
+
 
 
 Cache::Cache(std::unique_ptr<PredicatesCacheManager> &&cache_manager)
@@ -49,17 +51,6 @@ struct hash_pair {
   }
 };
 
-struct VarIndexManager {
-  std::unordered_map<std::string, unsigned long> var_indexes;
-  unsigned long current_index;
-  VarIndexManager() : current_index(0) {}
-
-  void assign_index_if_not_found(const std::string &var_name) {
-    if (var_indexes.find(var_name) == var_indexes.end()) {
-      var_indexes[var_name] = current_index++;
-    }
-  }
-};
 
 // prototypes
 
@@ -396,7 +387,7 @@ join_two_var_group(const std::string &var_one, const std::string &var_two,
 
     first_k2tree.scan_points(
         [](unsigned long col, unsigned long, void *report_state) {
-          auto set_of_coords =
+          auto &set_of_coords =
               *reinterpret_cast<std::set<unsigned long> *>(report_state);
           set_of_coords.insert(col);
         },
@@ -405,7 +396,7 @@ join_two_var_group(const std::string &var_one, const std::string &var_two,
 
     first_k2tree.scan_points(
         [](unsigned long col, unsigned long, void *report_state) {
-          auto set_of_coords =
+          auto &set_of_coords =
               *reinterpret_cast<std::set<unsigned long> *>(report_state);
           set_of_coords.insert(col);
         },
@@ -473,7 +464,6 @@ process_join_node(const proto_msg::SparqlNode &join_node, Cache::cm_t &cm,
 std::shared_ptr<ResultTable>
 process_bgp_node(const proto_msg::BGPNode &bgp_node, Cache::cm_t &cm,
                  VarIndexManager &vim) {
-  std::vector<struct sip_ipoint> join_coordinates(bgp_node.triple_size());
 
   auto k2trees_map = get_k2trees_map_by_predicate_value(bgp_node, cm);
   auto groups = group_triple_nodes(bgp_node);
@@ -629,5 +619,9 @@ std::shared_ptr<ResultTable> process_node(const proto_msg::SparqlNode &node,
 QueryResult Cache::run_query(proto_msg::SparqlTree const &query_tree) {
   VarIndexManager vim;
   auto result = process_node(query_tree.root(), cache_manager, vim);
-  return QueryResult(result);
+  return QueryResult(result, std::move(vim));
+}
+
+std::string Cache::extract_resource(unsigned long index){
+  return cache_manager->extract_resource(index);
 }

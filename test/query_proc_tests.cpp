@@ -32,9 +32,9 @@ TEST(QueryProcTests, test1) {
   first_predicate->set_term_value("<pred1>");
   
   auto *first_object = first_triple->mutable_object();
-  first_object->set_term_type(proto_msg::TermType::LITERAL);
+  first_object->set_term_type(proto_msg::TermType::VARIABLE);
   first_object->set_basic_type(proto_msg::BasicType::STRING);
-  first_object->set_term_value("obj1");
+  first_object->set_term_value("?y");
 
   auto string_result =  project_node->DebugString();
   std::cout << string_result << std::endl;
@@ -42,6 +42,12 @@ TEST(QueryProcTests, test1) {
 
   auto pcm = std::make_unique<PredicatesCacheManager>(std::make_unique<EmptyISDManager>());
   pcm->add_triple(RDFTripleResource(RDFResource("<subj1>", RDF_TYPE_IRI),
+                                   RDFResource("<pred1>", RDF_TYPE_IRI),
+                                   RDFResource("obj1", RDF_TYPE_LITERAL)));
+  pcm->add_triple(RDFTripleResource(RDFResource("<subj3>", RDF_TYPE_IRI),
+                                   RDFResource("<pred1>", RDF_TYPE_IRI),
+                                   RDFResource("obj1", RDF_TYPE_LITERAL)));
+  pcm->add_triple(RDFTripleResource(RDFResource("<subj2>", RDF_TYPE_IRI),
                                    RDFResource("<pred1>", RDF_TYPE_IRI),
                                    RDFResource("obj1", RDF_TYPE_LITERAL)));
 
@@ -53,9 +59,20 @@ TEST(QueryProcTests, test1) {
 
   auto result = cache.run_query(tree);
 
+  auto &vim =result.get_vim();
+  auto reverse_map = vim.reverse();
   auto &table = result.table();
+  for(auto col: table.headers){
+    std::cout << reverse_map[col] << " ";
+  }
+  std::cout << "\n";
   for(auto &row : table.data)
   {
-    
+    for(auto col: row){
+      auto col_resource = cache.extract_resource(col);
+      std::cout << col_resource << " ";
+    }
+    std::cout << "\n";
   }
+  std::cout << std::endl;
 }
