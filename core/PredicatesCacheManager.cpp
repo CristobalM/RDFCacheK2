@@ -73,6 +73,10 @@ void PredicatesCacheManager::add_triple(RDFTripleResource &rdf_triple) {
   handle_not_found(predicate_id, rdf_triple.predicate);
   handle_not_found(object_id, rdf_triple.object);
 
+  std::cout << "subject '" << rdf_triple.subject.value <<" -> " << subject_id << std::endl;
+  std::cout << "predicate '" << rdf_triple.predicate.value <<" -> " << predicate_id << std::endl;
+  std::cout << "object '" << rdf_triple.object.value <<" -> " << object_id << std::endl;
+
   measured_time_sd_lookup +=
       std::chrono::duration_cast<std::chrono::nanoseconds>(
           std::chrono::high_resolution_clock::now() - start)

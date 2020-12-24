@@ -86,7 +86,7 @@ std::shared_ptr<ResultTable> cross_product_partial_results(
     std::unordered_map<std::string, std::shared_ptr<ResultTable>>
         &partial_results);
 
-std::shared_ptr<ResultTable> join_table_with_trees(
+std::shared_ptr<ResultTable> join_table_with_trees_by_two_var(
     std::shared_ptr<ResultTable> &table,
     const std::pair<std::pair<std::string, std::string>, std::vector<Triple>>
         &two_var_group_item,
@@ -253,9 +253,20 @@ std::shared_ptr<ResultTable> cross_product_partial_results(
   auto left_table = it_left->second;
   auto second = std::next(it_left);
 
-  for (auto it = second; it != partial_results.end(); it++) {
-    const auto &var_name = it->first;
-    auto table = it->second;
+  std::vector<std::pair<std::string, std::shared_ptr<ResultTable>>> plain_partial_results;
+  for(auto it = second; it != partial_results.end(); it++)
+    plain_partial_results.push_back({it->first, it->second});
+
+  std::set<ResultTable *> done;
+
+  done.insert(it_left->second.get());
+
+  for (const auto &pair : plain_partial_results) {
+    const auto &var_name = pair.first;
+    auto table = pair.second;
+    if(done.find(table.get()) != done.end()){
+      continue;
+    }
 
     for (auto right_header : table->headers) {
       left_table->headers.push_back(right_header);
@@ -268,8 +279,12 @@ std::shared_ptr<ResultTable> cross_product_partial_results(
         }
       }
     }
+    
     partial_results[var_name] = left_table;
+    done.insert(table.get());
   }
+
+
 
   return left_table;
 }
@@ -328,7 +343,7 @@ std::shared_ptr<ResultTable> join_two_tables_with_trees(
   return cross_product_partial_results(partial_results);
 }
 
-std::shared_ptr<ResultTable> join_table_with_trees(
+std::shared_ptr<ResultTable> join_table_with_trees_by_two_var(
     std::shared_ptr<ResultTable> &table,
     const std::pair<std::pair<std::string, std::string>, std::vector<Triple>>
         &two_var_group_item,
@@ -363,6 +378,96 @@ std::shared_ptr<ResultTable> join_table_with_trees(
         break;
       }
     }
+  }
+
+  return table;
+}
+
+std::shared_ptr<ResultTable> join_table_with_trees_by_one_var(
+    std::shared_ptr<ResultTable> &table,
+    const std::string &table_var,
+    const std::string &other_var,
+    const std::pair<std::pair<std::string, std::string>, std::vector<Triple>>
+        &two_var_group_item,
+    std::unordered_map<std::string, K2TreeMixed *> &k2trees_map,
+    VarIndexManager &vim) {
+
+  unsigned long table_var_index = vim.var_indexes[table_var];
+  unsigned long real_table_var_index = table->get_actual_index(table_var_index);
+
+  vim.assign_index_if_not_found(other_var);
+  unsigned long other_var_index = vim.var_indexes[other_var];
+
+  table->headers.push_back(other_var_index);
+
+  std::cout << "debug" << std::endl;
+
+  std::cout << "table: " << std::endl;
+  for(auto header: table->headers){
+    std::cout << header << ",";
+  }
+  std::cout << std::endl;
+  for(auto &row: table->data){
+    for(auto col: row){
+      std::cout << col << ", ";
+    }
+    std::cout << std::endl;
+  }
+
+  std::cout << "two var triples" << "\n";
+  for(const auto &triple : two_var_group_item.second){
+    std::cout << triple.subject.value <<", " << triple.predicate.value << ", " << triple.object.value << std::endl;
+  }
+  for (const auto &triple : two_var_group_item.second){
+    auto &k2 =  *k2trees_map[triple.predicate.value];
+    std::vector<std::pair<unsigned long, unsigned long>> pairs;
+    k2.scan_points([](unsigned long col, unsigned long row, void *report_state){
+      auto &pairs = *reinterpret_cast<std::vector<std::pair<unsigned long, unsigned long>> *>(report_state);
+      pairs.push_back({col, row});
+    }, &pairs);
+    std::cout << "k2tree " << triple.predicate.value << ":" << std::endl;
+    for(const auto &pair: pairs){
+      std::cout << pair.first << ", " << pair.second << "\n";
+    }
+    std::cout << std::endl;
+  }
+
+
+  std::cout << "end debug" << std::endl;
+  for (auto it = table->data.begin(); it != table->data.end();) {
+    auto &row = *it;
+    unsigned long current_table_value = row[real_table_var_index];
+    std::vector<K2TreeMixed *> join_trees;
+    std::vector<struct sip_ipoint> join_coordinates;
+    for (const auto &triple : two_var_group_item.second) {
+      join_trees.push_back(k2trees_map[triple.predicate.value]);
+      struct sip_ipoint join_point;
+      join_point.coord = current_table_value;
+      if (triple.subject.value == table_var) {
+        join_point.coord_type = coord_t::COLUMN_COORD;
+      } else {
+        join_point.coord_type = coord_t::ROW_COORD;
+      }
+      join_coordinates.push_back(join_point);
+    }
+    auto join_result = K2TreeMixed::sip_join_k2trees(join_trees, join_coordinates);
+    auto next_it = std::next(it);
+
+    if(join_result.size() == 0){
+      table->data.erase(it);
+    }
+    else{
+    for(size_t curr_val_i = 0; curr_val_i < join_result.size(); curr_val_i++){
+      auto value = join_result[curr_val_i];
+      auto &current_row = *it;
+      auto row_copy = current_row;
+      current_row.push_back(value);
+      if(curr_val_i < join_result.size() - 1)
+        it = table->data.insert(next_it, std::move(row_copy));
+    }
+    }
+
+    it = next_it;
   }
 
   return table;
@@ -492,7 +597,7 @@ process_bgp_node(const proto_msg::BGPNode &bgp_node, Cache::cm_t &cm,
             join_two_tables_with_trees(partial_result_one, partial_result_two,
                                        item_pair, k2trees_map, vim);
       } else {
-        result = join_table_with_trees(partial_result_one, item_pair,
+        result = join_table_with_trees_by_two_var(partial_result_one, item_pair,
                                        k2trees_map, vim);
       }
 
@@ -503,14 +608,16 @@ process_bgp_node(const proto_msg::BGPNode &bgp_node, Cache::cm_t &cm,
       // The first variable only is in a single var table
       auto &partial_result = partial_results[item_pair.first.first];
       partial_result =
-          join_table_with_trees(partial_result, item_pair, k2trees_map, vim);
+          join_table_with_trees_by_one_var(partial_result,
+           item_pair.first.first, item_pair.first.second, item_pair, k2trees_map, vim);
       partial_results[item_pair.first.second] = partial_result;
     } else if (partial_results.find(item_pair.first.second) !=
                partial_results.end()) {
       // The second variable only is in a single var table
       auto &partial_result = partial_results[item_pair.first.second];
       partial_result =
-          join_table_with_trees(partial_result, item_pair, k2trees_map, vim);
+          join_table_with_trees_by_one_var(partial_result,
+           item_pair.first.second, item_pair.first.first, item_pair, k2trees_map, vim);
       partial_results[item_pair.first.first] = partial_result;
     } else {
       // None of the variables is in a single var table
