@@ -13,7 +13,20 @@
 #include <EmptyISDManager.hpp>
 #include <PredicatesCacheManager.hpp>
 #include <RDFTriple.hpp>
-/*
+
+static std::vector<std::vector<std::string>> translate_table(ResultTable &input_table, Cache &cache){
+  std::vector<std::vector<std::string>> translated_table;
+  for(auto &row: input_table.data){
+    std::vector<std::string> translated_row;
+    for(auto col: row){
+      auto col_resource = cache.extract_resource(col);
+      translated_row.push_back(col_resource);
+    }
+    translated_table.push_back(std::move(translated_row));
+  }
+  return translated_table;
+}
+
 TEST(QueryProcTests, test_bgp_node_1) {
   proto_msg::SparqlTree tree;
   auto *project_node = tree.mutable_root()->mutable_project_node();
@@ -36,9 +49,6 @@ TEST(QueryProcTests, test_bgp_node_1) {
   first_object->set_basic_type(proto_msg::BasicType::STRING);
   first_object->set_term_value("obj1");
 
-  auto string_result = project_node->DebugString();
-  std::cout << string_result << std::endl;
-
   auto pcm = std::make_unique<PredicatesCacheManager>(
       std::make_unique<EmptyISDManager>());
   pcm->add_triple(RDFTripleResource(RDFResource("<subj1>", RDF_TYPE_IRI),
@@ -53,25 +63,22 @@ TEST(QueryProcTests, test_bgp_node_1) {
 
   Cache cache(std::move(pcm));
 
-  std::cout << "running query..." << std::endl;
 
   auto result = cache.run_query(tree);
 
   auto &vim = result.get_vim();
   auto reverse_map = vim.reverse();
   auto &table = result.table();
-  for (auto col : table.headers) {
-    std::cout << reverse_map[col] << " ";
-  }
-  std::cout << "\n";
-  for (auto &row : table.data) {
-    for (auto col : row) {
-      auto col_resource = cache.extract_resource(col);
-      std::cout << col_resource << " ";
-    }
-    std::cout << "\n";
-  }
-  std::cout << std::endl;
+
+
+  auto translated_table = translate_table(table, cache);
+  auto header_str = reverse_map[table.headers[0]];
+  ASSERT_EQ(header_str, "?x");
+
+  ASSERT_EQ(translated_table[0][0], "<subj1>");
+  ASSERT_EQ(translated_table[1][0], "<subj3>");
+  ASSERT_EQ(translated_table[2][0], "<subj2>");
+
 }
 
 TEST(QueryProcTests, test_bgp_node_2) {
@@ -113,10 +120,6 @@ TEST(QueryProcTests, test_bgp_node_2) {
   second_object->set_basic_type(proto_msg::BasicType::STRING);
   second_object->set_term_value("?y");
 
-
-  auto string_result = project_node->DebugString();
-  std::cout << string_result << std::endl;
-
   auto pcm = std::make_unique<PredicatesCacheManager>(
       std::make_unique<EmptyISDManager>());
   pcm->add_triple(RDFTripleResource(RDFResource("<subj1>", RDF_TYPE_IRI),
@@ -147,27 +150,27 @@ TEST(QueryProcTests, test_bgp_node_2) {
 
   Cache cache(std::move(pcm));
 
-  std::cout << "running query..." << std::endl;
-
   auto result = cache.run_query(tree);
 
   auto &vim = result.get_vim();
   auto reverse_map = vim.reverse();
   auto &table = result.table();
-  for (auto col : table.headers) {
-    std::cout << reverse_map[col] << " ";
-  }
-  std::cout << "\n";
-  for (auto &row : table.data) {
-    for (auto col : row) {
-      auto col_resource = cache.extract_resource(col);
-      std::cout << col_resource << " ";
-    }
-    std::cout << "\n";
-  }
-  std::cout << std::endl;
+ 
+
+
+  ASSERT_EQ(reverse_map[table.headers[0]], "?x");
+  ASSERT_EQ(reverse_map[table.headers[1]], "?y");
+
+  ASSERT_EQ(table.data.size(), 2);
+  auto translated_table = translate_table(table, cache);
+
+  ASSERT_EQ(translated_table[0][0], "<subj2>");
+  ASSERT_EQ(translated_table[0][1], "obj1");
+  ASSERT_EQ(translated_table[1][0], "<subj2>");
+  ASSERT_EQ(translated_table[1][1], "obj2");
+
 }
-*/
+
 TEST(QueryProcTests, test_bgp_node_3) {
   proto_msg::SparqlTree tree;
   auto *project_node = tree.mutable_root()->mutable_project_node();
@@ -224,9 +227,6 @@ TEST(QueryProcTests, test_bgp_node_3) {
   third_object->set_term_value("?z");
 
 
-  auto string_result = project_node->DebugString();
-  std::cout << string_result << std::endl;
-
   auto pcm = std::make_unique<PredicatesCacheManager>(
       std::make_unique<EmptyISDManager>());
   pcm->add_triple(RDFTripleResource(RDFResource("<subj1>", RDF_TYPE_IRI),
@@ -265,23 +265,29 @@ TEST(QueryProcTests, test_bgp_node_3) {
 
   Cache cache(std::move(pcm));
 
-  std::cout << "running query..." << std::endl;
 
   auto result = cache.run_query(tree);
 
   auto &vim = result.get_vim();
   auto reverse_map = vim.reverse();
   auto &table = result.table();
+
+  auto translated_table = translate_table(table, cache);
+
+  std::vector<std::string> translated_headers;
+
   for (auto col : table.headers) {
-    std::cout << reverse_map[col] << " ";
+    translated_headers.push_back(reverse_map[col]);
   }
-  std::cout << "\n";
-  for (auto &row : table.data) {
-    for (auto col : row) {
-      auto col_resource = cache.extract_resource(col);
-      std::cout << col_resource << " ";
-    }
-    std::cout << "\n";
-  }
-  std::cout << std::endl;
+
+  ASSERT_EQ(translated_headers[0], "?x");
+  ASSERT_EQ(translated_headers[1], "?y");
+
+  ASSERT_EQ(translated_table[0][0], "<subj2>");
+  ASSERT_EQ(translated_table[0][1], "obj1");
+
+  ASSERT_EQ(translated_table[1][0], "<subj2>");
+  ASSERT_EQ(translated_table[1][1], "obj2");
+
 }
+

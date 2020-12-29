@@ -393,7 +393,7 @@ std::shared_ptr<ResultTable> join_table_with_trees_by_one_var(
   unsigned long other_var_index = vim.var_indexes[other_var];
 
   table->headers.push_back(other_var_index);
-
+  /*
   std::cout << "debug" << std::endl;
 
   std::cout << "table: " << std::endl;
@@ -414,6 +414,7 @@ std::shared_ptr<ResultTable> join_table_with_trees_by_one_var(
     std::cout << triple.subject.value << ", " << triple.predicate.value << ", "
               << triple.object.value << std::endl;
   }
+  */
   for (const auto &triple : two_var_group_item.second) {
     auto &k2 = *k2trees_map[triple.predicate.value];
     std::vector<std::pair<unsigned long, unsigned long>> pairs;
@@ -425,14 +426,15 @@ std::shared_ptr<ResultTable> join_table_with_trees_by_one_var(
           pairs.push_back({col, row});
         },
         &pairs);
+        /*
     std::cout << "k2tree " << triple.predicate.value << ":" << std::endl;
     for (const auto &pair : pairs) {
       std::cout << pair.first << ", " << pair.second << "\n";
     }
     std::cout << std::endl;
+    */
   }
 
-  std::cout << "end debug" << std::endl;
   for (auto it = table->data.begin(); it != table->data.end();) {
     auto &row = *it;
     unsigned long current_table_value = row[real_table_var_index];

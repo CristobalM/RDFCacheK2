@@ -50,8 +50,10 @@ void PredicatesCacheManager::handle_not_found(unsigned long &resource_id,
     default:
       res_type_name = "UNKNOWN";
     }
+    /*
     std::cerr << "Resource " << resource.value << " of type " << res_type_name
               << " does not exist" << std::endl;
+              */
     resource_id = extra_dicts.locate_resource(resource.value);
     if (resource_id == 0) {
       extra_dicts.add_resource(resource.value);
@@ -73,10 +75,11 @@ void PredicatesCacheManager::add_triple(RDFTripleResource &rdf_triple) {
   handle_not_found(predicate_id, rdf_triple.predicate);
   handle_not_found(object_id, rdf_triple.object);
 
+  /*
   std::cout << "subject '" << rdf_triple.subject.value <<" -> " << subject_id << std::endl;
   std::cout << "predicate '" << rdf_triple.predicate.value <<" -> " << predicate_id << std::endl;
   std::cout << "object '" << rdf_triple.object.value <<" -> " << object_id << std::endl;
-
+  */
   measured_time_sd_lookup +=
       std::chrono::duration_cast<std::chrono::nanoseconds>(
           std::chrono::high_resolution_clock::now() - start)
