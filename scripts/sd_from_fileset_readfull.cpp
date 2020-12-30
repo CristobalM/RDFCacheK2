@@ -6,21 +6,8 @@
 #include <fstream>
 #include <getopt.h>
 #include <iostream>
-#include <memory>
 #include <string>
 #include <vector>
-#include <memory>
-
-#include <StringDictionaryHASHRPDAC.h>
-#include <StringDictionaryHASHRPDACBlocks.h>
-#include <StringDictionaryHTFC.h>
-#include <StringDictionaryPFC.h>
-#include <StringDictionaryRPDAC.h>
-
-#include <iterators/IteratorDictString.h>
-#include <iterators/IteratorDictStringPlain.h>
-
-#include <base64.h>
 
 #include <SDBuilder.hpp>
 
