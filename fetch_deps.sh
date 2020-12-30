@@ -80,6 +80,5 @@ else
     cd ${LIB_NTPARSER}
 fi
 
-./fetch_deps.sh
 
 cd ..

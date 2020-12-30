@@ -288,6 +288,11 @@ TEST(QueryProcTests, test_bgp_node_3) {
 
   ASSERT_EQ(translated_table[1][0], "<subj2>");
   ASSERT_EQ(translated_table[1][1], "obj2");
-
 }
 
+
+
+TEST(QueryProcTests, test_bgp_node_4_compact_dicts) {
+
+
+}

@@ -40,6 +40,8 @@ set(CORE_SOURCE_FILES
 set(PROC_SOURCE_FILES
         proc/QueueIteratorDictString.cpp
         proc/SDFeed.cpp
+        proc/SDBuilder.cpp
+
 )
 
 set(GRAPH_RESULT_CACHING_FILE
@@ -80,8 +82,12 @@ set(INCLUDES memory core network proc ${PROTO_MESSAGES_PATH} ${CMAKE_SOURCE_DIR}
 
 set(K2TREE_PATH ${CMAKE_SOURCE_DIR}/lib/c-k2tree-dyn)
 
+set(LIB_CPPBASE64_PATH lib/cpp-base64)
+
+
 set(INCLUDES_LIBS
         ${K2TREE_PATH}/include
+        ${LIB_CPPBASE64_PATH}
         )
 
 
@@ -102,13 +108,18 @@ set(LIB_NTPARSER_INCLUDES
         ${LIB_NTPARSER}/gen
 )
 
+
+
 add_subdirectory(${LIB_NTPARSER})
-
-
 add_subdirectory(${K2TREE_PATH})
 
 
-include_directories(${INCLUDES} ${INCLUDES_LIBS} ${LIB_CSD_INCLUDES} ${LIB_NTPARSER_INCLUDES})
+include_directories(
+        ${INCLUDES} 
+        ${INCLUDES_LIBS} 
+        ${LIB_CSD_INCLUDES} 
+        ${LIB_NTPARSER_INCLUDES} 
+        )
 link_directories(${LINK_LIBS})
 
 
@@ -125,10 +136,16 @@ add_library(ProtoMessages STATIC ${PROTO_MESSAGES})
 
 add_library(Proc STATIC ${PROC_SOURCE_FILES})
 
+add_library(CppBase64 ${LIB_CPPBASE64_PATH}/base64.cpp)
+
+add_dependencies(Proc CppBase64)
+
 # add_dependencies(RDFCacheK2 _k2tree_merged_noalloc)
 add_dependencies(RDFCacheK2 k2dyn)
 
 #add_dependencies(RDFCacheK2_GR RDFCacheK2)
+
+
 
 find_package(Protobuf REQUIRED)
 include_directories(${Protobuf_INCLUDE_DIRS})
@@ -152,6 +169,7 @@ set(PROC_LIBS
         CSD
         cds
         pthread
+        CppBase64
         )
 
 set(DEFAULT_LIBS
@@ -165,11 +183,6 @@ set(DEFAULT_LIBS
         CSD
         cds
         )
-
-
-
-set(LIB_CPPBASE64_PATH lib/cpp-base64)
-add_library(CppBase64 ${LIB_CPPBASE64_PATH}/base64.cpp ${LIB_CPPBASE64_PATH}/base64.h)
 
 
 # target_link_libraries(start_cache_server_example RDFCacheK2_GR ${DEFAULT_LIBS} )
@@ -193,17 +206,16 @@ target_link_libraries(split_nt_triples ntparser CppBase64 )
 
 
 add_executable(sd_from_fileset_readfull scripts/sd_from_fileset_readfull.cpp)
-target_include_directories(sd_from_fileset_readfull PUBLIC ${LIB_CPPBASE64_PATH})
-target_link_libraries(sd_from_fileset_readfull ${PROC_LIBS} CppBase64)
+target_link_libraries(sd_from_fileset_readfull ${PROC_LIBS})
 
 add_executable(print_sd scripts/print_sd.cpp)
 target_include_directories(print_sd PUBLIC ${LIB_CPPBASE64_PATH})
-target_link_libraries(print_sd ${PROC_LIBS} CppBase64)
+target_link_libraries(print_sd ${PROC_LIBS})
 
 
 add_executable(base64_transform scripts/base64_transform.cpp)
 target_include_directories(base64_transform PUBLIC ${LIB_CPPBASE64_PATH})
-target_link_libraries(base64_transform ${PROC_LIBS} CppBase64)
+target_link_libraries(base64_transform ${PROC_LIBS})
 
 
 add_executable(four_sided_queue_example example/four_sided_queue_example.cpp)
@@ -242,6 +254,10 @@ target_link_libraries(k2tree_mixed_test  ${DEFAULT_LIBS}  ${GTEST_BOTH_LIBRARIES
 add_executable(query_proc_tests test/query_proc_tests.cpp)
 target_link_libraries(query_proc_tests ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} pthread)
 
+add_executable(test_sd_builder test/test_sd_builder.cpp)
+target_link_libraries(test_sd_builder ${PROC_LIBS} ${GTEST_BOTH_LIBRARIES} pthread)
+
+
 add_test(NAME serialization_test COMMAND ./serialization_test)
 add_test(NAME k2tree_serialization_test COMMAND ./k2tree_serialization_test)
 add_test(NAME predicates_cache_manager_test COMMAND ./predicates_cache_manager_test)
@@ -249,6 +265,7 @@ add_test(NAME four_sided_queue_test COMMAND ./four_sided_queue_test)
 add_test(NAME k2tree_tests COMMAND ./k2tree_tests)
 add_test(NAME result_table_test COMMAND ./result_table_test)
 add_test(NAME k2tree_mixed_test COMMAND ./k2tree_mixed_test)
+add_test(NAME test_sd_builder COMMAND ./test_sd_builder)
 endif()
 
 

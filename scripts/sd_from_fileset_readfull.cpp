@@ -9,6 +9,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <memory>
 
 #include <StringDictionaryHASHRPDAC.h>
 #include <StringDictionaryHASHRPDACBlocks.h>
@@ -19,9 +20,9 @@
 #include <iterators/IteratorDictString.h>
 #include <iterators/IteratorDictStringPlain.h>
 
-#include <MemoryPool.hpp>
-
 #include <base64.h>
+
+#include <SDBuilder.hpp>
 
 class VecIteratorDictString : public IteratorDictString {
   std::vector<std::string> &v;
@@ -40,109 +41,31 @@ public:
   }
 };
 
-namespace {
-enum SDType {
-  PFC = 0,
-  HTFC = 1,
-  HRPDAC = 2,
-  RPDAC = 3,
-  HRPDACBlocks = 4,
-};
-}
-
 struct parsed_options {
   std::string input_file;
   std::string output_file;
-  SDType sd_type;
+  SDBuilder::SDType sd_type;
   bool base64;
   int thread_count;
   unsigned long cut_size;
   int bucket_size;
 };
 
-struct BufferedData {
-  unsigned char *data;
-  size_t size;
-};
 
 parsed_options parse_cmline(int argc, char **argv);
 
 void print_help();
-
-BufferedData put_in_buffer(std::vector<BufferedData> &input_vec);
 
 int main(int argc, char **argv) {
   parsed_options parsed = parse_cmline(argc, argv);
 
   std::ifstream ifs(parsed.input_file);
 
-  std::string line;
-
-  std::vector<BufferedData> data_holder;
-
-  static constexpr size_t one_MB = 1'000'000'000;
-  using buffer_t = unsigned char[one_MB]; // 1MB
-  MemoryPool<buffer_t> pool(1);
-  buffer_t *current_buffer = pool.request_memory();
-  size_t bytes_used = 0;
-  size_t bytes_used_total = 0;
-  while (std::getline(ifs, line)) {
-    BufferedData bd{};
-    std::string decoded;
-    if (parsed.base64)
-      decoded = base64_decode(line, true);
-    else
-      decoded = line;
-    if (bytes_used + decoded.size() + 1 > one_MB) {
-      current_buffer = pool.request_memory();
-      bytes_used_total += bytes_used;
-      bytes_used = 0;
-    }
-    bd.data = reinterpret_cast<unsigned char *>(*current_buffer) + bytes_used;
-    memcpy(bd.data, decoded.data(), decoded.size() + 1);
-    bd.size = decoded.size();
-    bytes_used += decoded.size() + 1;
-    data_holder.push_back(bd);
-  }
-
-  std::sort(data_holder.begin(), data_holder.end(),
-            [](const BufferedData &lhs, const BufferedData &rhs) {
-              return strcmp(reinterpret_cast<char *>(lhs.data),
-                            reinterpret_cast<char *>(rhs.data)) < 0;
-            });
-
-  auto buffered_data = put_in_buffer(data_holder);
-  pool.free_all_memory();
-  data_holder.clear();
-
-  auto *it = dynamic_cast<IteratorDictString *>(
-      new IteratorDictStringPlain(buffered_data.data, buffered_data.size));
-  std::unique_ptr<StringDictionary> sd;
-
-  switch (parsed.sd_type) {
-  case SDType::PFC:
-    std::cout << "Creating PFC String Dictionary" << std::endl;
-    sd = std::make_unique<StringDictionaryPFC>(it, parsed.bucket_size);
-    break;
-  case SDType::HTFC:
-    sd = std::make_unique<StringDictionaryHTFC>(it, parsed.bucket_size);
-    break;
-  case SDType::HRPDAC:
-    std::cout << "Creating HASHRPDAC String Dictionary" << std::endl;
-    sd =
-        std::make_unique<StringDictionaryHASHRPDAC>(it, buffered_data.size, 25);
-    break;
-  case SDType::HRPDACBlocks:
-    std::cout << "Creating HASHRPDACBlocks String Dictionary" << std::endl;
-    sd = std::make_unique<StringDictionaryHASHRPDACBlocks>(
-        dynamic_cast<IteratorDictStringPlain *>(it), buffered_data.size, 25,
-        parsed.cut_size, parsed.thread_count);
-    break;
-  case SDType::RPDAC:
-    std::cout << "Creating RPDAC String Dictionary" << std::endl;
-    sd = std::make_unique<StringDictionaryRPDAC>(it);
-    break;
-  }
+  SDInput input;
+  input.thread_count = parsed.thread_count;
+  input.cut_size = parsed.cut_size;
+  input.bucket_size = parsed.bucket_size;
+  auto sd = SDBuilder(parsed.sd_type, parsed.base64, input).build(ifs);
 
   ifs.close();
 
@@ -151,26 +74,6 @@ int main(int argc, char **argv) {
   sd->save(ofs);
 
   return 0;
-}
-
-BufferedData put_in_buffer(std::vector<BufferedData> &input_vec) {
-  unsigned long buffer_sz = 0;
-  for (auto bd : input_vec) {
-    buffer_sz += bd.size + 1;
-  }
-  auto *data = new unsigned char[buffer_sz];
-
-  unsigned long pos = 0;
-  for (auto bd : input_vec) {
-    memcpy(data + pos, bd.data, bd.size + 1);
-    pos += bd.size + 1;
-  }
-
-  BufferedData out{};
-  out.data = data;
-  out.size = buffer_sz;
-
-  return out;
 }
 
 parsed_options parse_cmline(int argc, char **argv) {
@@ -213,15 +116,15 @@ parsed_options parse_cmline(int argc, char **argv) {
       if (optarg) {
         std::string given_type(optarg);
         if (given_type == "PFC") {
-          out.sd_type = SDType::PFC;
+          out.sd_type = SDBuilder::SDType::PFC;
         } else if (given_type == "HTFC") {
-          out.sd_type = SDType::HTFC;
+          out.sd_type = SDBuilder::SDType::HTFC;
         } else if (given_type == "HRPDAC") {
-          out.sd_type = SDType::HRPDAC;
+          out.sd_type = SDBuilder::SDType::HRPDAC;
         } else if (given_type == "RPDAC") {
-          out.sd_type = SDType ::RPDAC;
+          out.sd_type = SDBuilder::SDType ::RPDAC;
         } else if (given_type == "HRPDACBlocks") {
-          out.sd_type = SDType::HRPDACBlocks;
+          out.sd_type = SDBuilder::SDType::HRPDACBlocks;
         } else {
           throw std::runtime_error("Unknown String Dictionary type: " +
                                    given_type);
