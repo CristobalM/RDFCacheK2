@@ -30,6 +30,8 @@ public:
   void add_resource(std::string resource);
   unsigned long locate_resource(const std::string &resource) const;
   std::string extract_resource(unsigned long id) const;
+
+  size_t size() const;
 };
 
 #endif /* NAIVE_DYNAMIC_STRING_DICTIONARY_HPP */

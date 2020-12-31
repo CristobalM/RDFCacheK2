@@ -85,3 +85,6 @@ std::string NaiveDynamicStringDictionary::extract_resource(unsigned long id) con
   return resources_extra[next_id];
 }
 
+size_t NaiveDynamicStringDictionary::size() const {
+  return resources_extra.size();
+}
