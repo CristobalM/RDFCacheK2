@@ -7,6 +7,7 @@
 #include <SDBuilder.hpp>
 #include <unordered_set>
 
+
 TEST(sd_builder_suite, test_1){
   SDInput input;
   input.cut_size = 10000000;

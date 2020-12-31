@@ -252,7 +252,7 @@ add_executable(k2tree_mixed_test test/k2tree_mixed_test.cpp)
 target_link_libraries(k2tree_mixed_test  ${DEFAULT_LIBS}  ${GTEST_BOTH_LIBRARIES} pthread)
 
 add_executable(query_proc_tests test/query_proc_tests.cpp)
-target_link_libraries(query_proc_tests ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} pthread)
+target_link_libraries(query_proc_tests ${DEFAULT_LIBS} ${PROC_LIBS} ${GTEST_BOTH_LIBRARIES} pthread)
 
 add_executable(test_sd_builder test/test_sd_builder.cpp)
 target_link_libraries(test_sd_builder ${PROC_LIBS} ${GTEST_BOTH_LIBRARIES} pthread)

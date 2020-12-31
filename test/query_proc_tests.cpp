@@ -13,6 +13,11 @@
 #include <EmptyISDManager.hpp>
 #include <PredicatesCacheManager.hpp>
 #include <RDFTriple.hpp>
+#include <SDEntitiesMapping.hpp>
+
+#include <StringDictionaryHASHRPDACBlocks.h>
+
+#include <SDBuilder.hpp>
 
 static std::vector<std::vector<std::string>> translate_table(ResultTable &input_table, Cache &cache){
   std::vector<std::vector<std::string>> translated_table;
@@ -290,9 +295,73 @@ TEST(QueryProcTests, test_bgp_node_3) {
   ASSERT_EQ(translated_table[1][1], "obj2");
 }
 
+static std::stringstream ss_input_from_vector_of_strings(std::vector<std::string> &&data){
+  std::stringstream ss;
+  while(!data.empty()){
+    auto curr = data.back();
+    data.pop_back();
+    ss << curr << '\n';
+  }
+  return ss;
+}
 
+static std::vector<std::string> generate_vec_strings(const std::string &prefix, int amount){
+  std::vector<std::string> result;
+  for(int i = 0; i < amount; i++){
+    result.push_back(prefix + "SOME_STRING_" + std::to_string(i));
+  }
+  return result;
+}
 
 TEST(QueryProcTests, test_bgp_node_4_compact_dicts) {
+  auto iris_data = generate_vec_strings("iris", 1000);
+  auto tmp_iris_data = iris_data;
+  auto ss_input_iris = ss_input_from_vector_of_strings(std::move(tmp_iris_data));
+
+  SDInput sd_input_iris;
+  sd_input_iris.bucket_size = 128;
+  auto sd_iris = SDBuilder(SDBuilder::SDType::PFC, false, sd_input_iris).build(ss_input_iris);
+  std::stringstream sd_iris_ss(std::ios::in | std::ios::out | std::ios::binary);
+  sd_iris->save(sd_iris_ss);
+
+  auto blanks_data = generate_vec_strings("blanks", 1000);
+  auto tmp_blanks_data = blanks_data;
+  auto ss_input_blanks = ss_input_from_vector_of_strings(std::move(tmp_blanks_data));
+
+  SDInput sd_input_blanks;
+  sd_input_blanks.cut_size = 100'000;
+  sd_input_blanks.thread_count = 4;
+  auto sd_blanks = SDBuilder(SDBuilder::SDType::HRPDACBlocks, false, sd_input_blanks).build(ss_input_blanks);
+  std::stringstream sd_blanks_ss(std::ios::in | std::ios::out | std::ios::binary);
+  sd_blanks->save(sd_blanks_ss);
+
+  auto literals_data = generate_vec_strings("literals", 1000);
+  auto tmp_literals_data = literals_data;
+  auto ss_input_literals = ss_input_from_vector_of_strings(std::move(tmp_literals_data));
+
+  SDInput sd_input_literals;
+  sd_input_literals.cut_size = 100'000;
+  sd_input_literals.thread_count = 4;
+
+  auto sd_literals = SDBuilder(SDBuilder::SDType::HRPDACBlocks, false, sd_input_literals).build(ss_input_literals);
+  std::stringstream sd_literals_ss(std::ios::in | std::ios::out | std::ios::binary);
+  sd_literals->save(sd_literals_ss);
+
+  sd_iris_ss.seekg(0);
+  sd_iris_ss.seekp(0);
+
+  sd_blanks_ss.seekg(0);
+  sd_blanks_ss.seekp(0);
+
+  sd_literals_ss.seekg(0);
+  sd_literals_ss.seekp(0);
+
+
+  SDEntitiesMapping<StringDictionaryHASHRPDACBlocks,
+   StringDictionaryHASHRPDACBlocks, StringDictionaryPFC> sdent(sd_iris_ss, sd_blanks_ss, sd_literals_ss);
+
+
+  
 
 
 }

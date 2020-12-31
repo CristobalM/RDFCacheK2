@@ -38,9 +38,9 @@ class SDEntitiesMapping : public ISDManager {
   std::unique_ptr<StringDictionary> literals_dictionary;
 
 public:
-  SDEntitiesMapping(std::ifstream &iris_dict_ifs,
-                    std::ifstream &blanks_dict_ifs,
-                    std::ifstream &literals_dict_ifs)
+  SDEntitiesMapping(std::istream &iris_dict_ifs,
+                    std::istream &blanks_dict_ifs,
+                    std::istream &literals_dict_ifs)
       : iris_dictionary(SDIRIS::load(iris_dict_ifs)),
         blanks_dictionary(SDBlanks::load(blanks_dict_ifs)),
         literals_dictionary(SDLiterals::load(literals_dict_ifs)) {}
