@@ -469,44 +469,40 @@ TEST(QueryProcTests, test_bgp_node_4_compact_dicts) {
   auto query_result = cache.run_query(tree);
 
   auto reverse_var_map = query_result.get_vim().reverse();
-  for(auto header_var_index: query_result.table().headers){
-    std::cout << reverse_var_map[header_var_index] << ",";
-  }
-  std::cout << "\n";
+  auto &headers = query_result.table().headers;
+  auto h0 = reverse_var_map[headers[0]];
+  auto h1 = reverse_var_map[headers[1]];
+
+  ASSERT_EQ(h0, "?x");
+  ASSERT_EQ(h1, "?y");
+
+  std::vector<std::vector<std::string>> transformed_data;
 
   for(const auto &row: query_result.table().data){
+    std::vector<std::string> current_row;
     for(auto col: row){
-      std::cout << cache.extract_resource(col) << ",";
+      current_row.push_back(cache.extract_resource(col));
     }
-    std::cout << "\n";
-  }
-  std::cout << std::endl;
-
-
-  /*
-  auto &cache_pcm = cache.get_pcm();
-
-  auto &k2tree = cache_pcm.get_tree_by_predicate_name(predicate_str);
-  
-  std::vector<std::pair<unsigned long, unsigned long>> points;
-  k2tree.scan_points([](unsigned long col, unsigned long row, void *report_state){
-    auto &points = *reinterpret_cast<std::vector<std::pair<unsigned long, unsigned long>>*>(report_state);
-    points.push_back({col, row});
-  }, &points);
-
-
-  std::vector<std::pair<std::string, std::string>> transformed_points;
-
-  for(const auto &point: points){
-    transformed_points.push_back({cache.extract_resource(point.first), cache.extract_resource(point.second)});
+    transformed_data.push_back(std::move(current_row));
   }
 
-  std::sort(transformed_points.begin(), transformed_points.end());
-  
-  for(const auto &point: transformed_points){
-    std::cout << "(" << point.first << ", " << point.second<< ")\n";
+  std::sort(transformed_data.begin(), transformed_data.end(), 
+  [](
+    const std::vector<std::string> &lhs,
+    const std::vector<std::string> &rhs
+  ){
+    for(size_t i = 0; i < lhs.size(); i++){
+      if(lhs[i] < rhs[i]) return true;
+      else if(lhs[i]> rhs[i]) return false;
+    }
+    return true;
+  });
+
+  for(size_t row_i = 0; row_i < transformed_data.size(); row_i++){
+    ASSERT_EQ(transformed_data[row_i].size(), 2);
+    ASSERT_EQ(transformed_data[row_i][0], iris_data[row_i]);
+    ASSERT_EQ(transformed_data[row_i][1], literals_data[row_i]);
   }
-  std::cout << std::endl;
-  */
+
 
 }

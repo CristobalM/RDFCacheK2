@@ -97,6 +97,12 @@ join_two_var_group(const std::string &var_one, const std::string &var_two,
                    std::unordered_map<std::string, K2TreeMixed *> &k2trees_map,
                    VarIndexManager &vim);
 
+std::shared_ptr<ResultTable>
+join_two_var_group_sip(const std::string &var_one, const std::string &var_two,
+                   const std::vector<Triple> &triples,
+                   std::unordered_map<std::string, K2TreeMixed *> &k2trees_map,
+                   VarIndexManager &vim);
+
 void process_expr_node(const proto_msg::ExprNode &,
                        std::shared_ptr<ResultTable> &, Cache::cm_t &);
 
@@ -111,9 +117,9 @@ process_project_node(const proto_msg::ProjectNode &project_node,
 void process_triple_node(const proto_msg::TripleNode &,
                          std::shared_ptr<ResultTable> &, Cache::cm_t &);
 
-void
-remove_extra_vars_from_table(std::shared_ptr<ResultTable> input_table,
-              const std::vector<std::string> &vars, VarIndexManager &vim);
+void remove_extra_vars_from_table(std::shared_ptr<ResultTable> input_table,
+                                  const std::vector<std::string> &vars,
+                                  VarIndexManager &vim);
 // definitions
 
 std::unordered_map<std::string, K2TreeMixed *>
@@ -393,28 +399,7 @@ std::shared_ptr<ResultTable> join_table_with_trees_by_one_var(
   unsigned long other_var_index = vim.var_indexes[other_var];
 
   table->headers.push_back(other_var_index);
-  /*
-  std::cout << "debug" << std::endl;
 
-  std::cout << "table: " << std::endl;
-  for (auto header : table->headers) {
-    std::cout << header << ",";
-  }
-  std::cout << std::endl;
-  for (auto &row : table->data) {
-    for (auto col : row) {
-      std::cout << col << ", ";
-    }
-    std::cout << std::endl;
-  }
-
-  std::cout << "two var triples"
-            << "\n";
-  for (const auto &triple : two_var_group_item.second) {
-    std::cout << triple.subject.value << ", " << triple.predicate.value << ", "
-              << triple.object.value << std::endl;
-  }
-  */
   for (const auto &triple : two_var_group_item.second) {
     auto &k2 = *k2trees_map[triple.predicate.value];
     std::vector<std::pair<unsigned long, unsigned long>> pairs;
@@ -426,13 +411,6 @@ std::shared_ptr<ResultTable> join_table_with_trees_by_one_var(
           pairs.push_back({col, row});
         },
         &pairs);
-        /*
-    std::cout << "k2tree " << triple.predicate.value << ":" << std::endl;
-    for (const auto &pair : pairs) {
-      std::cout << pair.first << ", " << pair.second << "\n";
-    }
-    std::cout << std::endl;
-    */
   }
 
   for (auto it = table->data.begin(); it != table->data.end();) {
@@ -475,8 +453,96 @@ std::shared_ptr<ResultTable> join_table_with_trees_by_one_var(
   return table;
 }
 
+struct ChainedInput {
+  ResultTable &result_table;
+  const std::vector<Triple> &triples;
+  const std::unordered_map<std::string, K2TreeMixed *> &k2trees_map;
+  const std::vector<coord_t> &coord_types;
+  ChainedInput(
+    ResultTable &result_table, 
+    const std::vector<Triple> &triples, 
+    const std::unordered_map<std::string, K2TreeMixed *> &k2trees_map,
+    const std::vector<coord_t> &coord_types
+    ):
+  result_table(result_table), 
+  triples(triples),
+  k2trees_map(k2trees_map),
+  coord_types(coord_types)
+  {}
+};
+
+std::shared_ptr<ResultTable> join_two_var_group(
+    const std::string &var_one, const std::string &var_two,
+    const std::vector<Triple> &triples,
+    std::unordered_map<std::string, K2TreeMixed *> &k2trees_map,
+    VarIndexManager &vim) {
+
+  if (triples.empty())
+    throw std::runtime_error("join_two_var_group: no triples");
+
+  const auto &first_triple = triples.at(0);
+  K2TreeMixed &first_k2tree = *k2trees_map[first_triple.predicate.value];
+
+  auto result = std::make_shared<ResultTable>(
+    std::vector<unsigned long>(
+    {
+      vim.var_indexes[var_one], 
+      vim.var_indexes[var_two]
+    })
+  );
+
+
+  std::vector<coord_t> coord_types;
+
+  for(auto &triple: triples){
+    coord_t ctype;
+    if(triple.subject.value == var_one){
+      ctype = COLUMN_COORD;
+    }
+    else{
+      ctype = ROW_COORD;
+    }
+    coord_types.push_back(ctype);
+  }
+
+  ChainedInput chained_input(*result, triples, k2trees_map, coord_types);
+
+
+
+  first_k2tree.scan_points([](unsigned long col, unsigned long row, void *report_state){
+    auto &chained_input = *reinterpret_cast<ChainedInput *>(report_state);
+    auto &result_table = chained_input.result_table;
+    const auto &triples = chained_input.triples;
+    const auto &k2trees_map = chained_input.k2trees_map;
+    const auto &coord_types = chained_input.coord_types;
+    bool valid = true;
+    for(size_t i = 1; i < triples.size(); i++){
+      auto &triple = triples[i];
+      auto &k2tree = *k2trees_map.at(triple.predicate.value);
+      if(coord_types[i] == COLUMN_COORD){
+        valid = k2tree.has(col, row);
+      }
+      else{
+        valid = k2tree.has(row, col);
+      }
+      if(!valid) break;
+    }
+
+    if(valid){
+      if(coord_types[0] == COLUMN_COORD)
+      result_table.data.push_back(std::vector<unsigned long>({col, row}));
+      else
+      result_table.data.push_back(std::vector<unsigned long>({row, col}));
+    }
+  }, &chained_input);
+  
+
+  return result;
+
+}
+
 std::shared_ptr<ResultTable>
-join_two_var_group(const std::string &var_one, const std::string &var_two,
+join_two_var_group_sip(const std::string &var_one, const std::string &var_two,
                    const std::vector<Triple> &triples,
                    std::unordered_map<std::string, K2TreeMixed *> &k2trees_map,
                    VarIndexManager &vim) {
@@ -502,10 +568,10 @@ join_two_var_group(const std::string &var_one, const std::string &var_two,
   } else {
 
     first_k2tree.scan_points(
-        [](unsigned long col, unsigned long, void *report_state) {
+        [](unsigned long, unsigned long row, void *report_state) {
           auto &set_of_coords =
               *reinterpret_cast<std::set<unsigned long> *>(report_state);
-          set_of_coords.insert(col);
+          set_of_coords.insert(row);
         },
         &set_of_coords);
   }
@@ -679,41 +745,41 @@ process_left_join_node(const proto_msg::LeftJoinNode &left_join_node,
   return left_result;
 }
 
-void
-remove_extra_vars_from_table(std::shared_ptr<ResultTable> input_table,
-              const std::vector<std::string> &vars, VarIndexManager &vim) {
-  
-  //std::unordered_set<std::string> vars_set(vars.begin(), vars.end());
+void remove_extra_vars_from_table(std::shared_ptr<ResultTable> input_table,
+                                  const std::vector<std::string> &vars,
+                                  VarIndexManager &vim) {
+
+  // std::unordered_set<std::string> vars_set(vars.begin(), vars.end());
   std::unordered_set<unsigned long> vars_set;
   std::unordered_set<unsigned long> columns_to_erase;
-  for(auto var: vars){
+  for (auto var : vars) {
     vars_set.insert(vim.var_indexes[var]);
   }
 
   std::unordered_set<unsigned long> headers_set;
-  for(auto var_value: input_table->headers){
+  for (auto var_value : input_table->headers) {
     headers_set.insert(var_value);
   }
 
-  if(vars_set == headers_set) return;
+  if (vars_set == headers_set)
+    return;
 
   std::vector<unsigned long> next_headers;
-  for(size_t h_i = 0; h_i < input_table->headers.size(); h_i++){
+  for (size_t h_i = 0; h_i < input_table->headers.size(); h_i++) {
     auto header_value = input_table->headers[h_i];
-    if(vars_set.find(header_value) == vars_set.end()){
+    if (vars_set.find(header_value) == vars_set.end()) {
       columns_to_erase.insert(h_i);
-    }
-    else{
+    } else {
       next_headers.push_back(header_value);
     }
   }
 
   input_table->headers = std::move(next_headers);
 
-  for(auto &row: input_table->data){
+  for (auto &row : input_table->data) {
     std::vector<unsigned long> next_row;
-    for(size_t i = 0; i < row.size(); i++){
-      if(columns_to_erase.find(i) == columns_to_erase.end()){
+    for (size_t i = 0; i < row.size(); i++) {
+      if (columns_to_erase.find(i) == columns_to_erase.end()) {
         next_row.push_back(row[i]);
       }
     }
@@ -721,18 +787,15 @@ remove_extra_vars_from_table(std::shared_ptr<ResultTable> input_table,
   }
 }
 
-void remove_repeated_rows(
-  std::shared_ptr<ResultTable> input_table
-){
+void remove_repeated_rows(std::shared_ptr<ResultTable> input_table) {
   auto left_it = input_table->data.begin();
 
-  for(auto it = std::next(left_it); it != input_table->data.end();){
-    if(*it == *left_it){
+  for (auto it = std::next(left_it); it != input_table->data.end();) {
+    if (*it == *left_it) {
       auto next_it = std::next(it);
       input_table->data.erase(it);
       it = next_it;
-    }
-    else{
+    } else {
       left_it = it;
       it++;
     }
@@ -767,7 +830,7 @@ process_project_node(const proto_msg::ProjectNode &project_node,
   }
 
   remove_extra_vars_from_table(result_table, vars, vim);
-  //remove_repeated_rows(result_table);
+  // remove_repeated_rows(result_table);
   return result_table;
 }
 
@@ -793,6 +856,4 @@ std::string Cache::extract_resource(unsigned long index) {
   return cache_manager->extract_resource(index);
 }
 
-PredicatesCacheManager & Cache::get_pcm(){
-  return *cache_manager;
-}
+PredicatesCacheManager &Cache::get_pcm() { return *cache_manager; }
