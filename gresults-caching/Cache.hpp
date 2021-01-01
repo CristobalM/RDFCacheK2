@@ -36,6 +36,9 @@ public:
 
   QueryResult run_query(proto_msg::SparqlTree const &query_tree);
   std::string extract_resource(unsigned long index);
+
+  PredicatesCacheManager & get_pcm();
+
 };
 
 #endif // RDFCACHEK2_CACHE_HPP

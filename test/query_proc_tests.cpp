@@ -4,6 +4,7 @@
 #include <iostream>
 #include <memory>
 #include <random>
+#include <cmath>
 
 #include <gtest/gtest.h>
 
@@ -299,11 +300,25 @@ ss_input_from_vector_of_strings(std::vector<std::string> &&data) {
   return ss;
 }
 
+static std::string transform_int_to_str_padded(int value, int padding){
+  std::stringstream ss;
+
+  int max_val = std::pow(10, padding)-1;
+  if(value > max_val) throw std::runtime_error("value " + std::to_string(value) + " is bigger than max_value " + std::to_string(max_val));
+
+  int next_pow10 = std::ceil(std::log10(value+1));
+  int remaining_zeros = padding - next_pow10;
+  for(int i = 0; i < remaining_zeros; i++) ss << "0";
+  if(value != 0)
+  ss << std::to_string(value);
+  return ss.str();
+}
+
 static std::vector<std::string> generate_vec_strings(const std::string &prefix,
                                                      int amount) {
   std::vector<std::string> result;
   for (int i = 0; i < amount; i++) {
-    result.push_back(prefix + "SOME_STRING_" + std::to_string(i));
+    result.push_back(prefix + "SOME_STRING_" + transform_int_to_str_padded(i, 4));
   }
   return result;
 }
@@ -403,12 +418,95 @@ TEST(QueryProcTests, test_bgp_node_4_compact_dicts) {
 
   auto pcm = std::make_unique<PredicatesCacheManager>(std::move(sdent));
 
-  for (unsigned long i = 0; i < iris_data.size() / 2; i++) {
+
+  auto predicate_str = iris_data[iris_data.size()/2 + 1];
+
+  for (unsigned long i = 0; i < iris_data.size(); i++) {
     pcm->add_triple(RDFTripleResource(
         RDFResource(std::string(iris_data[i]), RDFResourceType::RDF_TYPE_IRI),
-        RDFResource(std::string(iris_data[iris_data.size()/2 + 1]), RDFResourceType::RDF_TYPE_IRI),
-        RDFResource(std::string(literals_data[0]), RDFResourceType::RDF_TYPE_LITERAL )));
+        RDFResource(std::string(predicate_str), RDFResourceType::RDF_TYPE_IRI),
+        RDFResource(std::string(literals_data[i]), RDFResourceType::RDF_TYPE_LITERAL )));
   }
 
+  for (unsigned long i = 0; i < iris_data.size(); i++) {
+    ASSERT_TRUE(pcm->has_triple(RDFTripleResource(
+        RDFResource(std::string(iris_data[i]), RDFResourceType::RDF_TYPE_IRI),
+        RDFResource(std::string(predicate_str), RDFResourceType::RDF_TYPE_IRI),
+        RDFResource(std::string(literals_data[i]), RDFResourceType::RDF_TYPE_LITERAL )))) << "Not found triple ("
+        << iris_data[i] << ", " << predicate_str << ", " << literals_data[i] << ")";
+  }
+
+
   ASSERT_EQ(pcm->get_dyn_dicts().size(), 0);
+
+  
+  Cache cache(std::move(pcm));
+
+
+  proto_msg::SparqlTree tree;
+  auto *project_node = tree.mutable_root()->mutable_project_node();
+  project_node->add_vars("?x");
+  project_node->add_vars("?y");
+  auto *bgp = project_node->mutable_sub_op()->mutable_bgp_node();
+  // proto_msg::TripleNode().mutable_subject()
+  auto *first_triple = bgp->mutable_triple()->Add();
+  auto *first_subject = first_triple->mutable_subject();
+  first_subject->set_term_type(proto_msg::TermType::VARIABLE);
+  first_subject->set_basic_type(proto_msg::BasicType::STRING);
+  first_subject->set_term_value("?x");
+
+  auto *first_predicate = first_triple->mutable_predicate();
+  first_predicate->set_term_type(proto_msg::TermType::IRI);
+  first_predicate->set_basic_type(proto_msg::BasicType::STRING);
+  first_predicate->set_term_value(predicate_str);
+
+  auto *first_object = first_triple->mutable_object();
+  first_object->set_term_type(proto_msg::TermType::VARIABLE);
+  first_object->set_basic_type(proto_msg::BasicType::STRING);
+  first_object->set_term_value("?y");
+
+
+  auto query_result = cache.run_query(tree);
+
+  auto reverse_var_map = query_result.get_vim().reverse();
+  for(auto header_var_index: query_result.table().headers){
+    std::cout << reverse_var_map[header_var_index] << ",";
+  }
+  std::cout << "\n";
+
+  for(const auto &row: query_result.table().data){
+    for(auto col: row){
+      std::cout << cache.extract_resource(col) << ",";
+    }
+    std::cout << "\n";
+  }
+  std::cout << std::endl;
+
+
+  /*
+  auto &cache_pcm = cache.get_pcm();
+
+  auto &k2tree = cache_pcm.get_tree_by_predicate_name(predicate_str);
+  
+  std::vector<std::pair<unsigned long, unsigned long>> points;
+  k2tree.scan_points([](unsigned long col, unsigned long row, void *report_state){
+    auto &points = *reinterpret_cast<std::vector<std::pair<unsigned long, unsigned long>>*>(report_state);
+    points.push_back({col, row});
+  }, &points);
+
+
+  std::vector<std::pair<std::string, std::string>> transformed_points;
+
+  for(const auto &point: points){
+    transformed_points.push_back({cache.extract_resource(point.first), cache.extract_resource(point.second)});
+  }
+
+  std::sort(transformed_points.begin(), transformed_points.end());
+  
+  for(const auto &point: transformed_points){
+    std::cout << "(" << point.first << ", " << point.second<< ")\n";
+  }
+  std::cout << std::endl;
+  */
+
 }

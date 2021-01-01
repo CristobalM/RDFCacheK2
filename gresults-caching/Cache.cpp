@@ -792,3 +792,7 @@ QueryResult Cache::run_query(proto_msg::SparqlTree const &query_tree) {
 std::string Cache::extract_resource(unsigned long index) {
   return cache_manager->extract_resource(index);
 }
+
+PredicatesCacheManager & Cache::get_pcm(){
+  return *cache_manager;
+}

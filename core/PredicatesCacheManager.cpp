@@ -13,7 +13,7 @@ PredicatesCacheManager::PredicatesCacheManager(
       predicates_index(std::move(predicates_index)),
       measured_time_sd_lookup(0) {}
 
-uint64_t PredicatesCacheManager::get_resource_index(RDFResource &resource) {
+uint64_t PredicatesCacheManager::get_resource_index(const RDFResource &resource) const {
   unsigned long index;
   switch (resource.resource_type) {
   case RDF_TYPE_IRI:
@@ -30,7 +30,7 @@ uint64_t PredicatesCacheManager::get_resource_index(RDFResource &resource) {
   if (index == NORESULT)
     return extra_dicts.locate_resource(resource.value) + isd_manager->last_id();
 
-  return NORESULT;
+  return index;
 }
 
 void PredicatesCacheManager::handle_not_found(unsigned long &resource_id,
@@ -48,12 +48,10 @@ void PredicatesCacheManager::handle_not_found(unsigned long &resource_id,
       res_type_name = "LITERAL";
       break;
     default:
-      res_type_name = "UNKNOWN";
+      throw std::runtime_error("Unknown resource type: '" +
+       std::to_string(resource.resource_type) + "' with value '" + resource.value + "'" );
     }
-    /*
-    std::cerr << "Resource " << resource.value << " of type " << res_type_name
-              << " does not exist" << std::endl;
-              */
+
     resource_id = extra_dicts.locate_resource(resource.value);
     if (resource_id == 0) {
       extra_dicts.add_resource(resource.value);
@@ -140,6 +138,11 @@ K2TreeMixed &PredicatesCacheManager::get_tree_by_predicate_name(
   return predicates_index->get_k2tree(index);
 }
 
+K2TreeMixed &PredicatesCacheManager::get_tree_by_predicate_index(unsigned long index){
+  return predicates_index->get_k2tree(index);
+}
+
+
 unsigned long PredicatesCacheManager::get_iri_index(const std::string &value) {
   auto index = isd_manager->iris_index(value);
   if (index == 0) {
@@ -168,4 +171,15 @@ std::string PredicatesCacheManager::extract_resource(unsigned long index) {
   if (index <= isd_manager->last_id())
     return isd_manager->get_resource(index).value;
   return extra_dicts.extract_resource(index - isd_manager->last_id());
+}
+
+
+
+bool PredicatesCacheManager::has_triple(const RDFTripleResource &rdf_triple) const {
+  auto subject_index = get_resource_index(rdf_triple.subject);
+  auto predicate_index = get_resource_index(rdf_triple.predicate);
+  auto object_index = get_resource_index(rdf_triple.object);
+
+  auto &k2tree =  predicates_index->get_k2tree(predicate_index);
+  return k2tree.has(subject_index, object_index);
 }

@@ -36,12 +36,15 @@ public:
   void add_triple(RDFTripleResource &rdf_triple,
                   PredicatesIndexCacheBuilder &builder);
 
+  bool has_triple(const RDFTripleResource &rdf_triple) const;
+
   void
   replace_index_cache(std::unique_ptr<PredicatesIndexCache> &&predicates_index);
 
   PredicatesIndexCache &get_predicates_cache();
 
   K2TreeMixed &get_tree_by_predicate_name(const std::string &predicate_name);
+  K2TreeMixed &get_tree_by_predicate_index(unsigned long index);
 
   NaiveDynamicStringDictionary &get_dyn_dicts();
 
@@ -53,7 +56,7 @@ public:
   std::string extract_resource(unsigned long index);
 
 private:
-  uint64_t get_resource_index(RDFResource &resource);
+  uint64_t get_resource_index(const RDFResource &resource) const;
   void handle_not_found(unsigned long &resource_id, RDFResource &resource);
 };
 
