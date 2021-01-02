@@ -11,12 +11,17 @@
 #include <utility>
 
 #include "Cache.hpp"
-
 #include "VarIndexManager.hpp"
 #include "CacheReplacementFactory.hpp"
 
-Cache::Cache(std::unique_ptr<PredicatesCacheManager> &&cache_manager, CacheReplacement::STRATEGY cache_replacement_strategy, size_t memory_budget_bytes)
-    : cache_manager(std::move(cache_manager)), cache_replacement(CacheReplacementFactory::select_strategy(cache_replacement_strategy, memory_budget_bytes)) {}
+Cache::Cache(std::shared_ptr<PredicatesCacheManager> &cache_manager, 
+CacheReplacement::STRATEGY cache_replacement_strategy, 
+size_t memory_budget_bytes)
+    : cache_manager(cache_manager), 
+    cache_replacement(
+      CacheReplacementFactory::select_strategy(cache_replacement_strategy,
+       memory_budget_bytes,
+       cache_manager)) {}
 
 enum TermType {
   IRI = proto_msg::TermType::IRI,

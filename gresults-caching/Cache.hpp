@@ -27,13 +27,15 @@ struct CacheStats {
 };
 
 class Cache {
-  std::unique_ptr<PredicatesCacheManager> cache_manager;
+  std::shared_ptr<PredicatesCacheManager> cache_manager;
 
   CacheReplacement cache_replacement;
 
 public:
-  using cm_t = std::unique_ptr<PredicatesCacheManager>;
-  Cache(std::unique_ptr<PredicatesCacheManager> &&cache_manager, CacheReplacement::STRATEGY cache_replacement_strategy, size_t memory_budget_bytes);
+  using cm_t = std::shared_ptr<PredicatesCacheManager>;
+  Cache(std::shared_ptr<PredicatesCacheManager> &cache_manager, 
+  CacheReplacement::STRATEGY cache_replacement_strategy, 
+  size_t memory_budget_bytes);
 
   CacheStats cache_stats();
 

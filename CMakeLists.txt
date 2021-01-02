@@ -48,6 +48,8 @@ set(GRAPH_RESULT_CACHING_FILE
         gresults-caching/GraphResult.cpp
         gresults-caching/Cache.cpp
         gresults-caching/QueryResult.cpp
+        gresults-caching/CacheReplacementFactory.cpp
+        gresults-caching/LRUCacheReplacement.cpp
         gresults-caching/cache_result/ExistingCacheResult.cpp
         gresults-caching/cache_result/NonExistingCacheResult.cpp
 )
