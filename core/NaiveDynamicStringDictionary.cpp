@@ -7,8 +7,7 @@
 NaiveDynamicStringDictionary::NaiveDynamicStringDictionary(
     std::vector<std::string> &&resources_extra,
     std::unordered_map<std::string, unsigned long> &&reverse_resources)
-    : resources_extra(resources_extra), reverse_resources(reverse_resources)
-    {}
+    : resources_extra(resources_extra), reverse_resources(reverse_resources) {}
 
 void NaiveDynamicStringDictionary::serialize_dict(
     std::vector<std::string> &strings, const std::string &fname) {
@@ -60,26 +59,23 @@ NaiveDynamicStringDictionary
 NaiveDynamicStringDictionary::load(const std::string &res_fname) {
   auto res = deserialize_dict(res_fname);
   auto reverse_res = create_reverse(res);
-  return NaiveDynamicStringDictionary(
-      std::move(res), std::move(reverse_res));
+  return NaiveDynamicStringDictionary(std::move(res), std::move(reverse_res));
 }
-
 
 void NaiveDynamicStringDictionary::add_resource(std::string resource) {
   reverse_resources[resource] = resources_extra.size();
   resources_extra.push_back(std::move(resource));
 }
 
-
-unsigned long
-NaiveDynamicStringDictionary::locate_resource(const std::string &literal) const {
+unsigned long NaiveDynamicStringDictionary::locate_resource(
+    const std::string &literal) const {
   if (reverse_resources.find(literal) == reverse_resources.end())
     return 0;
   return reverse_resources.at(literal) + 1;
 }
 
-
-std::string NaiveDynamicStringDictionary::extract_resource(unsigned long id) const {
+std::string
+NaiveDynamicStringDictionary::extract_resource(unsigned long id) const {
   long next_id = static_cast<long>(id) - 1;
   assert(id > 0 && next_id >= 0 && next_id < (long)resources_extra.size());
   return resources_extra[next_id];

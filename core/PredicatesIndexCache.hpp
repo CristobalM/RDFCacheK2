@@ -25,6 +25,8 @@ public:
 private:
   predicates_map_t predicates_map;
 
+  std::unordered_map<uint64_t, size_t> k2tree_sizes;
+
 public:
   PredicatesIndexCache();
   PredicatesIndexCache(
@@ -47,6 +49,9 @@ public:
   void dump_to_file(const std::string &file_path);
 
   void load_dump_file(const std::string &file_path);
+
+  void calculate_sizes();
+  size_t get_predicate_k2tree_size(uint64_t predicate_index) const;
 };
 
 class PredicatesIndexCacheBuilder {

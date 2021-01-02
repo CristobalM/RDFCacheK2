@@ -72,6 +72,18 @@ PredicatesIndexCache::get_predicates_map() {
   return predicates_map;
 }
 
+
+void PredicatesIndexCache::calculate_sizes(){
+  for(auto it = predicates_map.begin(); it != predicates_map.end(); it++){
+    k2tree_sizes[it->first] = it->second->measure_in_memory_size().total_bytes;
+  }
+}
+
+size_t PredicatesIndexCache::get_predicate_k2tree_size(uint64_t predicate_index) const{
+  return k2tree_sizes.at(predicate_index);
+}
+
+
 PredicatesIndexCacheBuilder::PredicatesIndexCacheBuilder(
     int worker_pool_size, unsigned long max_queue_size)
     : worker_pool_size(worker_pool_size), max_queue_size(max_queue_size) {}
@@ -158,3 +170,4 @@ void PredicatesIndexCacheBuilder::finish() {
     insert_batch();
   }
 }
+

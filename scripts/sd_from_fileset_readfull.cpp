@@ -38,7 +38,6 @@ struct parsed_options {
   int bucket_size;
 };
 
-
 parsed_options parse_cmline(int argc, char **argv);
 
 void print_help();

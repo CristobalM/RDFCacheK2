@@ -97,7 +97,8 @@ int main(int argc, char **argv) {
   std::cout << "Saving to disk..." << std::endl;
 
   cache_manager.get_predicates_cache().dump_to_file(parsed.output_k2tree);
-  cache_manager.get_dyn_dicts().save(parsed.output_k2tree + "_extra_resources.bin");
+  cache_manager.get_dyn_dicts().save(parsed.output_k2tree +
+                                     "_extra_resources.bin");
 }
 
 RDFResource resource_from_nres(NTRes *nres) {

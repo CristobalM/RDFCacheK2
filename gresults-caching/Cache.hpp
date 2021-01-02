@@ -9,9 +9,10 @@
 #include <string>
 
 #include <request_msg.pb.h>
+#include <PredicatesCacheManager.hpp>
 
 #include "QueryResult.hpp"
-#include <PredicatesCacheManager.hpp>
+#include "CacheReplacement.hpp"
 
 struct CacheStats {
   int allocated_u32s;
@@ -28,16 +29,19 @@ struct CacheStats {
 class Cache {
   std::unique_ptr<PredicatesCacheManager> cache_manager;
 
+  CacheReplacement cache_replacement;
+
 public:
   using cm_t = std::unique_ptr<PredicatesCacheManager>;
-  Cache(std::unique_ptr<PredicatesCacheManager> &&cache_manager);
+  Cache(std::unique_ptr<PredicatesCacheManager> &&cache_manager, CacheReplacement::STRATEGY cache_replacement_strategy, size_t memory_budget_bytes);
 
   CacheStats cache_stats();
 
   QueryResult run_query(proto_msg::SparqlTree const &query_tree);
-  std::string extract_resource(unsigned long index);
+  std::string extract_resource(unsigned long index) const;
 
   PredicatesCacheManager & get_pcm();
+  
 
 };
 

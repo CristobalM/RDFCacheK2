@@ -226,13 +226,6 @@ void rec_occup_ratio_count(struct block *b, K2TreeStats &k2tree_stats) {
 
 K2TreeStats K2Tree::k2tree_stats() {
   K2TreeStats result{};
-  result.allocated_u32s = 0;
-  result.nodes_count = 0;
-  result.containers_sz_sum = 0;
-  result.frontier_data = 0;
-  result.blocks_data = 0;
-  result.number_of_points = 0;
-  result.blocks_counted = 0;
 
   rec_occup_ratio_count(root, result);
 

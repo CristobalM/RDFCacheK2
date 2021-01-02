@@ -13,9 +13,10 @@
 #include "Cache.hpp"
 
 #include "VarIndexManager.hpp"
+#include "CacheReplacementFactory.hpp"
 
-Cache::Cache(std::unique_ptr<PredicatesCacheManager> &&cache_manager)
-    : cache_manager(std::move(cache_manager)) {}
+Cache::Cache(std::unique_ptr<PredicatesCacheManager> &&cache_manager, CacheReplacement::STRATEGY cache_replacement_strategy, size_t memory_budget_bytes)
+    : cache_manager(std::move(cache_manager)), cache_replacement(CacheReplacementFactory::select_strategy(cache_replacement_strategy, memory_budget_bytes)) {}
 
 enum TermType {
   IRI = proto_msg::TermType::IRI,
@@ -852,7 +853,7 @@ QueryResult Cache::run_query(proto_msg::SparqlTree const &query_tree) {
   return QueryResult(result, std::move(vim));
 }
 
-std::string Cache::extract_resource(unsigned long index) {
+std::string Cache::extract_resource(unsigned long index) const {
   return cache_manager->extract_resource(index);
 }
 

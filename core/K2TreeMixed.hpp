@@ -67,6 +67,7 @@ public:
   void write_to_ostream(std::ostream &os);
   static K2TreeMixed read_from_istream(std::istream &is);
 
+
 private:
   void clean_up();
 };
