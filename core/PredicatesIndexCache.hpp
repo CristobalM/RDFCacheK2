@@ -10,8 +10,6 @@
 #include <mutex>
 #include <unordered_map>
 
-#include "MapOfQueues.hpp"
-#include "RDFTriple.hpp"
 
 #include <request_msg.pb.h>
 
@@ -34,10 +32,6 @@ public:
 
   void wait_workers();
 
-  /*
-    void feed_full_k2tree(
-        proto_msg::CacheFeedFullK2TreeRequest &cache_feed_full_k2tree_request);
-  */
   bool has_predicate(uint64_t predicate_index);
   void add_predicate(uint64_t predicate_index);
   K2TreeMixed &get_k2tree(uint64_t predicate_index);
@@ -52,35 +46,13 @@ public:
 
   void calculate_sizes();
   size_t get_predicate_k2tree_size(uint64_t predicate_index) const;
+
+
+  void dump_to_stream(std::ostream &ofs);
+
+  static PredicatesIndexCache from_stream(std::istream &ifs);
+
 };
 
-class PredicatesIndexCacheBuilder {
-  PredicatesIndexCache::predicates_map_t predicates_map;
-  MapOfQueues<RDFTriple> insertion_queue;
-
-  int worker_pool_size;
-  unsigned long max_queue_size;
-  double measured_insertion_time;
-
-public:
-  PredicatesIndexCacheBuilder(int worker_pool_size,
-                              unsigned long max_queue_size);
-
-  void insert_point(uint64_t subject_id, uint64_t predicate_id,
-                    uint64_t object_id);
-
-  double get_measured_insertion_time();
-
-  void finish();
-
-  bool has_predicate(uint64_t predicate_index);
-  void add_predicate(uint64_t predicate_index);
-
-  std::unique_ptr<PredicatesIndexCache> get();
-  K2TreeMixed &get_k2tree(uint64_t predicate_index);
-
-private:
-  void insert_batch();
-};
 
 #endif // RDFCACHEK2_PREDICATESINDEXCACHE_HPP

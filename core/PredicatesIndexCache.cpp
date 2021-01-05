@@ -5,7 +5,6 @@
 #include <fstream>
 #include <sstream>
 
-#include <parallel/Worker.hpp>
 
 #include "PredicatesIndexCache.hpp"
 
@@ -83,91 +82,75 @@ size_t PredicatesIndexCache::get_predicate_k2tree_size(uint64_t predicate_index)
   return k2tree_sizes.at(predicate_index);
 }
 
-
-PredicatesIndexCacheBuilder::PredicatesIndexCacheBuilder(
-    int worker_pool_size, unsigned long max_queue_size)
-    : worker_pool_size(worker_pool_size), max_queue_size(max_queue_size) {}
-
-void PredicatesIndexCacheBuilder::insert_point(uint64_t subject_id,
-                                               uint64_t predicate_id,
-                                               uint64_t object_id) {
-
-  RDFTriple triple{};
-  triple.subject = subject_id;
-  triple.predicate = predicate_id;
-  triple.object = object_id;
-  insertion_queue.push_back(triple, predicate_id);
-
-  if (insertion_queue.size() >= max_queue_size) {
-    insert_batch();
+void PredicatesIndexCache::dump_to_stream(std::ostream &ofs){
+  std::vector<unsigned long> predicates_ids;
+  for(auto it = predicates_map.begin(); it != predicates_map.end(); it++){
+    predicates_ids.push_back(it->first);
   }
-}
+  std::sort(predicates_ids.begin(), predicates_ids.end());
 
-void PredicatesIndexCacheBuilder::insert_batch() {
-  WorkerPool worker_pool(worker_pool_size);
-  volatile unsigned long remaining_points = insertion_queue.size();
-  std::mutex m;
-  std::condition_variable cv;
 
-  for (auto it = insertion_queue.get_map().begin();
-       it != insertion_queue.get_map().end(); it++) {
-    auto predicate_id = it->first;
-    if (!has_predicate(predicate_id)) {
-      add_predicate(predicate_id);
-    }
+  std::vector<unsigned long> tree_offsets;
+
+  std::array<char, 28> metadata_unit_zeros{};
+
+  write_u32(ofs, predicates_ids.size());
+
+  auto begin_metadata = ofs.tellp();
+
+  for(size_t i = 0; i < predicates_ids.size(); i++){
+    ofs.write(metadata_unit_zeros.data(), 28);
   }
 
-  for (auto it = insertion_queue.get_map().begin();
-       it != insertion_queue.get_map().end(); it++) {
-    auto predicate_id = it->first;
-    auto &queue = it->second;
+  for(auto predicate_id: predicates_ids){
     auto &k2tree = *predicates_map[predicate_id];
-    worker_pool.add_task([&queue, &k2tree, &remaining_points, &m, &cv]() {
-      unsigned long to_discount = queue.size();
-      while (!queue.empty()) {
-        auto next = queue.front();
-        queue.pop_front();
-        k2tree.insert(next.subject, next.object);
-      }
-      {
-        std::lock_guard<std::mutex> lg(m);
-        remaining_points -= to_discount;
-      }
-      cv.notify_all();
-    });
+    auto start_offset = ofs.tellp();
+    k2tree.write_to_ostream(ofs);
+    tree_offsets.push_back(start_offset);
   }
 
-  std::unique_lock<std::mutex> ul(m);
-  cv.wait(ul, [&remaining_points]() { return remaining_points == 0; });
+  tree_offsets.push_back(ofs.tellp());
 
-  worker_pool.stop_all_workers();
-  worker_pool.wait_workers();
-  insertion_queue.clear();
-}
+  ofs.seekp(begin_metadata);
 
-double PredicatesIndexCacheBuilder::get_measured_insertion_time() {
-  return measured_insertion_time;
-}
+  assert(predicates_ids.size()+1 == tree_offsets.size());
 
-std::unique_ptr<PredicatesIndexCache> PredicatesIndexCacheBuilder::get() {
-  return std::make_unique<PredicatesIndexCache>(std::move(predicates_map));
-}
-
-K2TreeMixed &PredicatesIndexCacheBuilder::get_k2tree(uint64_t predicate_index) {
-  return *predicates_map[predicate_index];
-}
-
-bool PredicatesIndexCacheBuilder::has_predicate(uint64_t predicate_index) {
-  return predicates_map.find(predicate_index) != predicates_map.end();
-}
-
-void PredicatesIndexCacheBuilder::add_predicate(uint64_t predicate_index) {
-  predicates_map[predicate_index] = std::make_unique<K2TreeMixed>(32, 256, 10);
-}
-
-void PredicatesIndexCacheBuilder::finish() {
-  if (insertion_queue.size() > 0) {
-    insert_batch();
+  for(size_t i = 0; i < predicates_ids.size(); i++){
+    write_u64(ofs, predicates_ids[i]);
+    write_u64(ofs, tree_offsets[i]);
+    write_u64(ofs, tree_offsets[i+1] - tree_offsets[i]);
+    write_u32(ofs, 0); // TODO: write right value of the priority
   }
+
+  ofs.seekp(tree_offsets[tree_offsets.size() - 1]); // put stream pointer at the end
 }
 
+struct DeserializedMetadata{
+  uint64_t predicate_id;
+  uint64_t tree_offset;
+  uint64_t tree_size;
+  uint32_t priority;
+};
+
+PredicatesIndexCache PredicatesIndexCache::from_stream(std::istream &ifs){
+   std::unordered_map<uint64_t, std::unique_ptr<K2TreeMixed>> k2tree_map_result;
+
+   auto predicates_qty = read_u32(ifs);
+
+   std::vector<DeserializedMetadata> metadata;
+
+   for(size_t i = 0; i < predicates_qty; i++){
+     DeserializedMetadata current;
+     current.predicate_id = read_u64(ifs);
+     current.tree_offset = read_u64(ifs);
+     current.tree_size = read_u64(ifs);
+     current.priority = read_u32(ifs);
+     metadata.push_back(current);
+   }
+
+   for(size_t i = 0; i < predicates_qty; i++){
+    k2tree_map_result[metadata[i].predicate_id] = std::make_unique<K2TreeMixed>(K2TreeMixed::read_from_istream(ifs));
+   }
+
+   return PredicatesIndexCache(std::move(k2tree_map_result));
+}

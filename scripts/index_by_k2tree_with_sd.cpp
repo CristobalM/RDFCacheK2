@@ -18,6 +18,8 @@
 
 #include <nt_parser.hpp>
 
+#include <PredicatesIndexCacheBuilder.hpp>
+
 struct parsed_options {
   std::string iris_sd_file;
   std::string blanks_sd_file;
