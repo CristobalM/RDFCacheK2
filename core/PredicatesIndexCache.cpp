@@ -21,29 +21,14 @@ K2TreeMixed &PredicatesIndexCache::get_k2tree(uint64_t predicate_index) {
 void PredicatesIndexCache::dump_to_file(const std::string &file_path) {
   std::fstream outfs(file_path,
                      std::ios::out | std::ios::trunc | std::ios::binary);
-  write_u32(outfs, predicates_map.size());
-  for (auto &hmap_item : predicates_map) {
-    write_u64(outfs, hmap_item.first);
-    hmap_item.second->write_to_ostream(outfs);
-  }
+  dump_to_stream(outfs);
 }
 
 void PredicatesIndexCache::load_dump_file(const std::string &file_path) {
   std::ifstream ifstream(file_path, std::ios::binary | std::ios::out);
 
-  if (!ifstream.good()) {
-    std::cerr << "Error while opening file '" << file_path << "'" << std::endl;
-    return;
-  }
-
-  uint32_t map_sz = read_u32(ifstream);
-
-  for (uint32_t i = 0; i < map_sz; i++) {
-    uint64_t predicate_index = read_u64(ifstream);
-    predicates_map[predicate_index] =
-        std::make_unique<K2TreeMixed>(K2TreeMixed::read_from_istream(ifstream));
-  }
-  ifstream.close();
+  auto loaded = from_stream(ifstream);
+  *this = std::move(loaded);
 }
 
 void PredicatesIndexCache::add_predicate(uint64_t predicate_index) {
@@ -82,11 +67,7 @@ size_t PredicatesIndexCache::get_predicate_k2tree_size(
 }
 
 void PredicatesIndexCache::dump_to_stream(std::ostream &ofs) {
-  std::vector<unsigned long> predicates_ids;
-  for (auto it = predicates_map.begin(); it != predicates_map.end(); it++) {
-    predicates_ids.push_back(it->first);
-  }
-  std::sort(predicates_ids.begin(), predicates_ids.end());
+  auto &predicates_ids = metadata.get_ids_vector();
 
   std::vector<unsigned long> tree_offsets;
 
