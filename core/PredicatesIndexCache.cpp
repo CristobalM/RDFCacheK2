@@ -5,13 +5,10 @@
 #include <fstream>
 #include <sstream>
 
-
 #include "PredicatesIndexCache.hpp"
 
 #include "predicates_index_cache.pb.h"
 #include "serialization_util.hpp"
-
-PredicatesIndexCache::PredicatesIndexCache() {}
 
 bool PredicatesIndexCache::has_predicate(uint64_t predicate_index) {
   return predicates_map.find(predicate_index) != predicates_map.end();
@@ -63,32 +60,33 @@ std::vector<unsigned long> PredicatesIndexCache::get_predicates_ids() {
 }
 
 PredicatesIndexCache::PredicatesIndexCache(
-    std::unordered_map<uint64_t, std::unique_ptr<K2TreeMixed>> &&predicates_map)
-    : predicates_map(std::move(predicates_map)) {}
+    std::unordered_map<uint64_t, std::unique_ptr<K2TreeMixed>> &&predicates_map,
+    PredicatesCacheMetadata &&metadata)
+    : predicates_map(std::move(predicates_map)), metadata(std::move(metadata)) {
+}
 
 PredicatesIndexCache::predicates_map_t &
 PredicatesIndexCache::get_predicates_map() {
   return predicates_map;
 }
 
-
-void PredicatesIndexCache::calculate_sizes(){
-  for(auto it = predicates_map.begin(); it != predicates_map.end(); it++){
+void PredicatesIndexCache::calculate_sizes() {
+  for (auto it = predicates_map.begin(); it != predicates_map.end(); it++) {
     k2tree_sizes[it->first] = it->second->measure_in_memory_size().total_bytes;
   }
 }
 
-size_t PredicatesIndexCache::get_predicate_k2tree_size(uint64_t predicate_index) const{
+size_t PredicatesIndexCache::get_predicate_k2tree_size(
+    uint64_t predicate_index) const {
   return k2tree_sizes.at(predicate_index);
 }
 
-void PredicatesIndexCache::dump_to_stream(std::ostream &ofs){
+void PredicatesIndexCache::dump_to_stream(std::ostream &ofs) {
   std::vector<unsigned long> predicates_ids;
-  for(auto it = predicates_map.begin(); it != predicates_map.end(); it++){
+  for (auto it = predicates_map.begin(); it != predicates_map.end(); it++) {
     predicates_ids.push_back(it->first);
   }
   std::sort(predicates_ids.begin(), predicates_ids.end());
-
 
   std::vector<unsigned long> tree_offsets;
 
@@ -98,11 +96,11 @@ void PredicatesIndexCache::dump_to_stream(std::ostream &ofs){
 
   auto begin_metadata = ofs.tellp();
 
-  for(size_t i = 0; i < predicates_ids.size(); i++){
+  for (size_t i = 0; i < predicates_ids.size(); i++) {
     ofs.write(metadata_unit_zeros.data(), 28);
   }
 
-  for(auto predicate_id: predicates_ids){
+  for (auto predicate_id : predicates_ids) {
     auto &k2tree = *predicates_map[predicate_id];
     auto start_offset = ofs.tellp();
     k2tree.write_to_ostream(ofs);
@@ -113,44 +111,54 @@ void PredicatesIndexCache::dump_to_stream(std::ostream &ofs){
 
   ofs.seekp(begin_metadata);
 
-  assert(predicates_ids.size()+1 == tree_offsets.size());
+  assert(predicates_ids.size() + 1 == tree_offsets.size());
 
-  for(size_t i = 0; i < predicates_ids.size(); i++){
+  for (size_t i = 0; i < predicates_ids.size(); i++) {
     write_u64(ofs, predicates_ids[i]);
     write_u64(ofs, tree_offsets[i]);
-    write_u64(ofs, tree_offsets[i+1] - tree_offsets[i]);
+    write_u64(ofs, tree_offsets[i + 1] - tree_offsets[i]);
     write_u32(ofs, 0); // TODO: write right value of the priority
   }
 
-  ofs.seekp(tree_offsets[tree_offsets.size() - 1]); // put stream pointer at the end
+  ofs.seekp(
+      tree_offsets[tree_offsets.size() - 1]); // put stream pointer at the end
 }
 
-struct DeserializedMetadata{
-  uint64_t predicate_id;
-  uint64_t tree_offset;
-  uint64_t tree_size;
-  uint32_t priority;
-};
+PredicatesIndexCache PredicatesIndexCache::from_stream(std::istream &is) {
+  std::unordered_map<uint64_t, std::unique_ptr<K2TreeMixed>> k2tree_map_result;
 
-PredicatesIndexCache PredicatesIndexCache::from_stream(std::istream &ifs){
-   std::unordered_map<uint64_t, std::unique_ptr<K2TreeMixed>> k2tree_map_result;
+  auto metadata = PredicatesCacheMetadata(is);
 
-   auto predicates_qty = read_u32(ifs);
+  const auto &metadata_map = metadata.get_map();
 
-   std::vector<DeserializedMetadata> metadata;
+  for (auto predicate_id : metadata.get_ids_vector()) {
+    k2tree_map_result[predicate_id] =
+        std::make_unique<K2TreeMixed>(K2TreeMixed::read_from_istream(is));
+  }
 
-   for(size_t i = 0; i < predicates_qty; i++){
-     DeserializedMetadata current;
-     current.predicate_id = read_u64(ifs);
-     current.tree_offset = read_u64(ifs);
-     current.tree_size = read_u64(ifs);
-     current.priority = read_u32(ifs);
-     metadata.push_back(current);
-   }
+  return PredicatesIndexCache(std::move(k2tree_map_result),
+                              std::move(metadata));
+}
 
-   for(size_t i = 0; i < predicates_qty; i++){
-    k2tree_map_result[metadata[i].predicate_id] = std::make_unique<K2TreeMixed>(K2TreeMixed::read_from_istream(ifs));
-   }
+PredicatesIndexCache PredicatesIndexCache::from_stream_subset(
+    std::istream &is, const std::vector<uint64_t> &predicates_to_fetch) {
+  std::unordered_map<uint64_t, std::unique_ptr<K2TreeMixed>> k2tree_map_result;
 
-   return PredicatesIndexCache(std::move(k2tree_map_result));
+  auto metadata = PredicatesCacheMetadata(is);
+
+  const auto &metadata_map = metadata.get_map();
+
+  for (auto predicate_id : predicates_to_fetch) {
+    if (metadata_map.find(predicate_id) == metadata_map.end())
+      throw std::runtime_error("Can't find predicate_id " +
+                               std::to_string(predicate_id) +
+                               " on predicates map");
+    auto predicate_metadata = metadata_map.at(predicate_id);
+    is.seekg(predicate_metadata.tree_offset);
+    k2tree_map_result[predicate_id] =
+        std::make_unique<K2TreeMixed>(K2TreeMixed::read_from_istream(is));
+  }
+
+  return PredicatesIndexCache(std::move(k2tree_map_result),
+                              std::move(metadata));
 }

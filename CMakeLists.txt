@@ -27,6 +27,7 @@ add_definitions(-DLIGHT_FIELDS)
 
 set(CORE_SOURCE_FILES
         core/K2Tree.cpp
+        core/PredicatesCacheMetadata.cpp
         core/PredicatesIndexCache.cpp
         core/PredicatesIndexCacheBuilder.cpp
         core/serialization_util.cpp

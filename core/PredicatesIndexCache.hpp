@@ -7,13 +7,13 @@
 
 #include <condition_variable>
 #include <memory>
-#include <mutex>
 #include <unordered_map>
-
 
 #include <request_msg.pb.h>
 
 #include "K2TreeMixed.hpp"
+
+#include "PredicatesCacheMetadata.hpp"
 
 class PredicatesIndexCache {
 public:
@@ -25,10 +25,12 @@ private:
 
   std::unordered_map<uint64_t, size_t> k2tree_sizes;
 
+  PredicatesCacheMetadata metadata;
+
 public:
-  PredicatesIndexCache();
   PredicatesIndexCache(
-      std::unordered_map<uint64_t, std::unique_ptr<K2TreeMixed>> &&k2tree_map);
+      std::unordered_map<uint64_t, std::unique_ptr<K2TreeMixed>> &&k2tree_map,
+      PredicatesCacheMetadata &&metadata);
 
   void wait_workers();
 
@@ -47,12 +49,12 @@ public:
   void calculate_sizes();
   size_t get_predicate_k2tree_size(uint64_t predicate_index) const;
 
-
   void dump_to_stream(std::ostream &ofs);
 
   static PredicatesIndexCache from_stream(std::istream &ifs);
-
+  static PredicatesIndexCache
+  from_stream_subset(std::istream &ifs,
+                     const std::vector<uint64_t> &predicates_to_fetch);
 };
-
 
 #endif // RDFCACHEK2_PREDICATESINDEXCACHE_HPP
