@@ -21,15 +21,17 @@ public:
       std::unordered_map<uint64_t, std::unique_ptr<K2TreeMixed>>;
 
 private:
+  PredicatesCacheMetadata metadata;
   predicates_map_t predicates_map;
 
   std::unordered_map<uint64_t, size_t> k2tree_sizes;
 
-  PredicatesCacheMetadata metadata;
 
 public:
+  PredicatesIndexCache();
+  explicit PredicatesIndexCache(std::unordered_map<uint64_t, std::unique_ptr<K2TreeMixed>> &&predicates_map);
   PredicatesIndexCache(
-      std::unordered_map<uint64_t, std::unique_ptr<K2TreeMixed>> &&k2tree_map,
+      std::unordered_map<uint64_t, std::unique_ptr<K2TreeMixed>> &&predicates_map,
       PredicatesCacheMetadata &&metadata);
 
   void wait_workers();

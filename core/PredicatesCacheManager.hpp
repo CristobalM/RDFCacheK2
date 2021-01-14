@@ -9,6 +9,7 @@
 #include "NaiveDynamicStringDictionary.hpp"
 #include "PredicatesIndexCache.hpp"
 #include "RDFTriple.hpp"
+#include "PredicatesIndexCacheBuilder.hpp"
 #include <memory>
 #include <string>
 

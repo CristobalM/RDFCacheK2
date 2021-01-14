@@ -10,6 +10,11 @@
 #include "predicates_index_cache.pb.h"
 #include "serialization_util.hpp"
 
+
+PredicatesCacheMetadata build_metadata_from_predicates_map(
+  std::unordered_map<uint64_t, std::unique_ptr<K2TreeMixed>> &predicates_map);
+
+
 bool PredicatesIndexCache::has_predicate(uint64_t predicate_index) {
   return predicates_map.find(predicate_index) != predicates_map.end();
 }
@@ -47,7 +52,16 @@ std::vector<unsigned long> PredicatesIndexCache::get_predicates_ids() {
 PredicatesIndexCache::PredicatesIndexCache(
     std::unordered_map<uint64_t, std::unique_ptr<K2TreeMixed>> &&predicates_map,
     PredicatesCacheMetadata &&metadata)
-    : predicates_map(std::move(predicates_map)), metadata(std::move(metadata)) {
+    :  metadata(std::move(metadata)),
+    predicates_map(std::move(predicates_map)) {
+}
+
+PredicatesIndexCache::PredicatesIndexCache(){}
+
+
+PredicatesIndexCache::PredicatesIndexCache(
+  std::unordered_map<uint64_t, std::unique_ptr<K2TreeMixed>> &&predicates_map)
+: predicates_map(std::move(predicates_map)){
 }
 
 PredicatesIndexCache::predicates_map_t &
@@ -110,8 +124,6 @@ PredicatesIndexCache PredicatesIndexCache::from_stream(std::istream &is) {
 
   auto metadata = PredicatesCacheMetadata(is);
 
-  const auto &metadata_map = metadata.get_map();
-
   for (auto predicate_id : metadata.get_ids_vector()) {
     k2tree_map_result[predicate_id] =
         std::make_unique<K2TreeMixed>(K2TreeMixed::read_from_istream(is));
@@ -143,3 +155,5 @@ PredicatesIndexCache PredicatesIndexCache::from_stream_subset(
   return PredicatesIndexCache(std::move(k2tree_map_result),
                               std::move(metadata));
 }
+
+
