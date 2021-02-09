@@ -16,7 +16,7 @@ struct DataOne {
 };
 
 TEST(k2tree_tests, scan_test_1) {
-  K2Tree k2Tree(32, 128);
+  K2Tree k2Tree(32, 256);
 
   for (int i = 0; i < 100; i++) {
     for (int j = 0; j < 100; j++) {

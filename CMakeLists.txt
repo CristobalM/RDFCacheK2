@@ -30,13 +30,14 @@ set(CORE_SOURCE_FILES
         core/PredicatesCacheMetadata.cpp
         core/PredicatesIndexCache.cpp
         core/PredicatesIndexCacheBuilder.cpp
-        core/serialization_util.cpp
         core/PredicatesCacheManager.cpp
         core/NaiveDynamicStringDictionary.cpp
         core/ResultTable.cpp
         core/EmptyISDManager.cpp
         core/block_serialization.cpp
         core/K2TreeMixed.cpp
+        core/CacheSettings.cpp
+        core/InMemoryCacheSettings.cpp
         )
 
 set(PROC_SOURCE_FILES
@@ -54,6 +55,8 @@ set(GRAPH_RESULT_CACHING_FILE
         gresults-caching/LRUCacheReplacement.cpp
         gresults-caching/cache_result/ExistingCacheResult.cpp
         gresults-caching/cache_result/NonExistingCacheResult.cpp
+        gresults-caching/LRU/LRUQueue.cpp
+        gresults-caching/LRUCacheReplacement.cpp
 )
 
         
@@ -82,7 +85,7 @@ set(PROTO_MESSAGES
 
 set(PROTO_MESSAGES_PATH ${CMAKE_SOURCE_DIR}/proto/generated)
 
-set(INCLUDES memory core network proc ${PROTO_MESSAGES_PATH} ${CMAKE_SOURCE_DIR}/gresults-caching)
+set(INCLUDES memory core network proc algorithms utils ${PROTO_MESSAGES_PATH} ${CMAKE_SOURCE_DIR}/gresults-caching)
 
 set(K2TREE_PATH ${CMAKE_SOURCE_DIR}/lib/c-k2tree-dyn)
 
@@ -142,10 +145,12 @@ add_library(Proc STATIC ${PROC_SOURCE_FILES})
 
 add_library(CppBase64 ${LIB_CPPBASE64_PATH}/base64.cpp)
 
+add_library(Utils utils/serialization_util.cpp)
+
 add_dependencies(Proc CppBase64)
 
 # add_dependencies(RDFCacheK2 _k2tree_merged_noalloc)
-add_dependencies(RDFCacheK2 k2dyn)
+add_dependencies(RDFCacheK2 k2dyn Utils)
 
 #add_dependencies(RDFCacheK2_GR RDFCacheK2)
 
@@ -166,6 +171,7 @@ set(BASE_LIBS
         ${Protobuf_LIBRARIES}
         CSD
         cds
+        Utils
         )
         
 set(PROC_LIBS
@@ -174,6 +180,7 @@ set(PROC_LIBS
         cds
         pthread
         CppBase64
+        Utils
         )
 
 set(DEFAULT_LIBS
@@ -186,6 +193,7 @@ set(DEFAULT_LIBS
         ${Protobuf_LIBRARIES}
         CSD
         cds
+        Utils
         )
 
 
@@ -220,6 +228,18 @@ target_link_libraries(print_sd ${PROC_LIBS})
 add_executable(base64_transform scripts/base64_transform.cpp)
 target_include_directories(base64_transform PUBLIC ${LIB_CPPBASE64_PATH})
 target_link_libraries(base64_transform ${PROC_LIBS})
+
+add_executable(external_sort scripts/external_sort.cpp)
+target_include_directories(external_sort PUBLIC ${INCLUDES})
+target_link_libraries(external_sort pthread Utils)
+
+add_executable(convert_nt_to_binary scripts/convert_nt_to_binary.cpp)
+target_include_directories(convert_nt_to_binary PUBLIC ${INCLUDES})
+target_link_libraries(convert_nt_to_binary ${PROC_LIBS} ntparser )
+
+add_executable(extract_triples_binary scripts/extract_triples_binary.cpp)
+target_include_directories(extract_triples_binary PUBLIC ${INCLUDES})
+target_link_libraries(extract_triples_binary ${PROC_LIBS} ntparser )
 
 
 add_executable(four_sided_queue_example example/four_sided_queue_example.cpp)
@@ -261,6 +281,12 @@ target_link_libraries(query_proc_tests ${DEFAULT_LIBS} ${PROC_LIBS} ${GTEST_BOTH
 add_executable(test_sd_builder test/test_sd_builder.cpp)
 target_link_libraries(test_sd_builder ${PROC_LIBS} ${GTEST_BOTH_LIBRARIES} pthread)
 
+add_executable(cache_replacement_test test/cache_replacement_test.cpp)
+target_link_libraries(cache_replacement_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} pthread)
+
+add_executable(test_external_sort test/test_external_sort.cpp)
+target_link_libraries(test_external_sort ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} pthread)
+
 
 add_test(NAME serialization_test COMMAND ./serialization_test)
 add_test(NAME k2tree_serialization_test COMMAND ./k2tree_serialization_test)
@@ -269,7 +295,10 @@ add_test(NAME four_sided_queue_test COMMAND ./four_sided_queue_test)
 add_test(NAME k2tree_tests COMMAND ./k2tree_tests)
 add_test(NAME result_table_test COMMAND ./result_table_test)
 add_test(NAME k2tree_mixed_test COMMAND ./k2tree_mixed_test)
+add_test(NAME query_proc_tests COMMAND ./query_proc_tests)
 add_test(NAME test_sd_builder COMMAND ./test_sd_builder)
+add_test(NAME cache_replacement_test COMMAND ./cache_replacement_test)
+add_test(NAME test_external_sort COMMAND ./test_external_sort)
 endif()
 
 

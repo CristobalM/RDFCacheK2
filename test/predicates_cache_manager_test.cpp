@@ -14,4 +14,5 @@ TEST(predicates_cache_manager_test, test1) {
   pcm.add_triple(RDFTripleResource(RDFResource("subject1", RDF_TYPE_IRI),
                                    RDFResource("predicate1", RDF_TYPE_IRI),
                                    RDFResource("object1", RDF_TYPE_LITERAL)));
+
 }

@@ -1,0 +1,407 @@
+#ifndef _EXTERNAL_SORT_HPP_
+#define _EXTERNAL_SORT_HPP_
+
+#include <algorithm>
+#include <cstdio>
+#include <filesystem>
+#include <fstream>
+#include <list>
+#include <memory>
+#include <queue>
+#include <regex>
+#include <sstream>
+#include <string>
+#include <vector>
+#include <unordered_set>
+
+
+#include "ParallelWorker.hpp"
+#include "serialization_util.hpp"
+
+struct TripleValue{
+  uint64_t first;
+  uint64_t second;
+  uint64_t third;
+
+  TripleValue(){}
+
+  TripleValue(
+    uint64_t first, 
+    uint64_t second, 
+    uint64_t third
+    ) : 
+    first(first),
+    second(second),
+    third(third) {}
+
+  TripleValue(std::ifstream &file) {
+    read_from_file(file);
+  }
+
+  void read_from_file(std::ifstream &file){
+    first = read_u64(file);
+    second = read_u64(file);
+    third = read_u64(file);
+  }
+
+  void write_to_file(std::ofstream &file) const {
+    write_u64(file, first);
+    write_u64(file, second);
+    write_u64(file, third);
+  }
+};
+
+struct FileData{
+  uint64_t size;
+  uint64_t current_triple;
+
+  TripleValue read_triple(std::ifstream &file){
+    auto triple = TripleValue(file);
+    current_triple++;
+    return triple;
+  }
+
+  bool finished(){
+    return current_triple >= size;
+  }
+};
+
+using pair_tvalue_int = std::pair<TripleValue, int>;
+
+
+
+template <typename Comparator> struct PairComp {
+  bool operator()(const pair_tvalue_int &lhs, const pair_tvalue_int &rhs) {
+    return !Comparator()(lhs.first, rhs.first);
+  }
+};
+
+template <typename Comparator>
+static void parallel_sort(std::vector<TripleValue> &data, int max_workers,
+                          unsigned long segment_size,
+                          Comparator &comparator) {
+
+  std::vector<int> offsets = {0};
+  std::unordered_set<int> offsets_set;
+  unsigned long acc_size = sizeof(TripleValue);
+  for(int i = 1; i < static_cast<int>(data.size()); i++ ){
+    acc_size += sizeof(TripleValue);
+    if(acc_size >= segment_size){
+      offsets.push_back(i);
+      offsets_set.insert(i);
+      acc_size = 0;
+    }
+  }
+  offsets.push_back(data.size());
+  offsets_set.insert(data.size());
+
+  int parts = offsets.size() -1;
+  int workers = std::min(max_workers, parts);
+  if (workers == 1) {
+    std::sort(data.begin(), data.end(), comparator);
+    return;
+  }
+
+  ParallelWorkerPool pool(workers);
+
+  for(int i = 0; i < parts; i++){
+    pool.add_task([i, &offsets, &data, &comparator](){
+      std::sort(data.begin()+offsets[i], data.begin() + offsets[i+1], comparator);
+    });
+  }
+
+  pool.stop_all_workers();
+  pool.wait_workers();
+
+  std::vector<TripleValue> result;
+
+  std::priority_queue<pair_tvalue_int, std::vector<pair_tvalue_int>, PairComp<Comparator>> pqueue;
+
+  for(int i = 0; i < parts; i++){
+    pqueue.push({data[offsets[i]], offsets[i]});
+  }
+
+  while(!pqueue.empty()){
+    auto &current = pqueue.top();
+    result.push_back(current.first);
+    int next = current.second + 1;
+    pqueue.pop();
+    if(offsets_set.find(next) != offsets_set.end()){
+      continue;
+    }
+    pqueue.push({data[next], next});
+  }
+
+  data = std::move(result);
+  
+}
+
+template <typename Comparator>
+static void create_file_part(
+  const std::string &input_filename_base,
+   const std::string &tmp_dir,
+  int workers, // workers,
+  std::vector<char> &buffer_out,
+  Comparator &comparator,
+  unsigned long &accumulated_size,
+  std::vector<TripleValue> &data,
+  int &current_file_index,
+  std::vector<std::string> &filenames,
+  unsigned long segment_size
+){
+  accumulated_size = 0;
+  auto filename =
+      (std::filesystem::path(tmp_dir) /
+        std::filesystem::path(input_filename_base + "-p" +
+                              std::to_string(current_file_index++)))
+          .string();
+  std::ofstream ofs(filename, std::ios::out | std::ios::binary);
+  ofs.rdbuf()->pubsetbuf(buffer_out.data(), buffer_out.size());
+  filenames.push_back(filename);
+  // std::sort(data.begin(), data.end(), comparator);
+  parallel_sort(data, workers, segment_size, comparator);
+  uint64_t size = data.size();
+  write_u64(ofs, size);
+  for (auto &triple : data) {
+    write_u64(ofs, triple.first);
+    write_u64(ofs, triple.second);
+    write_u64(ofs, triple.third);
+  }
+  data.clear();
+}
+
+template <typename Comparator>
+static std::vector<std::string>
+split_file(const std::string &input_filename, const std::string &tmp_dir,
+           unsigned long memory_budget,
+           int workers,
+           std::vector<char> &buffer_in, std::vector<char> &buffer_out,
+           unsigned long segment_size,
+           Comparator &comparator) {
+
+  std::vector<std::string> filenames;
+  std::ifstream input_file(input_filename, std::ios::in | std::ios::binary);
+
+  input_file.rdbuf()->pubsetbuf(buffer_in.data(), buffer_in.size());
+
+  int current_file_index = 0;
+  unsigned long accumulated_size = 0;
+
+  std::vector<TripleValue> data;
+
+  FileData filedata{};
+  filedata.size = read_u64(input_file);
+  filedata.current_triple = 0;
+
+  while(!filedata.finished()){
+    auto triple = filedata.read_triple(input_file);
+    if (accumulated_size >= memory_budget/3) {
+      create_file_part(input_filename, tmp_dir, workers, buffer_out, comparator, accumulated_size, data, current_file_index, filenames, segment_size);
+    }
+    data.push_back(triple);
+    accumulated_size += sizeof(TripleValue);
+  }
+  if(accumulated_size > 0)
+    create_file_part(input_filename, tmp_dir, workers, buffer_out, comparator, accumulated_size, data, current_file_index, filenames, segment_size);
+  return filenames;
+}
+
+
+
+std::string concatenate_filenames(const std::vector<std::string> &filenames) {
+  std::stringstream ss;
+  for (const auto &filename : filenames) {
+    auto filename_relative =
+        std::filesystem::path(filename).filename().string();
+    // std::replace(filename_relative.begin(), filename_relative.end(), '/',
+    // ''):
+    ss << "_" << filename_relative;
+  }
+  return ss.str();
+}
+
+static inline bool fill_with_file(std::list<TripleValue> &data_block,
+                           std::unique_ptr<std::ifstream> &input_file,
+                           FileData &filedata,
+                           unsigned long block_size) {
+  std::string line;
+  unsigned long accumulated_size = 0;
+  while (accumulated_size < block_size) {
+    if(filedata.finished()){
+      input_file = nullptr;
+      break;
+    }
+    accumulated_size += sizeof(TripleValue);
+    data_block.push_back(filedata.read_triple(*input_file));
+  }
+  return !data_block.empty();
+}
+
+
+
+template <typename Comparator>
+static void
+block_update(int index, std::vector<std::list<TripleValue>> &data,
+             std::vector<std::unique_ptr<std::ifstream>> &opened_files,
+             std::vector<FileData> &files_data,
+             std::priority_queue<pair_tvalue_int, std::vector<pair_tvalue_int>,
+                                 PairComp<Comparator>> &pqueue,
+             unsigned long block_size) {
+  if (data[index].empty() && opened_files[index]) {
+    if (!fill_with_file(data[index], opened_files[index], files_data[index], block_size))
+      return;
+  } else if (data[index].empty()) {
+    return;
+  }
+  auto current_str = data[index].front();
+  pqueue.push({std::move(current_str), index});
+  data[index].pop_front();
+}
+
+template <typename Comparator>
+static std::string
+merge_pass(const std::vector<std::string> &filenames, int start, int end,
+           const std::string &tmp_dir, unsigned long block_size,
+           std::vector<std::vector<char>> &buffers, Comparator &) {
+
+  std::vector<std::unique_ptr<std::ifstream>> opened_files;
+
+  auto result_template = (std::filesystem::path(tmp_dir) / "m_XXXXXX").string();
+  auto mut_fname_template = std::vector<char>(result_template.size() + 1);
+  std::copy(result_template.begin(), result_template.end(),
+            mut_fname_template.data());
+  mut_fname_template[result_template.size()] = '\0';
+  int created = mkstemp(mut_fname_template.data());
+  auto result_filename =
+      std::string(mut_fname_template.begin(), mut_fname_template.end());
+  if (!created)
+    throw std::runtime_error("couldn't generate tmp file with name " +
+                             result_filename);
+  std::ofstream ofs(result_filename, std::ios::out | std::ios::binary);
+
+  ofs.rdbuf()->pubsetbuf(buffers[buffers.size() - 1].data(),
+                         buffers[buffers.size() - 1].size());
+
+  std::priority_queue<pair_tvalue_int, std::vector<pair_tvalue_int>,
+                      PairComp<Comparator>>
+      pqueue;
+
+  for (int i = start; i < end; i++) {
+    opened_files.push_back(
+        std::make_unique<std::ifstream>(filenames[i], std::ios::in | std::ios::binary));
+
+    opened_files.back()->rdbuf()->pubsetbuf(buffers[i - start].data(),
+                                            buffers[i - start].size());
+  }
+
+  std::vector<std::list<TripleValue>> data;
+
+  std::vector<FileData> files_data;
+
+  std::string line;
+  for (auto &file : opened_files) {
+    unsigned long accumulated_size = 0;
+
+    FileData current_file_data;
+    current_file_data.size = read_u64(*file);
+    current_file_data.current_triple = 0;
+
+    std::list<TripleValue> current_block;
+    while (accumulated_size < block_size) {
+      if(current_file_data.finished()){
+        file = nullptr;
+        break;
+      }
+      auto triple = current_file_data.read_triple(*file);
+
+      accumulated_size += sizeof(TripleValue);
+
+      current_block.push_back(triple);
+    }
+    data.push_back(std::move(current_block));
+    files_data.push_back(current_file_data);
+  }
+
+  uint64_t total_size = 0;
+  for(auto &fdata: files_data){
+    total_size += fdata.size;
+  }
+
+  for (int i = 0; i < static_cast<int>(data.size()); i++) {
+    block_update(i, data, opened_files, files_data, pqueue, block_size);
+  }
+
+  write_u64(ofs, total_size);
+
+  while (!pqueue.empty()) {
+    auto &current = pqueue.top();
+    int index = current.second;
+    current.first.write_to_file(ofs);
+    pqueue.pop();
+    block_update(index, data, opened_files, files_data, pqueue, block_size);
+  }
+
+  ofs.flush();
+  ofs.close();
+
+  
+  for (int i = start; i < end; i++) {
+    remove(filenames.at(i).c_str());
+  }
+  
+
+  return result_filename;
+}
+
+template <typename Comparator>
+static std::vector<std::string> merge_bottom_up(
+    const std::vector<std::string> &filenames, const std::string &tmp_dir,
+    int max_files, unsigned long block_size,
+    std::vector<std::vector<char>> &buffers, Comparator &comparator) {
+  std::vector<std::string> result_filenames;
+
+  int level_passes = (filenames.size() / max_files) +
+                     (filenames.size() % max_files != 0 ? 1 : 0);
+  for (int current_pass = 0; current_pass < level_passes; current_pass++) {
+    auto pass_file = merge_pass(
+        filenames, current_pass * max_files,
+        std::min<int>((current_pass + 1) * max_files, filenames.size()),
+        tmp_dir, block_size, buffers, comparator);
+    result_filenames.push_back(pass_file);
+  }
+
+  return result_filenames;
+}
+
+static inline std::vector<std::vector<char>> init_buffers(int max_files,
+                                                   unsigned long block_size) {
+  std::vector<std::vector<char>> buffers;
+  for (int i = 0; i < max_files + 1; i++) {
+    buffers.push_back(std::vector<char>(block_size));
+  }
+  return buffers;
+}
+
+template <typename Comparator>
+void external_sort_triples(const std::string &input_filename,
+                   const std::string &output_filename,
+                   const std::string &tmp_dir, int workers, int max_files,
+                   unsigned long memory_budget, unsigned long block_size,
+                   unsigned long segment_size,
+                   Comparator comparator) {
+
+  auto buffers = init_buffers(max_files, block_size);
+
+  auto current_filenames =
+      split_file(input_filename, tmp_dir, memory_budget, workers, buffers[0],
+                 buffers[max_files], segment_size, comparator);
+
+
+  while (current_filenames.size() > 1) {
+    current_filenames = merge_bottom_up(current_filenames, tmp_dir, max_files,
+                                        block_size, buffers, comparator);
+  }
+  rename(current_filenames[0].c_str(), output_filename.c_str());
+}
+
+#endif /* _EXTERNAL_SORT_HPP_ */

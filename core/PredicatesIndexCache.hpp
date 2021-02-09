@@ -53,10 +53,16 @@ public:
 
   void dump_to_stream(std::ostream &ofs);
 
+  void load_single_predicate(std::istream &ifs, uint64_t predicate_index);
+  void discard_in_memory_predicate(uint64_t predicate_index);
+
   static PredicatesIndexCache from_stream(std::istream &ifs);
   static PredicatesIndexCache
   from_stream_subset(std::istream &ifs,
                      const std::vector<uint64_t> &predicates_to_fetch);
+
+
+    
 };
 
 #endif // RDFCACHEK2_PREDICATESINDEXCACHE_HPP

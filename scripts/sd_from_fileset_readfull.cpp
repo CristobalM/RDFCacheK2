@@ -55,9 +55,10 @@ int main(int argc, char **argv) {
 
   ifs.close();
 
-  std::ofstream ofs(parsed.output_file, std::ofstream::binary);
+  std::ofstream ofs(parsed.output_file, std::ios::out | std::ios::binary | std::ios::trunc);
 
   sd->save(ofs);
+  ofs.close();
 
   return 0;
 }

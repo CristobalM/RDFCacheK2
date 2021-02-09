@@ -10,6 +10,7 @@
 
 #include <sparql_tree.pb.h>
 
+#include <CacheReplacement.hpp>
 #include <Cache.hpp>
 #include <EmptyISDManager.hpp>
 #include <PredicatesCacheManager.hpp>
@@ -19,6 +20,8 @@
 #include <StringDictionaryHASHRPDACBlocks.h>
 
 #include <SDBuilder.hpp>
+
+#include <InMemoryCacheSettings.hpp>
 
 static std::vector<std::vector<std::string>>
 translate_table(ResultTable &input_table, Cache &cache) {
@@ -56,7 +59,7 @@ TEST(QueryProcTests, test_bgp_node_1) {
   first_object->set_basic_type(proto_msg::BasicType::STRING);
   first_object->set_term_value("obj1");
 
-  auto pcm = std::make_unique<PredicatesCacheManager>(
+  auto pcm = std::make_shared<PredicatesCacheManager>(
       std::make_unique<EmptyISDManager>());
   pcm->add_triple(RDFTripleResource(RDFResource("<subj1>", RDF_TYPE_IRI),
                                     RDFResource("<pred1>", RDF_TYPE_IRI),
@@ -68,7 +71,13 @@ TEST(QueryProcTests, test_bgp_node_1) {
                                     RDFResource("<pred1>", RDF_TYPE_IRI),
                                     RDFResource("obj1", RDF_TYPE_LITERAL)));
 
-  Cache cache(std::move(pcm));
+
+  
+  Cache cache(
+    pcm,
+    CacheReplacement::STRATEGY::LRU,
+    100'000,
+    static_cast<std::unique_ptr<ICacheSettings>>(std::make_unique<InMemoryCacheSettings>("")));
 
   auto result = cache.run_query(tree);
 
@@ -124,7 +133,7 @@ TEST(QueryProcTests, test_bgp_node_2) {
   second_object->set_basic_type(proto_msg::BasicType::STRING);
   second_object->set_term_value("?y");
 
-  auto pcm = std::make_unique<PredicatesCacheManager>(
+  auto pcm = std::make_shared<PredicatesCacheManager>(
       std::make_unique<EmptyISDManager>());
   pcm->add_triple(RDFTripleResource(RDFResource("<subj1>", RDF_TYPE_IRI),
                                     RDFResource("<pred1>", RDF_TYPE_IRI),
@@ -152,7 +161,12 @@ TEST(QueryProcTests, test_bgp_node_2) {
                                     RDFResource("<pred2>", RDF_TYPE_IRI),
                                     RDFResource("obj2", RDF_TYPE_LITERAL)));
 
-  Cache cache(std::move(pcm));
+  Cache cache(
+    pcm,
+    CacheReplacement::STRATEGY::LRU,
+    100'000,
+    static_cast<std::unique_ptr<ICacheSettings>>(std::make_unique<InMemoryCacheSettings>("")));
+
 
   auto result = cache.run_query(tree);
 
@@ -227,7 +241,7 @@ TEST(QueryProcTests, test_bgp_node_3) {
   third_object->set_basic_type(proto_msg::BasicType::STRING);
   third_object->set_term_value("?z");
 
-  auto pcm = std::make_unique<PredicatesCacheManager>(
+  auto pcm = std::make_shared<PredicatesCacheManager>(
       std::make_unique<EmptyISDManager>());
   pcm->add_triple(RDFTripleResource(RDFResource("<subj1>", RDF_TYPE_IRI),
                                     RDFResource("<pred1>", RDF_TYPE_IRI),
@@ -263,7 +277,11 @@ TEST(QueryProcTests, test_bgp_node_3) {
                                     RDFResource("<pred3>", RDF_TYPE_IRI),
                                     RDFResource("obj1", RDF_TYPE_LITERAL)));
 
-  Cache cache(std::move(pcm));
+  Cache cache(
+    pcm,
+    CacheReplacement::STRATEGY::LRU,
+    100'000,
+    static_cast<std::unique_ptr<ICacheSettings>>(std::make_unique<InMemoryCacheSettings>("")));
 
   auto result = cache.run_query(tree);
 
@@ -448,7 +466,7 @@ TEST(QueryProcTests, test_bgp_node_4_compact_dicts) {
   ASSERT_TRUE(union_set.find(union_set.size()) != union_set.end());
   ASSERT_TRUE(union_set.find(union_set.size() + 1) == union_set.end());
 
-  auto pcm = std::make_unique<PredicatesCacheManager>(std::move(sdent));
+  auto pcm = std::make_shared<PredicatesCacheManager>(std::move(sdent));
 
   auto predicate_str = iris_data[iris_data.size() / 2 + 1];
 
@@ -472,7 +490,12 @@ TEST(QueryProcTests, test_bgp_node_4_compact_dicts) {
 
   ASSERT_EQ(pcm->get_dyn_dicts().size(), 0);
 
-  Cache cache(std::move(pcm));
+
+  Cache cache(
+    pcm,
+    CacheReplacement::STRATEGY::LRU,
+    100'000,
+    static_cast<std::unique_ptr<ICacheSettings>>(std::make_unique<InMemoryCacheSettings>("")));
 
   proto_msg::SparqlTree tree;
   auto *project_node = tree.mutable_root()->mutable_project_node();

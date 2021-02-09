@@ -12,12 +12,15 @@
 #include "PredicatesIndexCacheBuilder.hpp"
 #include <memory>
 #include <string>
+#include <istream>
 
 class PredicatesCacheManager {
   std::unique_ptr<ISDManager> isd_manager;
   std::unique_ptr<PredicatesIndexCache> predicates_index;
 
   NaiveDynamicStringDictionary extra_dicts;
+
+  std::unique_ptr<std::istream> cache_input_stream;
 
 public:
   double measured_time_sd_lookup;
@@ -29,7 +32,7 @@ public:
       std::unique_ptr<ISDManager> &&isd_manager,
       std::unique_ptr<PredicatesIndexCache> &&predicates_index);
 
-  explicit PredicatesCacheManager(std::unique_ptr<ISDManager> &&isd_manager);
+   PredicatesCacheManager(std::unique_ptr<ISDManager> &&isd_manager);
 
   void add_triple(RDFTripleResource &rdf_triple);
   void add_triple(RDFTripleResource &&rdf_triple);
@@ -57,6 +60,9 @@ public:
   std::string extract_resource(unsigned long index) const;
 
   PredicatesIndexCache &get_predicates_index_cache();
+
+  std::istream &get_input_stream();
+  void set_input_stream(std::unique_ptr<std::istream> &&istream);
 
 private:
   uint64_t get_resource_index(const RDFResource &resource) const;

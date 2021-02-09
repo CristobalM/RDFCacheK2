@@ -14,6 +14,8 @@
 #include "QueryResult.hpp"
 #include "CacheReplacement.hpp"
 
+#include "ICacheSettings.hpp"
+
 struct CacheStats {
   int allocated_u32s;
   int nodes_count;
@@ -31,11 +33,15 @@ class Cache {
 
   CacheReplacement cache_replacement;
 
+  std::unique_ptr<ICacheSettings> settings;
+
 public:
   using cm_t = std::shared_ptr<PredicatesCacheManager>;
   Cache(std::shared_ptr<PredicatesCacheManager> &cache_manager, 
   CacheReplacement::STRATEGY cache_replacement_strategy, 
-  size_t memory_budget_bytes);
+  size_t memory_budget_bytes,
+  std::unique_ptr<ICacheSettings> &&settings
+  );
 
   CacheStats cache_stats();
 

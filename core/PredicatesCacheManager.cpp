@@ -13,6 +13,10 @@ PredicatesCacheManager::PredicatesCacheManager(
       predicates_index(std::move(predicates_index)),
       measured_time_sd_lookup(0) {}
 
+PredicatesCacheManager::PredicatesCacheManager(
+    std::unique_ptr<ISDManager> &&isd_manager)
+    : PredicatesCacheManager(std::move(isd_manager),
+                             std::make_unique<PredicatesIndexCache>()) {}
 uint64_t
 PredicatesCacheManager::get_resource_index(const RDFResource &resource) const {
   unsigned long index;
@@ -25,6 +29,9 @@ PredicatesCacheManager::get_resource_index(const RDFResource &resource) const {
     break;
   case RDF_TYPE_LITERAL:
     index = isd_manager->literals_index(resource.value);
+    break;
+  default:
+    index = NORESULT;
     break;
   }
 
@@ -109,11 +116,6 @@ PredicatesIndexCache &PredicatesCacheManager::get_predicates_cache() {
   return *predicates_index;
 }
 
-PredicatesCacheManager::PredicatesCacheManager(
-    std::unique_ptr<ISDManager> &&isd_manager)
-    : PredicatesCacheManager(std::move(isd_manager),
-                             std::make_unique<PredicatesIndexCache>()) {}
-
 void PredicatesCacheManager::save_all(const std::string &fname) {
   predicates_index->dump_to_file("k2ts-" + fname);
   isd_manager->save("iris-sd-" + fname, "blanks-sd-" + fname,
@@ -185,6 +187,17 @@ bool PredicatesCacheManager::has_triple(
   return k2tree.has(subject_index, object_index);
 }
 
-PredicatesIndexCache &PredicatesCacheManager::get_predicates_index_cache(){
+PredicatesIndexCache &PredicatesCacheManager::get_predicates_index_cache() {
   return *predicates_index;
+}
+
+std::istream &PredicatesCacheManager::get_input_stream() {
+  if (!cache_input_stream)
+    throw std::runtime_error("PredicatesCacheManager input stream was not set");
+  return *cache_input_stream;
+}
+
+void PredicatesCacheManager::set_input_stream(
+    std::unique_ptr<std::istream> &&istream) {
+  cache_input_stream = std::move(istream);
 }

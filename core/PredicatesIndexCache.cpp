@@ -10,10 +10,8 @@
 #include "predicates_index_cache.pb.h"
 #include "serialization_util.hpp"
 
-
 PredicatesCacheMetadata build_metadata_from_predicates_map(
-  std::unordered_map<uint64_t, std::unique_ptr<K2TreeMixed>> &predicates_map);
-
+    std::unordered_map<uint64_t, std::unique_ptr<K2TreeMixed>> &predicates_map);
 
 bool PredicatesIndexCache::has_predicate(uint64_t predicate_index) {
   return predicates_map.find(predicate_index) != predicates_map.end();
@@ -52,17 +50,14 @@ std::vector<unsigned long> PredicatesIndexCache::get_predicates_ids() {
 PredicatesIndexCache::PredicatesIndexCache(
     std::unordered_map<uint64_t, std::unique_ptr<K2TreeMixed>> &&predicates_map,
     PredicatesCacheMetadata &&metadata)
-    :  metadata(std::move(metadata)),
-    predicates_map(std::move(predicates_map)) {
+    : metadata(std::move(metadata)), predicates_map(std::move(predicates_map)) {
 }
 
-PredicatesIndexCache::PredicatesIndexCache(){}
-
+PredicatesIndexCache::PredicatesIndexCache() {}
 
 PredicatesIndexCache::PredicatesIndexCache(
-  std::unordered_map<uint64_t, std::unique_ptr<K2TreeMixed>> &&predicates_map)
-: predicates_map(std::move(predicates_map)){
-}
+    std::unordered_map<uint64_t, std::unique_ptr<K2TreeMixed>> &&predicates_map)
+    : predicates_map(std::move(predicates_map)) {}
 
 PredicatesIndexCache::predicates_map_t &
 PredicatesIndexCache::get_predicates_map() {
@@ -156,4 +151,19 @@ PredicatesIndexCache PredicatesIndexCache::from_stream_subset(
                               std::move(metadata));
 }
 
+void PredicatesIndexCache::load_single_predicate(std::istream &ifs,
+                                                 uint64_t predicate_index) {
+  if (metadata.get_map().find(predicate_index) == metadata.get_map().end()) {
+    throw std::runtime_error("PredicatesIndexCache::load_single_predicate: "
+                             "Couldn't find predicate_index " +
+                             std::to_string(predicate_index) +
+                             " on metadata map");
+  }
+  auto predicate_metadata = metadata.get_map().at(predicate_index);
+  ifs.seekg(predicate_metadata.tree_offset);
+  predicates_map[predicate_metadata.predicate_id] = std::make_unique<K2TreeMixed>(K2TreeMixed::read_from_istream(ifs));
+}
 
+void PredicatesIndexCache::discard_in_memory_predicate(uint64_t predicate_index){
+  predicates_map.erase(predicate_index);
+}

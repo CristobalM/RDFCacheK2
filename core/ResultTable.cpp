@@ -124,7 +124,7 @@ void ResultTable::left_inner_join_with(unsigned long left_column_index,
 
 std::list<std::vector<unsigned long>> &ResultTable::get_data() { return data; }
 
-size_t ResultTable::rows_size() const { return data.size(); };
+size_t ResultTable::rows_size() const { return data.size(); }
 
 unsigned long ResultTable::get_actual_index(unsigned long virtual_index) {
   for (size_t i = 0; i < headers.size(); i++)

@@ -24,3 +24,7 @@ uint32_t PredicatesCacheMetadata::get_predicates_count() const {
 const std::unordered_map<uint64_t, PredicateMetadata> & PredicatesCacheMetadata::get_map(){
   return metadata_map;
 }
+
+const std::vector<uint64_t> &PredicatesCacheMetadata::get_ids_vector(){
+  return predicates_ids;
+}
