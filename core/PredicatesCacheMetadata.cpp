@@ -1,10 +1,26 @@
 #include "PredicatesCacheMetadata.hpp"
 #include "serialization_util.hpp"
 
+
+void PredicateMetadata::write_to_ostream(std::ostream &os){
+    write_u64(os, predicate_id);
+    write_u64(os, tree_offset);
+    write_u64(os, tree_size);
+    write_u32(os, priority);
+}
+
+
 PredicatesCacheMetadata::PredicatesCacheMetadata(){}
 
+PredicatesCacheMetadata::PredicatesCacheMetadata(
+    std::unordered_map<uint64_t, PredicateMetadata> &&metadata_map,
+    std::vector<uint64_t> &&predicates_ids
+    ) :
+    metadata_map(std::move(metadata_map)),
+    predicates_ids(std::move(predicates_ids)) {}
+
 PredicatesCacheMetadata::PredicatesCacheMetadata(std::istream &is){
-  auto predicates_count = read_u32(is);
+  auto predicates_count = read_u64(is);
 
   for(size_t i = 0; i < predicates_count; i++){
     PredicateMetadata current;

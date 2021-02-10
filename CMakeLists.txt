@@ -30,6 +30,9 @@ set(CORE_SOURCE_FILES
         core/PredicatesCacheMetadata.cpp
         core/PredicatesIndexCache.cpp
         core/PredicatesIndexCacheBuilder.cpp
+        core/PredicatesIndexFileBuilder.cpp
+        core/PredicatesIndexCacheMD.cpp
+        core/PredicatesIndexCacheMDFile.cpp
         core/PredicatesCacheManager.cpp
         core/NaiveDynamicStringDictionary.cpp
         core/ResultTable.cpp
@@ -204,8 +207,8 @@ target_include_directories(validate_sd_from_nt PUBLIC ${LIB_CPPBASE64_PATH})
 target_link_libraries(validate_sd_from_nt ${BASE_LIBS} CppBase64 ntparser stdc++fs)
 
 
-add_executable(index_by_k2tree_with_sd scripts/index_by_k2tree_with_sd.cpp)
-target_link_libraries(index_by_k2tree_with_sd ${BASE_LIBS} ntparser )
+#add_executable(index_by_k2tree_with_sd scripts/index_by_k2tree_with_sd.cpp)
+#target_link_libraries(index_by_k2tree_with_sd ${BASE_LIBS} ntparser )
 
 
 add_executable(print_k2trees scripts/print_k2trees.cpp)
@@ -287,6 +290,9 @@ target_link_libraries(cache_replacement_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRAR
 add_executable(test_external_sort test/test_external_sort.cpp)
 target_link_libraries(test_external_sort ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} pthread)
 
+add_executable(predicates_metadata_serialization_test test/predicates_metadata_serialization_test.cpp)
+target_link_libraries(predicates_metadata_serialization_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} pthread)
+
 
 add_test(NAME serialization_test COMMAND ./serialization_test)
 add_test(NAME k2tree_serialization_test COMMAND ./k2tree_serialization_test)
@@ -299,6 +305,7 @@ add_test(NAME query_proc_tests COMMAND ./query_proc_tests)
 add_test(NAME test_sd_builder COMMAND ./test_sd_builder)
 add_test(NAME cache_replacement_test COMMAND ./cache_replacement_test)
 add_test(NAME test_external_sort COMMAND ./test_external_sort)
+add_test(NAME predicates_metadata_serialization_test COMMAND ./predicates_metadata_serialization_test)
 endif()
 
 

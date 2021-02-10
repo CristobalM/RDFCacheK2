@@ -33,6 +33,7 @@ public:
   PredicatesIndexCache(
       std::unordered_map<uint64_t, std::unique_ptr<K2TreeMixed>> &&predicates_map,
       PredicatesCacheMetadata &&metadata);
+  explicit PredicatesIndexCache(PredicatesCacheMetadata &&metadata);
 
   void wait_workers();
 

@@ -4,8 +4,8 @@
 
 
 PredicatesIndexCacheBuilder::PredicatesIndexCacheBuilder(
-    int worker_pool_size, unsigned long max_queue_size)
-    : worker_pool_size(worker_pool_size), max_queue_size(max_queue_size) {}
+    int worker_pool_size, unsigned long max_queue_size, K2TreeConfig config)
+    : worker_pool_size(worker_pool_size), max_queue_size(max_queue_size), config(std::move(config)) {}
 
 void PredicatesIndexCacheBuilder::insert_point(uint64_t subject_id,
                                                uint64_t predicate_id,
@@ -81,7 +81,7 @@ bool PredicatesIndexCacheBuilder::has_predicate(uint64_t predicate_index) {
 }
 
 void PredicatesIndexCacheBuilder::add_predicate(uint64_t predicate_index) {
-  predicates_map[predicate_index] = std::make_unique<K2TreeMixed>(32, 256, 10);
+  predicates_map[predicate_index] = std::make_unique<K2TreeMixed>(config.treedepth, config.max_node_count, config.cut_depth);
 }
 
 void PredicatesIndexCacheBuilder::finish() {

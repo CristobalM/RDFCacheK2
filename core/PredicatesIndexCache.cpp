@@ -59,6 +59,8 @@ PredicatesIndexCache::PredicatesIndexCache(
     std::unordered_map<uint64_t, std::unique_ptr<K2TreeMixed>> &&predicates_map)
     : predicates_map(std::move(predicates_map)) {}
 
+PredicatesIndexCache::PredicatesIndexCache(PredicatesCacheMetadata &&metadata) : metadata(std::move(metadata)) {}
+
 PredicatesIndexCache::predicates_map_t &
 PredicatesIndexCache::get_predicates_map() {
   return predicates_map;
@@ -82,7 +84,7 @@ void PredicatesIndexCache::dump_to_stream(std::ostream &ofs) {
 
   std::array<char, 28> metadata_unit_zeros{};
 
-  write_u32(ofs, predicates_ids.size());
+  write_u64(ofs, predicates_ids.size());
 
   auto begin_metadata = ofs.tellp();
 

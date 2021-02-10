@@ -7,7 +7,7 @@
 
 #include "ISDManager.hpp"
 #include "NaiveDynamicStringDictionary.hpp"
-#include "PredicatesIndexCache.hpp"
+#include "PredicatesIndexCacheMDFile.hpp"
 #include "RDFTriple.hpp"
 #include "PredicatesIndexCacheBuilder.hpp"
 #include <memory>
@@ -16,11 +16,12 @@
 
 class PredicatesCacheManager {
   std::unique_ptr<ISDManager> isd_manager;
-  std::unique_ptr<PredicatesIndexCache> predicates_index;
+  std::unique_ptr<PredicatesIndexCacheMDFile> predicates_index;
 
   NaiveDynamicStringDictionary extra_dicts;
 
-  std::unique_ptr<std::istream> cache_input_stream;
+
+  K2TreeConfig k2tree_config;
 
 public:
   double measured_time_sd_lookup;
@@ -30,9 +31,11 @@ public:
 
   PredicatesCacheManager(
       std::unique_ptr<ISDManager> &&isd_manager,
-      std::unique_ptr<PredicatesIndexCache> &&predicates_index);
+      std::unique_ptr<PredicatesIndexCacheMDFile> &&predicates_index,
+      K2TreeConfig k2tree_config
+      );
 
-   PredicatesCacheManager(std::unique_ptr<ISDManager> &&isd_manager);
+   PredicatesCacheManager(std::unique_ptr<ISDManager> &&isd_manager, K2TreeConfig k2tree_config, const std::string &fname);
 
   void add_triple(RDFTripleResource &rdf_triple);
   void add_triple(RDFTripleResource &&rdf_triple);
@@ -43,26 +46,24 @@ public:
   bool has_triple(const RDFTripleResource &rdf_triple) const;
 
   void
-  replace_index_cache(std::unique_ptr<PredicatesIndexCache> &&predicates_index);
+  replace_index_cache(std::unique_ptr<PredicatesIndexCacheMDFile> &&predicates_index);
 
-  PredicatesIndexCache &get_predicates_cache();
+  PredicatesIndexCacheMDFile &get_predicates_cache();
 
   K2TreeMixed &get_tree_by_predicate_name(const std::string &predicate_name);
   K2TreeMixed &get_tree_by_predicate_index(unsigned long index);
 
   NaiveDynamicStringDictionary &get_dyn_dicts();
 
-  void save_all(const std::string &fname);
+  void save_all(const std::string &fname, const std::string &dirname);
 
   unsigned long get_iri_index(const std::string &value);
   unsigned long get_literal_index(const std::string &value);
   unsigned long get_blank_index(const std::string &value);
   std::string extract_resource(unsigned long index) const;
 
-  PredicatesIndexCache &get_predicates_index_cache();
+  PredicatesIndexCacheMDFile &get_predicates_index_cache();
 
-  std::istream &get_input_stream();
-  void set_input_stream(std::unique_ptr<std::istream> &&istream);
 
 private:
   uint64_t get_resource_index(const RDFResource &resource) const;

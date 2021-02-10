@@ -5,18 +5,25 @@
 #include "PredicatesCacheManager.hpp"
 #include <StringDictionary.h>
 #include <chrono>
+#include <filesystem>
+#include <fstream>
+
+namespace fs = std::filesystem;
 
 PredicatesCacheManager::PredicatesCacheManager(
     std::unique_ptr<ISDManager> &&isd_manager,
-    std::unique_ptr<PredicatesIndexCache> &&predicates_index)
+    std::unique_ptr<PredicatesIndexCacheMDFile> &&predicates_index,
+    K2TreeConfig k2tree_config)
     : isd_manager(std::move(isd_manager)),
       predicates_index(std::move(predicates_index)),
-      measured_time_sd_lookup(0) {}
+      k2tree_config(std::move(k2tree_config)),
+      measured_time_sd_lookup(0)
+       {}
 
 PredicatesCacheManager::PredicatesCacheManager(
-    std::unique_ptr<ISDManager> &&isd_manager)
+    std::unique_ptr<ISDManager> &&isd_manager, K2TreeConfig k2tree_config, const std::string &fname)
     : PredicatesCacheManager(std::move(isd_manager),
-                             std::make_unique<PredicatesIndexCache>()) {}
+                             std::make_unique<PredicatesIndexCacheMDFile>(fname, k2tree_config), k2tree_config) {}
 uint64_t
 PredicatesCacheManager::get_resource_index(const RDFResource &resource) const {
   unsigned long index;
@@ -86,11 +93,7 @@ void PredicatesCacheManager::add_triple(RDFTripleResource &rdf_triple) {
   handle_not_found(subject_id, rdf_triple.subject);
   handle_not_found(predicate_id, rdf_triple.predicate);
   handle_not_found(object_id, rdf_triple.object);
-
-  if (!predicates_index->has_predicate(predicate_id)) {
-    predicates_index->add_predicate(predicate_id);
-  }
-  predicates_index->get_k2tree(predicate_id).insert(subject_id, object_id);
+  predicates_index->insert_point(subject_id, predicate_id, object_id);
 }
 
 void PredicatesCacheManager::add_triple(RDFTripleResource &rdf_triple,
@@ -112,14 +115,17 @@ void PredicatesCacheManager::add_triple(RDFTripleResource &rdf_triple,
   builder.insert_point(subject_id, predicate_id, object_id);
 }
 
-PredicatesIndexCache &PredicatesCacheManager::get_predicates_cache() {
-  return *predicates_index;
-}
+void PredicatesCacheManager::save_all(const std::string &fname, const std::string &dirname) {
 
-void PredicatesCacheManager::save_all(const std::string &fname) {
-  predicates_index->dump_to_file("k2ts-" + fname);
-  isd_manager->save("iris-sd-" + fname, "blanks-sd-" + fname,
-                    "literals-sd-" + fname);
+  // auto predicates_fname_path = fs::path(dirname)  / fs::path("k2ts-" + fname);
+  auto iris_fname_path = fs::path(dirname)  / fs::path("iris-sd-" + fname);
+  auto blanks_fname_path = fs::path(dirname)  / fs::path("blanks-sd-" + fname);
+  auto literals_fname_path = fs::path(dirname)  / fs::path("literals-sd-" + fname);
+
+  predicates_index->sync_file();
+
+  isd_manager->save(iris_fname_path.string(), blanks_fname_path.string(),
+                    literals_fname_path.string());
 }
 
 NaiveDynamicStringDictionary &PredicatesCacheManager::get_dyn_dicts() {
@@ -127,7 +133,7 @@ NaiveDynamicStringDictionary &PredicatesCacheManager::get_dyn_dicts() {
 }
 
 void PredicatesCacheManager::replace_index_cache(
-    std::unique_ptr<PredicatesIndexCache> &&predicates_index) {
+    std::unique_ptr<PredicatesIndexCacheMDFile> &&predicates_index) {
   this->predicates_index = std::move(predicates_index);
 }
 
@@ -138,12 +144,12 @@ K2TreeMixed &PredicatesCacheManager::get_tree_by_predicate_name(
   if (index == NORESULT)
     throw std::runtime_error("Predicate with name " + predicate_name +
                              " was not found in predicates cache manager");
-  return predicates_index->get_k2tree(index);
+  return predicates_index->fetch_k2tree(index);
 }
 
 K2TreeMixed &
 PredicatesCacheManager::get_tree_by_predicate_index(unsigned long index) {
-  return predicates_index->get_k2tree(index);
+  return predicates_index->fetch_k2tree(index);
 }
 
 unsigned long PredicatesCacheManager::get_iri_index(const std::string &value) {
@@ -183,21 +189,11 @@ bool PredicatesCacheManager::has_triple(
   auto predicate_index = get_resource_index(rdf_triple.predicate);
   auto object_index = get_resource_index(rdf_triple.object);
 
-  auto &k2tree = predicates_index->get_k2tree(predicate_index);
+  auto &k2tree = predicates_index->fetch_k2tree(predicate_index);
   return k2tree.has(subject_index, object_index);
 }
 
-PredicatesIndexCache &PredicatesCacheManager::get_predicates_index_cache() {
+PredicatesIndexCacheMDFile &PredicatesCacheManager::get_predicates_index_cache() {
   return *predicates_index;
 }
 
-std::istream &PredicatesCacheManager::get_input_stream() {
-  if (!cache_input_stream)
-    throw std::runtime_error("PredicatesCacheManager input stream was not set");
-  return *cache_input_stream;
-}
-
-void PredicatesCacheManager::set_input_stream(
-    std::unique_ptr<std::istream> &&istream) {
-  cache_input_stream = std::move(istream);
-}

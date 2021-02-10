@@ -86,9 +86,14 @@ int main(int argc, char **argv) {
         ifs_iris, ifs_blanks, ifs_literals);
   }
 
-  PredicatesCacheManager cache_manager(std::move(isd_manager));
+  K2TreeConfig config;
+  config.cut_depth = 10;
+  config.max_node_count = 256;
+  config.treedepth = 32;
+
+  PredicatesCacheManager cache_manager(std::move(isd_manager), config);
   PredicatesIndexCacheBuilder pcbuilder(parsed.workers_pool_size,
-                                        parsed.max_insertion_queue_size);
+                                        parsed.max_insertion_queue_size, config);
 
   PCMBuilderHolder pcmb_holder(cache_manager, pcbuilder);
   std::ifstream ifs_nt(parsed.nt_file);
@@ -98,6 +103,8 @@ int main(int argc, char **argv) {
 
   std::cout << "Saving to disk..." << std::endl;
 
+  
+  
   cache_manager.get_predicates_cache().dump_to_file(parsed.output_k2tree);
   cache_manager.get_dyn_dicts().save(parsed.output_k2tree +
                                      "_extra_resources.bin");

@@ -6,7 +6,7 @@
 #include "PredicatesIndexCache.hpp"
 #include "MapOfQueues.hpp"
 #include "RDFTriple.hpp"
-
+#include "K2TreeMixed.hpp"
 
 class PredicatesIndexCacheBuilder {
   PredicatesIndexCache::predicates_map_t predicates_map;
@@ -16,9 +16,11 @@ class PredicatesIndexCacheBuilder {
   unsigned long max_queue_size;
   double measured_insertion_time;
 
+  K2TreeConfig config;
+
 public:
   PredicatesIndexCacheBuilder(int worker_pool_size,
-                              unsigned long max_queue_size);
+                              unsigned long max_queue_size, K2TreeConfig config);
 
   void insert_point(uint64_t subject_id, uint64_t predicate_id,
                     uint64_t object_id);

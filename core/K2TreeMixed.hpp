@@ -17,6 +17,13 @@ extern "C" {
 struct k2node;
 struct k2qstate;
 
+
+struct K2TreeConfig{
+  uint32_t treedepth;
+  uint32_t max_node_count;
+  uint32_t cut_depth;
+};
+
 class K2TreeMixed {
   struct k2node *root;
   std::unique_ptr<struct k2qstate> st;
@@ -27,6 +34,8 @@ public:
   K2TreeMixed(uint32_t treedepth, uint32_t max_node_count, uint32_t cut_depth);
   K2TreeMixed(struct k2node *root, uint32_t treedepth, uint32_t max_node_count,
               uint32_t cut_depth);
+
+  K2TreeMixed(K2TreeConfig config);
 
   K2TreeMixed(const K2TreeMixed &other) = delete;
   K2TreeMixed &operator=(const K2TreeMixed &other) = delete;

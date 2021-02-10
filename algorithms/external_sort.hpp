@@ -5,6 +5,8 @@
 #include <cstdio>
 #include <filesystem>
 #include <fstream>
+#include <istream>
+#include <ostream>
 #include <list>
 #include <memory>
 #include <queue>
@@ -34,17 +36,17 @@ struct TripleValue{
     second(second),
     third(third) {}
 
-  TripleValue(std::ifstream &file) {
+  TripleValue(std::istream &file) {
     read_from_file(file);
   }
 
-  void read_from_file(std::ifstream &file){
+  void read_from_file(std::istream &file){
     first = read_u64(file);
     second = read_u64(file);
     third = read_u64(file);
   }
 
-  void write_to_file(std::ofstream &file) const {
+  void write_to_file(std::ostream &file) const {
     write_u64(file, first);
     write_u64(file, second);
     write_u64(file, third);
@@ -55,7 +57,7 @@ struct FileData{
   uint64_t size;
   uint64_t current_triple;
 
-  TripleValue read_triple(std::ifstream &file){
+  TripleValue read_triple(std::istream &file){
     auto triple = TripleValue(file);
     current_triple++;
     return triple;
@@ -206,19 +208,6 @@ split_file(const std::string &input_filename, const std::string &tmp_dir,
   return filenames;
 }
 
-
-
-std::string concatenate_filenames(const std::vector<std::string> &filenames) {
-  std::stringstream ss;
-  for (const auto &filename : filenames) {
-    auto filename_relative =
-        std::filesystem::path(filename).filename().string();
-    // std::replace(filename_relative.begin(), filename_relative.end(), '/',
-    // ''):
-    ss << "_" << filename_relative;
-  }
-  return ss.str();
-}
 
 static inline bool fill_with_file(std::list<TripleValue> &data_block,
                            std::unique_ptr<std::ifstream> &input_file,

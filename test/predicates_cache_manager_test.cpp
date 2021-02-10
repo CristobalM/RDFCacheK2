@@ -10,7 +10,12 @@
 #include <RDFTriple.hpp>
 
 TEST(predicates_cache_manager_test, test1) {
-  PredicatesCacheManager pcm(std::make_unique<EmptyISDManager>());
+  K2TreeConfig config;
+  config.treedepth = 32;
+  config.max_node_count = 256;
+  config.cut_depth = 10;
+  std::string fname = "predicates.bin";
+  PredicatesCacheManager pcm(std::make_unique<EmptyISDManager>(), config, fname);
   pcm.add_triple(RDFTripleResource(RDFResource("subject1", RDF_TYPE_IRI),
                                    RDFResource("predicate1", RDF_TYPE_IRI),
                                    RDFResource("object1", RDF_TYPE_LITERAL)));

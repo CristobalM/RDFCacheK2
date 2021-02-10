@@ -22,8 +22,12 @@ K2TreeMixed::K2TreeMixed(struct k2node *root, uint32_t treedepth,
   init_k2qstate(st.get(), treedepth, max_node_count, cut_depth);
 }
 
+K2TreeMixed::K2TreeMixed(K2TreeConfig config)
+: K2TreeMixed(config.treedepth, config.max_node_count, config.cut_depth)
+{}
+
 void K2TreeMixed::clean_up() {
-  if (root) {
+  if (root && st) {
     free_rec_k2node(root, 0, st->cut_depth);
   }
   root = nullptr;
