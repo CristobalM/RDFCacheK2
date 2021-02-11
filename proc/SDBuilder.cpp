@@ -1,7 +1,7 @@
 
+#include <algorithm>
 #include <string>
 #include <vector>
-#include <algorithm>
 
 #include "SDBuilder.hpp"
 
@@ -46,11 +46,11 @@ std::unique_ptr<StringDictionary> SDBuilder::build(std::istream &input_stream) {
 
   auto buffered_data = put_in_buffer(std::move(data_holder), bytes_used);
 
-
   std::unique_ptr<StringDictionary> string_dictionary;
 
-  // this is deleted internally by string dictionaries at some point, don't delete here!
-  // that is a bad practice that must be changed in the string dictionaries lib
+  // this is deleted internally by string dictionaries at some point, don't
+  // delete here! that is a bad practice that must be changed in the string
+  // dictionaries lib
   auto *it = dynamic_cast<IteratorDictString *>(
       new IteratorDictStringPlain(buffered_data.data, buffered_data.size));
 
@@ -88,7 +88,6 @@ BufferedData put_in_buffer(std::vector<std::string> &&input_vec,
                            const size_t total_size) {
   auto *data = new unsigned char[total_size]();
 
-  
   unsigned long right_pos_exclusive = total_size - 1;
   const long last_i = input_vec.size() - 1;
   for (long i = last_i; i >= 0; i--) {
@@ -98,7 +97,7 @@ BufferedData put_in_buffer(std::vector<std::string> &&input_vec,
 
     memcpy(data + left_pos_inclusive, current_str.data(), current_str.size());
 
-    right_pos_exclusive -= current_str.size()+1;
+    right_pos_exclusive -= current_str.size() + 1;
 
     input_vec.pop_back();
   }

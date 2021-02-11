@@ -51,10 +51,7 @@ struct RDFTripleResource {
         object(std::move(object)) {}
   RDFTripleResource(RDFResource &subject, RDFResource &predicate,
                     RDFResource &object)
-      : subject(subject), predicate(predicate),
-        object(object) {}
-
-  
+      : subject(subject), predicate(predicate), object(object) {}
 };
 
 struct RDFTripleResourceReference {

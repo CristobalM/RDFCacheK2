@@ -2,17 +2,17 @@
 // Created by Cristobal Miranda, 2020
 //
 #include <cmath>
+#include <filesystem>
 #include <iostream>
 #include <memory>
 #include <random>
-#include <filesystem>
 
 #include <gtest/gtest.h>
 
 #include <sparql_tree.pb.h>
 
-#include <CacheReplacement.hpp>
 #include <Cache.hpp>
+#include <CacheReplacement.hpp>
 #include <EmptyISDManager.hpp>
 #include <PredicatesCacheManager.hpp>
 #include <RDFTriple.hpp>
@@ -26,9 +26,7 @@
 
 #include "cache_test_util.hpp"
 
-
 namespace fs = std::filesystem;
-
 
 static std::vector<std::vector<std::string>>
 translate_table(ResultTable &input_table, Cache &cache) {
@@ -80,13 +78,7 @@ TEST(QueryProcTests, test_bgp_node_1) {
                                     RDFResource("<pred1>", RDF_TYPE_IRI),
                                     RDFResource("obj1", RDF_TYPE_LITERAL)));
 
-
-  
-  Cache cache(
-    pcm,
-    CacheReplacement::STRATEGY::LRU,
-    100'000,
-    static_cast<std::unique_ptr<ICacheSettings>>(std::make_unique<InMemoryCacheSettings>("")));
+  Cache cache(pcm, CacheReplacement::STRATEGY::LRU, 100'000);
 
   auto result = cache.run_query(tree);
 
@@ -173,12 +165,7 @@ TEST(QueryProcTests, test_bgp_node_2) {
                                     RDFResource("<pred2>", RDF_TYPE_IRI),
                                     RDFResource("obj2", RDF_TYPE_LITERAL)));
 
-  Cache cache(
-    pcm,
-    CacheReplacement::STRATEGY::LRU,
-    100'000,
-    static_cast<std::unique_ptr<ICacheSettings>>(std::make_unique<InMemoryCacheSettings>("")));
-
+  Cache cache(pcm, CacheReplacement::STRATEGY::LRU, 100'000);
 
   auto result = cache.run_query(tree);
 
@@ -292,11 +279,7 @@ TEST(QueryProcTests, test_bgp_node_3) {
                                     RDFResource("<pred3>", RDF_TYPE_IRI),
                                     RDFResource("obj1", RDF_TYPE_LITERAL)));
 
-  Cache cache(
-    pcm,
-    CacheReplacement::STRATEGY::LRU,
-    100'000,
-    static_cast<std::unique_ptr<ICacheSettings>>(std::make_unique<InMemoryCacheSettings>("")));
+  Cache cache(pcm, CacheReplacement::STRATEGY::LRU, 100'000);
 
   auto result = cache.run_query(tree);
 
@@ -482,7 +465,6 @@ TEST(QueryProcTests, test_bgp_node_4_compact_dicts) {
   ASSERT_TRUE(union_set.find(union_set.size()) != union_set.end());
   ASSERT_TRUE(union_set.find(union_set.size() + 1) == union_set.end());
 
-
   std::string fname = "predicates.bin";
   build_cache_test_file(fname, {});
   auto pcm = std::make_shared<PredicatesCacheManager>(std::move(sdent), fname);
@@ -509,12 +491,7 @@ TEST(QueryProcTests, test_bgp_node_4_compact_dicts) {
 
   ASSERT_EQ(pcm->get_dyn_dicts().size(), 0);
 
-
-  Cache cache(
-    pcm,
-    CacheReplacement::STRATEGY::LRU,
-    100'000,
-    static_cast<std::unique_ptr<ICacheSettings>>(std::make_unique<InMemoryCacheSettings>("")));
+  Cache cache(pcm, CacheReplacement::STRATEGY::LRU, 100'000);
 
   proto_msg::SparqlTree tree;
   auto *project_node = tree.mutable_root()->mutable_project_node();
@@ -608,12 +585,12 @@ TEST(QueryProcTests, test_bgp_node_4_compact_dicts) {
 
   auto predicate_str3 = iris_data[iris_data.size() / 3 + 1];
 
-  for (unsigned long i = 0; i < iris_data.size()/2; i++) {
-      pcm2.add_triple(RDFTripleResource(
-    RDFResource(std::string(iris_data[i]), RDFResourceType::RDF_TYPE_IRI),
-    RDFResource(std::string(predicate_str3), RDFResourceType::RDF_TYPE_IRI),
-    RDFResource(std::string(literals_data[i]),
-                RDFResourceType::RDF_TYPE_LITERAL)));
+  for (unsigned long i = 0; i < iris_data.size() / 2; i++) {
+    pcm2.add_triple(RDFTripleResource(
+        RDFResource(std::string(iris_data[i]), RDFResourceType::RDF_TYPE_IRI),
+        RDFResource(std::string(predicate_str3), RDFResourceType::RDF_TYPE_IRI),
+        RDFResource(std::string(literals_data[i]),
+                    RDFResourceType::RDF_TYPE_LITERAL)));
   }
 
   auto *third_triple = bgp->mutable_triple()->Add();
@@ -632,30 +609,31 @@ TEST(QueryProcTests, test_bgp_node_4_compact_dicts) {
   third_object->set_basic_type(proto_msg::BasicType::STRING);
   third_object->set_term_value("?y");
 
-
   auto query_result_3 = cache.run_query(tree);
 
   auto transformed_data_3 =
       transform_table_to_string(query_result_3.table(), cache);
 
-  ASSERT_EQ(transformed_data_3.size(), iris_data.size()/2);
+  ASSERT_EQ(transformed_data_3.size(), iris_data.size() / 2);
 
   std::unordered_set<std::string> set_big;
   std::unordered_set<std::string> set_small;
 
-  for(const auto & row: transformed_data_2){
+  for (const auto &row : transformed_data_2) {
     std::stringstream ss;
-    for(const auto & s: row) ss << s;
+    for (const auto &s : row)
+      ss << s;
     set_big.insert(ss.str());
   }
 
-  for(const auto & row: transformed_data_3){
+  for (const auto &row : transformed_data_3) {
     std::stringstream ss;
-    for(const auto & s: row) ss << s;
+    for (const auto &s : row)
+      ss << s;
     set_small.insert(ss.str());
   }
 
-  for(const auto & s: set_small){
+  for (const auto &s : set_small) {
     ASSERT_TRUE(set_big.find(s) != set_big.end());
   }
   fs::remove(fname);

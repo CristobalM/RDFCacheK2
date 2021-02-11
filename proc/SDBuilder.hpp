@@ -22,11 +22,7 @@ public:
     HRPDACBlocks = 4,
   };
 
-  SDBuilder(
-    SDType sd_type,
-    bool base_64_data,
-    SDInput extra_input
-  );
+  SDBuilder(SDType sd_type, bool base_64_data, SDInput extra_input);
 
   std::unique_ptr<StringDictionary> build(std::istream &input_stream);
 

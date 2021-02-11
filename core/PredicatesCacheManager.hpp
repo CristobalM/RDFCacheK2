@@ -9,16 +9,15 @@
 #include "NaiveDynamicStringDictionary.hpp"
 #include "PredicatesIndexCacheMDFile.hpp"
 #include "RDFTriple.hpp"
+#include <istream>
 #include <memory>
 #include <string>
-#include <istream>
 
 class PredicatesCacheManager {
   std::unique_ptr<ISDManager> isd_manager;
   std::unique_ptr<PredicatesIndexCacheMDFile> predicates_index;
 
   NaiveDynamicStringDictionary extra_dicts;
-
 
   K2TreeConfig k2tree_config;
 
@@ -30,18 +29,18 @@ public:
 
   PredicatesCacheManager(
       std::unique_ptr<ISDManager> &&isd_manager,
-      std::unique_ptr<PredicatesIndexCacheMDFile> &&predicates_index
-      );
+      std::unique_ptr<PredicatesIndexCacheMDFile> &&predicates_index);
 
-   PredicatesCacheManager(std::unique_ptr<ISDManager> &&isd_manager, const std::string &fname);
+  PredicatesCacheManager(std::unique_ptr<ISDManager> &&isd_manager,
+                         const std::string &fname);
 
   void add_triple(RDFTripleResource &rdf_triple);
   void add_triple(RDFTripleResource &&rdf_triple);
 
   bool has_triple(const RDFTripleResource &rdf_triple) const;
 
-  void
-  replace_index_cache(std::unique_ptr<PredicatesIndexCacheMDFile> &&predicates_index);
+  void replace_index_cache(
+      std::unique_ptr<PredicatesIndexCacheMDFile> &&predicates_index);
 
   PredicatesIndexCacheMDFile &get_predicates_cache();
 
@@ -58,7 +57,6 @@ public:
   std::string extract_resource(unsigned long index) const;
 
   PredicatesIndexCacheMDFile &get_predicates_index_cache();
-
 
   uint64_t get_resource_index(const RDFResource &resource) const;
 

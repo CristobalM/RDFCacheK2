@@ -8,11 +8,11 @@
 #include <memory>
 #include <string>
 
-#include <request_msg.pb.h>
 #include <PredicatesCacheManager.hpp>
+#include <request_msg.pb.h>
 
-#include "QueryResult.hpp"
 #include "CacheReplacement.hpp"
+#include "QueryResult.hpp"
 
 #include "ICacheSettings.hpp"
 
@@ -33,24 +33,18 @@ class Cache {
 
   CacheReplacement cache_replacement;
 
-  std::unique_ptr<ICacheSettings> settings;
-
 public:
   using cm_t = std::shared_ptr<PredicatesCacheManager>;
-  Cache(std::shared_ptr<PredicatesCacheManager> &cache_manager, 
-  CacheReplacement::STRATEGY cache_replacement_strategy, 
-  size_t memory_budget_bytes,
-  std::unique_ptr<ICacheSettings> &&settings
-  );
+  Cache(std::shared_ptr<PredicatesCacheManager> &cache_manager,
+        CacheReplacement::STRATEGY cache_replacement_strategy,
+        size_t memory_budget_bytes);
 
   CacheStats cache_stats();
 
   QueryResult run_query(proto_msg::SparqlTree const &query_tree);
   std::string extract_resource(unsigned long index) const;
 
-  PredicatesCacheManager & get_pcm();
-  
-
+  PredicatesCacheManager &get_pcm();
 };
 
 #endif // RDFCACHEK2_CACHE_HPP

@@ -55,9 +55,7 @@ void LRUQueue::require_space(unsigned long space_required) {
   }
 }
 
-unsigned long LRUQueue::get_stats_erase_count(){
-  return stats_erase_count;
-}
-unsigned long LRUQueue::get_stats_retrieval_count(){
+unsigned long LRUQueue::get_stats_erase_count() { return stats_erase_count; }
+unsigned long LRUQueue::get_stats_retrieval_count() {
   return stats_retrieval_count;
 }

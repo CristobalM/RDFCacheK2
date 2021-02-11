@@ -64,7 +64,7 @@ set(GRAPH_RESULT_CACHING_FILE
 set(NETWORK_SOURCE_FILES
         network/CacheServer.cpp
         network/TCPServerConnection.cpp
-        #network/ServerTask.cpp
+        network/ServerTask.cpp
         network/CacheServerTaskProcessor.cpp
         network/ServerWorker.cpp
         network/Message.cpp
@@ -136,7 +136,7 @@ add_library(MemoryManager STATIC
         )
 
 add_library(RDFCacheK2 STATIC ${CORE_SOURCE_FILES} ${GRAPH_RESULT_CACHING_FILE})
-#add_library(RDFCacheK2_Network STATIC ${NETWORK_SOURCE_FILES})
+add_library(RDFCacheK2_Network STATIC ${NETWORK_SOURCE_FILES})
 #add_library(RDFCacheK2_GR STATIC ${GRAPH_RESULT_CACHING_FILE})
 
 add_library(ProtoMessages STATIC ${PROTO_MESSAGES})
@@ -186,7 +186,7 @@ set(PROC_LIBS
 
 set(DEFAULT_LIBS
         RDFCacheK2
-        #RDFCacheK2_Network
+        RDFCacheK2_Network
         k2dyn
         MemoryManager
         pthread
@@ -246,6 +246,11 @@ target_link_libraries(build_k2tree_index ${DEFAULT_LIBS})
 add_executable(print_k2tree_index scripts/print_k2tree_index.cpp)
 target_include_directories(print_k2tree_index PUBLIC ${INCLUDES})
 target_link_libraries(print_k2tree_index ${DEFAULT_LIBS} )
+
+
+add_executable(cache_server scripts/cache_server.cpp)
+target_include_directories(cache_server PUBLIC ${INCLUDES})
+target_link_libraries(cache_server ${DEFAULT_LIBS} )
 
 
 add_executable(four_sided_queue_example example/four_sided_queue_example.cpp)

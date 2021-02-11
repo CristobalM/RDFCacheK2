@@ -1,23 +1,21 @@
 #include <filesystem>
-#include <memory>
 #include <fstream>
+#include <memory>
 
 #include "PredicatesIndexCacheMDFile.hpp"
 
 namespace fs = std::filesystem;
 
-
-static std::unique_ptr<std::istream> load_file(const std::string &fname){
-  if(!fs::exists(fs::path(fname))){
+static std::unique_ptr<std::istream> load_file(const std::string &fname) {
+  if (!fs::exists(fs::path(fname))) {
     throw std::runtime_error("File " + fname + " doesn't exist");
   }
-  return std::make_unique<std::ifstream>(fname, std::ios::in | std::ios::binary);
+  return std::make_unique<std::ifstream>(fname,
+                                         std::ios::in | std::ios::binary);
 }
 
-PredicatesIndexCacheMDFile::PredicatesIndexCacheMDFile(
-    const std::string &fname)
-    : PredicatesIndexCacheMD(load_file(fname)),
-      fname(fname) {}
+PredicatesIndexCacheMDFile::PredicatesIndexCacheMDFile(const std::string &fname)
+    : PredicatesIndexCacheMD(load_file(fname)), fname(fname) {}
 
 PredicatesIndexCacheMDFile::PredicatesIndexCacheMDFile(
     PredicatesIndexCacheMDFile &&other) noexcept
@@ -73,14 +71,15 @@ void PredicatesIndexCacheMDFile::sync_file() {
       std::make_unique<std::ifstream>(fname, std::ios::binary | std::ios::in);
 }
 
-void PredicatesIndexCacheMDFile::discard_in_memory_predicate(uint64_t predicate_index) {
+void PredicatesIndexCacheMDFile::discard_in_memory_predicate(
+    uint64_t predicate_index) {
   PredicatesIndexCacheMD::discard_in_memory_predicate(predicate_index);
 }
 
-K2TreeConfig PredicatesIndexCacheMDFile::get_config(){
+K2TreeConfig PredicatesIndexCacheMDFile::get_config() {
   return PredicatesIndexCacheMD::get_config();
 }
 
-const std::vector<uint64_t> &PredicatesIndexCacheMDFile::get_predicates_ids(){
+const std::vector<uint64_t> &PredicatesIndexCacheMDFile::get_predicates_ids() {
   return PredicatesIndexCacheMD::get_predicates_ids();
 }

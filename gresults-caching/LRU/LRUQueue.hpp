@@ -1,22 +1,18 @@
 #ifndef _LRU_QUEUE_HPP_
 #define _LRU_QUEUE_HPP_
 
-#include <unordered_map>
 #include <list>
+#include <unordered_map>
 
 #include "LRUController.hpp"
 
-
-struct LRUElement{
+struct LRUElement {
   unsigned long id;
   unsigned long size;
-  LRUElement(unsigned long id, unsigned long size):
-  id(id),
-  size(size)
-  {}
+  LRUElement(unsigned long id, unsigned long size) : id(id), size(size) {}
 };
 
-class LRUQueue{
+class LRUQueue {
   std::list<LRUElement> lru_list;
   std::unordered_map<unsigned long, std::list<LRUElement>::iterator> lru_hm;
 
@@ -28,8 +24,7 @@ class LRUQueue{
   unsigned long stats_erase_count;
   unsigned long stats_retrieval_count;
 
-  public:
-
+public:
   explicit LRUQueue(LRUController &lru_controller);
 
   void hit_element(unsigned long id, unsigned long element_size);
@@ -37,10 +32,8 @@ class LRUQueue{
   unsigned long get_stats_erase_count();
   unsigned long get_stats_retrieval_count();
 
-  private:
-
+private:
   void require_space(unsigned long space_required);
-
 };
 
 #endif /* _LRU_QUEUE_HPP_ */

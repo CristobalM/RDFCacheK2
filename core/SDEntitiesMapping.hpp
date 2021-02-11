@@ -10,27 +10,6 @@
 #include <fstream>
 #include <memory>
 
-namespace {
-uint64_t _offset_index_cond(uint64_t index, uint64_t offset) {
-  if (index > 0)
-    return index + offset;
-  return 0;
-}
-
-std::string _pop_string_from_ucarr(unsigned char *data, size_t size) {
-  std::string result(reinterpret_cast<char *>(data), size);
-  delete[] data;
-  return result;
-}
-
-std::string _extract_from_sd(StringDictionary *sd, uint64_t index) {
-  unsigned int string_size;
-  unsigned char *data = sd->extract(index, &string_size);
-  return _pop_string_from_ucarr(data, string_size);
-}
-
-} // namespace
-
 template <class SDIRIS, class SDBlanks, class SDLiterals>
 class SDEntitiesMapping : public ISDManager {
   std::unique_ptr<StringDictionary> iris_dictionary;
@@ -38,8 +17,7 @@ class SDEntitiesMapping : public ISDManager {
   std::unique_ptr<StringDictionary> literals_dictionary;
 
 public:
-  SDEntitiesMapping(std::istream &iris_dict_ifs,
-                    std::istream &blanks_dict_ifs,
+  SDEntitiesMapping(std::istream &iris_dict_ifs, std::istream &blanks_dict_ifs,
                     std::istream &literals_dict_ifs)
       : iris_dictionary(SDIRIS::load(iris_dict_ifs)),
         blanks_dictionary(SDBlanks::load(blanks_dict_ifs)),
@@ -162,6 +140,25 @@ public:
   unsigned long last_id() override {
     return iris_dictionary->numElements() + blanks_dictionary->numElements() +
            literals_dictionary->numElements();
+  }
+
+private:
+  uint64_t _offset_index_cond(uint64_t index, uint64_t offset) {
+    if (index > 0)
+      return index + offset;
+    return 0;
+  }
+
+  std::string _pop_string_from_ucarr(unsigned char *data, size_t size) {
+    std::string result(reinterpret_cast<char *>(data), size);
+    delete[] data;
+    return result;
+  }
+
+  std::string _extract_from_sd(StringDictionary *sd, uint64_t index) {
+    unsigned int string_size;
+    unsigned char *data = sd->extract(index, &string_size);
+    return _pop_string_from_ucarr(data, string_size);
   }
 };
 

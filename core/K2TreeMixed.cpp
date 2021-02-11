@@ -23,8 +23,7 @@ K2TreeMixed::K2TreeMixed(struct k2node *root, uint32_t treedepth,
 }
 
 K2TreeMixed::K2TreeMixed(K2TreeConfig config)
-: K2TreeMixed(config.treedepth, config.max_node_count, config.cut_depth)
-{}
+    : K2TreeMixed(config.treedepth, config.max_node_count, config.cut_depth) {}
 
 void K2TreeMixed::clean_up() {
   if (root && st) {

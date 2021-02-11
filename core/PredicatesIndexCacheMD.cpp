@@ -3,14 +3,14 @@
 #include "PredicatesIndexCacheMD.hpp"
 #include <serialization_util.hpp>
 
-PredicatesIndexCacheMD::PredicatesIndexCacheMD(std::unique_ptr<std::istream> &&is)
+PredicatesIndexCacheMD::PredicatesIndexCacheMD(
+    std::unique_ptr<std::istream> &&is)
     : metadata(*is), is(std::move(is)), k2tree_config(metadata.get_config()) {}
 
-PredicatesIndexCacheMD::PredicatesIndexCacheMD(PredicatesIndexCacheMD &&other) noexcept
-: metadata(std::move(other.metadata)), is(std::move(other.is)), k2tree_config(other.k2tree_config)
-{
-  
-}
+PredicatesIndexCacheMD::PredicatesIndexCacheMD(
+    PredicatesIndexCacheMD &&other) noexcept
+    : metadata(std::move(other.metadata)), is(std::move(other.is)),
+      k2tree_config(other.k2tree_config) {}
 
 bool PredicatesIndexCacheMD::load_single_predicate(uint64_t predicate_index) {
   if (metadata.get_map().find(predicate_index) == metadata.get_map().end()) {
@@ -35,45 +35,49 @@ K2TreeMixed &PredicatesIndexCacheMD::fetch_k2tree(uint64_t predicate_index) {
   return *predicates[predicate_index];
 }
 
-bool PredicatesIndexCacheMD::has_predicate(uint64_t predicate_index){
-  return has_predicate_active(predicate_index) || has_predicate_stored(predicate_index);
+bool PredicatesIndexCacheMD::has_predicate(uint64_t predicate_index) {
+  return has_predicate_active(predicate_index) ||
+         has_predicate_stored(predicate_index);
 }
 
-bool PredicatesIndexCacheMD::has_predicate_active(uint64_t predicate_index){
+bool PredicatesIndexCacheMD::has_predicate_active(uint64_t predicate_index) {
   return predicates.find(predicate_index) != predicates.end();
 }
 
-bool PredicatesIndexCacheMD::has_predicate_stored(uint64_t predicate_index){
+bool PredicatesIndexCacheMD::has_predicate_stored(uint64_t predicate_index) {
   return metadata.get_map().find(predicate_index) != metadata.get_map().end();
 }
 
-void PredicatesIndexCacheMD::add_predicate(uint64_t predicate_index){
+void PredicatesIndexCacheMD::add_predicate(uint64_t predicate_index) {
   dirty_predicates.insert(predicate_index);
   predicates[predicate_index] = std::make_unique<K2TreeMixed>(k2tree_config);
   new_predicates.insert(predicate_index);
 }
 
 // TODO: fix to work with cache replacement
-void PredicatesIndexCacheMD::insert_point(uint64_t subject_index, uint64_t predicate_index, uint64_t object_index){
+void PredicatesIndexCacheMD::insert_point(uint64_t subject_index,
+                                          uint64_t predicate_index,
+                                          uint64_t object_index) {
   dirty_predicates.insert(predicate_index);
 
   auto predicate_active = has_predicate_active(predicate_index);
   auto predicate_stored = has_predicate_stored(predicate_index);
 
-  if(predicate_stored && !predicate_active){
+  if (predicate_stored && !predicate_active) {
     load_single_predicate(predicate_index);
-  }
-  else if(!predicate_stored && !predicate_active){
+  } else if (!predicate_stored && !predicate_active) {
     add_predicate(predicate_index);
   }
 
   predicates[predicate_index]->insert(subject_index, object_index);
 }
 
-// Dont use the same stream as the stored, create a new one and then replace it with this
-void PredicatesIndexCacheMD::sync_to_stream(std::ostream &os){
-  std::vector<uint64_t> all_predicates(new_predicates.begin(), new_predicates.end());
-  for(auto &it : metadata.get_map()){
+// Dont use the same stream as the stored, create a new one and then replace it
+// with this
+void PredicatesIndexCacheMD::sync_to_stream(std::ostream &os) {
+  std::vector<uint64_t> all_predicates(new_predicates.begin(),
+                                       new_predicates.end());
+  for (auto &it : metadata.get_map()) {
     all_predicates.push_back(it.first);
   }
 
@@ -84,27 +88,26 @@ void PredicatesIndexCacheMD::sync_to_stream(std::ostream &os){
 
   std::unordered_map<uint64_t, PredicateMetadata> new_metadata_map;
   auto metadata_start = os.tellp();
-  for(auto predicate_id : all_predicates){
+  for (auto predicate_id : all_predicates) {
     new_metadata_map[predicate_id] = PredicateMetadata{};
     new_metadata_map[predicate_id].write_to_ostream(os);
   }
 
-  for(auto predicate_id : all_predicates){
+  for (auto predicate_id : all_predicates) {
     auto &meta = new_metadata_map[predicate_id];
     meta.predicate_id = predicate_id;
     meta.tree_offset = os.tellp();
-    if(dirty_predicates.find(predicate_id) == dirty_predicates.end()){
+    if (dirty_predicates.find(predicate_id) == dirty_predicates.end()) {
       auto &current_md = metadata.get_map().at(predicate_id);
       meta.tree_size = current_md.tree_size;
-      
+
       is->seekg(current_md.tree_offset);
       {
         std::vector<char> buf(meta.tree_size);
         is->read(buf.data(), buf.size());
         os.write(buf.data(), buf.size());
       }
-    }
-    else{
+    } else {
       predicates[predicate_id]->write_to_ostream(os);
       auto end_pos = static_cast<uint64_t>(os.tellp());
       meta.tree_size = end_pos - meta.tree_offset;
@@ -114,27 +117,28 @@ void PredicatesIndexCacheMD::sync_to_stream(std::ostream &os){
   auto last_pos = os.tellp();
 
   os.seekp(metadata_start);
-  for(auto predicate_id : all_predicates){
+  for (auto predicate_id : all_predicates) {
     new_metadata_map[predicate_id].write_to_ostream(os);
   }
   os.seekp(last_pos);
 
-  metadata = PredicatesCacheMetadata(std::move(new_metadata_map), std::move(all_predicates), k2tree_config);
+  metadata = PredicatesCacheMetadata(std::move(new_metadata_map),
+                                     std::move(all_predicates), k2tree_config);
 }
 
 // Call after sync_to_stream
-void PredicatesIndexCacheMD::replace_istream(std::unique_ptr<std::istream> &&_is){
+void PredicatesIndexCacheMD::replace_istream(
+    std::unique_ptr<std::istream> &&_is) {
   this->is = std::move(_is);
 }
 
-void PredicatesIndexCacheMD::discard_in_memory_predicate(uint64_t predicate_index){
+void PredicatesIndexCacheMD::discard_in_memory_predicate(
+    uint64_t predicate_index) {
   predicates.erase(predicate_index);
 }
 
-K2TreeConfig PredicatesIndexCacheMD::get_config(){
-  return k2tree_config;
-}
+K2TreeConfig PredicatesIndexCacheMD::get_config() { return k2tree_config; }
 
-const std::vector<uint64_t> &PredicatesIndexCacheMD::get_predicates_ids(){
+const std::vector<uint64_t> &PredicatesIndexCacheMD::get_predicates_ids() {
   return metadata.get_ids_vector();
 }

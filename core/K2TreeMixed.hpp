@@ -19,19 +19,18 @@ extern "C" {
 struct k2node;
 struct k2qstate;
 
-
-struct K2TreeConfig{
+struct K2TreeConfig {
   uint32_t treedepth;
   uint32_t max_node_count;
   uint32_t cut_depth;
 
-  void write_to_ostream(std::ostream &os){
+  void write_to_ostream(std::ostream &os) {
     write_u32(os, treedepth);
     write_u32(os, max_node_count);
     write_u32(os, cut_depth);
   }
 
-  void read_from_istream(std::istream &is){
+  void read_from_istream(std::istream &is) {
     treedepth = read_u32(is);
     max_node_count = read_u32(is);
     cut_depth = read_u32(is);
@@ -89,7 +88,6 @@ public:
 
   void write_to_ostream(std::ostream &os);
   static K2TreeMixed read_from_istream(std::istream &is);
-
 
 private:
   void clean_up();

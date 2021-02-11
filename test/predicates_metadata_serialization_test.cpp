@@ -45,7 +45,7 @@ TEST(predicates_metadata_serialization, can_create_save_and_retrieve) {
 TEST(predicates_metadata_serialization, can_sync_with_external) {
   auto [pc, sz] = build_picmd();
 
-  for(unsigned long i = 20'000; i < 30'000; i++){
+  for (unsigned long i = 20'000; i < 30'000; i++) {
     pc.insert_point(i, i, i);
   }
 
@@ -64,5 +64,4 @@ TEST(predicates_metadata_serialization, can_sync_with_external) {
     ASSERT_TRUE(k2tree.has(i, i));
     ASSERT_FALSE(k2tree.has(i, i + 1));
   }
-
 }

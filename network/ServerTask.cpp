@@ -28,8 +28,9 @@ void send_response(int socket_client_fd,
   send(socket_client_fd, result.data(), result.size() * sizeof(char), 0);
 }
 
-proto_msg::CacheResponse
-create_response_from_query_result(QueryResult &query_result) {}
+proto_msg::CacheResponse create_response_from_query_result(QueryResult &) {
+  return proto_msg::CacheResponse();
+}
 
 void process_cache_query(ServerTask &server_task, Message &message) {
   auto &cache = server_task.get_cache();

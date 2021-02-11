@@ -1,7 +1,7 @@
 #ifndef _VAR_INDEX_MANAGER_HPP_
 #define _VAR_INDEX_MANAGER_HPP_
-#include <unordered_map>
 #include <string>
+#include <unordered_map>
 
 struct VarIndexManager {
   std::unordered_map<std::string, unsigned long> var_indexes;
@@ -14,9 +14,9 @@ struct VarIndexManager {
     }
   }
 
-  std::unordered_map<unsigned long, std::string> reverse(){
+  std::unordered_map<unsigned long, std::string> reverse() {
     std::unordered_map<unsigned long, std::string> result;
-    for(auto &item : var_indexes){
+    for (auto &item : var_indexes) {
       result[item.second] = item.first;
     }
     return result;

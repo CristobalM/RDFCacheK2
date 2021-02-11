@@ -10,20 +10,19 @@
 
 namespace fs = std::filesystem;
 
-
 PredicatesCacheManager::PredicatesCacheManager(
     std::unique_ptr<ISDManager> &&isd_manager,
     std::unique_ptr<PredicatesIndexCacheMDFile> &&predicates_index)
     : isd_manager(std::move(isd_manager)),
       predicates_index(std::move(predicates_index)),
       k2tree_config(this->predicates_index->get_config()),
-      measured_time_sd_lookup(0)
-       {}
+      measured_time_sd_lookup(0) {}
 
 PredicatesCacheManager::PredicatesCacheManager(
     std::unique_ptr<ISDManager> &&isd_manager, const std::string &fname)
-    : PredicatesCacheManager(std::move(isd_manager),
-                             std::make_unique<PredicatesIndexCacheMDFile>(fname)) {}
+    : PredicatesCacheManager(
+          std::move(isd_manager),
+          std::make_unique<PredicatesIndexCacheMDFile>(fname)) {}
 uint64_t
 PredicatesCacheManager::get_resource_index(const RDFResource &resource) const {
   unsigned long index;
@@ -96,12 +95,15 @@ void PredicatesCacheManager::add_triple(RDFTripleResource &rdf_triple) {
   predicates_index->insert_point(subject_id, predicate_id, object_id);
 }
 
-void PredicatesCacheManager::save_all(const std::string &fname, const std::string &dirname) {
+void PredicatesCacheManager::save_all(const std::string &fname,
+                                      const std::string &dirname) {
 
-  // auto predicates_fname_path = fs::path(dirname)  / fs::path("k2ts-" + fname);
-  auto iris_fname_path = fs::path(dirname)  / fs::path("iris-sd-" + fname);
-  auto blanks_fname_path = fs::path(dirname)  / fs::path("blanks-sd-" + fname);
-  auto literals_fname_path = fs::path(dirname)  / fs::path("literals-sd-" + fname);
+  // auto predicates_fname_path = fs::path(dirname)  / fs::path("k2ts-" +
+  // fname);
+  auto iris_fname_path = fs::path(dirname) / fs::path("iris-sd-" + fname);
+  auto blanks_fname_path = fs::path(dirname) / fs::path("blanks-sd-" + fname);
+  auto literals_fname_path =
+      fs::path(dirname) / fs::path("literals-sd-" + fname);
 
   predicates_index->sync_file();
 
@@ -174,7 +176,7 @@ bool PredicatesCacheManager::has_triple(
   return k2tree.has(subject_index, object_index);
 }
 
-PredicatesIndexCacheMDFile &PredicatesCacheManager::get_predicates_index_cache() {
+PredicatesIndexCacheMDFile &
+PredicatesCacheManager::get_predicates_index_cache() {
   return *predicates_index;
 }
-

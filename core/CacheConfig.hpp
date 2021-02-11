@@ -3,7 +3,7 @@
 
 #include <string>
 
-struct CacheConfig{
+struct CacheConfig {
   std::string cache_file_path;
 };
 

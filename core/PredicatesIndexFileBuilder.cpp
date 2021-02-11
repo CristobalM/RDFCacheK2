@@ -4,7 +4,6 @@
 #include "serialization_util.hpp"
 #include <unordered_map>
 
-
 static void write_ktree_with_size(std::iostream &ios, K2TreeMixed &k2tree) {
   uint64_t sz = 0;
   auto bef = ios.tellp();
@@ -18,10 +17,9 @@ static void write_ktree_with_size(std::iostream &ios, K2TreeMixed &k2tree) {
   ios.seekp(end);
 }
 
-PredicatesCacheMetadata PredicatesIndexFileBuilder::build(std::istream &input_file,
-                             std::ostream &output_file, 
-                            std::iostream &tmp_stream,
-                             K2TreeConfig config) {
+PredicatesCacheMetadata PredicatesIndexFileBuilder::build(
+    std::istream &input_file, std::ostream &output_file,
+    std::iostream &tmp_stream, K2TreeConfig config) {
   FileData filedata{};
   filedata.current_triple = 0;
   filedata.size = read_u64(input_file);
@@ -34,8 +32,8 @@ PredicatesCacheMetadata PredicatesIndexFileBuilder::build(std::istream &input_fi
       if (current_k2tree) {
         write_ktree_with_size(tmp_stream, *current_k2tree);
       }
-      current_k2tree =
-          std::make_unique<K2TreeMixed>(config.treedepth, config.max_node_count, config.cut_depth);
+      current_k2tree = std::make_unique<K2TreeMixed>(
+          config.treedepth, config.max_node_count, config.cut_depth);
       current_predicate = triple.second;
       predicates_ids.push_back(current_predicate);
     }
@@ -82,15 +80,15 @@ PredicatesCacheMetadata PredicatesIndexFileBuilder::build(std::istream &input_fi
                                  std::move(predicates_ids), config);
 }
 
-
 /*
-PredicatesCacheMetadata PredicatesIndexFileBuilder::build_from_memory(std::vector<TripleValue> &triples,
-std::ostream &output_file, 
+PredicatesCacheMetadata
+PredicatesIndexFileBuilder::build_from_memory(std::vector<TripleValue> &triples,
+std::ostream &output_file,
                           std::iostream &tmp_stream,
                             K2TreeConfig config){
 
-std::sort(triples.begin(), triples.end(), [](const TripleValue &lhs, const TripleValue &rhs){
-  return lhs.second < rhs.second;
+std::sort(triples.begin(), triples.end(), [](const TripleValue &lhs, const
+TripleValue &rhs){ return lhs.second < rhs.second;
 });
 
 
