@@ -1,11 +1,11 @@
-#include <string>
-#include <stdexcept>
-#include <getopt.h>
 #include <filesystem>
 #include <fstream>
+#include <getopt.h>
+#include <stdexcept>
+#include <string>
 
-#include <PredicatesIndexFileBuilder.hpp>
 #include <K2TreeMixed.hpp>
+#include <PredicatesIndexFileBuilder.hpp>
 
 namespace fs = std::filesystem;
 
@@ -16,19 +16,19 @@ struct parsed_options {
 
 parsed_options parse_cmline(int argc, char **argv);
 
-int main(int argc, char **argv){
+int main(int argc, char **argv) {
   auto parsed = parse_cmline(argc, argv);
 
-  if(!fs::exists(parsed.input_file)){
+  if (!fs::exists(parsed.input_file)) {
     throw std::runtime_error("Not found file " + parsed.input_file);
-  }  
+  }
 
   K2TreeConfig config;
   config.max_node_count = 256;
   config.cut_depth = 10;
   config.treedepth = 32;
 
-  auto tmp_fname = (parsed.output_file + ".tmp";
+  auto tmp_fname = parsed.output_file + ".tmp";
   std::ifstream ifs(parsed.input_file, std::ios::in | std::ios::binary);
   std::ofstream ofs(parsed.output_file, std::ios::out | std::ios::binary | std::ios::trunc);
   std::fstream tmp_fs(tmp_fname, std::ios::in | std::ios::out | std::ios::binary | std::ios::trunc );
@@ -40,8 +40,7 @@ int main(int argc, char **argv){
   return 0;
 }
 
-
-parsed_options parse_cmline(int argc, char **argv){
+parsed_options parse_cmline(int argc, char **argv) {
   const char short_options[] = "i:o:";
   struct option long_options[] = {
       {"input-file", required_argument, nullptr, 'i'},
@@ -59,22 +58,24 @@ parsed_options parse_cmline(int argc, char **argv){
     if (opt == -1) {
       break;
     }
-    switch(opt){
-      case 'i':
+    switch (opt) {
+    case 'i':
       out.input_file = optarg;
       has_input = true;
       break;
-      case 'o':
+    case 'o':
       out.output_file = optarg;
       has_output = optarg;
       break;
-      default:
+    default:
       break;
     }
   }
 
-  if(!has_input) throw std::runtime_error("input-file (i) argument is required");
-  if(!has_output) throw std::runtime_error("output-file (o) argument is required");
- 
+  if (!has_input)
+    throw std::runtime_error("input-file (i) argument is required");
+  if (!has_output)
+    throw std::runtime_error("output-file (o) argument is required");
+
   return out;
 }

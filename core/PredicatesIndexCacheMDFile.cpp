@@ -15,9 +15,8 @@ static std::unique_ptr<std::istream> load_file(const std::string &fname){
 }
 
 PredicatesIndexCacheMDFile::PredicatesIndexCacheMDFile(
-    const std::string &fname, K2TreeConfig k2tree_config)
-    : PredicatesIndexCacheMD(load_file(fname),
-                             k2tree_config),
+    const std::string &fname)
+    : PredicatesIndexCacheMD(load_file(fname)),
       fname(fname) {}
 
 PredicatesIndexCacheMDFile::PredicatesIndexCacheMDFile(
@@ -76,4 +75,12 @@ void PredicatesIndexCacheMDFile::sync_file() {
 
 void PredicatesIndexCacheMDFile::discard_in_memory_predicate(uint64_t predicate_index) {
   PredicatesIndexCacheMD::discard_in_memory_predicate(predicate_index);
+}
+
+K2TreeConfig PredicatesIndexCacheMDFile::get_config(){
+  return PredicatesIndexCacheMD::get_config();
+}
+
+const std::vector<uint64_t> &PredicatesIndexCacheMDFile::get_predicates_ids(){
+  return PredicatesIndexCacheMD::get_predicates_ids();
 }

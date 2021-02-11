@@ -66,14 +66,10 @@ TEST(QueryProcTests, test_bgp_node_1) {
   first_object->set_basic_type(proto_msg::BasicType::STRING);
   first_object->set_term_value("obj1");
 
-  K2TreeConfig config;
-  config.cut_depth = 10;
-  config.max_node_count = 256;
-  config.treedepth = 32;
   std::string fname = "predicates.bin";
   build_cache_test_file(fname, build_initial_values_triples_vector(10000));
   auto pcm = std::make_shared<PredicatesCacheManager>(
-      std::make_unique<EmptyISDManager>(), config, fname);
+      std::make_unique<EmptyISDManager>(), fname);
   pcm->add_triple(RDFTripleResource(RDFResource("<subj1>", RDF_TYPE_IRI),
                                     RDFResource("<pred1>", RDF_TYPE_IRI),
                                     RDFResource("obj1", RDF_TYPE_LITERAL)));
@@ -147,14 +143,10 @@ TEST(QueryProcTests, test_bgp_node_2) {
   second_object->set_basic_type(proto_msg::BasicType::STRING);
   second_object->set_term_value("?y");
 
-  K2TreeConfig config;
-  config.cut_depth = 10;
-  config.max_node_count = 256;
-  config.treedepth = 32;
   std::string fname = "predicates.bin";
   build_cache_test_file(fname, build_initial_values_triples_vector(10000));
   auto pcm = std::make_shared<PredicatesCacheManager>(
-      std::make_unique<EmptyISDManager>(), config, fname);
+      std::make_unique<EmptyISDManager>(), fname);
   pcm->add_triple(RDFTripleResource(RDFResource("<subj1>", RDF_TYPE_IRI),
                                     RDFResource("<pred1>", RDF_TYPE_IRI),
                                     RDFResource("obj1", RDF_TYPE_LITERAL)));
@@ -262,14 +254,10 @@ TEST(QueryProcTests, test_bgp_node_3) {
   third_object->set_basic_type(proto_msg::BasicType::STRING);
   third_object->set_term_value("?z");
 
-  K2TreeConfig config;
-  config.cut_depth = 10;
-  config.max_node_count = 256;
-  config.treedepth = 32;
   std::string fname = "predicates.bin";
   build_cache_test_file(fname, build_initial_values_triples_vector(10000));
   auto pcm = std::make_shared<PredicatesCacheManager>(
-      std::make_unique<EmptyISDManager>(), config, fname);
+      std::make_unique<EmptyISDManager>(), fname);
   pcm->add_triple(RDFTripleResource(RDFResource("<subj1>", RDF_TYPE_IRI),
                                     RDFResource("<pred1>", RDF_TYPE_IRI),
                                     RDFResource("obj1", RDF_TYPE_LITERAL)));
@@ -494,13 +482,10 @@ TEST(QueryProcTests, test_bgp_node_4_compact_dicts) {
   ASSERT_TRUE(union_set.find(union_set.size()) != union_set.end());
   ASSERT_TRUE(union_set.find(union_set.size() + 1) == union_set.end());
 
-  K2TreeConfig config;
-  config.cut_depth = 10;
-  config.max_node_count = 256;
-  config.treedepth = 32;
+
   std::string fname = "predicates.bin";
   build_cache_test_file(fname, {});
-  auto pcm = std::make_shared<PredicatesCacheManager>(std::move(sdent), config, fname);
+  auto pcm = std::make_shared<PredicatesCacheManager>(std::move(sdent), fname);
 
   auto predicate_str = iris_data[iris_data.size() / 2 + 1];
 

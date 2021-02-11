@@ -21,8 +21,7 @@ static void write_ktree_with_size(std::iostream &ios, K2TreeMixed &k2tree) {
 PredicatesCacheMetadata PredicatesIndexFileBuilder::build(std::istream &input_file,
                              std::ostream &output_file, 
                             std::iostream &tmp_stream,
-                             uint32_t treedepth,
-                             uint32_t max_node_count, uint32_t cut_depth) {
+                             K2TreeConfig config) {
   FileData filedata{};
   filedata.current_triple = 0;
   filedata.size = read_u64(input_file);
@@ -36,11 +35,11 @@ PredicatesCacheMetadata PredicatesIndexFileBuilder::build(std::istream &input_fi
         write_ktree_with_size(tmp_stream, *current_k2tree);
       }
       current_k2tree =
-          std::make_unique<K2TreeMixed>(treedepth, max_node_count, cut_depth);
+          std::make_unique<K2TreeMixed>(config.treedepth, config.max_node_count, config.cut_depth);
       current_predicate = triple.second;
       predicates_ids.push_back(current_predicate);
     }
-    current_k2tree->insert(triple.first, triple.second);
+    current_k2tree->insert(triple.first, triple.third);
   }
   if (current_k2tree) {
     write_ktree_with_size(tmp_stream, *current_k2tree);
@@ -51,6 +50,7 @@ PredicatesCacheMetadata PredicatesIndexFileBuilder::build(std::istream &input_fi
 
   uint64_t predicates_count = predicates_ids.size();
   write_u64(output_file, predicates_count);
+  config.write_to_ostream(output_file);
   auto metadata_start = output_file.tellp();
   for (auto predicate_id : predicates_ids) {
     metadata_map[predicate_id] = PredicateMetadata{};
@@ -79,14 +79,7 @@ PredicatesCacheMetadata PredicatesIndexFileBuilder::build(std::istream &input_fi
   output_file.seekp(to_restore);
 
   return PredicatesCacheMetadata(std::move(metadata_map),
-                                 std::move(predicates_ids));
-}
-
-PredicatesCacheMetadata PredicatesIndexFileBuilder::build(std::istream &input_file,
-                             std::ostream &output_file, 
-                            std::iostream &tmp_stream,
-                             K2TreeConfig config){
-  return build(input_file, output_file, tmp_stream, config.treedepth, config.max_node_count, config.cut_depth);
+                                 std::move(predicates_ids), config);
 }
 
 

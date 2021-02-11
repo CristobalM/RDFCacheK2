@@ -26,7 +26,7 @@ class PredicatesIndexCacheMD{
 
   K2TreeConfig k2tree_config;
   public:
-  PredicatesIndexCacheMD( std::unique_ptr<std::istream> &&is, K2TreeConfig k2tree_config );
+  PredicatesIndexCacheMD( std::unique_ptr<std::istream> &&is);
   
   PredicatesIndexCacheMD(PredicatesIndexCacheMD &&other) noexcept;
 
@@ -43,8 +43,8 @@ class PredicatesIndexCacheMD{
   void replace_istream(std::unique_ptr<std::istream> &&is);
 
   void discard_in_memory_predicate(uint64_t predicate_index);
-
-  
+  K2TreeConfig get_config();
+  const std::vector<uint64_t> &get_predicates_ids();
 };
 
 #endif /* _PREDICATES_INDEX_CACHE_MD_HPP_ */

@@ -1,18 +1,18 @@
 
-#include <string>
-#include <stdexcept>
 #include <iostream>
 #include <memory>
+#include <stdexcept>
+#include <string>
 
-#include <nt_parser.hpp>
-#include <serialization_util.hpp>
 #include <external_sort.hpp>
 #include <getopt.h>
+#include <nt_parser.hpp>
+#include <serialization_util.hpp>
 
 #include <ISDManager.hpp>
 #include <SDEntitiesMapping.hpp>
-#include <StringDictionaryPFC.h>
 #include <StringDictionaryHASHRPDACBlocks.h>
+#include <StringDictionaryPFC.h>
 
 struct parsed_options {
   std::string input_file;
@@ -26,11 +26,10 @@ struct FSHolder {
   std::ofstream &ofs;
   std::unique_ptr<ISDManager> sd_manager;
   uint64_t &triples_count;
-  FSHolder(std::ofstream &ofs, std::unique_ptr<ISDManager> &&sd_manager, uint64_t &triples_count):
-  ofs(ofs),
-  sd_manager(std::move(sd_manager)),
-  triples_count(triples_count)
-  {}
+  FSHolder(std::ofstream &ofs, std::unique_ptr<ISDManager> &&sd_manager,
+           uint64_t &triples_count)
+      : ofs(ofs), sd_manager(std::move(sd_manager)),
+        triples_count(triples_count) {}
 };
 
 void print_help();
@@ -38,14 +37,15 @@ void processor(NTTriple *ntriple, void *fs_holder_ptr);
 std::unique_ptr<ISDManager> read_sds(parsed_options &options);
 parsed_options parse_cmline(int argc, char **argv);
 
-int main(int argc, char **argv ){
+int main(int argc, char **argv) {
   uint64_t triples_count = 0;
 
   auto parsed = parse_cmline(argc, argv);
 
   auto sd_manager = read_sds(parsed);
 
-  std::ofstream ofs(parsed.output_file, std::ios::out | std::ios::binary | std::ios::trunc);
+  std::ofstream ofs(parsed.output_file,
+                    std::ios::out | std::ios::binary | std::ios::trunc);
   FSHolder fs_holder(ofs, std::move(sd_manager), triples_count);
 
   auto start = ofs.tellp();
@@ -57,28 +57,27 @@ int main(int argc, char **argv ){
 
   ofs.seekp(start);
   write_u64(ofs, triples_count);
-  
 }
 
-
-uint64_t get_resource_index(NTRes res, ISDManager &isd_manager){
-  switch(res.type){
-    case RDFType::IRI:
-      return isd_manager.iris_index(std::string(res.data));
-    case RDFType::LITERAL:
-      return isd_manager.literals_index(std::string(res.data));
-    case RDFType::BLANK_NODE:
-      return isd_manager.blanks_index(std::string(res.data));
-    default:
-      return NORESULT;
+uint64_t get_resource_index(NTRes res, ISDManager &isd_manager) {
+  switch (res.type) {
+  case RDFType::IRI:
+    return isd_manager.iris_index(std::string(res.data));
+  case RDFType::LITERAL:
+    return isd_manager.literals_index(std::string(res.data));
+  case RDFType::BLANK_NODE:
+    return isd_manager.blanks_index(std::string(res.data));
+  default:
+    return NORESULT;
   }
 }
 
-void processor(NTTriple *ntriple, void *fs_holder_ptr){
+void processor(NTTriple *ntriple, void *fs_holder_ptr) {
   auto &h = *reinterpret_cast<FSHolder *>(fs_holder_ptr);
-  
+
   uint64_t subject_index = get_resource_index(ntriple->subject, *h.sd_manager);
-  uint64_t predicate_index = get_resource_index(ntriple->predicate, *h.sd_manager);
+  uint64_t predicate_index =
+      get_resource_index(ntriple->predicate, *h.sd_manager);
   uint64_t object_index = get_resource_index(ntriple->object, *h.sd_manager);
 
   TripleValue triple(subject_index, predicate_index, object_index);
@@ -86,16 +85,15 @@ void processor(NTTriple *ntriple, void *fs_holder_ptr){
   h.triples_count++;
 }
 
-std::unique_ptr<ISDManager> read_sds(parsed_options &parsed){
+std::unique_ptr<ISDManager> read_sds(parsed_options &parsed) {
 
   std::unique_ptr<ISDManager> isd_manager;
 
-  std::ifstream ifs_iris(parsed.iris_sd_file,
-                          std::ios::in | std::ios::binary);
+  std::ifstream ifs_iris(parsed.iris_sd_file, std::ios::in | std::ios::binary);
   std::ifstream ifs_blanks(parsed.blanks_sd_file,
-                            std::ios::in | std::ios::binary);
+                           std::ios::in | std::ios::binary);
   std::ifstream ifs_literals(parsed.literals_sd_file,
-                              std::ios::in | std::ios::binary);
+                             std::ios::in | std::ios::binary);
   if (ifs_iris.fail()) {
     std::stringstream ss;
     ss << "Failed to open iris file '" << parsed.iris_sd_file << "'";
@@ -104,31 +102,28 @@ std::unique_ptr<ISDManager> read_sds(parsed_options &parsed){
 
   if (ifs_blanks.fail()) {
     std::stringstream ss;
-    ss << "Failed to open blanks file '" << parsed.blanks_sd_file
-              << "'";
+    ss << "Failed to open blanks file '" << parsed.blanks_sd_file << "'";
 
     throw std::runtime_error(ss.str());
   }
   if (ifs_literals.fail()) {
     std::stringstream ss;
-    ss << "Failed to open literals file '" << parsed.literals_sd_file
-              << "'";
+    ss << "Failed to open literals file '" << parsed.literals_sd_file << "'";
     throw std::runtime_error(ss.str());
   }
 
   isd_manager = std::make_unique<
       SDEntitiesMapping<StringDictionaryPFC, StringDictionaryPFC,
-                        StringDictionaryHASHRPDACBlocks>>(
-      ifs_iris, ifs_blanks, ifs_literals);
+                        StringDictionaryHASHRPDACBlocks>>(ifs_iris, ifs_blanks,
+                                                          ifs_literals);
 
   return isd_manager;
-
 }
 
 parsed_options parse_cmline(int argc, char **argv) {
   const char short_options[] = "i:b:l:I:O:";
   struct option long_options[] = {
-    {"iris-sd-file", required_argument, nullptr, 'i'},
+      {"iris-sd-file", required_argument, nullptr, 'i'},
       {"blanks-sd-file", required_argument, nullptr, 'b'},
       {"literals-sd-file", required_argument, nullptr, 'l'},
       {"input-file", required_argument, nullptr, 'I'},
@@ -150,7 +145,7 @@ parsed_options parse_cmline(int argc, char **argv) {
       break;
     }
     switch (opt) {
-       case 'i':
+    case 'i':
       out.iris_sd_file = optarg;
       has_iris = true;
       break;
@@ -174,7 +169,6 @@ parsed_options parse_cmline(int argc, char **argv) {
       break;
     }
   }
-
 
   if (!has_iris) {
     std::cerr << "Missing option --iris-sd-file\n" << std::endl;

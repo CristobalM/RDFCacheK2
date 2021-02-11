@@ -3,8 +3,8 @@
 #include "PredicatesIndexCacheMD.hpp"
 #include <serialization_util.hpp>
 
-PredicatesIndexCacheMD::PredicatesIndexCacheMD(std::unique_ptr<std::istream> &&is, K2TreeConfig k2tree_config)
-    : metadata(*is), is(std::move(is)), k2tree_config(k2tree_config) {}
+PredicatesIndexCacheMD::PredicatesIndexCacheMD(std::unique_ptr<std::istream> &&is)
+    : metadata(*is), is(std::move(is)), k2tree_config(metadata.get_config()) {}
 
 PredicatesIndexCacheMD::PredicatesIndexCacheMD(PredicatesIndexCacheMD &&other) noexcept
 : metadata(std::move(other.metadata)), is(std::move(other.is)), k2tree_config(other.k2tree_config)
@@ -80,6 +80,7 @@ void PredicatesIndexCacheMD::sync_to_stream(std::ostream &os){
   std::sort(all_predicates.begin(), all_predicates.end());
 
   write_u64(os, all_predicates.size());
+  k2tree_config.write_to_ostream(os);
 
   std::unordered_map<uint64_t, PredicateMetadata> new_metadata_map;
   auto metadata_start = os.tellp();
@@ -118,7 +119,7 @@ void PredicatesIndexCacheMD::sync_to_stream(std::ostream &os){
   }
   os.seekp(last_pos);
 
-  metadata = PredicatesCacheMetadata(std::move(new_metadata_map), std::move(all_predicates));
+  metadata = PredicatesCacheMetadata(std::move(new_metadata_map), std::move(all_predicates), k2tree_config);
 }
 
 // Call after sync_to_stream
@@ -128,4 +129,12 @@ void PredicatesIndexCacheMD::replace_istream(std::unique_ptr<std::istream> &&_is
 
 void PredicatesIndexCacheMD::discard_in_memory_predicate(uint64_t predicate_index){
   predicates.erase(predicate_index);
+}
+
+K2TreeConfig PredicatesIndexCacheMD::get_config(){
+  return k2tree_config;
+}
+
+const std::vector<uint64_t> &PredicatesIndexCacheMD::get_predicates_ids(){
+  return metadata.get_ids_vector();
 }

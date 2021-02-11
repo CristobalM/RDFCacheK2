@@ -16,11 +16,7 @@
 #include "cache_test_util.hpp"
 
 TEST(predicates_cache_manager_test, test1) {
-  K2TreeConfig config;
-  config.treedepth = 32;
-  config.max_node_count = 256;
-  config.cut_depth = 10;
-  
+
   std::string fname = "predicates.bin";
 
   std::vector<TripleValue> data;
@@ -29,7 +25,7 @@ TEST(predicates_cache_manager_test, test1) {
     data.push_back(TripleValue(i,i,i));
   }
   build_cache_test_file(fname, data);
-  PredicatesCacheManager pcm(std::make_unique<EmptyISDManager>(), config, fname);
+  PredicatesCacheManager pcm(std::make_unique<EmptyISDManager>(), fname);
 
   for(uint64_t i = 1; i <= sz; i++){
     // ASSERT_TRUE(pcm.has_triple(i, i, i));

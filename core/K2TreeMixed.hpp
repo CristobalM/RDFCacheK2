@@ -9,6 +9,8 @@
 #include "ResultTable.hpp"
 #include "k2tree_stats.hpp"
 
+#include <serialization_util.hpp>
+
 extern "C" {
 #include <definitions.h>
 #include <k2node.h>
@@ -22,6 +24,18 @@ struct K2TreeConfig{
   uint32_t treedepth;
   uint32_t max_node_count;
   uint32_t cut_depth;
+
+  void write_to_ostream(std::ostream &os){
+    write_u32(os, treedepth);
+    write_u32(os, max_node_count);
+    write_u32(os, cut_depth);
+  }
+
+  void read_from_istream(std::istream &is){
+    treedepth = read_u32(is);
+    max_node_count = read_u32(is);
+    cut_depth = read_u32(is);
+  }
 };
 
 class K2TreeMixed {

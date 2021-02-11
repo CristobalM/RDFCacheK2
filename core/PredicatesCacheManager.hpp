@@ -9,7 +9,6 @@
 #include "NaiveDynamicStringDictionary.hpp"
 #include "PredicatesIndexCacheMDFile.hpp"
 #include "RDFTriple.hpp"
-#include "PredicatesIndexCacheBuilder.hpp"
 #include <memory>
 #include <string>
 #include <istream>
@@ -31,17 +30,13 @@ public:
 
   PredicatesCacheManager(
       std::unique_ptr<ISDManager> &&isd_manager,
-      std::unique_ptr<PredicatesIndexCacheMDFile> &&predicates_index,
-      K2TreeConfig k2tree_config
+      std::unique_ptr<PredicatesIndexCacheMDFile> &&predicates_index
       );
 
-   PredicatesCacheManager(std::unique_ptr<ISDManager> &&isd_manager, K2TreeConfig k2tree_config, const std::string &fname);
+   PredicatesCacheManager(std::unique_ptr<ISDManager> &&isd_manager, const std::string &fname);
 
   void add_triple(RDFTripleResource &rdf_triple);
   void add_triple(RDFTripleResource &&rdf_triple);
-
-  void add_triple(RDFTripleResource &rdf_triple,
-                  PredicatesIndexCacheBuilder &builder);
 
   bool has_triple(const RDFTripleResource &rdf_triple) const;
 

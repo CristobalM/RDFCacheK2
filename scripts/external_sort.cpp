@@ -37,7 +37,8 @@ int main(int argc, char **argv) {
   std::ifstream ifs(parsed.input_file, std::ios::in);
   std::ofstream ofs(parsed.output_file, std::ios::out | std::ios::trunc);
   external_sort_triples(parsed.input_file, parsed.output_file, parsed.tmp_dir,
-                        parsed.workers, 10, parsed.max_memory, 8192, 10'000'000, Comparator());
+                        parsed.workers, 10, parsed.max_memory, 8192, 10'000'000,
+                        Comparator());
 }
 
 parsed_options parse_cmline(int argc, char **argv) {

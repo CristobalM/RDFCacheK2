@@ -28,7 +28,7 @@ static std::pair<PredicatesIndexCacheMD, unsigned long> build_picmd() {
   out->seekp(0);
   PredicatesIndexFileBuilder::build(ss, *out, tmp, config);
 
-  return {PredicatesIndexCacheMD(std::move(out), config), sz};
+  return {PredicatesIndexCacheMD(std::move(out)), sz};
 }
 
 TEST(predicates_metadata_serialization, can_create_save_and_retrieve) {

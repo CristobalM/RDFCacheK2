@@ -11,8 +11,7 @@ class PredicatesIndexCacheMDFile : private PredicatesIndexCacheMD{
   public:
 
   PredicatesIndexCacheMDFile(
-    const std::string &fname, 
-    K2TreeConfig k2tree_config);
+    const std::string &fname);
 
   PredicatesIndexCacheMDFile(PredicatesIndexCacheMDFile &&other) noexcept;
 
@@ -28,6 +27,10 @@ class PredicatesIndexCacheMDFile : private PredicatesIndexCacheMD{
 
   void sync_file();
   void discard_in_memory_predicate(uint64_t predicate_index);
+
+  K2TreeConfig get_config();
+
+  const std::vector<uint64_t> &get_predicates_ids();
 
 };
 

@@ -13,18 +13,17 @@ namespace fs = std::filesystem;
 
 PredicatesCacheManager::PredicatesCacheManager(
     std::unique_ptr<ISDManager> &&isd_manager,
-    std::unique_ptr<PredicatesIndexCacheMDFile> &&predicates_index,
-    K2TreeConfig k2tree_config)
+    std::unique_ptr<PredicatesIndexCacheMDFile> &&predicates_index)
     : isd_manager(std::move(isd_manager)),
       predicates_index(std::move(predicates_index)),
-      k2tree_config(std::move(k2tree_config)),
+      k2tree_config(this->predicates_index->get_config()),
       measured_time_sd_lookup(0)
        {}
 
 PredicatesCacheManager::PredicatesCacheManager(
-    std::unique_ptr<ISDManager> &&isd_manager, K2TreeConfig k2tree_config, const std::string &fname)
+    std::unique_ptr<ISDManager> &&isd_manager, const std::string &fname)
     : PredicatesCacheManager(std::move(isd_manager),
-                             std::make_unique<PredicatesIndexCacheMDFile>(fname, k2tree_config), k2tree_config) {}
+                             std::make_unique<PredicatesIndexCacheMDFile>(fname)) {}
 uint64_t
 PredicatesCacheManager::get_resource_index(const RDFResource &resource) const {
   unsigned long index;
@@ -95,25 +94,6 @@ void PredicatesCacheManager::add_triple(RDFTripleResource &rdf_triple) {
   handle_not_found(predicate_id, rdf_triple.predicate);
   handle_not_found(object_id, rdf_triple.object);
   predicates_index->insert_point(subject_id, predicate_id, object_id);
-}
-
-void PredicatesCacheManager::add_triple(RDFTripleResource &rdf_triple,
-                                        PredicatesIndexCacheBuilder &builder) {
-  auto start = std::chrono::high_resolution_clock::now();
-  auto subject_id = get_resource_index(rdf_triple.subject);
-  auto predicate_id = get_resource_index(rdf_triple.predicate);
-  auto object_id = get_resource_index(rdf_triple.object);
-
-  handle_not_found(subject_id, rdf_triple.subject);
-  handle_not_found(predicate_id, rdf_triple.predicate);
-  handle_not_found(object_id, rdf_triple.object);
-
-  measured_time_sd_lookup +=
-      std::chrono::duration_cast<std::chrono::nanoseconds>(
-          std::chrono::high_resolution_clock::now() - start)
-          .count();
-
-  builder.insert_point(subject_id, predicate_id, object_id);
 }
 
 void PredicatesCacheManager::save_all(const std::string &fname, const std::string &dirname) {

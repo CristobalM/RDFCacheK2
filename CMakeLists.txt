@@ -28,8 +28,6 @@ add_definitions(-DLIGHT_FIELDS)
 set(CORE_SOURCE_FILES
         core/K2Tree.cpp
         core/PredicatesCacheMetadata.cpp
-        core/PredicatesIndexCache.cpp
-        core/PredicatesIndexCacheBuilder.cpp
         core/PredicatesIndexFileBuilder.cpp
         core/PredicatesIndexCacheMD.cpp
         core/PredicatesIndexCacheMDFile.cpp
@@ -211,10 +209,6 @@ target_link_libraries(validate_sd_from_nt ${BASE_LIBS} CppBase64 ntparser stdc++
 #target_link_libraries(index_by_k2tree_with_sd ${BASE_LIBS} ntparser )
 
 
-add_executable(print_k2trees scripts/print_k2trees.cpp)
-target_link_libraries(print_k2trees ${BASE_LIBS} pthread)
-
-
 add_executable(split_nt_triples scripts/split_nt_triples.cpp)
 target_include_directories(split_nt_triples PUBLIC ${LIB_CPPBASE64_PATH})
 target_link_libraries(split_nt_triples ntparser CppBase64 )
@@ -247,7 +241,11 @@ target_link_libraries(extract_triples_binary ${PROC_LIBS} ntparser )
 
 add_executable(build_k2tree_index scripts/build_k2tree_index.cpp)
 target_include_directories(build_k2tree_index PUBLIC ${INCLUDES})
-target_link_libraries(build_k2tree_index ${DEFAULT_LIBS} ntparser )
+target_link_libraries(build_k2tree_index ${DEFAULT_LIBS})
+
+add_executable(print_k2tree_index scripts/print_k2tree_index.cpp)
+target_include_directories(print_k2tree_index PUBLIC ${INCLUDES})
+target_link_libraries(print_k2tree_index ${DEFAULT_LIBS} )
 
 
 add_executable(four_sided_queue_example example/four_sided_queue_example.cpp)
