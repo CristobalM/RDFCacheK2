@@ -28,11 +28,14 @@ int main(int argc, char **argv){
   config.cut_depth = 10;
   config.treedepth = 32;
 
+  auto tmp_fname = (parsed.output_file + ".tmp";
   std::ifstream ifs(parsed.input_file, std::ios::in | std::ios::binary);
   std::ofstream ofs(parsed.output_file, std::ios::out | std::ios::binary | std::ios::trunc);
-  std::fstream tmp_fs(parsed.output_file + ".tmp", std::ios::in | std::ios::out | std::ios::binary );
+  std::fstream tmp_fs(tmp_fname, std::ios::in | std::ios::out | std::ios::binary | std::ios::trunc );
   PredicatesIndexFileBuilder::build(ifs, ofs, tmp_fs, config);
 
+
+  fs::remove(tmp_fname);
 
   return 0;
 }
