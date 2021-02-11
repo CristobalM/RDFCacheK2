@@ -24,6 +24,14 @@ public:
                             std::iostream &tmp_stream,
                              K2TreeConfig config);
 
+
+  /*
+  static PredicatesCacheMetadata build_from_memory(std::vector<TripleValue> &triples,
+  std::ostream &output_file, 
+                            std::iostream &tmp_stream,
+                             K2TreeConfig config);
+
+                             */
 };
 
 #endif /* _PREDICATES_INDEX_FILE_BUILDER_HPP_ */

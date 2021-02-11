@@ -14,7 +14,7 @@ class PredicatesIndexCacheMDFile : private PredicatesIndexCacheMD{
     const std::string &fname, 
     K2TreeConfig k2tree_config);
 
-  PredicatesIndexCacheMDFile(PredicatesIndexCacheMDFile &&other);
+  PredicatesIndexCacheMDFile(PredicatesIndexCacheMDFile &&other) noexcept;
 
 
   bool load_single_predicate(uint64_t predicate_index);

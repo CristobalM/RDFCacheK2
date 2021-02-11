@@ -57,6 +57,7 @@ PredicatesCacheMetadata PredicatesIndexFileBuilder::build(std::istream &input_fi
     metadata_map[predicate_id].write_to_ostream(output_file);
   }
 
+  tmp_stream.seekg(0);
   for (auto predicate_id : predicates_ids) {
     auto k2tree_serialized_size = read_u64(tmp_stream);
     auto offset = output_file.tellp();
@@ -87,3 +88,18 @@ PredicatesCacheMetadata PredicatesIndexFileBuilder::build(std::istream &input_fi
                              K2TreeConfig config){
   return build(input_file, output_file, tmp_stream, config.treedepth, config.max_node_count, config.cut_depth);
 }
+
+
+/*
+PredicatesCacheMetadata PredicatesIndexFileBuilder::build_from_memory(std::vector<TripleValue> &triples,
+std::ostream &output_file, 
+                          std::iostream &tmp_stream,
+                            K2TreeConfig config){
+
+std::sort(triples.begin(), triples.end(), [](const TripleValue &lhs, const TripleValue &rhs){
+  return lhs.second < rhs.second;
+});
+
+
+}
+*/

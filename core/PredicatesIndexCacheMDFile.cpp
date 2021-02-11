@@ -21,7 +21,7 @@ PredicatesIndexCacheMDFile::PredicatesIndexCacheMDFile(
       fname(fname) {}
 
 PredicatesIndexCacheMDFile::PredicatesIndexCacheMDFile(
-    PredicatesIndexCacheMDFile &&other)
+    PredicatesIndexCacheMDFile &&other) noexcept
     : PredicatesIndexCacheMD(std::move(other)) {}
 
 bool PredicatesIndexCacheMDFile::load_single_predicate(

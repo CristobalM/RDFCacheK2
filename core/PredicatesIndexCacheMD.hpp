@@ -28,7 +28,7 @@ class PredicatesIndexCacheMD{
   public:
   PredicatesIndexCacheMD( std::unique_ptr<std::istream> &&is, K2TreeConfig k2tree_config );
   
-  PredicatesIndexCacheMD(PredicatesIndexCacheMD &&other);
+  PredicatesIndexCacheMD(PredicatesIndexCacheMD &&other) noexcept;
 
   bool load_single_predicate(uint64_t predicate_index);
   K2TreeMixed & fetch_k2tree(uint64_t predicate_index);

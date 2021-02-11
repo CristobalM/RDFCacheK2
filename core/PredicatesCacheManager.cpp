@@ -10,6 +10,7 @@
 
 namespace fs = std::filesystem;
 
+
 PredicatesCacheManager::PredicatesCacheManager(
     std::unique_ptr<ISDManager> &&isd_manager,
     std::unique_ptr<PredicatesIndexCacheMDFile> &&predicates_index,

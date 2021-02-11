@@ -65,8 +65,9 @@ public:
   PredicatesIndexCacheMDFile &get_predicates_index_cache();
 
 
-private:
   uint64_t get_resource_index(const RDFResource &resource) const;
+
+private:
   void handle_not_found(unsigned long &resource_id, RDFResource &resource);
 };
 

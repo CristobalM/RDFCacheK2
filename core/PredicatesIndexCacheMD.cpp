@@ -6,7 +6,7 @@
 PredicatesIndexCacheMD::PredicatesIndexCacheMD(std::unique_ptr<std::istream> &&is, K2TreeConfig k2tree_config)
     : metadata(*is), is(std::move(is)), k2tree_config(k2tree_config) {}
 
-PredicatesIndexCacheMD::PredicatesIndexCacheMD(PredicatesIndexCacheMD &&other)
+PredicatesIndexCacheMD::PredicatesIndexCacheMD(PredicatesIndexCacheMD &&other) noexcept
 : metadata(std::move(other.metadata)), is(std::move(other.is)), k2tree_config(other.k2tree_config)
 {
   
@@ -60,7 +60,7 @@ void PredicatesIndexCacheMD::insert_point(uint64_t subject_index, uint64_t predi
   auto predicate_active = has_predicate_active(predicate_index);
   auto predicate_stored = has_predicate_stored(predicate_index);
 
-  if(predicate_stored && !predicate_stored){
+  if(predicate_stored && !predicate_active){
     load_single_predicate(predicate_index);
   }
   else if(!predicate_stored && !predicate_active){
@@ -122,8 +122,8 @@ void PredicatesIndexCacheMD::sync_to_stream(std::ostream &os){
 }
 
 // Call after sync_to_stream
-void PredicatesIndexCacheMD::replace_istream(std::unique_ptr<std::istream> &&is){
-  this->is = std::move(is);
+void PredicatesIndexCacheMD::replace_istream(std::unique_ptr<std::istream> &&_is){
+  this->is = std::move(_is);
 }
 
 void PredicatesIndexCacheMD::discard_in_memory_predicate(uint64_t predicate_index){
