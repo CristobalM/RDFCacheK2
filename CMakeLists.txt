@@ -245,6 +245,11 @@ target_include_directories(extract_triples_binary PUBLIC ${INCLUDES})
 target_link_libraries(extract_triples_binary ${PROC_LIBS} ntparser )
 
 
+add_executable(build_k2tree_index scripts/build_k2tree_index.cpp)
+target_include_directories(build_k2tree_index PUBLIC ${INCLUDES})
+target_link_libraries(build_k2tree_index ${DEFAULT_LIBS} ntparser )
+
+
 add_executable(four_sided_queue_example example/four_sided_queue_example.cpp)
 
 
