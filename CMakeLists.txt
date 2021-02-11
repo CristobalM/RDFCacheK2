@@ -263,7 +263,7 @@ target_link_libraries(serialization_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES}
 add_executable(k2tree_serialization_test  test/k2tree_serialization_test.cpp)
 target_link_libraries(k2tree_serialization_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES})
 
-add_executable(predicates_cache_manager_test  test/predicates_cache_manager_test.cpp)
+add_executable(predicates_cache_manager_test  test/predicates_cache_manager_test.cpp test/cache_test_util.cpp)
 target_link_libraries(predicates_cache_manager_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES})
 
 add_executable(four_sided_queue_test test/four_sided_queue_test.cpp)
@@ -278,7 +278,7 @@ target_link_libraries(result_table_test  ${DEFAULT_LIBS}  ${GTEST_BOTH_LIBRARIES
 add_executable(k2tree_mixed_test test/k2tree_mixed_test.cpp)
 target_link_libraries(k2tree_mixed_test  ${DEFAULT_LIBS}  ${GTEST_BOTH_LIBRARIES} pthread)
 
-add_executable(query_proc_tests test/query_proc_tests.cpp)
+add_executable(query_proc_tests test/query_proc_tests.cpp test/cache_test_util.cpp)
 target_link_libraries(query_proc_tests ${DEFAULT_LIBS} ${PROC_LIBS} ${GTEST_BOTH_LIBRARIES} pthread)
 
 add_executable(test_sd_builder test/test_sd_builder.cpp)

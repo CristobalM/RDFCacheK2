@@ -5,6 +5,7 @@
 #include <iostream>
 #include <memory>
 #include <random>
+#include <filesystem>
 
 #include <gtest/gtest.h>
 
@@ -22,6 +23,12 @@
 #include <SDBuilder.hpp>
 
 #include <InMemoryCacheSettings.hpp>
+
+#include "cache_test_util.hpp"
+
+
+namespace fs = std::filesystem;
+
 
 static std::vector<std::vector<std::string>>
 translate_table(ResultTable &input_table, Cache &cache) {
@@ -64,6 +71,7 @@ TEST(QueryProcTests, test_bgp_node_1) {
   config.max_node_count = 256;
   config.treedepth = 32;
   std::string fname = "predicates.bin";
+  build_cache_test_file(fname, build_initial_values_triples_vector(10000));
   auto pcm = std::make_shared<PredicatesCacheManager>(
       std::make_unique<EmptyISDManager>(), config, fname);
   pcm->add_triple(RDFTripleResource(RDFResource("<subj1>", RDF_TYPE_IRI),
@@ -97,6 +105,7 @@ TEST(QueryProcTests, test_bgp_node_1) {
   ASSERT_EQ(translated_table[0][0], "<subj1>");
   ASSERT_EQ(translated_table[1][0], "<subj3>");
   ASSERT_EQ(translated_table[2][0], "<subj2>");
+  fs::remove(fname);
 }
 
 TEST(QueryProcTests, test_bgp_node_2) {
@@ -142,8 +151,10 @@ TEST(QueryProcTests, test_bgp_node_2) {
   config.cut_depth = 10;
   config.max_node_count = 256;
   config.treedepth = 32;
+  std::string fname = "predicates.bin";
+  build_cache_test_file(fname, build_initial_values_triples_vector(10000));
   auto pcm = std::make_shared<PredicatesCacheManager>(
-      std::make_unique<EmptyISDManager>(), config, "predicates.bin");
+      std::make_unique<EmptyISDManager>(), config, fname);
   pcm->add_triple(RDFTripleResource(RDFResource("<subj1>", RDF_TYPE_IRI),
                                     RDFResource("<pred1>", RDF_TYPE_IRI),
                                     RDFResource("obj1", RDF_TYPE_LITERAL)));
@@ -193,6 +204,7 @@ TEST(QueryProcTests, test_bgp_node_2) {
   ASSERT_EQ(translated_table[0][1], "obj1");
   ASSERT_EQ(translated_table[1][0], "<subj2>");
   ASSERT_EQ(translated_table[1][1], "obj2");
+  fs::remove(fname);
 }
 
 TEST(QueryProcTests, test_bgp_node_3) {
@@ -254,8 +266,10 @@ TEST(QueryProcTests, test_bgp_node_3) {
   config.cut_depth = 10;
   config.max_node_count = 256;
   config.treedepth = 32;
+  std::string fname = "predicates.bin";
+  build_cache_test_file(fname, build_initial_values_triples_vector(10000));
   auto pcm = std::make_shared<PredicatesCacheManager>(
-      std::make_unique<EmptyISDManager>(), config, "predicates.bin");
+      std::make_unique<EmptyISDManager>(), config, fname);
   pcm->add_triple(RDFTripleResource(RDFResource("<subj1>", RDF_TYPE_IRI),
                                     RDFResource("<pred1>", RDF_TYPE_IRI),
                                     RDFResource("obj1", RDF_TYPE_LITERAL)));
@@ -318,6 +332,7 @@ TEST(QueryProcTests, test_bgp_node_3) {
 
   ASSERT_EQ(translated_table[1][0], "<subj2>");
   ASSERT_EQ(translated_table[1][1], "obj2");
+  fs::remove(fname);
 }
 
 static std::stringstream
@@ -483,7 +498,9 @@ TEST(QueryProcTests, test_bgp_node_4_compact_dicts) {
   config.cut_depth = 10;
   config.max_node_count = 256;
   config.treedepth = 32;
-  auto pcm = std::make_shared<PredicatesCacheManager>(std::move(sdent), config, "predicates.bin");
+  std::string fname = "predicates.bin";
+  build_cache_test_file(fname, {});
+  auto pcm = std::make_shared<PredicatesCacheManager>(std::move(sdent), config, fname);
 
   auto predicate_str = iris_data[iris_data.size() / 2 + 1];
 
@@ -656,4 +673,5 @@ TEST(QueryProcTests, test_bgp_node_4_compact_dicts) {
   for(const auto & s: set_small){
     ASSERT_TRUE(set_big.find(s) != set_big.end());
   }
+  fs::remove(fname);
 }
