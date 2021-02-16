@@ -80,7 +80,6 @@ set(PROTO_MESSAGES
         proto/generated/predicates_index_cache.pb.cc
         proto/generated/request_msg.pb.cc
         proto/generated/response_msg.pb.cc
-        proto/generated/radix_tree.pb.cc
         proto/generated/sparql_tree.pb.cc
         )
 

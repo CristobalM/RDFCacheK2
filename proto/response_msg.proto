@@ -16,7 +16,6 @@ message CacheResponse{
     }
 }
 
-
 message ConnectionEndResponse{
     bool end = 1;
 }

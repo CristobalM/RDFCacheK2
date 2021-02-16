@@ -50,8 +50,6 @@ proto-build:
 		./proto/request_msg.proto \
 		./proto/response_msg.proto \
 		./proto/predicates_index_cache.proto \
-		./proto/entities_mapping.proto \
-		./proto/radix_tree.proto \
 		./proto/sparql_tree.proto
 
 proto-clean:
@@ -85,7 +83,6 @@ bundle-code: # clean-all
 	--include 'gresults-caching/***' \
 	--include 'memory/***' \
 	--include 'network/***' \
-	--include 'plib/***' \
 	--include 'proc/***' \
 	--include 'benchmarks/***' \
 	--include 'proto/' \
