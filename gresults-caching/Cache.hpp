@@ -42,7 +42,7 @@ public:
   CacheStats cache_stats();
 
   QueryResult run_query(proto_msg::SparqlTree const &query_tree);
-  std::string extract_resource(unsigned long index) const;
+  RDFResource extract_resource(unsigned long index) const;
 
   PredicatesCacheManager &get_pcm();
 };

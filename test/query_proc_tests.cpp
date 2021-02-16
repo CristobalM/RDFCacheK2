@@ -28,11 +28,11 @@
 
 namespace fs = std::filesystem;
 
-static std::vector<std::vector<std::string>>
+static std::vector<std::vector<RDFResource>>
 translate_table(ResultTable &input_table, Cache &cache) {
-  std::vector<std::vector<std::string>> translated_table;
+  std::vector<std::vector<RDFResource>> translated_table;
   for (auto &row : input_table.data) {
-    std::vector<std::string> translated_row;
+    std::vector<RDFResource> translated_row;
     for (auto col : row) {
       auto col_resource = cache.extract_resource(col);
       translated_row.push_back(col_resource);
@@ -90,9 +90,9 @@ TEST(QueryProcTests, test_bgp_node_1) {
   auto header_str = reverse_map[table.headers[0]];
   ASSERT_EQ(header_str, "?x");
 
-  ASSERT_EQ(translated_table[0][0], "<subj1>");
-  ASSERT_EQ(translated_table[1][0], "<subj3>");
-  ASSERT_EQ(translated_table[2][0], "<subj2>");
+  ASSERT_EQ(translated_table[0][0].value, "<subj1>");
+  ASSERT_EQ(translated_table[1][0].value, "<subj3>");
+  ASSERT_EQ(translated_table[2][0].value, "<subj2>");
   fs::remove(fname);
 }
 
@@ -179,10 +179,10 @@ TEST(QueryProcTests, test_bgp_node_2) {
   ASSERT_EQ(table.data.size(), 2);
   auto translated_table = translate_table(table, cache);
 
-  ASSERT_EQ(translated_table[0][0], "<subj2>");
-  ASSERT_EQ(translated_table[0][1], "obj1");
-  ASSERT_EQ(translated_table[1][0], "<subj2>");
-  ASSERT_EQ(translated_table[1][1], "obj2");
+  ASSERT_EQ(translated_table[0][0].value, "<subj2>");
+  ASSERT_EQ(translated_table[0][1].value, "obj1");
+  ASSERT_EQ(translated_table[1][0].value, "<subj2>");
+  ASSERT_EQ(translated_table[1][1].value, "obj2");
   fs::remove(fname);
 }
 
@@ -298,11 +298,11 @@ TEST(QueryProcTests, test_bgp_node_3) {
   ASSERT_EQ(translated_headers[0], "?x");
   ASSERT_EQ(translated_headers[1], "?y");
 
-  ASSERT_EQ(translated_table[0][0], "<subj2>");
-  ASSERT_EQ(translated_table[0][1], "obj1");
+  ASSERT_EQ(translated_table[0][0].value, "<subj2>");
+  ASSERT_EQ(translated_table[0][1].value, "obj1");
 
-  ASSERT_EQ(translated_table[1][0], "<subj2>");
-  ASSERT_EQ(translated_table[1][1], "obj2");
+  ASSERT_EQ(translated_table[1][0].value, "<subj2>");
+  ASSERT_EQ(translated_table[1][1].value, "obj2");
   fs::remove(fname);
 }
 
@@ -345,12 +345,12 @@ static std::vector<std::string> generate_vec_strings(const std::string &prefix,
   return result;
 }
 
-static std::vector<std::vector<std::string>>
+static std::vector<std::vector<RDFResource>>
 transform_table_to_string(const ResultTable &table, const Cache &cache) {
-  std::vector<std::vector<std::string>> transformed_data;
+  std::vector<std::vector<RDFResource>> transformed_data;
 
   for (const auto &row : table.data) {
-    std::vector<std::string> current_row;
+    std::vector<RDFResource> current_row;
     for (auto col : row) {
       current_row.push_back(cache.extract_resource(col));
     }
@@ -358,12 +358,12 @@ transform_table_to_string(const ResultTable &table, const Cache &cache) {
   }
 
   std::sort(transformed_data.begin(), transformed_data.end(),
-            [](const std::vector<std::string> &lhs,
-               const std::vector<std::string> &rhs) {
+            [](const std::vector<RDFResource> &lhs,
+               const std::vector<RDFResource> &rhs) {
               for (size_t i = 0; i < lhs.size(); i++) {
-                if (lhs[i] < rhs[i])
+                if (lhs[i].value < rhs[i].value)
                   return true;
-                else if (lhs[i] > rhs[i])
+                else if (lhs[i].value > rhs[i].value)
                   return false;
               }
               return true;
@@ -529,8 +529,8 @@ TEST(QueryProcTests, test_bgp_node_4_compact_dicts) {
 
   for (size_t row_i = 0; row_i < transformed_data.size(); row_i++) {
     ASSERT_EQ(transformed_data[row_i].size(), 2);
-    ASSERT_EQ(transformed_data[row_i][0], iris_data[row_i]);
-    ASSERT_EQ(transformed_data[row_i][1], literals_data[row_i]);
+    ASSERT_EQ(transformed_data[row_i][0].value, iris_data[row_i]);
+    ASSERT_EQ(transformed_data[row_i][1].value, literals_data[row_i]);
   }
 
   auto predicate_str2 = iris_data[iris_data.size() / 3];
@@ -621,15 +621,15 @@ TEST(QueryProcTests, test_bgp_node_4_compact_dicts) {
 
   for (const auto &row : transformed_data_2) {
     std::stringstream ss;
-    for (const auto &s : row)
-      ss << s;
+    for (const auto &res : row)
+      ss << res.value;
     set_big.insert(ss.str());
   }
 
   for (const auto &row : transformed_data_3) {
     std::stringstream ss;
-    for (const auto &s : row)
-      ss << s;
+    for (const auto &res : row)
+      ss << res.value;
     set_small.insert(ss.str());
   }
 

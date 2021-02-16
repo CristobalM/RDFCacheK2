@@ -7,29 +7,37 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <string>
+
+
+struct NaiveHash{
+  std::size_t operator()(const RDFResource &key) const{
+    return std::hash<std::string>()(key.value) ^ key.resource_type;
+  }
+};
 
 class NaiveDynamicStringDictionary {
 
-  std::vector<std::string> resources_extra;
-  std::unordered_map<std::string, unsigned long> reverse_resources;
+  std::vector<RDFResource> resources_extra;
+  std::unordered_map<RDFResource, unsigned long, NaiveHash> reverse_resources;
 
 public:
   NaiveDynamicStringDictionary() = default;
   NaiveDynamicStringDictionary(
-      std::vector<std::string> &&resources_extra,
-      std::unordered_map<std::string, unsigned long> &&reverse_resources_extra);
+      std::vector<RDFResource> &&resources_extra,
+      std::unordered_map<RDFResource, unsigned long, NaiveHash> &&reverse_resources_extra);
 
-  static void serialize_dict(std::vector<std::string> &strings,
+  static void serialize_dict(std::vector<RDFResource> &resources,
                              const std::string &fname);
-  static std::vector<std::string> deserialize_dict(const std::string &fname);
-  static std::unordered_map<std::string, unsigned long>
-  create_reverse(std::vector<std::string> &input);
+  static std::vector<RDFResource> deserialize_dict(const std::string &fname);
+  static std::unordered_map<RDFResource, unsigned long, NaiveHash>
+  create_reverse(std::vector<RDFResource> &input);
   void save(const std::string &res_fname);
   static NaiveDynamicStringDictionary load(const std::string &res_fname);
 
-  void add_resource(std::string resource);
-  unsigned long locate_resource(const std::string &resource) const;
-  std::string extract_resource(unsigned long id) const;
+  void add_resource(RDFResource resource);
+  unsigned long locate_resource(const RDFResource &resource) const;
+  RDFResource extract_resource(unsigned long id) const;
 
   size_t size() const;
 };

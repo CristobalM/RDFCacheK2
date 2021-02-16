@@ -842,7 +842,7 @@ QueryResult Cache::run_query(proto_msg::SparqlTree const &query_tree) {
   return QueryResult(result, std::move(vim));
 }
 
-std::string Cache::extract_resource(unsigned long index) const {
+RDFResource Cache::extract_resource(unsigned long index) const {
   return cache_manager->extract_resource(index);
 }
 

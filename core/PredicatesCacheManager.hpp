@@ -54,7 +54,7 @@ public:
   unsigned long get_iri_index(const std::string &value);
   unsigned long get_literal_index(const std::string &value);
   unsigned long get_blank_index(const std::string &value);
-  std::string extract_resource(unsigned long index) const;
+  RDFResource extract_resource(unsigned long index) const;
 
   PredicatesIndexCacheMDFile &get_predicates_index_cache();
 

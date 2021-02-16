@@ -42,7 +42,7 @@ PredicatesCacheManager::get_resource_index(const RDFResource &resource) const {
   }
 
   if (index == NORESULT)
-    return extra_dicts.locate_resource(resource.value) + isd_manager->last_id();
+    return extra_dicts.locate_resource(resource) + isd_manager->last_id();
 
   return index;
 }
@@ -67,10 +67,10 @@ void PredicatesCacheManager::handle_not_found(unsigned long &resource_id,
                                "' with value '" + resource.value + "'");
     }
 
-    resource_id = extra_dicts.locate_resource(resource.value);
+    resource_id = extra_dicts.locate_resource(resource);
     if (resource_id == 0) {
-      extra_dicts.add_resource(resource.value);
-      resource_id = extra_dicts.locate_resource(resource.value);
+      extra_dicts.add_resource(resource);
+      resource_id = extra_dicts.locate_resource(resource);
     }
     resource_id = resource_id + isd_manager->last_id();
   }
@@ -138,7 +138,8 @@ PredicatesCacheManager::get_tree_by_predicate_index(unsigned long index) {
 unsigned long PredicatesCacheManager::get_iri_index(const std::string &value) {
   auto index = isd_manager->iris_index(value);
   if (index == 0) {
-    return extra_dicts.locate_resource(value) + isd_manager->last_id();
+    RDFResource res(value, RDFResourceType::RDF_TYPE_IRI);
+    return extra_dicts.locate_resource(res) + isd_manager->last_id();
   }
   return index;
 }
@@ -146,7 +147,8 @@ unsigned long
 PredicatesCacheManager::get_literal_index(const std::string &value) {
   auto index = isd_manager->literals_index(value);
   if (index == 0) {
-    return extra_dicts.locate_resource(value) + isd_manager->last_id();
+    RDFResource res(value, RDFResourceType::RDF_TYPE_LITERAL);
+    return extra_dicts.locate_resource(res) + isd_manager->last_id();
   }
   return index;
 }
@@ -154,15 +156,16 @@ unsigned long
 PredicatesCacheManager::get_blank_index(const std::string &value) {
   auto index = isd_manager->blanks_index(value);
   if (index == 0) {
-    return extra_dicts.locate_resource(value) + isd_manager->last_id();
+    RDFResource res(value, RDFResourceType::RDF_TYPE_BLANK);
+    return extra_dicts.locate_resource(res) + isd_manager->last_id();
   }
   return index;
 }
 
-std::string
+RDFResource
 PredicatesCacheManager::extract_resource(unsigned long index) const {
   if (index <= isd_manager->last_id())
-    return isd_manager->get_resource(index).value;
+    return isd_manager->get_resource(index);
   return extra_dicts.extract_resource(index - isd_manager->last_id());
 }
 

@@ -1,5 +1,6 @@
 syntax = "proto3";
 import "message_type.proto";
+import "sparql_tree.proto";
 
 package proto_msg;
 
@@ -29,6 +30,7 @@ message QueryResultResponse{
 message QueryResultKeyValuePair {
     uint64 key = 1;
     string value = 2;
+    TermType type = 3;
 }
 
 message QueryResultRow {

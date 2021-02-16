@@ -49,10 +49,23 @@ static proto_msg::CacheResponse create_response_from_query_result(ServerTask &se
   auto &cache = server_task.get_cache();
 
   for(auto key: keys){
-    auto key_str = cache.extract_resource(key);
+    auto key_res = cache.extract_resource(key);
     auto *kv = cache_response.mutable_query_result_response()->add_kvs();
     kv->set_key(key);
-    kv->set_value(key_str);
+    kv->set_value(key_res.value);
+    switch(key_res.resource_type){
+      case RDFResourceType::RDF_TYPE_BLANK:
+          kv->set_type(proto_msg::TermType::BLANK_NODE);
+          break;
+      
+      case RDFResourceType::RDF_TYPE_IRI:
+          kv->set_type(proto_msg::TermType::IRI);
+          break;
+      
+      case RDFResourceType::RDF_TYPE_LITERAL:
+          kv->set_type(proto_msg::TermType::LITERAL);
+          break;
+    }
   }
 
   auto reverse_map = vim.reverse();
