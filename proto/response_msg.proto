@@ -1,6 +1,5 @@
 syntax = "proto3";
 import "message_type.proto";
-import  "graph_result.proto";
 
 package proto_msg;
 
@@ -12,32 +11,27 @@ message CacheResponse{
     MessageType response_type = 1;
 
     oneof response {
-        CacheCheckResponse cache_check_response = 2;
-        CacheFeedResponse cache_feed_response = 3;
-        CacheRetrieveResponse cache_retrieve_Response = 4;
-        ConnectionEndResponse connection_end_response = 5;
-
-        CacheFeedFullK2TreeResponse cache_feed_full_k2tree_response = 6;
+        ConnectionEndResponse connection_end_response = 2;
+        QueryResultResponse query_result_response = 3;
     }
 }
 
-message CacheCheckResponse {
-    bool has_result_stored = 1;
-}
-
-message CacheFeedResponse {
-    bool data_was_stored = 1;
-}
-
-message CacheRetrieveResponse {
-    bool has_result_stored = 1;
-    GraphResult graph_result = 2;
-}
 
 message ConnectionEndResponse{
     bool end = 1;
 }
 
-message CacheFeedFullK2TreeResponse{
-    bool data_was_stored = 1;
+message QueryResultResponse{
+    repeated QueryResultKeyValuePair kvs = 1;
+    repeated string header = 2;
+    repeated QueryResultRow rows = 3;
+}
+
+message QueryResultKeyValuePair {
+    uint64 key = 1;
+    string value = 2;
+}
+
+message QueryResultRow {
+    repeated uint64 row = 1;
 }

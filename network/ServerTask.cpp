@@ -7,6 +7,7 @@
 #include <sstream>
 #include <sys/socket.h>
 #include <unistd.h>
+#include <set>
 
 #include "ServerTask.hpp"
 
@@ -14,22 +15,53 @@
 #include <message_type.pb.h>
 #include <response_msg.pb.h>
 
+#include <serialization_util.hpp>
+
 ServerTask::ServerTask(int client_socket_fd, Cache &cache)
     : client_socket_fd(client_socket_fd), cache(cache) {}
 
 void send_response(int socket_client_fd,
                    proto_msg::CacheResponse &cache_response) {
   std::string serialized = cache_response.SerializeAsString();
-  uint32_t message_sz = htonl(serialized.size() + sizeof(uint32_t));
   std::stringstream ss;
-  ss.write(reinterpret_cast<char *>(&message_sz), sizeof(uint32_t));
+  write_u32(ss, serialized.size());
   ss.write(serialized.data(), sizeof(char) * serialized.size());
   auto result = ss.str();
   send(socket_client_fd, result.data(), result.size() * sizeof(char), 0);
 }
 
-proto_msg::CacheResponse create_response_from_query_result(QueryResult &) {
-  return proto_msg::CacheResponse();
+static proto_msg::CacheResponse create_response_from_query_result(ServerTask &server_task, QueryResult &query_result) {
+  auto &vim = query_result.get_vim();
+  auto &table = query_result.table();
+
+  proto_msg::CacheResponse cache_response;
+  cache_response.set_response_type(proto_msg::MessageType::RESULT_TABLE_RESPONSE);
+
+  std::set<uint64_t> keys; // will store values in ascending order
+  for(const auto &row: table.get_data()){
+    auto *response_row = cache_response.mutable_query_result_response()->add_rows();
+    for(auto value : row){
+      keys.insert(value);
+      response_row->add_row(value);
+    }
+  }
+
+  auto &cache = server_task.get_cache();
+
+  for(auto key: keys){
+    auto key_str = cache.extract_resource(key);
+    auto *kv = cache_response.mutable_query_result_response()->add_kvs();
+    kv->set_key(key);
+    kv->set_value(key_str);
+  }
+
+  auto reverse_map = vim.reverse();
+  for(auto header: table.headers){
+    auto header_str = reverse_map[header];
+    cache_response.mutable_query_result_response()->add_header(header_str);
+  }
+  
+  return cache_response;
 }
 
 void process_cache_query(ServerTask &server_task, Message &message) {
@@ -37,7 +69,7 @@ void process_cache_query(ServerTask &server_task, Message &message) {
   auto &tree =
       message.get_cache_request().cache_run_query_algebra().sparql_tree();
   auto query_result = cache.run_query(tree);
-  auto response = create_response_from_query_result(query_result);
+  auto response = create_response_from_query_result(server_task, query_result);
   int client_fd = server_task.get_client_socket_fd();
   send_response(client_fd, response);
 }

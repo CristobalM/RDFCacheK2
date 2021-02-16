@@ -8,9 +8,7 @@ option java_outer_classname = "MsgType";
 
 enum MessageType {
     UNKNOWN = 0;
-    CACHE_CHECK = 1;
-    CACHE_FEED = 2;
-    CACHE_RETRIEVE = 3;
-    CONNECTION_END = 4;
-    RUN_QUERY = 5;
+    CONNECTION_END = 1;
+    RUN_QUERY = 2;
+    RESULT_TABLE_RESPONSE = 3;
 }
