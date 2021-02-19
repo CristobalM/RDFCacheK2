@@ -9,6 +9,8 @@
 #include <unistd.h>
 #include <set>
 
+#include <openssl/md5.h>
+
 #include "ServerTask.hpp"
 
 #include <graph_result.pb.h>
@@ -17,18 +19,86 @@
 
 #include <serialization_util.hpp>
 
+
+
 ServerTask::ServerTask(int client_socket_fd, Cache &cache)
     : client_socket_fd(client_socket_fd), cache(cache) {}
 
+
+static std::vector<char> md5calc(const std::string &input){
+  std::vector<char> result(16, 0);
+
+  MD5(reinterpret_cast<const unsigned char*>(input.data()), input.size(), reinterpret_cast<unsigned char *>(result.data()));
+  return result;
+}
+
+static std::string md5_human_readable(const std::vector<char> &digest){
+  static const char hexchars[] = "0123456789abcdef";
+
+
+  std::string result;
+
+  for (int i = 0; i < 16; i++)
+  {
+      unsigned char b = digest[i];
+      char hex[3];
+
+      hex[0] = hexchars[b >> 4];
+      hex[1] = hexchars[b & 0xF];
+      hex[2] = 0;
+
+      result.append(hex);
+  }
+
+  std::for_each(result.begin(), result.end(), [](char & c){
+    c = ::toupper(c);
+  });
+  return result;
+}
+
 void send_response(int socket_client_fd,
                    proto_msg::CacheResponse &cache_response) {
+  // std::cout << "Sending response: " << cache_response.DebugString() << std::endl;
   std::string serialized = cache_response.SerializeAsString();
+  auto serialized_hash =  md5calc(serialized);
   std::stringstream ss;
-  write_u32(ss, serialized.size());
+  std::cout << "Sending message of size " << serialized.size() << " with hash '" << md5_human_readable(serialized_hash) << "'" << std::endl;
+  write_u64(ss, serialized.size());
+  ss.write(serialized_hash.data(), sizeof(char) * serialized_hash.size());
   ss.write(serialized.data(), sizeof(char) * serialized.size());
+  // ss << serialized_hash;
+  // ss << serialized;
   auto result = ss.str();
   send(socket_client_fd, result.data(), result.size() * sizeof(char), 0);
 }
+
+
+// static void print_table_debug(QueryResult &query_result, ServerTask &server_task){
+//   std::cout << " Debug print table" << std::endl;
+//   auto &vim = query_result.get_vim();
+//   auto &table = query_result.table();
+
+//   if(table.headers.size() == 0) throw std::runtime_error("No headers present in table");
+
+//   auto rev_map = vim.reverse();
+//   for(auto header: table.headers){
+//     std::cout << rev_map[header] << ",";
+//   }
+//   std::cout << std::endl;
+
+//   int counter = 0;
+//   for(auto &row: table.data){
+//     if(row.size() != table.headers.size()){
+//       throw std::runtime_error(std::to_string(counter) + "th row has size " + std::to_string(row.size()) + " but should be " + std::to_string(table.headers.size()));
+//     }
+//     counter++;
+//     for(auto col: row){
+//       std::cout << server_task.get_cache().extract_resource(col).value << ",";
+//     }
+//     std::cout << "\n";
+//   }
+//   std::cout << std::endl;
+// }
 
 static proto_msg::CacheResponse create_response_from_query_result(ServerTask &server_task, QueryResult &query_result) {
   auto &vim = query_result.get_vim();
@@ -151,8 +221,6 @@ void ServerTask::process() {
       return;
     }
     std::cout << "msg_size before rsz: " << msg_size << std::endl;
-
-    msg_size -= sizeof(msg_size);
 
     std::cout << "msg_size after: " << msg_size << std::endl;
 

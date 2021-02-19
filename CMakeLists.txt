@@ -159,6 +159,9 @@ add_dependencies(RDFCacheK2 k2dyn Utils)
 find_package(Protobuf REQUIRED)
 include_directories(${Protobuf_INCLUDE_DIRS})
 
+find_package(OpenSSL REQUIRED)
+include_directories(${OPENSSL_INCLUDE_DIRS})
+
 
 
 #add_executable(start_cache_server_example example/start_cache_server_example.cpp)
@@ -194,6 +197,7 @@ set(DEFAULT_LIBS
         CSD
         cds
         Utils
+        ${OPENSSL_LIBRARIES}
         )
 
 

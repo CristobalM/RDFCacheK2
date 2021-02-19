@@ -41,8 +41,14 @@ PredicatesCacheManager::get_resource_index(const RDFResource &resource) const {
     break;
   }
 
-  if (index == NORESULT)
-    return extra_dicts.locate_resource(resource) + isd_manager->last_id();
+  if (index == NORESULT){
+    auto naive_id = extra_dicts.locate_resource(resource);
+    if(naive_id == NORESULT){
+      throw std::runtime_error("Not found resource '" + resource.value + "'");
+    }
+    return naive_id + isd_manager->last_id();
+  }
+    
 
   return index;
 }
