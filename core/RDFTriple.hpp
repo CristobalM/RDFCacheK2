@@ -29,19 +29,19 @@ struct RDFResource {
   RDFResource(const std::string &value, RDFResourceType resource_type)
       : value(value), resource_type(resource_type) {}
 
-  RDFResource(const RDFResource &other) : value(other.value), resource_type(other.resource_type){
-  }
-  
-  RDFResource(RDFResource &&other) noexcept : value(std::move(other.value)), resource_type(other.resource_type){
-  }
+  RDFResource(const RDFResource &other)
+      : value(other.value), resource_type(other.resource_type) {}
 
-  RDFResource & operator=(const RDFResource &other) {
+  RDFResource(RDFResource &&other) noexcept
+      : value(std::move(other.value)), resource_type(other.resource_type) {}
+
+  RDFResource &operator=(const RDFResource &other) {
     value = other.value;
     resource_type = other.resource_type;
     return *this;
   }
 
-  RDFResource & operator=(RDFResource &&other) noexcept {
+  RDFResource &operator=(RDFResource &&other) noexcept {
     value = std::move(other.value);
     resource_type = other.resource_type;
     return *this;
@@ -50,7 +50,6 @@ struct RDFResource {
   bool operator==(const RDFResource &other) const {
     return value == other.value && resource_type == other.resource_type;
   }
-
 };
 
 struct RDFResourceReference {

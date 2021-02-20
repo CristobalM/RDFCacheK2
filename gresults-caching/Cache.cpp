@@ -2,6 +2,7 @@
 // Created by Cristobal Miranda, 2020
 //
 
+#include <chrono>
 #include <set>
 #include <sstream>
 #include <stdexcept>
@@ -250,6 +251,9 @@ std::shared_ptr<ResultTable> join_single_var_group(
 std::shared_ptr<ResultTable> cross_product_partial_results(
     std::unordered_map<std::string, std::shared_ptr<ResultTable>>
         &partial_results) {
+
+  auto start = std::chrono::high_resolution_clock::now();
+
   if (partial_results.size() == 0)
     throw std::runtime_error("cross_product_partial_results: no results");
   if (partial_results.size() == 1)
@@ -291,6 +295,12 @@ std::shared_ptr<ResultTable> cross_product_partial_results(
     done.insert(table.get());
   }
 
+  auto end = std::chrono::high_resolution_clock::now();
+  auto duration =
+      std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+  std::cout << "cross_product_partial_results took " << duration.count()
+            << " ms" << std::endl;
+
   return left_table;
 }
 
@@ -301,6 +311,8 @@ std::shared_ptr<ResultTable> join_two_tables_with_trees(
         &two_var_group_item,
     std::unordered_map<std::string, K2TreeMixed *> &k2trees_map,
     VarIndexManager &vim) {
+
+  auto start = std::chrono::high_resolution_clock::now();
   std::shared_ptr<ResultTable> smaller, bigger;
   const std::string *smaller_var, *bigger_var;
   if (table_one->rows_size() < table_two->rows_size()) {
@@ -345,7 +357,15 @@ std::shared_ptr<ResultTable> join_two_tables_with_trees(
   partial_results[*smaller_var] = smaller;
   partial_results[*bigger_var] = bigger;
 
-  return cross_product_partial_results(partial_results);
+  auto result = cross_product_partial_results(partial_results);
+  auto stop = std::chrono::high_resolution_clock::now();
+  auto duration =
+      std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+
+  std::cout << "join_two_tables_with_trees took " << duration.count() << " ms"
+            << std::endl;
+
+  return result;
 }
 
 std::shared_ptr<ResultTable> join_table_with_trees_by_two_var(
@@ -354,6 +374,7 @@ std::shared_ptr<ResultTable> join_table_with_trees_by_two_var(
         &two_var_group_item,
     std::unordered_map<std::string, K2TreeMixed *> &k2trees_map,
     VarIndexManager &vim) {
+  auto start = std::chrono::high_resolution_clock::now();
 
   const std::string &left_string = two_var_group_item.first.first;
   const std::string &right_string = two_var_group_item.first.second;
@@ -385,6 +406,13 @@ std::shared_ptr<ResultTable> join_table_with_trees_by_two_var(
     }
   }
 
+  auto stop = std::chrono::high_resolution_clock::now();
+  auto duration =
+      std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+
+  std::cout << "join_table_with_trees_by_two_var took " << duration.count()
+            << " ms" << std::endl;
+
   return table;
 }
 
@@ -395,6 +423,8 @@ std::shared_ptr<ResultTable> join_table_with_trees_by_one_var(
         &two_var_group_item,
     std::unordered_map<std::string, K2TreeMixed *> &k2trees_map,
     VarIndexManager &vim) {
+
+  auto start = std::chrono::high_resolution_clock::now();
 
   unsigned long table_var_index = vim.var_indexes[table_var];
   unsigned long real_table_var_index = table->get_actual_index(table_var_index);
@@ -454,6 +484,13 @@ std::shared_ptr<ResultTable> join_table_with_trees_by_one_var(
     it = next_it;
   }
 
+  auto stop = std::chrono::high_resolution_clock::now();
+  auto duration =
+      std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+
+  std::cout << "join_table_with_trees_by_one_var took " << duration.count()
+            << " ms" << std::endl;
+
   return table;
 }
 
@@ -476,11 +513,16 @@ join_two_var_group(const std::string &var_one, const std::string &var_two,
                    std::unordered_map<std::string, K2TreeMixed *> &k2trees_map,
                    VarIndexManager &vim) {
 
+  auto start = std::chrono::high_resolution_clock::now();
+
   if (triples.empty())
     throw std::runtime_error("join_two_var_group: no triples");
 
   const auto &first_triple = triples.at(0);
   K2TreeMixed &first_k2tree = *k2trees_map[first_triple.predicate.value];
+
+  std::cout << "join_two_var_group first_triple predicate: "
+            << first_triple.predicate.value << std::endl;
 
   auto result = std::make_shared<ResultTable>(std::vector<unsigned long>(
       {vim.var_indexes[var_one], vim.var_indexes[var_two]}));
@@ -528,6 +570,13 @@ join_two_var_group(const std::string &var_one, const std::string &var_two,
       },
       &chained_input);
 
+  auto stop = std::chrono::high_resolution_clock::now();
+  auto duration =
+      std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+
+  std::cout << "join_two_var_group took " << duration.count() << " ms"
+            << std::endl;
+
   return result;
 }
 
@@ -536,6 +585,8 @@ std::shared_ptr<ResultTable> join_two_var_group_sip(
     const std::vector<Triple> &triples,
     std::unordered_map<std::string, K2TreeMixed *> &k2trees_map,
     VarIndexManager &vim) {
+
+  auto start = std::chrono::high_resolution_clock::now();
 
   if (triples.empty())
     throw std::runtime_error("join_two_var_group: no triples");
@@ -599,6 +650,13 @@ std::shared_ptr<ResultTable> join_two_var_group_sip(
     }
   }
 
+  auto stop = std::chrono::high_resolution_clock::now();
+  auto duration =
+      std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+
+  std::cout << "join_two_var_group_sip took " << duration.count() << " ms"
+            << std::endl;
+
   return table;
 }
 
@@ -626,6 +684,7 @@ process_join_node(const proto_msg::SparqlNode &join_node, Cache::cm_t &cm,
 std::shared_ptr<ResultTable>
 process_bgp_node(const proto_msg::BGPNode &bgp_node, Cache::cm_t &cm,
                  VarIndexManager &vim) {
+  auto start = std::chrono::high_resolution_clock::now();
 
   auto k2trees_map = get_k2trees_map_by_predicate_value(bgp_node, cm);
   auto groups = group_triple_nodes(bgp_node);
@@ -650,6 +709,7 @@ process_bgp_node(const proto_msg::BGPNode &bgp_node, Cache::cm_t &cm,
       auto &partial_result_two = partial_results[item_pair.first.second];
       std::shared_ptr<ResultTable> result;
       if (&partial_result_one != &partial_result_two) {
+
         result =
             join_two_tables_with_trees(partial_result_one, partial_result_two,
                                        item_pair, k2trees_map, vim);
@@ -686,7 +746,14 @@ process_bgp_node(const proto_msg::BGPNode &bgp_node, Cache::cm_t &cm,
     }
   }
 
-  return cross_product_partial_results(partial_results);
+  auto result = cross_product_partial_results(partial_results);
+  auto end = std::chrono::high_resolution_clock::now();
+  auto duration =
+      std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+  std::cout << "process_bgp_node took " << duration.count() << " ms"
+            << std::endl;
+
+  return result;
 }
 
 void process_expr_node(const proto_msg::ExprNode &,

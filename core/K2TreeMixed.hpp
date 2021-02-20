@@ -40,13 +40,14 @@ struct K2TreeConfig {
 class K2TreeMixed {
   struct k2node *root;
   std::unique_ptr<struct k2qstate> st;
+  uint64_t points_count;
 
 public:
   explicit K2TreeMixed(uint32_t treedepth);
   K2TreeMixed(uint32_t treedepth, uint32_t max_node_count);
   K2TreeMixed(uint32_t treedepth, uint32_t max_node_count, uint32_t cut_depth);
   K2TreeMixed(struct k2node *root, uint32_t treedepth, uint32_t max_node_count,
-              uint32_t cut_depth);
+              uint32_t cut_depth, uint64_t points_count);
 
   K2TreeMixed(K2TreeConfig config);
 
@@ -88,6 +89,8 @@ public:
 
   void write_to_ostream(std::ostream &os);
   static K2TreeMixed read_from_istream(std::istream &is);
+
+  size_t size() const;
 
 private:
   void clean_up();

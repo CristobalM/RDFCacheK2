@@ -14,6 +14,13 @@ TEST(k2tree_mixed_tests, can_insert) {
   ASSERT_FALSE(tree.has(5, 2));
 }
 
+TEST(k2tree_mixed_tests, same_insertion_doesnt_increase_size) {
+  K2TreeMixed tree(10);
+  for (int i = 0; i < 100; i++)
+    tree.insert(3, 3);
+  ASSERT_EQ(tree.size(), 1);
+}
+
 TEST(k2tree_mixed_test, exhaustive_validation) {
   std::set<std::pair<unsigned long, unsigned long>> points_to_insert = {
       {0, 3}, {2, 1}, {123, 321}, {44, 41}, {33, 21}, {6, 9}};

@@ -25,6 +25,20 @@ PredicatesCacheManager::PredicatesCacheManager(
           std::make_unique<PredicatesIndexCacheMDFile>(fname)) {}
 uint64_t
 PredicatesCacheManager::get_resource_index(const RDFResource &resource) const {
+  auto index = get_resource_index_notfound_zero(resource);
+  if (index == NORESULT) {
+    auto naive_id = extra_dicts.locate_resource(resource);
+    if (naive_id == NORESULT) {
+      throw std::runtime_error("Not found resource '" + resource.value + "'");
+    }
+    return naive_id + isd_manager->last_id();
+  }
+
+  return index;
+}
+
+uint64_t PredicatesCacheManager::get_resource_index_notfound_zero(
+    const RDFResource &resource) const {
   unsigned long index;
   switch (resource.resource_type) {
   case RDF_TYPE_IRI:
@@ -41,54 +55,47 @@ PredicatesCacheManager::get_resource_index(const RDFResource &resource) const {
     break;
   }
 
-  if (index == NORESULT){
-    auto naive_id = extra_dicts.locate_resource(resource);
-    if(naive_id == NORESULT){
-      throw std::runtime_error("Not found resource '" + resource.value + "'");
-    }
-    return naive_id + isd_manager->last_id();
-  }
-    
-
   return index;
 }
 
 void PredicatesCacheManager::handle_not_found(unsigned long &resource_id,
                                               RDFResource &resource) {
-  if (resource_id == NORESULT) {
-    std::string res_type_name;
-    switch (resource.resource_type) {
-    case RDF_TYPE_IRI:
-      res_type_name = "IRI";
-      break;
-    case RDF_TYPE_BLANK:
-      res_type_name = "BLANK_NODE";
-      break;
-    case RDF_TYPE_LITERAL:
-      res_type_name = "LITERAL";
-      break;
-    default:
-      throw std::runtime_error("Unknown resource type: '" +
-                               std::to_string(resource.resource_type) +
-                               "' with value '" + resource.value + "'");
-    }
+  if (resource_id != NORESULT)
+    return;
 
-    resource_id = extra_dicts.locate_resource(resource);
-    if (resource_id == 0) {
-      extra_dicts.add_resource(resource);
-      resource_id = extra_dicts.locate_resource(resource);
-    }
-    resource_id = resource_id + isd_manager->last_id();
+  std::string res_type_name;
+  switch (resource.resource_type) {
+  case RDF_TYPE_IRI:
+    res_type_name = "IRI";
+    break;
+  case RDF_TYPE_BLANK:
+    res_type_name = "BLANK_NODE";
+    break;
+  case RDF_TYPE_LITERAL:
+    res_type_name = "LITERAL";
+    break;
+  default:
+    throw std::runtime_error("Unknown resource type: '" +
+                             std::to_string(resource.resource_type) +
+                             "' with value '" + resource.value + "'");
   }
+
+  resource_id = extra_dicts.locate_resource(resource);
+  if (resource_id == 0) {
+    extra_dicts.add_resource(resource);
+    resource_id = extra_dicts.locate_resource(resource);
+  }
+  resource_id = resource_id + isd_manager->last_id();
 }
+
 void PredicatesCacheManager::add_triple(RDFTripleResource &&rdf_triple) {
   add_triple(rdf_triple);
 }
 void PredicatesCacheManager::add_triple(RDFTripleResource &rdf_triple) {
   auto start = std::chrono::high_resolution_clock::now();
-  auto subject_id = get_resource_index(rdf_triple.subject);
-  auto predicate_id = get_resource_index(rdf_triple.predicate);
-  auto object_id = get_resource_index(rdf_triple.object);
+  auto subject_id = get_resource_index_notfound_zero(rdf_triple.subject);
+  auto predicate_id = get_resource_index_notfound_zero(rdf_triple.predicate);
+  auto object_id = get_resource_index_notfound_zero(rdf_triple.object);
 
   measured_time_sd_lookup +=
       std::chrono::duration_cast<std::chrono::nanoseconds>(

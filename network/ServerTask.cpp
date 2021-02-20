@@ -4,10 +4,10 @@
 
 #include <iostream>
 #include <netinet/in.h>
+#include <set>
 #include <sstream>
 #include <sys/socket.h>
 #include <unistd.h>
-#include <set>
 
 #include <openssl/md5.h>
 
@@ -19,50 +19,47 @@
 
 #include <serialization_util.hpp>
 
-
-
 ServerTask::ServerTask(int client_socket_fd, Cache &cache)
     : client_socket_fd(client_socket_fd), cache(cache) {}
 
-
-static std::vector<char> md5calc(const std::string &input){
+static std::vector<char> md5calc(const std::string &input) {
   std::vector<char> result(16, 0);
 
-  MD5(reinterpret_cast<const unsigned char*>(input.data()), input.size(), reinterpret_cast<unsigned char *>(result.data()));
+  MD5(reinterpret_cast<const unsigned char *>(input.data()), input.size(),
+      reinterpret_cast<unsigned char *>(result.data()));
   return result;
 }
 
-static std::string md5_human_readable(const std::vector<char> &digest){
+static std::string md5_human_readable(const std::vector<char> &digest) {
   static const char hexchars[] = "0123456789abcdef";
-
 
   std::string result;
 
-  for (int i = 0; i < 16; i++)
-  {
-      unsigned char b = digest[i];
-      char hex[3];
+  for (int i = 0; i < 16; i++) {
+    unsigned char b = digest[i];
+    char hex[3];
 
-      hex[0] = hexchars[b >> 4];
-      hex[1] = hexchars[b & 0xF];
-      hex[2] = 0;
+    hex[0] = hexchars[b >> 4];
+    hex[1] = hexchars[b & 0xF];
+    hex[2] = 0;
 
-      result.append(hex);
+    result.append(hex);
   }
 
-  std::for_each(result.begin(), result.end(), [](char & c){
-    c = ::toupper(c);
-  });
+  std::for_each(result.begin(), result.end(),
+                [](char &c) { c = ::toupper(c); });
   return result;
 }
 
 void send_response(int socket_client_fd,
                    proto_msg::CacheResponse &cache_response) {
-  // std::cout << "Sending response: " << cache_response.DebugString() << std::endl;
+  // std::cout << "Sending response: " << cache_response.DebugString() <<
+  // std::endl;
   std::string serialized = cache_response.SerializeAsString();
-  auto serialized_hash =  md5calc(serialized);
+  auto serialized_hash = md5calc(serialized);
   std::stringstream ss;
-  std::cout << "Sending message of size " << serialized.size() << " with hash '" << md5_human_readable(serialized_hash) << "'" << std::endl;
+  std::cout << "Sending message of size " << serialized.size() << " with hash '"
+            << md5_human_readable(serialized_hash) << "'" << std::endl;
   write_u64(ss, serialized.size());
   ss.write(serialized_hash.data(), sizeof(char) * serialized_hash.size());
   ss.write(serialized.data(), sizeof(char) * serialized.size());
@@ -72,13 +69,14 @@ void send_response(int socket_client_fd,
   send(socket_client_fd, result.data(), result.size() * sizeof(char), 0);
 }
 
-
-// static void print_table_debug(QueryResult &query_result, ServerTask &server_task){
+// static void print_table_debug(QueryResult &query_result, ServerTask
+// &server_task){
 //   std::cout << " Debug print table" << std::endl;
 //   auto &vim = query_result.get_vim();
 //   auto &table = query_result.table();
 
-//   if(table.headers.size() == 0) throw std::runtime_error("No headers present in table");
+//   if(table.headers.size() == 0) throw std::runtime_error("No headers present
+//   in table");
 
 //   auto rev_map = vim.reverse();
 //   for(auto header: table.headers){
@@ -89,28 +87,35 @@ void send_response(int socket_client_fd,
 //   int counter = 0;
 //   for(auto &row: table.data){
 //     if(row.size() != table.headers.size()){
-//       throw std::runtime_error(std::to_string(counter) + "th row has size " + std::to_string(row.size()) + " but should be " + std::to_string(table.headers.size()));
+//       throw std::runtime_error(std::to_string(counter) + "th row has size " +
+//       std::to_string(row.size()) + " but should be " +
+//       std::to_string(table.headers.size()));
 //     }
 //     counter++;
 //     for(auto col: row){
-//       std::cout << server_task.get_cache().extract_resource(col).value << ",";
+//       std::cout << server_task.get_cache().extract_resource(col).value <<
+//       ",";
 //     }
 //     std::cout << "\n";
 //   }
 //   std::cout << std::endl;
 // }
 
-static proto_msg::CacheResponse create_response_from_query_result(ServerTask &server_task, QueryResult &query_result) {
+static proto_msg::CacheResponse
+create_response_from_query_result(ServerTask &server_task,
+                                  QueryResult &query_result) {
   auto &vim = query_result.get_vim();
   auto &table = query_result.table();
 
   proto_msg::CacheResponse cache_response;
-  cache_response.set_response_type(proto_msg::MessageType::RESULT_TABLE_RESPONSE);
+  cache_response.set_response_type(
+      proto_msg::MessageType::RESULT_TABLE_RESPONSE);
 
   std::set<uint64_t> keys; // will store values in ascending order
-  for(const auto &row: table.get_data()){
-    auto *response_row = cache_response.mutable_query_result_response()->add_rows();
-    for(auto value : row){
+  for (const auto &row : table.get_data()) {
+    auto *response_row =
+        cache_response.mutable_query_result_response()->add_rows();
+    for (auto value : row) {
       keys.insert(value);
       response_row->add_row(value);
     }
@@ -118,32 +123,32 @@ static proto_msg::CacheResponse create_response_from_query_result(ServerTask &se
 
   auto &cache = server_task.get_cache();
 
-  for(auto key: keys){
+  for (auto key : keys) {
     auto key_res = cache.extract_resource(key);
     auto *kv = cache_response.mutable_query_result_response()->add_kvs();
     kv->set_key(key);
     kv->set_value(key_res.value);
-    switch(key_res.resource_type){
-      case RDFResourceType::RDF_TYPE_BLANK:
-          kv->set_type(proto_msg::TermType::BLANK_NODE);
-          break;
-      
-      case RDFResourceType::RDF_TYPE_IRI:
-          kv->set_type(proto_msg::TermType::IRI);
-          break;
-      
-      case RDFResourceType::RDF_TYPE_LITERAL:
-          kv->set_type(proto_msg::TermType::LITERAL);
-          break;
+    switch (key_res.resource_type) {
+    case RDFResourceType::RDF_TYPE_BLANK:
+      kv->set_type(proto_msg::TermType::BLANK_NODE);
+      break;
+
+    case RDFResourceType::RDF_TYPE_IRI:
+      kv->set_type(proto_msg::TermType::IRI);
+      break;
+
+    case RDFResourceType::RDF_TYPE_LITERAL:
+      kv->set_type(proto_msg::TermType::LITERAL);
+      break;
     }
   }
 
   auto reverse_map = vim.reverse();
-  for(auto header: table.headers){
+  for (auto header : table.headers) {
     auto header_str = reverse_map[header];
     cache_response.mutable_query_result_response()->add_header(header_str);
   }
-  
+
   return cache_response;
 }
 

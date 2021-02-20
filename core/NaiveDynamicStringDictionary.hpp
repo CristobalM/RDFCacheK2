@@ -7,11 +7,9 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include <string>
 
-
-struct NaiveHash{
-  std::size_t operator()(const RDFResource &key) const{
+struct NaiveHash {
+  std::size_t operator()(const RDFResource &key) const {
     return std::hash<std::string>()(key.value) ^ key.resource_type;
   }
 };
@@ -25,7 +23,8 @@ public:
   NaiveDynamicStringDictionary() = default;
   NaiveDynamicStringDictionary(
       std::vector<RDFResource> &&resources_extra,
-      std::unordered_map<RDFResource, unsigned long, NaiveHash> &&reverse_resources_extra);
+      std::unordered_map<RDFResource, unsigned long, NaiveHash>
+          &&reverse_resources_extra);
 
   static void serialize_dict(std::vector<RDFResource> &resources,
                              const std::string &fname);

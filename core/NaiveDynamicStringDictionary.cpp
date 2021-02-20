@@ -7,8 +7,10 @@
 
 NaiveDynamicStringDictionary::NaiveDynamicStringDictionary(
     std::vector<RDFResource> &&resources_extra,
-    std::unordered_map<RDFResource, unsigned long, NaiveHash> &&reverse_resources)
-    : resources_extra(std::move(resources_extra)), reverse_resources(std::move(reverse_resources)) {}
+    std::unordered_map<RDFResource, unsigned long, NaiveHash>
+        &&reverse_resources)
+    : resources_extra(std::move(resources_extra)),
+      reverse_resources(std::move(reverse_resources)) {}
 
 void NaiveDynamicStringDictionary::serialize_dict(
     std::vector<RDFResource> &resources, const std::string &fname) {
@@ -17,7 +19,7 @@ void NaiveDynamicStringDictionary::serialize_dict(
   for (auto &resource : resources) {
     size += resource.value.size() + 1 + sizeof(uint16_t);
   }
-  
+
   write_u64(ofs, size);
 
   for (auto &resource : resources) {

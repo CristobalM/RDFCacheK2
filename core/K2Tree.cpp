@@ -97,7 +97,8 @@ K2Tree::~K2Tree() noexcept(false) {
 }
 
 void K2Tree::insert(unsigned long col, unsigned long row) {
-  int err_check = insert_point(root, col, row, qs.get());
+  int already_exists;
+  int err_check = insert_point(root, col, row, qs.get(), &already_exists);
   if (err_check)
     throw std::runtime_error("insert: CANT INSERT POINT " +
                              std::to_string(col) + ", " + std::to_string(row) +

@@ -13,11 +13,12 @@ K2TreeMixed::K2TreeMixed(uint32_t treedepth, uint32_t max_node_count)
     : K2TreeMixed(treedepth, max_node_count, std::max(treedepth / 4, 1U)) {}
 K2TreeMixed::K2TreeMixed(uint32_t treedepth, uint32_t max_node_count,
                          uint32_t cut_depth)
-    : K2TreeMixed(create_k2node(), treedepth, max_node_count, cut_depth) {}
+    : K2TreeMixed(create_k2node(), treedepth, max_node_count, cut_depth, 0) {}
 
 K2TreeMixed::K2TreeMixed(struct k2node *root, uint32_t treedepth,
-                         uint32_t max_node_count, uint32_t cut_depth)
-    : root(root) {
+                         uint32_t max_node_count, uint32_t cut_depth,
+                         uint64_t points_count)
+    : root(root), points_count(points_count) {
   st = std::make_unique<struct k2qstate>();
   init_k2qstate(st.get(), treedepth, max_node_count, cut_depth);
 }
@@ -52,7 +53,10 @@ K2TreeMixed &K2TreeMixed::operator=(K2TreeMixed &&other) {
 K2TreeMixed::~K2TreeMixed() { clean_up(); }
 
 void K2TreeMixed::insert(unsigned long col, unsigned long row) {
-  k2node_insert_point(root, col, row, st.get());
+  int already_exists;
+  k2node_insert_point(root, col, row, st.get(), &already_exists);
+  if (!already_exists)
+    points_count++;
 }
 
 bool K2TreeMixed::has(unsigned long col, unsigned long row) {
@@ -234,6 +238,7 @@ void K2TreeMixed::write_to_ostream(std::ostream &os) {
 
   serialize_to_vec_with_k2node_ptrs(root, 0, st->cut_depth, containers,
                                     current_node_location);
+  write_u64(os, points_count);
   write_u32(os, st->k2tree_depth);
   write_u32(os, st->cut_depth);
   write_u32(os, st->qs.max_nodes_count);
@@ -271,6 +276,7 @@ struct k2node *deserialize_k2node_tree(std::istream &is,
 }
 
 K2TreeMixed K2TreeMixed::read_from_istream(std::istream &is) {
+  uint64_t points_count = read_u64(is);
   uint32_t k2tree_depth = read_u32(is);
   uint32_t cut_depth = read_u32(is);
   uint32_t max_nodes_count = read_u32(is);
@@ -282,7 +288,8 @@ K2TreeMixed K2TreeMixed::read_from_istream(std::istream &is) {
   uint32_t current_node_location = 0;
   struct k2node *root = deserialize_k2node_tree(is, containers, 0, cut_depth,
                                                 current_node_location);
-  return K2TreeMixed(root, k2tree_depth, max_nodes_count, cut_depth);
+  return K2TreeMixed(root, k2tree_depth, max_nodes_count, cut_depth,
+                     points_count);
 }
 
 std::vector<unsigned long> K2TreeMixed::sip_join_k2trees(
@@ -322,3 +329,5 @@ std::vector<unsigned long> K2TreeMixed::sip_join_k2trees(
 
   return result;
 }
+
+size_t K2TreeMixed::size() const { return points_count; }

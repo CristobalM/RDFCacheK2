@@ -62,6 +62,7 @@ public:
 
 private:
   void handle_not_found(unsigned long &resource_id, RDFResource &resource);
+  uint64_t get_resource_index_notfound_zero(const RDFResource &resource) const;
 };
 
 #endif // RDFCACHEK2_PREDICATESCACHEMANAGER_HPP
