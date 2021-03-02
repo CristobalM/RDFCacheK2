@@ -1,3 +1,5 @@
+#include <algorithm>
+#include <cassert>
 #include <memory>
 #include <stdexcept>
 
@@ -140,3 +142,21 @@ void ResultTable::add_row(std::vector<unsigned long> &&row) {
 
 ResultTable::ResultTable(std::vector<unsigned long> &&headers)
     : headers(std::move(headers)) {}
+
+ResultTable::ResultTable(std::vector<unsigned long> &headers)
+    : headers(headers) {}
+
+void ResultTable::sort_rows() {
+  data.sort([](const vul_t &lhs, const vul_t &rhs) {
+    assert(lhs.size() == rhs.size());
+
+    for (size_t i = 0; i < lhs.size(); i++) {
+      unsigned long lhs_i = lhs.at(i);
+      unsigned long rhs_i = rhs.at(i);
+      if (lhs_i == rhs_i)
+        continue;
+      return lhs_i < rhs_i;
+    }
+    return false;
+  });
+}

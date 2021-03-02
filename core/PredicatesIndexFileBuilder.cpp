@@ -79,18 +79,3 @@ PredicatesCacheMetadata PredicatesIndexFileBuilder::build(
   return PredicatesCacheMetadata(std::move(metadata_map),
                                  std::move(predicates_ids), config);
 }
-
-/*
-PredicatesCacheMetadata
-PredicatesIndexFileBuilder::build_from_memory(std::vector<TripleValue> &triples,
-std::ostream &output_file,
-                          std::iostream &tmp_stream,
-                            K2TreeConfig config){
-
-std::sort(triples.begin(), triples.end(), [](const TripleValue &lhs, const
-TripleValue &rhs){ return lhs.second < rhs.second;
-});
-
-
-}
-*/

@@ -101,3 +101,85 @@ TEST(k2tree_mixed_test, can_serialize) {
     }
   }
 }
+
+TEST(k2tree_mixed_test, can_report_column) {
+  unsigned long treedepth = 10;
+  K2TreeMixed tree(treedepth, 255, 5);
+
+  for (int i = 1; i < 100; i++) {
+    tree.insert(1, i);
+  }
+
+  std::vector<unsigned long> retrieved;
+  tree.traverse_column(
+      1,
+      [](unsigned long, unsigned long row, void *report_state) {
+        reinterpret_cast<std::vector<unsigned long> *>(report_state)
+            ->push_back(row);
+      },
+      &retrieved);
+
+  for (int i = 0; i < 99; i++) {
+    ASSERT_EQ(retrieved[i], i + 1);
+  }
+}
+
+TEST(k2tree_mixed_test, can_report_row) {
+  unsigned long treedepth = 10;
+  K2TreeMixed tree(treedepth, 255, 5);
+
+  for (int i = 1; i < 100; i++) {
+    tree.insert(i, 1);
+  }
+
+  std::vector<unsigned long> retrieved;
+  tree.traverse_row(
+      1,
+      [](unsigned long col, unsigned long, void *report_state) {
+        reinterpret_cast<std::vector<unsigned long> *>(report_state)
+            ->push_back(col);
+      },
+      &retrieved);
+
+  for (int i = 0; i < 99; i++) {
+    ASSERT_EQ(retrieved[i], i + 1);
+  }
+}
+
+TEST(k2tree_mixed_test, can_report_row_and_sip) {
+  unsigned long treedepth = 10;
+  K2TreeMixed tree(treedepth, 255, 5);
+
+  for (int i = 1; i < 100; i++) {
+    tree.insert(i, 1);
+  }
+
+  std::vector<unsigned long> retrieved;
+  tree.traverse_row(
+      1,
+      [](unsigned long col, unsigned long, void *report_state) {
+        reinterpret_cast<std::vector<unsigned long> *>(report_state)
+            ->push_back(col);
+      },
+      &retrieved);
+
+  std::vector<unsigned long> retrieved_sip;
+
+  std::vector<K2TreeMixed *> trees;
+
+  trees.push_back(&tree);
+  std::vector<struct sip_ipoint> join_coords;
+
+  struct sip_ipoint coord;
+  coord.coord = 1;
+  coord.coord_type = coord_t::ROW_COORD;
+
+  join_coords.push_back(coord);
+
+  auto result_sip = K2TreeMixed::sip_join_k2trees(trees, join_coords);
+  ASSERT_EQ(result_sip.size(), retrieved.size());
+
+  for (int i = 0; i < 99; i++) {
+    ASSERT_EQ(retrieved[i], result_sip[i]);
+  }
+}

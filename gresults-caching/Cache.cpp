@@ -15,6 +15,8 @@
 #include "CacheReplacementFactory.hpp"
 #include "VarIndexManager.hpp"
 
+#include "MergeJoin.hpp"
+
 Cache::Cache(std::shared_ptr<PredicatesCacheManager> &cache_manager,
              CacheReplacement::STRATEGY cache_replacement_strategy,
              size_t memory_budget_bytes)
@@ -46,13 +48,60 @@ struct Triple {
   }
 };
 
+struct KeyPairStr {
+  std::string first_var;
+  std::string second_var;
+
+  KeyPairStr() {}
+
+  KeyPairStr(std::string &&first, std::string &&second)
+      : first_var(std::move(first)), second_var(std::move(second)) {}
+
+  KeyPairStr(const std::string &first, const std::string &second)
+      : first_var(first), second_var(second) {}
+
+  KeyPairStr(KeyPairStr &&other) noexcept
+      : first_var(std::move(other.first_var)),
+        second_var(std::move(other.second_var)) {}
+
+  KeyPairStr(const KeyPairStr &other)
+      : first_var(other.first_var), second_var(other.second_var) {}
+
+  KeyPairStr &operator=(KeyPairStr &&other) noexcept {
+    this->first_var = std::move(other.first_var);
+    this->second_var = std::move(other.second_var);
+    return *this;
+  }
+
+  KeyPairStr &operator=(const KeyPairStr &other) {
+    this->first_var = other.first_var;
+    this->second_var = other.second_var;
+    return *this;
+  }
+
+  friend bool operator==(const KeyPairStr &lhs, const KeyPairStr &rhs) {
+    return lhs.first_var == rhs.first_var && lhs.second_var == rhs.second_var;
+  }
+};
+
 struct hash_pair {
-  template <class T1, class T2>
-  size_t operator()(const std::pair<T1, T2> &p) const {
-    auto hash1 = std::hash<T1>{}(p.first);
-    auto hash2 = std::hash<T2>{}(p.second);
+  size_t operator()(const KeyPairStr &p) const {
+    auto hash1 = std::hash<std::string>{}(p.first_var);
+    auto hash2 = std::hash<std::string>{}(p.second_var);
     return hash1 ^ hash2;
   }
+};
+
+struct GroupedTriples {
+  std::unordered_map<std::string, std::vector<Triple>> one_var_groups;
+  std::unordered_map<KeyPairStr, std::vector<Triple>, hash_pair> two_var_groups;
+
+  GroupedTriples(
+      std::unordered_map<std::string, std::vector<Triple>> &&one_var_groups,
+      std::unordered_map<KeyPairStr, std::vector<Triple>, hash_pair>
+          &&two_var_groups)
+      : one_var_groups(std::move(one_var_groups)),
+        two_var_groups(std::move(two_var_groups)) {}
 };
 
 // prototypes
@@ -69,10 +118,7 @@ std::unordered_map<std::string, K2TreeMixed *>
 get_k2trees_map_by_predicate_value(const proto_msg::BGPNode &bgp_node,
                                    Cache::cm_t &cm);
 
-std::pair<std::unordered_map<std::string, std::vector<Triple>>,
-          std::unordered_map<std::pair<std::string, std::string>,
-                             std::vector<Triple>, hash_pair>>
-group_triple_nodes(const proto_msg::BGPNode &bgp_node);
+GroupedTriples group_triple_nodes(const proto_msg::BGPNode &bgp_node);
 
 unsigned long get_index_from_term(const Term &term, Cache::cm_t &cm);
 
@@ -91,8 +137,7 @@ std::shared_ptr<ResultTable> cross_product_partial_results(
 
 std::shared_ptr<ResultTable> join_table_with_trees_by_two_var(
     std::shared_ptr<ResultTable> &table,
-    const std::pair<std::pair<std::string, std::string>, std::vector<Triple>>
-        &two_var_group_item,
+    const std::pair<const KeyPairStr, std::vector<Triple>> &two_var_group_item,
     std::unordered_map<std::string, K2TreeMixed *> &k2trees_map,
     VarIndexManager &vim);
 
@@ -101,6 +146,12 @@ join_two_var_group(const std::string &var_one, const std::string &var_two,
                    const std::vector<Triple> &triples,
                    std::unordered_map<std::string, K2TreeMixed *> &k2trees_map,
                    VarIndexManager &vim);
+
+std::shared_ptr<ResultTable> join_two_var_group_merge(
+    const std::string &var_one, const std::string &var_two,
+    const std::vector<Triple> &triples,
+    std::unordered_map<std::string, K2TreeMixed *> &k2trees_map,
+    VarIndexManager &vim);
 
 std::shared_ptr<ResultTable> join_two_var_group_sip(
     const std::string &var_one, const std::string &var_two,
@@ -138,7 +189,7 @@ get_k2trees_map_by_predicate_value(const proto_msg::BGPNode &bgp_node,
     if (predicate_type != proto_msg::TermType::IRI) {
       throw std::runtime_error(
           "Operation not supported, predicate is not an IRI");
-    }
+    };
 
     const std::string &predicate_value = triple.predicate().term_value();
 
@@ -151,26 +202,23 @@ get_k2trees_map_by_predicate_value(const proto_msg::BGPNode &bgp_node,
   return k2trees_map;
 }
 
-std::pair<std::unordered_map<std::string, std::vector<Triple>>,
-          std::unordered_map<std::pair<std::string, std::string>,
-                             std::vector<Triple>, hash_pair>>
-group_triple_nodes(const proto_msg::BGPNode &bgp_node) {
+GroupedTriples group_triple_nodes(const proto_msg::BGPNode &bgp_node) {
 
   std::unordered_map<std::string, std::vector<Triple>> one_var_groups;
-  std::unordered_map<std::pair<std::string, std::string>, std::vector<Triple>,
-                     hash_pair>
-      two_var_groups;
+  std::unordered_map<KeyPairStr, std::vector<Triple>, hash_pair> two_var_groups;
 
   for (int i = 0; i < bgp_node.triple_size(); i++) {
     const auto &triple = bgp_node.triple().at(i);
 
     if (triple.subject().term_type() == proto_msg::TermType::VARIABLE &&
         triple.object().term_type() == proto_msg::TermType::VARIABLE) {
-      std::pair<std::string, std::string> keypair;
+      KeyPairStr keypair;
       if (triple.subject().term_value() < triple.object().term_value()) {
-        keypair = {triple.subject().term_value(), triple.object().term_value()};
+        keypair = KeyPairStr(triple.subject().term_value(),
+                             triple.object().term_value());
       } else {
-        keypair = {triple.object().term_value(), triple.subject().term_value()};
+        keypair = KeyPairStr(triple.object().term_value(),
+                             triple.subject().term_value());
       }
 
       two_var_groups[keypair].push_back(Triple(triple));
@@ -189,7 +237,8 @@ group_triple_nodes(const proto_msg::BGPNode &bgp_node) {
       throw std::runtime_error(ss.str());
     }
   }
-  return {one_var_groups, two_var_groups};
+
+  return GroupedTriples(std::move(one_var_groups), std::move(two_var_groups));
 }
 
 unsigned long get_index_from_term(const Term &term, Cache::cm_t &cm) {
@@ -268,9 +317,12 @@ std::shared_ptr<ResultTable> cross_product_partial_results(
   for (auto it = second; it != partial_results.end(); it++)
     plain_partial_results.push_back({it->first, it->second});
 
+  std::cout << "plain partial results size : " << plain_partial_results.size()
+            << std::endl;
+
   std::set<ResultTable *> done;
 
-  done.insert(it_left->second.get());
+  done.insert(left_table.get());
 
   for (const auto &pair : plain_partial_results) {
     const auto &var_name = pair.first;
@@ -279,14 +331,18 @@ std::shared_ptr<ResultTable> cross_product_partial_results(
       continue;
     }
 
-    for (auto right_header : table->headers) {
-      left_table->headers.push_back(right_header);
-    }
+    if (left_table.get() != table.get()) {
+      std::cout << "merging... size left: " << left_table->rows_size()
+                << ", size right: " << table->rows_size() << std::endl;
+      for (auto right_header : table->headers) {
+        left_table->headers.push_back(right_header);
+      }
 
-    for (auto &left_row : left_table->data) {
-      for (auto &right_row : table->data) {
-        for (auto right_val : right_row) {
-          left_row.push_back(right_val);
+      for (auto &left_row : left_table->data) {
+        for (auto &right_row : table->data) {
+          for (auto right_val : right_row) {
+            left_row.push_back(right_val);
+          }
         }
       }
     }
@@ -307,26 +363,26 @@ std::shared_ptr<ResultTable> cross_product_partial_results(
 std::shared_ptr<ResultTable> join_two_tables_with_trees(
     std::shared_ptr<ResultTable> &table_one,
     std::shared_ptr<ResultTable> &table_two,
-    const std::pair<std::pair<std::string, std::string>, std::vector<Triple>>
-        &two_var_group_item,
+    const std::pair<const KeyPairStr, std::vector<Triple>> &two_var_group_item,
     std::unordered_map<std::string, K2TreeMixed *> &k2trees_map,
     VarIndexManager &vim) {
 
   auto start = std::chrono::high_resolution_clock::now();
   std::shared_ptr<ResultTable> smaller, bigger;
   const std::string *smaller_var, *bigger_var;
+  const KeyPairStr &var_pair = two_var_group_item.first;
   if (table_one->rows_size() < table_two->rows_size()) {
     smaller = table_one;
     bigger = table_two;
 
-    smaller_var = &two_var_group_item.first.first;
-    bigger_var = &two_var_group_item.first.second;
+    smaller_var = &var_pair.first_var;
+    bigger_var = &var_pair.second_var;
   } else {
     smaller = table_two;
     bigger = table_one;
 
-    smaller_var = &two_var_group_item.first.second;
-    bigger_var = &two_var_group_item.first.first;
+    smaller_var = &var_pair.second_var;
+    bigger_var = &var_pair.first_var;
   }
 
   unsigned long smaller_index = vim.var_indexes[*smaller_var];
@@ -370,14 +426,14 @@ std::shared_ptr<ResultTable> join_two_tables_with_trees(
 
 std::shared_ptr<ResultTable> join_table_with_trees_by_two_var(
     std::shared_ptr<ResultTable> &table,
-    const std::pair<std::pair<std::string, std::string>, std::vector<Triple>>
-        &two_var_group_item,
+    const std::pair<const KeyPairStr, std::vector<Triple>> &two_var_group_item,
     std::unordered_map<std::string, K2TreeMixed *> &k2trees_map,
     VarIndexManager &vim) {
   auto start = std::chrono::high_resolution_clock::now();
 
-  const std::string &left_string = two_var_group_item.first.first;
-  const std::string &right_string = two_var_group_item.first.second;
+  const KeyPairStr &var_pair = two_var_group_item.first;
+  const std::string &left_string = var_pair.first_var;
+  const std::string &right_string = var_pair.second_var;
 
   unsigned long left_index = vim.var_indexes[left_string];
   unsigned long left_real_index = table->get_actual_index(left_index);
@@ -416,11 +472,25 @@ std::shared_ptr<ResultTable> join_table_with_trees_by_two_var(
   return table;
 }
 
+/*
+struct TableUpdateTempStruct {
+  ResultTable::lvul_t::iterator &next_it;
+  ResultTable &table;
+  std::vector<unsigned long> base_row;
+  TableUpdateTempStruct(ResultTable::lvul_t::iterator &next_it, ResultTable
+&table, std::vector<unsigned long> &&base_row) : next_it(next_it), table(table),
+base_row(std::move(base_row)) {}
+};
+*/
+struct TableUpdateTempStruct {
+  int current_i;
+  TableUpdateTempStruct() : current_i(0) {}
+};
+
 std::shared_ptr<ResultTable> join_table_with_trees_by_one_var(
     std::shared_ptr<ResultTable> &table, const std::string &table_var,
     const std::string &other_var,
-    const std::pair<std::pair<std::string, std::string>, std::vector<Triple>>
-        &two_var_group_item,
+    const std::pair<const KeyPairStr, std::vector<Triple>> &two_var_group_item,
     std::unordered_map<std::string, K2TreeMixed *> &k2trees_map,
     VarIndexManager &vim) {
 
@@ -434,17 +504,131 @@ std::shared_ptr<ResultTable> join_table_with_trees_by_one_var(
 
   table->headers.push_back(other_var_index);
 
-  for (const auto &triple : two_var_group_item.second) {
-    auto &k2 = *k2trees_map[triple.predicate.value];
-    std::vector<std::pair<unsigned long, unsigned long>> pairs;
-    k2.scan_points(
-        [](unsigned long col, unsigned long row, void *report_state) {
-          auto &pairs = *reinterpret_cast<
-              std::vector<std::pair<unsigned long, unsigned long>> *>(
-              report_state);
-          pairs.push_back({col, row});
-        },
-        &pairs);
+  // const auto &var_pair = two_var_group_item.first;
+  const auto &triples = two_var_group_item.second;
+
+  std::vector<unsigned long> triples_subject_ids;
+
+  std::cout << "table var: " << table_var << ", other var: " << other_var
+            << ";;; ";
+
+  std::cout << "triples: ";
+
+  // to avoid comparing strings too much
+  for (const auto &triple : triples) {
+    triples_subject_ids.push_back(vim.var_indexes[triple.subject.value]);
+    std::cout << "(" << triple.subject.value << ", " << triple.predicate.value
+              << "," << triple.object.value << "); ";
+  }
+
+  std::cout << std::endl;
+
+  for (auto it = table->data.begin(); it != table->data.end();) {
+    unsigned long current_table_value = it->at(real_table_var_index);
+
+    int triple_index = 0;
+    std::unique_ptr<std::vector<unsigned long>> resulting_band;
+    for (const auto &triple : triples) {
+      auto &k2tree = *k2trees_map[triple.predicate.value];
+
+      std::vector<unsigned long> current_band;
+      if (triples_subject_ids[triple_index] == table_var_index) {
+        // std::cout << "matches subject, traversing column " <<
+        // current_table_value << std::endl;
+        k2tree.traverse_column(
+            current_table_value,
+            [](unsigned long, unsigned long row, void *report_state) {
+              reinterpret_cast<std::vector<unsigned long> *>(report_state)
+                  ->push_back(row);
+              std::cout << "traverse column: " << row << std::endl;
+            },
+            &current_band);
+
+      } else {
+        // std::cout << "doesn't match subject, traversing row " <<
+        // current_table_value << std::endl;
+
+        k2tree.traverse_row(
+            current_table_value,
+            [](unsigned long col, unsigned long, void *report_state) {
+              reinterpret_cast<std::vector<unsigned long> *>(report_state)
+                  ->push_back(col);
+              std::cout << "traverse row: " << col << std::endl;
+            },
+            &current_band);
+      }
+
+      if (triple_index == 0) {
+        // std::cout << "current_band  size: " << current_band.size() <<
+        // std::endl;
+        resulting_band = std::make_unique<std::vector<unsigned long>>(
+            std::move(current_band));
+      } else {
+        // std::cout << "current_band  size: " << current_band.size() <<
+        // std::endl;
+        resulting_band = std::make_unique<std::vector<unsigned long>>(
+            MergeJoin::merge_vectors(*resulting_band, current_band));
+        // std::cout << "merge vectors result size: " << resulting_band.size()
+        // << std::endl;
+      }
+
+      triple_index++;
+    }
+
+    auto next_it = std::next(it);
+    if (resulting_band->size() == 0) {
+      table->data.erase(it);
+    } else {
+      for (size_t curr_val_i = 0; curr_val_i < resulting_band->size();
+           curr_val_i++) {
+        auto value = resulting_band->at(curr_val_i);
+        auto &current_row = *it;
+        auto row_copy = current_row;
+        current_row.push_back(value);
+        if (curr_val_i < resulting_band->size() - 1)
+          it = table->data.insert(next_it, std::move(row_copy));
+      }
+    }
+
+    it = next_it;
+  }
+
+  auto stop = std::chrono::high_resolution_clock::now();
+  auto duration =
+      std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+
+  std::cout << "join_table_with_trees_by_one_var took " << duration.count()
+            << " ms" << std::endl;
+
+  return table;
+}
+
+// BROKEN
+std::shared_ptr<ResultTable> join_table_with_trees_by_one_var_sip(
+    std::shared_ptr<ResultTable> &table, const std::string &table_var,
+    const std::string &other_var,
+    const std::pair<const KeyPairStr, std::vector<Triple>> &two_var_group_item,
+    std::unordered_map<std::string, K2TreeMixed *> &k2trees_map,
+    VarIndexManager &vim) {
+
+  auto start = std::chrono::high_resolution_clock::now();
+
+  unsigned long table_var_index = vim.var_indexes[table_var];
+  unsigned long real_table_var_index = table->get_actual_index(table_var_index);
+
+  vim.assign_index_if_not_found(other_var);
+  unsigned long other_var_index = vim.var_indexes[other_var];
+
+  table->headers.push_back(other_var_index);
+
+  // const auto &var_pair = two_var_group_item.first;
+  const auto &triples = two_var_group_item.second;
+
+  std::vector<unsigned long> triples_subject_ids;
+
+  // to avoid comparing strings too much
+  for (const auto &triple : triples) {
+    triples_subject_ids.push_back(vim.var_indexes[triple.subject.value]);
   }
 
   for (auto it = table->data.begin(); it != table->data.end();) {
@@ -452,21 +636,25 @@ std::shared_ptr<ResultTable> join_table_with_trees_by_one_var(
     unsigned long current_table_value = row[real_table_var_index];
     std::vector<K2TreeMixed *> join_trees;
     std::vector<struct sip_ipoint> join_coordinates;
-    for (const auto &triple : two_var_group_item.second) {
-      join_trees.push_back(k2trees_map[triple.predicate.value]);
+    int triple_index = 0;
+    for (const auto &triple : triples) {
+      join_trees.push_back(
+          k2trees_map[triple.predicate.value]); // TODO:use numeric keys instead
       struct sip_ipoint join_point;
       join_point.coord = current_table_value;
-      if (triple.subject.value == table_var) {
+      if (triples_subject_ids[triple_index] == table_var_index) {
         join_point.coord_type = coord_t::COLUMN_COORD;
       } else {
         join_point.coord_type = coord_t::ROW_COORD;
       }
+
       join_coordinates.push_back(join_point);
+      triple_index++;
     }
     auto join_result =
         K2TreeMixed::sip_join_k2trees(join_trees, join_coordinates);
-    auto next_it = std::next(it);
 
+    auto next_it = std::next(it);
     if (join_result.size() == 0) {
       table->data.erase(it);
     } else {
@@ -488,7 +676,7 @@ std::shared_ptr<ResultTable> join_table_with_trees_by_one_var(
   auto duration =
       std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
 
-  std::cout << "join_table_with_trees_by_one_var took " << duration.count()
+  std::cout << "join_table_with_trees_by_one_var_sip took " << duration.count()
             << " ms" << std::endl;
 
   return table;
@@ -507,6 +695,122 @@ struct ChainedInput {
         coord_types(coord_types) {}
 };
 
+struct mutable_pair {
+  unsigned long first;
+  unsigned long second;
+};
+
+static bool less_than_uvtl_mpair(const std::vector<unsigned long> &vec,
+                                 mutable_pair pair) {
+  return (vec[0] != pair.first && vec[0] < pair.first) ||
+         (vec[0] == pair.first && vec[1] < pair.second);
+}
+
+std::shared_ptr<ResultTable> join_two_var_group_merge(
+    const std::string &var_one, const std::string &var_two,
+    const std::vector<Triple> &triples,
+    std::unordered_map<std::string, K2TreeMixed *> &k2trees_map,
+    VarIndexManager &vim) {
+  auto start = std::chrono::high_resolution_clock::now();
+
+  if (triples.empty())
+    throw std::runtime_error("join_two_var_group: no triples");
+
+  std::vector<Triple> triples_rearranged(triples);
+  std::sort(triples_rearranged.begin(), triples_rearranged.end(),
+            [&k2trees_map](const Triple &lhs, const Triple &rhs) {
+              return k2trees_map[lhs.predicate.value]->size() <
+                     k2trees_map[rhs.predicate.value]->size();
+            });
+
+  const auto &first_triple = triples_rearranged.at(0);
+  K2TreeMixed &first_k2tree = *k2trees_map[first_triple.predicate.value];
+
+  auto result = std::make_shared<ResultTable>(std::vector<unsigned long>(
+      {vim.var_indexes[var_one], vim.var_indexes[var_two]}));
+
+  if (first_triple.subject.value == var_one) {
+    first_k2tree.scan_points(
+        [](unsigned long col, unsigned long row, void *report_state) {
+          auto &table = *reinterpret_cast<ResultTable *>(report_state);
+          table.add_row({col, row});
+        },
+        result.get());
+  } else {
+    first_k2tree.scan_points(
+        [](unsigned long col, unsigned long row, void *report_state) {
+          auto &table = *reinterpret_cast<ResultTable *>(report_state);
+          table.add_row({row, col});
+        },
+        result.get());
+  }
+
+  result->sort_rows();
+
+  for (size_t triple_i = 1; triple_i < triples_rearranged.size(); triple_i++) {
+    const auto &triple = triples_rearranged[triple_i];
+    std::vector<mutable_pair> current_table;
+    K2TreeMixed &current_k2tree = *k2trees_map[triple.predicate.value];
+
+    if (triple.subject.value == var_one) {
+      current_k2tree.scan_points(
+          [](unsigned long col, unsigned long row, void *report_state) {
+            auto &current_table =
+                *reinterpret_cast<std::vector<mutable_pair> *>(report_state);
+            current_table.push_back({col, row});
+          },
+          &current_table);
+    } else {
+      current_k2tree.scan_points(
+          [](unsigned long col, unsigned long row, void *report_state) {
+            auto &current_table =
+                *reinterpret_cast<std::vector<mutable_pair> *>(report_state);
+            current_table.push_back({row, col});
+          },
+          &current_table);
+    }
+    std::sort(current_table.begin(), current_table.end(),
+              [](mutable_pair lhs, mutable_pair rhs) {
+                return (lhs.first != rhs.first && lhs.first < rhs.first) ||
+                       (lhs.first == rhs.first && lhs.second < rhs.second);
+              });
+
+    auto result_it = result->data.begin();
+    size_t current_i = 0;
+    while (result_it != result->data.end() &&
+           current_i < current_table.size()) {
+      mutable_pair current_pair = current_table[current_i];
+      auto &current_result_row = *result_it;
+      if (current_result_row[0] == current_pair.first &&
+          current_result_row[1] == current_pair.second) {
+        result_it++;
+        current_i++;
+      } else if (less_than_uvtl_mpair(current_result_row, current_pair)) {
+        auto del_it = result_it;
+        result_it++;
+        result->data.erase(del_it);
+      } else {
+        current_i++;
+      }
+    }
+
+    while (result_it != result->data.end()) {
+      auto del_it = result_it;
+      result_it++;
+      result->data.erase(del_it);
+    }
+  }
+
+  auto stop = std::chrono::high_resolution_clock::now();
+  auto duration =
+      std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+
+  std::cout << "join_two_var_group_merge took " << duration.count() << " ms"
+            << std::endl;
+
+  return result;
+}
+
 std::shared_ptr<ResultTable>
 join_two_var_group(const std::string &var_one, const std::string &var_two,
                    const std::vector<Triple> &triples,
@@ -518,7 +822,15 @@ join_two_var_group(const std::string &var_one, const std::string &var_two,
   if (triples.empty())
     throw std::runtime_error("join_two_var_group: no triples");
 
-  const auto &first_triple = triples.at(0);
+  std::vector<Triple> triples_rearranged(triples);
+
+  std::sort(triples_rearranged.begin(), triples_rearranged.end(),
+            [&k2trees_map](const Triple &lhs, const Triple &rhs) {
+              return k2trees_map[lhs.predicate.value]->size() <
+                     k2trees_map[rhs.predicate.value]->size();
+            });
+
+  const auto &first_triple = triples_rearranged.at(0);
   K2TreeMixed &first_k2tree = *k2trees_map[first_triple.predicate.value];
 
   std::cout << "join_two_var_group first_triple predicate: "
@@ -529,7 +841,7 @@ join_two_var_group(const std::string &var_one, const std::string &var_two,
 
   std::vector<coord_t> coord_types;
 
-  for (auto &triple : triples) {
+  for (auto &triple : triples_rearranged) {
     coord_t ctype;
     if (triple.subject.value == var_one) {
       ctype = COLUMN_COORD;
@@ -539,7 +851,8 @@ join_two_var_group(const std::string &var_one, const std::string &var_two,
     coord_types.push_back(ctype);
   }
 
-  ChainedInput chained_input(*result, triples, k2trees_map, coord_types);
+  ChainedInput chained_input(*result, triples_rearranged, k2trees_map,
+                             coord_types);
 
   first_k2tree.scan_points(
       [](unsigned long col, unsigned long row, void *report_state) {
@@ -548,25 +861,22 @@ join_two_var_group(const std::string &var_one, const std::string &var_two,
         const auto &triples = chained_input.triples;
         const auto &k2trees_map = chained_input.k2trees_map;
         const auto &coord_types = chained_input.coord_types;
-        bool valid = true;
         for (size_t i = 1; i < triples.size(); i++) {
           auto &triple = triples[i];
           auto &k2tree = *k2trees_map.at(triple.predicate.value);
           if (coord_types[i] == COLUMN_COORD) {
-            valid = k2tree.has(col, row);
+            if (!k2tree.has(col, row))
+              return;
           } else {
-            valid = k2tree.has(row, col);
+            if (!k2tree.has(row, col))
+              return;
           }
-          if (!valid)
-            break;
         }
 
-        if (valid) {
-          if (coord_types[0] == COLUMN_COORD)
-            result_table.data.push_back(std::vector<unsigned long>({col, row}));
-          else
-            result_table.data.push_back(std::vector<unsigned long>({row, col}));
-        }
+        if (coord_types[0] == COLUMN_COORD)
+          result_table.data.push_back(std::vector<unsigned long>({col, row}));
+        else
+          result_table.data.push_back(std::vector<unsigned long>({row, col}));
       },
       &chained_input);
 
@@ -688,8 +998,8 @@ process_bgp_node(const proto_msg::BGPNode &bgp_node, Cache::cm_t &cm,
 
   auto k2trees_map = get_k2trees_map_by_predicate_value(bgp_node, cm);
   auto groups = group_triple_nodes(bgp_node);
-  auto &one_var_groups = groups.first;
-  auto &two_var_groups = groups.second;
+  auto &one_var_groups = groups.one_var_groups;
+  auto &two_var_groups = groups.two_var_groups;
 
   std::unordered_map<std::string, std::shared_ptr<ResultTable>> partial_results;
   for (const auto &item : one_var_groups) {
@@ -699,14 +1009,15 @@ process_bgp_node(const proto_msg::BGPNode &bgp_node, Cache::cm_t &cm,
   }
 
   for (const auto &item_pair : two_var_groups) {
-    vim.assign_index_if_not_found(item_pair.first.first);
-    vim.assign_index_if_not_found(item_pair.first.second);
+    const KeyPairStr &var_pair = item_pair.first;
+    vim.assign_index_if_not_found(var_pair.first_var);
+    vim.assign_index_if_not_found(var_pair.second_var);
 
-    if (partial_results.find(item_pair.first.first) != partial_results.end() &&
-        partial_results.find(item_pair.first.second) != partial_results.end()) {
+    if (partial_results.find(var_pair.first_var) != partial_results.end() &&
+        partial_results.find(var_pair.second_var) != partial_results.end()) {
       // Both variables are in single var table
-      auto &partial_result_one = partial_results[item_pair.first.first];
-      auto &partial_result_two = partial_results[item_pair.first.second];
+      auto &partial_result_one = partial_results[var_pair.first_var];
+      auto &partial_result_two = partial_results[var_pair.second_var];
       std::shared_ptr<ResultTable> result;
       if (&partial_result_one != &partial_result_two) {
 
@@ -718,31 +1029,41 @@ process_bgp_node(const proto_msg::BGPNode &bgp_node, Cache::cm_t &cm,
                                                   k2trees_map, vim);
       }
 
-      partial_results[item_pair.first.first] = result;
-      partial_results[item_pair.first.second] = result;
-    } else if (partial_results.find(item_pair.first.first) !=
+      partial_results[var_pair.first_var] = result;
+      partial_results[var_pair.second_var] = result;
+    } else if (partial_results.find(var_pair.first_var) !=
                partial_results.end()) {
       // The first variable only is in a single var table
-      auto &partial_result = partial_results[item_pair.first.first];
+      auto &partial_result = partial_results[var_pair.first_var];
+      std::cout << "join_table_with_trees_by_one_var bef size: "
+                << partial_result->rows_size() << std::endl;
       partial_result = join_table_with_trees_by_one_var(
-          partial_result, item_pair.first.first, item_pair.first.second,
-          item_pair, k2trees_map, vim);
-      partial_results[item_pair.first.second] = partial_result;
-    } else if (partial_results.find(item_pair.first.second) !=
+          partial_result, var_pair.first_var, var_pair.second_var, item_pair,
+          k2trees_map, vim);
+      partial_results[var_pair.second_var] = partial_result;
+      partial_results[var_pair.first_var] = partial_result;
+      std::cout << "join_table_with_trees_by_one_var after size: "
+                << partial_result->rows_size() << std::endl;
+    } else if (partial_results.find(var_pair.second_var) !=
                partial_results.end()) {
       // The second variable only is in a single var table
-      auto &partial_result = partial_results[item_pair.first.second];
+      auto &partial_result = partial_results[var_pair.second_var];
+      std::cout << "join_table_with_trees_by_one_var bef size: "
+                << partial_result->rows_size() << std::endl;
       partial_result = join_table_with_trees_by_one_var(
-          partial_result, item_pair.first.second, item_pair.first.first,
-          item_pair, k2trees_map, vim);
-      partial_results[item_pair.first.first] = partial_result;
+          partial_result, var_pair.second_var, var_pair.first_var, item_pair,
+          k2trees_map, vim);
+      partial_results[var_pair.first_var] = partial_result;
+      partial_results[var_pair.second_var] = partial_result;
+      std::cout << "join_table_with_trees_by_one_var after size: "
+                << partial_result->rows_size() << std::endl;
     } else {
       // None of the variables is in a single var table
-      partial_results[item_pair.first.first] =
-          join_two_var_group(item_pair.first.first, item_pair.first.second,
+      partial_results[var_pair.first_var] =
+          join_two_var_group(var_pair.first_var, var_pair.second_var,
                              item_pair.second, k2trees_map, vim);
-      partial_results[item_pair.first.second] =
-          partial_results[item_pair.first.first];
+      partial_results[var_pair.second_var] =
+          partial_results[var_pair.first_var];
     }
   }
 

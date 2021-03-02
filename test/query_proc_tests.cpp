@@ -638,3 +638,132 @@ TEST(QueryProcTests, test_bgp_node_4_compact_dicts) {
   }
   fs::remove(fname);
 }
+
+TEST(QueryProcTests, join_two_two_vars) {
+  proto_msg::SparqlTree tree;
+  auto *project_node = tree.mutable_root()->mutable_project_node();
+  project_node->add_vars("?v");
+  project_node->add_vars("?y");
+  project_node->add_vars("?z");
+  auto *bgp = project_node->mutable_sub_op()->mutable_bgp_node();
+  // proto_msg::TripleNode().mutable_subject()
+  auto *first_triple = bgp->mutable_triple()->Add();
+  auto *first_subject = first_triple->mutable_subject();
+  first_subject->set_term_type(proto_msg::TermType::VARIABLE);
+  first_subject->set_basic_type(proto_msg::BasicType::STRING);
+  first_subject->set_term_value("?v");
+
+  auto *first_predicate = first_triple->mutable_predicate();
+  first_predicate->set_term_type(proto_msg::TermType::IRI);
+  first_predicate->set_basic_type(proto_msg::BasicType::STRING);
+  first_predicate->set_term_value("<pred1>");
+
+  auto *first_object = first_triple->mutable_object();
+  first_object->set_term_type(proto_msg::TermType::VARIABLE);
+  first_object->set_basic_type(proto_msg::BasicType::STRING);
+  first_object->set_term_value("?y");
+
+  auto *second_triple = bgp->mutable_triple()->Add();
+  auto *second_subject = second_triple->mutable_subject();
+  second_subject->set_term_type(proto_msg::TermType::VARIABLE);
+  second_subject->set_basic_type(proto_msg::BasicType::STRING);
+  second_subject->set_term_value("?v");
+
+  auto *second_predicate = second_triple->mutable_predicate();
+  second_predicate->set_term_type(proto_msg::TermType::IRI);
+  second_predicate->set_basic_type(proto_msg::BasicType::STRING);
+  second_predicate->set_term_value("<pred2>");
+
+  auto *second_object = second_triple->mutable_object();
+  second_object->set_term_type(proto_msg::TermType::VARIABLE);
+  second_object->set_basic_type(proto_msg::BasicType::STRING);
+  second_object->set_term_value("?z");
+
+  std::string fname = "predicates.bin";
+  build_cache_test_file(fname, build_initial_values_triples_vector(10000));
+  auto pcm = std::make_shared<PredicatesCacheManager>(
+      std::make_unique<EmptyISDManager>(), fname);
+  pcm->add_triple(RDFTripleResource(RDFResource("<res1>", RDF_TYPE_IRI),
+                                    RDFResource("<pred1>", RDF_TYPE_IRI),
+                                    RDFResource("x1", RDF_TYPE_LITERAL)));
+  pcm->add_triple(RDFTripleResource(RDFResource("<res1>", RDF_TYPE_IRI),
+                                    RDFResource("<pred1>", RDF_TYPE_IRI),
+                                    RDFResource("x2", RDF_TYPE_LITERAL)));
+
+  pcm->add_triple(RDFTripleResource(RDFResource("<res1>", RDF_TYPE_IRI),
+                                    RDFResource("<pred2>", RDF_TYPE_IRI),
+                                    RDFResource("y2", RDF_TYPE_LITERAL)));
+
+  pcm->add_triple(RDFTripleResource(RDFResource("<res1>", RDF_TYPE_IRI),
+                                    RDFResource("<pred2>", RDF_TYPE_IRI),
+                                    RDFResource("y3", RDF_TYPE_LITERAL)));
+
+  pcm->add_triple(RDFTripleResource(RDFResource("<res1>", RDF_TYPE_IRI),
+                                    RDFResource("<pred2>", RDF_TYPE_IRI),
+                                    RDFResource("y4", RDF_TYPE_LITERAL)));
+
+  pcm->add_triple(RDFTripleResource(RDFResource("<res1>", RDF_TYPE_IRI),
+                                    RDFResource("<pred2>", RDF_TYPE_IRI),
+                                    RDFResource("y5", RDF_TYPE_LITERAL)));
+
+  pcm->add_triple(RDFTripleResource(RDFResource("<res1>", RDF_TYPE_IRI),
+                                    RDFResource("<pred2>", RDF_TYPE_IRI),
+                                    RDFResource("y6", RDF_TYPE_LITERAL)));
+
+  pcm->add_triple(RDFTripleResource(RDFResource("<res1>", RDF_TYPE_IRI),
+                                    RDFResource("<pred2>", RDF_TYPE_IRI),
+                                    RDFResource("y1", RDF_TYPE_LITERAL)));
+
+  pcm->add_triple(RDFTripleResource(RDFResource("<res2>", RDF_TYPE_IRI),
+                                    RDFResource("<pred1>", RDF_TYPE_IRI),
+                                    RDFResource("XXXX1", RDF_TYPE_LITERAL)));
+
+  pcm->add_triple(RDFTripleResource(RDFResource("<res2>", RDF_TYPE_IRI),
+                                    RDFResource("<pred1>", RDF_TYPE_IRI),
+                                    RDFResource("XXXX2", RDF_TYPE_LITERAL)));
+
+  pcm->add_triple(RDFTripleResource(RDFResource("<res3>", RDF_TYPE_IRI),
+                                    RDFResource("<pred1>", RDF_TYPE_IRI),
+                                    RDFResource("XXXX2", RDF_TYPE_LITERAL)));
+
+  pcm->add_triple(RDFTripleResource(RDFResource("<res2>", RDF_TYPE_IRI),
+                                    RDFResource("<pred2>", RDF_TYPE_IRI),
+                                    RDFResource("y100", RDF_TYPE_LITERAL)));
+
+  pcm->add_triple(RDFTripleResource(RDFResource("<res2>", RDF_TYPE_IRI),
+                                    RDFResource("<pred2>", RDF_TYPE_IRI),
+                                    RDFResource("y101", RDF_TYPE_LITERAL)));
+
+  Cache cache(pcm, CacheReplacement::STRATEGY::LRU, 100'000);
+
+  auto result = cache.run_query(tree);
+
+  auto &vim = result.get_vim();
+  auto reverse_map = vim.reverse();
+  auto &table = result.table();
+
+  auto translated_table = translate_table(table, cache);
+  auto header_str = reverse_map[table.headers[0]];
+  /*
+  ASSERT_EQ(header_str, "?x");
+
+  ASSERT_EQ(translated_table[0][0].value, "<subj1>");
+  ASSERT_EQ(translated_table[1][0].value, "<subj3>");
+  ASSERT_EQ(translated_table[2][0].value, "<subj2>");
+ */
+
+  for (auto header : table.headers) {
+    std::cout << reverse_map[header] << "\t\t";
+  }
+  std::cout << std::endl;
+
+  for (auto &row : translated_table) {
+    for (auto &res : row) {
+      std::cout << res.value << "\t\t";
+    }
+    std::cout << std::endl;
+  }
+
+  std::cout << "total size: " << translated_table.size() << std::endl;
+  fs::remove(fname);
+}

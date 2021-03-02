@@ -255,6 +255,10 @@ add_executable(cache_server scripts/cache_server.cpp)
 target_include_directories(cache_server PUBLIC ${INCLUDES})
 target_link_libraries(cache_server ${DEFAULT_LIBS} )
 
+add_executable(debug_read_k2trees_metadata scripts/debug_read_k2trees_metadata.cpp)
+target_include_directories(debug_read_k2trees_metadata PUBLIC ${INCLUDES})
+target_link_libraries(debug_read_k2trees_metadata ${DEFAULT_LIBS} )
+
 
 add_executable(four_sided_queue_example example/four_sided_queue_example.cpp)
 
@@ -304,6 +308,9 @@ target_link_libraries(test_external_sort ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES}
 add_executable(predicates_metadata_serialization_test test/predicates_metadata_serialization_test.cpp)
 target_link_libraries(predicates_metadata_serialization_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} pthread)
 
+add_executable(join_util_test test/join_util_test.cpp)
+target_link_libraries(join_util_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES})
+
 
 add_test(NAME serialization_test COMMAND ./serialization_test)
 add_test(NAME k2tree_serialization_test COMMAND ./k2tree_serialization_test)
@@ -317,6 +324,7 @@ add_test(NAME test_sd_builder COMMAND ./test_sd_builder)
 add_test(NAME cache_replacement_test COMMAND ./cache_replacement_test)
 add_test(NAME test_external_sort COMMAND ./test_external_sort)
 add_test(NAME predicates_metadata_serialization_test COMMAND ./predicates_metadata_serialization_test)
+add_test(NAME join_util_test COMMAND ./join_util_test)
 endif()
 
 

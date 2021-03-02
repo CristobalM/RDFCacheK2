@@ -8,6 +8,15 @@ void PredicateMetadata::write_to_ostream(std::ostream &os) {
   write_u32(os, priority);
 }
 
+PredicateMetadata PredicateMetadata::read_from_istream(std::istream &is) {
+  PredicateMetadata result;
+  result.predicate_id = read_u64(is);
+  result.tree_offset = read_u64(is);
+  result.tree_size = read_u64(is);
+  result.priority = read_u32(is);
+  return result;
+}
+
 PredicatesCacheMetadata::PredicatesCacheMetadata(
     std::unordered_map<uint64_t, PredicateMetadata> &&metadata_map,
     std::vector<uint64_t> &&predicates_ids, K2TreeConfig config)
@@ -18,12 +27,8 @@ PredicatesCacheMetadata::PredicatesCacheMetadata(std::istream &is) {
   auto predicates_count = read_u64(is);
   config.read_from_istream(is);
   for (size_t i = 0; i < predicates_count; i++) {
-    PredicateMetadata current;
-    current.predicate_id = read_u64(is);
-    current.tree_offset = read_u64(is);
-    current.tree_size = read_u64(is);
-    current.priority = read_u32(is);
-    metadata_map[current.predicate_id] = std::move(current);
+    PredicateMetadata current = PredicateMetadata::read_from_istream(is);
+    metadata_map[current.predicate_id] = current;
     predicates_ids.push_back(current.predicate_id);
   }
 }
@@ -33,12 +38,21 @@ uint32_t PredicatesCacheMetadata::get_predicates_count() const {
 }
 
 const std::unordered_map<uint64_t, PredicateMetadata> &
-PredicatesCacheMetadata::get_map() {
+PredicatesCacheMetadata::get_map() const {
   return metadata_map;
 }
 
-const std::vector<uint64_t> &PredicatesCacheMetadata::get_ids_vector() {
+const std::vector<uint64_t> &PredicatesCacheMetadata::get_ids_vector() const {
   return predicates_ids;
 }
 
-K2TreeConfig PredicatesCacheMetadata::get_config() { return config; }
+K2TreeConfig PredicatesCacheMetadata::get_config() const { return config; }
+
+void PredicatesCacheMetadata::write_to_ostream(std::ostream &os) {
+  write_u64(os, predicates_ids.size());
+  config.write_to_ostream(os);
+  for (auto predicate_id : predicates_ids) {
+    auto &metadata = metadata_map[predicate_id];
+    metadata.write_to_ostream(os);
+  }
+}

@@ -83,3 +83,7 @@ K2TreeConfig PredicatesIndexCacheMDFile::get_config() {
 const std::vector<uint64_t> &PredicatesIndexCacheMDFile::get_predicates_ids() {
   return PredicatesIndexCacheMD::get_predicates_ids();
 }
+
+const PredicatesCacheMetadata &PredicatesIndexCacheMDFile::get_metadata() {
+  return PredicatesIndexCacheMD::get_metadata();
+}

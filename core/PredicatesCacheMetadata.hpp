@@ -16,6 +16,7 @@ struct PredicateMetadata {
   uint32_t priority;
 
   void write_to_ostream(std::ostream &ostream);
+  static PredicateMetadata read_from_istream(std::istream &is);
 };
 
 class PredicatesCacheMetadata {
@@ -31,9 +32,11 @@ public:
   explicit PredicatesCacheMetadata(std::istream &is);
 
   uint32_t get_predicates_count() const;
-  const std::unordered_map<uint64_t, PredicateMetadata> &get_map();
-  const std::vector<uint64_t> &get_ids_vector();
-  K2TreeConfig get_config();
+  const std::unordered_map<uint64_t, PredicateMetadata> &get_map() const;
+  const std::vector<uint64_t> &get_ids_vector() const;
+  K2TreeConfig get_config() const;
+
+  void write_to_ostream(std::ostream &os);
 };
 
 #endif /* _PREDICATES_CACHE_METADATA_HPP_ */

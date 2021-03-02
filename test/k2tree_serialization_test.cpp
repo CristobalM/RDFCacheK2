@@ -103,6 +103,8 @@ TEST(k2tree_serialization_custom_mixed, test1) {
   auto second_points = other_k2tree.get_all_points();
   std::sort(second_points.begin(), second_points.end(), sort_pair);
 
+  ASSERT_EQ(first_points.size(), cols * rows) << "Invalid size";
+
   ASSERT_EQ(first_points.size(), second_points.size())
       << "k2trees have different size";
 

@@ -29,6 +29,7 @@ public:
   K2TreeConfig get_config();
 
   const std::vector<uint64_t> &get_predicates_ids();
+  const PredicatesCacheMetadata &get_metadata();
 };
 
 #endif /* _PREDICATES_INDEX_CACHE_MD_FILE_HPP_  */

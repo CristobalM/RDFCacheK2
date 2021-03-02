@@ -41,12 +41,14 @@ K2TreeMixed::K2TreeMixed(K2TreeMixed &&other) {
   clean_up();
   std::swap(root, other.root);
   std::swap(st, other.st);
+  points_count = other.points_count;
 }
 
 K2TreeMixed &K2TreeMixed::operator=(K2TreeMixed &&other) {
   clean_up();
   std::swap(root, other.root);
   std::swap(st, other.st);
+  points_count = other.points_count;
   return *this;
 }
 
@@ -110,19 +112,29 @@ std::vector<unsigned long> K2TreeMixed::get_column(unsigned long col) {
 
 void K2TreeMixed::scan_points(point_reporter_fun_t fun_reporter,
                               void *report_state) {
-  k2node_scan_points_interactively(root, st.get(), fun_reporter, report_state);
+  int err = k2node_scan_points_interactively(root, st.get(), fun_reporter,
+                                             report_state);
+  if (err)
+    throw std::runtime_error("k2node_scan_points_interactively threw error " +
+                             std::to_string(err));
 }
 void K2TreeMixed::traverse_row(unsigned long row,
                                point_reporter_fun_t fun_reporter,
                                void *report_state) {
-  k2node_report_row_interactively(root, row, st.get(), fun_reporter,
-                                  report_state);
+  int err = k2node_report_row_interactively(root, row, st.get(), fun_reporter,
+                                            report_state);
+  if (err)
+    throw std::runtime_error("k2node_report_row_interactively threw error " +
+                             std::to_string(err));
 }
 void K2TreeMixed::traverse_column(unsigned long column,
                                   point_reporter_fun_t fun_reporter,
                                   void *report_state) {
-  k2node_report_column_interactively(root, column, st.get(), fun_reporter,
-                                     report_state);
+  int err = k2node_report_column_interactively(root, column, st.get(),
+                                               fun_reporter, report_state);
+  if (err)
+    throw std::runtime_error("k2node_report_column_interactively threw error " +
+                             std::to_string(err));
 }
 
 struct k2tree_measurement K2TreeMixed::measure_in_memory_size() {

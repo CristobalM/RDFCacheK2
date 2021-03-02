@@ -47,6 +47,8 @@ public:
   void discard_in_memory_predicate(uint64_t predicate_index);
   K2TreeConfig get_config();
   const std::vector<uint64_t> &get_predicates_ids();
+
+  const PredicatesCacheMetadata &get_metadata();
 };
 
 #endif /* _PREDICATES_INDEX_CACHE_MD_HPP_ */
