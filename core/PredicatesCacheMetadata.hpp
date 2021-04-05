@@ -14,6 +14,7 @@ struct PredicateMetadata {
   uint64_t tree_offset;
   uint64_t tree_size;
   uint32_t priority;
+  std::array<char, 16> k2tree_hash;
 
   void write_to_ostream(std::ostream &ostream);
   static PredicateMetadata read_from_istream(std::istream &is);

@@ -12,9 +12,11 @@
 #include <request_msg.pb.h>
 
 #include "CacheReplacement.hpp"
-#include "QueryResult.hpp"
 
 #include "ICacheSettings.hpp"
+
+#include "query_processing/QueryProcessor.hpp"
+#include "query_processing/QueryResult.hpp"
 
 struct CacheStats {
   int allocated_u32s;
@@ -33,8 +35,11 @@ class Cache {
 
   CacheReplacement cache_replacement;
 
+  QueryProcessor query_processor;
+
 public:
   using cm_t = std::shared_ptr<PredicatesCacheManager>;
+  using pcm_t = PredicatesCacheManager;
   Cache(std::shared_ptr<PredicatesCacheManager> &cache_manager,
         CacheReplacement::STRATEGY cache_replacement_strategy,
         size_t memory_budget_bytes);

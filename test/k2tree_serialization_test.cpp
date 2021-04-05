@@ -73,6 +73,9 @@ TEST(k2tree_serialization_custom, test1) {
 
   ASSERT_FALSE(other_k2tree.has(1 << 30, 1 << 30))
       << "point (" << 1 << 30 << ", " << 1 << 30 << ") exists and shouldn't";
+
+  ASSERT_EQ(debug_validate_block_rec(k2Tree.get_root_block()), 0);
+  ASSERT_EQ(debug_validate_block_rec(other_k2tree.get_root_block()), 0);
 }
 
 TEST(k2tree_serialization_custom_mixed, test1) {
@@ -134,4 +137,69 @@ TEST(k2tree_serialization_custom_mixed, test1) {
 
   ASSERT_FALSE(other_k2tree.has(1 << 30, 1 << 30))
       << "point (" << 1 << 30 << ", " << 1 << 30 << ") exists and shouldn't";
+
+  ASSERT_TRUE(k2Tree.has_valid_structure());
+  ASSERT_TRUE(other_k2tree.has_valid_structure());
+}
+
+TEST(k2tree_serialization_custom_mixed, sip_band_works_on_deserialized_1) {
+  K2TreeMixed k2tree(32, 256, 10);
+
+  int cols = 300;
+  int rows = 300;
+
+  std::cout << "inserting" << std::endl;
+  for (int i = 0; i < cols; i++) {
+    for (int j = 0; j < rows; j++) {
+      k2tree.insert(i, j);
+    }
+  }
+
+  auto first_points = k2tree.get_all_points();
+  std::sort(first_points.begin(), first_points.end(), sort_pair);
+
+  std::ostringstream oss;
+  k2tree.write_to_ostream(oss);
+
+  auto serialized = oss.str();
+
+  std::istringstream iss(serialized);
+
+  K2TreeMixed other_k2tree = K2TreeMixed::read_from_istream(iss);
+
+  std::vector<const K2TreeMixed *> trees = {&other_k2tree};
+
+  for (int i = 0; i < cols; i++) {
+
+    sip_ipoint join_coordinate;
+    join_coordinate.coord = i;
+    join_coordinate.coord_type = COLUMN_COORD;
+
+    std::vector<sip_ipoint> join_coordinates = {join_coordinate};
+    auto join_result = K2TreeMixed::sip_join_k2trees(trees, join_coordinates);
+
+    for (int j = 0; j < (int)join_result.size(); j++) {
+      ASSERT_EQ(join_result[j], j) << "(cols) Failed at " << i << ", " << j;
+    }
+  }
+
+  for (int i = 0; i < rows; i++) {
+
+    sip_ipoint join_coordinate;
+    join_coordinate.coord = i;
+    join_coordinate.coord_type = ROW_COORD;
+
+    std::vector<sip_ipoint> join_coordinates = {join_coordinate};
+    auto join_result = K2TreeMixed::sip_join_k2trees(trees, join_coordinates);
+
+    for (int j = 0; j < (int)join_result.size(); j++) {
+      ASSERT_EQ(join_result[j], j) << "(rows) Failed at " << i << ", " << j;
+    }
+  }
+
+  ASSERT_TRUE(k2tree.same_as(other_k2tree));
+  ASSERT_TRUE(other_k2tree.same_as(k2tree));
+
+  ASSERT_TRUE(k2tree.has_valid_structure());
+  ASSERT_TRUE(other_k2tree.has_valid_structure());
 }

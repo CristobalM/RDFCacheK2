@@ -133,8 +133,8 @@ void PredicatesCacheManager::replace_index_cache(
   this->predicates_index = std::move(predicates_index);
 }
 
-K2TreeMixed &PredicatesCacheManager::get_tree_by_predicate_name(
-    const std::string &predicate_name) {
+const K2TreeMixed &PredicatesCacheManager::get_tree_by_predicate_name(
+    const std::string &predicate_name) const {
   RDFResource resource(predicate_name, RDF_TYPE_IRI);
   auto index = get_resource_index(resource);
   if (index == NORESULT)
@@ -143,12 +143,13 @@ K2TreeMixed &PredicatesCacheManager::get_tree_by_predicate_name(
   return predicates_index->fetch_k2tree(index);
 }
 
-K2TreeMixed &
-PredicatesCacheManager::get_tree_by_predicate_index(unsigned long index) {
+const K2TreeMixed &
+PredicatesCacheManager::get_tree_by_predicate_index(unsigned long index) const {
   return predicates_index->fetch_k2tree(index);
 }
 
-unsigned long PredicatesCacheManager::get_iri_index(const std::string &value) {
+unsigned long
+PredicatesCacheManager::get_iri_index(const std::string &value) const {
   auto index = isd_manager->iris_index(value);
   if (index == 0) {
     RDFResource res(value, RDFResourceType::RDF_TYPE_IRI);
@@ -157,7 +158,7 @@ unsigned long PredicatesCacheManager::get_iri_index(const std::string &value) {
   return index;
 }
 unsigned long
-PredicatesCacheManager::get_literal_index(const std::string &value) {
+PredicatesCacheManager::get_literal_index(const std::string &value) const {
   auto index = isd_manager->literals_index(value);
   if (index == 0) {
     RDFResource res(value, RDFResourceType::RDF_TYPE_LITERAL);
@@ -166,7 +167,7 @@ PredicatesCacheManager::get_literal_index(const std::string &value) {
   return index;
 }
 unsigned long
-PredicatesCacheManager::get_blank_index(const std::string &value) {
+PredicatesCacheManager::get_blank_index(const std::string &value) const {
   auto index = isd_manager->blanks_index(value);
   if (index == 0) {
     RDFResource res(value, RDFResourceType::RDF_TYPE_BLANK);
@@ -195,4 +196,8 @@ bool PredicatesCacheManager::has_triple(
 PredicatesIndexCacheMDFile &
 PredicatesCacheManager::get_predicates_index_cache() {
   return *predicates_index;
+}
+
+ISDManager *PredicatesCacheManager::get_isd_manager() {
+  return isd_manager.get();
 }

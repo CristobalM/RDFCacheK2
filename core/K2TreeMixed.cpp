@@ -20,7 +20,9 @@ K2TreeMixed::K2TreeMixed(struct k2node *root, uint32_t treedepth,
                          uint64_t points_count)
     : root(root), points_count(points_count) {
   st = std::make_unique<struct k2qstate>();
-  init_k2qstate(st.get(), treedepth, max_node_count, cut_depth);
+  int err = init_k2qstate(st.get(), treedepth, max_node_count, cut_depth);
+  if (err)
+    throw std::runtime_error("Cant init k2qstate: " + std::to_string(err));
 }
 
 K2TreeMixed::K2TreeMixed(K2TreeConfig config)
@@ -61,7 +63,7 @@ void K2TreeMixed::insert(unsigned long col, unsigned long row) {
     points_count++;
 }
 
-bool K2TreeMixed::has(unsigned long col, unsigned long row) {
+bool K2TreeMixed::has(unsigned long col, unsigned long row) const {
   int result;
   k2node_has_point(root, col, row, st.get(), &result);
   return (bool)result;
@@ -84,7 +86,7 @@ K2TreeMixed::get_all_points() {
   return out;
 }
 
-std::vector<unsigned long> K2TreeMixed::get_row(unsigned long row) {
+std::vector<unsigned long> K2TreeMixed::get_row(unsigned long row) const {
   struct vector_pair2dl_t result;
   vector_pair2dl_t__init_vector(&result);
   k2node_report_row(root, row, st.get(), &result);
@@ -97,7 +99,7 @@ std::vector<unsigned long> K2TreeMixed::get_row(unsigned long row) {
   return out;
 }
 
-std::vector<unsigned long> K2TreeMixed::get_column(unsigned long col) {
+std::vector<unsigned long> K2TreeMixed::get_column(unsigned long col) const {
   struct vector_pair2dl_t result;
   vector_pair2dl_t__init_vector(&result);
   k2node_report_column(root, col, st.get(), &result);
@@ -111,7 +113,7 @@ std::vector<unsigned long> K2TreeMixed::get_column(unsigned long col) {
 }
 
 void K2TreeMixed::scan_points(point_reporter_fun_t fun_reporter,
-                              void *report_state) {
+                              void *report_state) const {
   int err = k2node_scan_points_interactively(root, st.get(), fun_reporter,
                                              report_state);
   if (err)
@@ -120,7 +122,7 @@ void K2TreeMixed::scan_points(point_reporter_fun_t fun_reporter,
 }
 void K2TreeMixed::traverse_row(unsigned long row,
                                point_reporter_fun_t fun_reporter,
-                               void *report_state) {
+                               void *report_state) const {
   int err = k2node_report_row_interactively(root, row, st.get(), fun_reporter,
                                             report_state);
   if (err)
@@ -129,7 +131,7 @@ void K2TreeMixed::traverse_row(unsigned long row,
 }
 void K2TreeMixed::traverse_column(unsigned long column,
                                   point_reporter_fun_t fun_reporter,
-                                  void *report_state) {
+                                  void *report_state) const {
   int err = k2node_report_column_interactively(root, column, st.get(),
                                                fun_reporter, report_state);
   if (err)
@@ -137,19 +139,19 @@ void K2TreeMixed::traverse_column(unsigned long column,
                              std::to_string(err));
 }
 
-struct k2tree_measurement K2TreeMixed::measure_in_memory_size() {
+struct k2tree_measurement K2TreeMixed::measure_in_memory_size() const {
   return k2node_measure_tree_size(root, st->cut_depth);
 }
 
-ResultTable K2TreeMixed::column_as_table(unsigned long) {
+ResultTable K2TreeMixed::column_as_table(unsigned long) const {
   throw "column_as_table not implemented";
 }
 
-ResultTable K2TreeMixed::row_as_table(unsigned long) {
+ResultTable K2TreeMixed::row_as_table(unsigned long) const {
   throw "row_as_table not implemented";
 }
 
-K2TreeStats K2TreeMixed::k2tree_stats() {
+K2TreeStats K2TreeMixed::k2tree_stats() const {
   throw "k2tree_stats not implemented";
 }
 
@@ -163,8 +165,16 @@ bool same_k2node(struct k2node *lhs, struct k2node *rhs, uint32_t current_depth,
       }
     }
     for (int i = 0; i < 4; i++) {
-      if (!same_k2node(lhs->k2subtree.children[i], rhs->k2subtree.children[i],
-                       current_depth + 1, cut_depth)) {
+      auto *lhs_child = lhs->k2subtree.children[i];
+      auto *rhs_child = rhs->k2subtree.children[i];
+
+      if ((lhs_child == nullptr && rhs_child != nullptr) ||
+          (lhs_child != nullptr && rhs_child == nullptr)) {
+        return false;
+      }
+
+      if (lhs_child != nullptr && rhs_child != nullptr &&
+          !same_k2node(lhs_child, rhs_child, current_depth + 1, cut_depth)) {
         return false;
       }
     }
@@ -174,7 +184,7 @@ bool same_k2node(struct k2node *lhs, struct k2node *rhs, uint32_t current_depth,
   return same_blocks(lhs->k2subtree.block_child, rhs->k2subtree.block_child);
 }
 
-bool K2TreeMixed::same_as(const K2TreeMixed &other) {
+bool K2TreeMixed::same_as(const K2TreeMixed &other) const {
   return same_k2node(root, other.root, 0, st->cut_depth);
 }
 
@@ -220,14 +230,16 @@ void serialize_to_vec_with_k2node_ptrs(struct k2node *node,
   }
 }
 
-void write_blocks_from_k2nodes(struct k2node *node, uint32_t current_depth,
-                               uint32_t cut_depth, std::ostream &os,
-                               struct k2qstate *st) {
+unsigned long write_blocks_from_k2nodes(struct k2node *node,
+                                        uint32_t current_depth,
+                                        uint32_t cut_depth, std::ostream &os,
+                                        struct k2qstate *st) {
+  unsigned long bytes_written = 0;
   if (current_depth < cut_depth) {
     for (int i = 0; i < 4; i++) {
       if (node->k2subtree.children[i]) {
-        write_blocks_from_k2nodes(node->k2subtree.children[i],
-                                  current_depth + 1, cut_depth, os, st);
+        bytes_written += write_blocks_from_k2nodes(
+            node->k2subtree.children[i], current_depth + 1, cut_depth, os, st);
       }
     }
   } else {
@@ -235,11 +247,13 @@ void write_blocks_from_k2nodes(struct k2node *node, uint32_t current_depth,
     serialization_data.root = node->k2subtree.block_child;
     serialization_data.max_node_count = st->qs.max_nodes_count;
     serialization_data.treedepth = st->qs.treedepth;
-    write_tree_to_ostream(serialization_data, os);
+    bytes_written += write_tree_to_ostream(serialization_data, os);
   }
+
+  return bytes_written;
 }
 
-void K2TreeMixed::write_to_ostream(std::ostream &os) {
+unsigned long K2TreeMixed::write_to_ostream(std::ostream &os) const {
   int k2nodes_count_wchildren = count_k2nodes_wchildren(root, 0, st->cut_depth);
   int bits_count = k2nodes_count_wchildren * 4;
   const int bits_per_container = (sizeof(uint32_t) * 8);
@@ -250,15 +264,21 @@ void K2TreeMixed::write_to_ostream(std::ostream &os) {
 
   serialize_to_vec_with_k2node_ptrs(root, 0, st->cut_depth, containers,
                                     current_node_location);
+
   write_u64(os, points_count);
   write_u32(os, st->k2tree_depth);
   write_u32(os, st->cut_depth);
   write_u32(os, st->qs.max_nodes_count);
   write_u32(os, containers_count);
+  unsigned long bytes_written = sizeof(uint32_t) * 4 + sizeof(uint64_t);
   for (int i = 0; i < containers_count; i++) {
     write_u32(os, containers[i]);
+    bytes_written += sizeof(uint32_t);
   }
-  write_blocks_from_k2nodes(root, 0, st->cut_depth, os, st.get());
+  bytes_written +=
+      write_blocks_from_k2nodes(root, 0, st->cut_depth, os, st.get());
+
+  return bytes_written;
 }
 
 struct k2node *deserialize_k2node_tree(std::istream &is,
@@ -305,7 +325,7 @@ K2TreeMixed K2TreeMixed::read_from_istream(std::istream &is) {
 }
 
 std::vector<unsigned long> K2TreeMixed::sip_join_k2trees(
-    const std::vector<K2TreeMixed *> &trees,
+    const std::vector<const K2TreeMixed *> &trees,
     std::vector<struct sip_ipoint> &join_coordinates) {
   if (trees.size() != join_coordinates.size()) {
     throw std::runtime_error(
@@ -330,16 +350,49 @@ std::vector<unsigned long> K2TreeMixed::sip_join_k2trees(
 
   std::vector<unsigned long> result;
 
-  k2node_sip_join(
+  int err = k2node_sip_join(
       sip_input,
       [](unsigned long coord, void *report_state) {
-        auto &result =
-            *reinterpret_cast<std::vector<unsigned long> *>(report_state);
-        result.push_back(coord);
+        reinterpret_cast<std::vector<unsigned long> *>(report_state)
+            ->push_back(coord);
       },
       &result);
+
+  if (err) {
+    throw std::runtime_error(
+        "K2TreeMixed::sip_join_k2trees:: error in k2node_sip_join: " +
+        std::to_string(err));
+  }
 
   return result;
 }
 
 size_t K2TreeMixed::size() const { return points_count; }
+
+struct k2node *K2TreeMixed::get_root_k2node() {
+  return root;
+}
+
+struct k2qstate *K2TreeMixed::get_k2qstate() {
+  return st.get();
+}
+
+bool K2TreeMixed::has_valid_structure() const {
+  int result = debug_validate_k2node_rec(root, st.get(), 0);
+
+  return result == 0;
+}
+
+std::vector<std::pair<unsigned long, unsigned long>>
+K2TreeMixed::scan_points_into_vector() const {
+  std::vector<std::pair<unsigned long, unsigned long>> result;
+  scan_points(
+      [](unsigned long col, unsigned long row, void *container_ptr) {
+        reinterpret_cast<
+            std::vector<std::pair<unsigned long, unsigned long>> *>(
+            container_ptr)
+            ->push_back({col, row});
+      },
+      &result);
+  return result;
+}

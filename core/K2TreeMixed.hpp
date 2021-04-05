@@ -59,38 +59,45 @@ public:
 
   ~K2TreeMixed();
 
+  struct k2node *get_root_k2node();
+  struct k2qstate *get_k2qstate();
+
   void insert(unsigned long col, unsigned long row);
-  bool has(unsigned long col, unsigned long row);
+  bool has(unsigned long col, unsigned long row) const;
 
   static std::vector<unsigned long>
-  sip_join_k2trees(const std::vector<K2TreeMixed *> &trees,
+  sip_join_k2trees(const std::vector<const K2TreeMixed *> &trees,
                    std::vector<struct sip_ipoint> &join_coordinates);
 
   unsigned long get_tree_depth();
 
   std::vector<std::pair<unsigned long, unsigned long>> get_all_points();
-  std::vector<unsigned long> get_row(unsigned long row);
-  std::vector<unsigned long> get_column(unsigned long col);
+  std::vector<unsigned long> get_row(unsigned long row) const;
+  std::vector<unsigned long> get_column(unsigned long col) const;
 
-  void scan_points(point_reporter_fun_t fun_reporter, void *report_state);
+  void scan_points(point_reporter_fun_t fun_reporter, void *report_state) const;
+  std::vector<std::pair<unsigned long, unsigned long>>
+  scan_points_into_vector() const;
   void traverse_row(unsigned long row, point_reporter_fun_t fun_reporter,
-                    void *report_state);
+                    void *report_state) const;
   void traverse_column(unsigned long column, point_reporter_fun_t fun_reporter,
-                       void *report_state);
+                       void *report_state) const;
 
-  struct k2tree_measurement measure_in_memory_size();
+  struct k2tree_measurement measure_in_memory_size() const;
 
-  ResultTable column_as_table(unsigned long column);
-  ResultTable row_as_table(unsigned long row);
+  ResultTable column_as_table(unsigned long column) const;
+  ResultTable row_as_table(unsigned long row) const;
 
-  K2TreeStats k2tree_stats();
+  K2TreeStats k2tree_stats() const;
 
-  bool same_as(const K2TreeMixed &other);
+  bool same_as(const K2TreeMixed &other) const;
 
-  void write_to_ostream(std::ostream &os);
+  unsigned long write_to_ostream(std::ostream &os) const;
   static K2TreeMixed read_from_istream(std::istream &is);
 
   size_t size() const;
+
+  bool has_valid_structure() const;
 
 private:
   void clean_up();

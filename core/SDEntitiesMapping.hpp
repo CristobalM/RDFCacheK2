@@ -130,17 +130,14 @@ public:
   }
 
   unsigned long last_blank_id() override {
-    return blanks_dictionary->numElements();
+    return last_iri_id() + blanks_dictionary->numElements();
   }
 
   unsigned long last_literal_id() override {
-    return literals_dictionary->numElements();
+    return last_blank_id() + literals_dictionary->numElements();
   }
 
-  unsigned long last_id() override {
-    return iris_dictionary->numElements() + blanks_dictionary->numElements() +
-           literals_dictionary->numElements();
-  }
+  unsigned long last_id() override { return last_literal_id(); }
 
 private:
   uint64_t _offset_index_cond(uint64_t index, uint64_t offset) {

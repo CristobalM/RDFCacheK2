@@ -320,3 +320,11 @@ std::vector<unsigned long> get_k2tree_band(unsigned long band_index,
 struct k2tree_measurement K2Tree::measure_in_memory_size() {
   return measure_tree_size(root);
 }
+
+struct block *K2Tree::get_root_block() {
+  return root;
+}
+
+struct queries_state *K2Tree::get_qs() {
+  return qs.get();
+}

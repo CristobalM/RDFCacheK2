@@ -40,6 +40,9 @@ public:
 
   ~K2Tree() noexcept(false);
 
+  struct block *get_root_block();
+  struct queries_state *get_qs();
+
   void insert(unsigned long col, unsigned long row);
   bool has(unsigned long col, unsigned long row);
 

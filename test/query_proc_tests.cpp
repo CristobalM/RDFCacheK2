@@ -298,6 +298,8 @@ TEST(QueryProcTests, test_bgp_node_3) {
   ASSERT_EQ(translated_headers[0], "?x");
   ASSERT_EQ(translated_headers[1], "?y");
 
+  ASSERT_EQ(translated_table.size(), 2);
+
   ASSERT_EQ(translated_table[0][0].value, "<subj2>");
   ASSERT_EQ(translated_table[0][1].value, "obj1");
 
@@ -640,6 +642,7 @@ TEST(QueryProcTests, test_bgp_node_4_compact_dicts) {
 }
 
 TEST(QueryProcTests, join_two_two_vars) {
+  // TODO: add assertions
   proto_msg::SparqlTree tree;
   auto *project_node = tree.mutable_root()->mutable_project_node();
   project_node->add_vars("?v");
@@ -744,14 +747,8 @@ TEST(QueryProcTests, join_two_two_vars) {
 
   auto translated_table = translate_table(table, cache);
   auto header_str = reverse_map[table.headers[0]];
+
   /*
-  ASSERT_EQ(header_str, "?x");
-
-  ASSERT_EQ(translated_table[0][0].value, "<subj1>");
-  ASSERT_EQ(translated_table[1][0].value, "<subj3>");
-  ASSERT_EQ(translated_table[2][0].value, "<subj2>");
- */
-
   for (auto header : table.headers) {
     std::cout << reverse_map[header] << "\t\t";
   }
@@ -765,5 +762,7 @@ TEST(QueryProcTests, join_two_two_vars) {
   }
 
   std::cout << "total size: " << translated_table.size() << std::endl;
+  */
+
   fs::remove(fname);
 }

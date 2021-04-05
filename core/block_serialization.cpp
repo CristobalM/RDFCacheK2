@@ -62,7 +62,7 @@ struct block *read_block_from_istream(std::istream &is) {
   return new_block;
 }
 
-void write_block_to_ostream(struct block *b, std::ostream &os) {
+unsigned long write_block_to_ostream(struct block *b, std::ostream &os) {
   uint16_t nodes_count = b->nodes_count;
   uint16_t children = b->children;
   uint16_t container_size = b->container_size;
@@ -71,10 +71,13 @@ void write_block_to_ostream(struct block *b, std::ostream &os) {
   write_u16(os, children);
   write_u16(os, container_size);
 
+  unsigned long bytes_written = sizeof(uint16_t) * 3;
+
   NODES_BV_T *frontier_preorders = b->preorders;
   for (uint32_t i = 0; i < children; i++) {
     uint16_t current_preorder = frontier_preorders[i];
     write_u16(os, current_preorder);
+    bytes_written += sizeof(uint16_t);
   }
 
   uint32_t *data = b->container;
@@ -82,32 +85,42 @@ void write_block_to_ostream(struct block *b, std::ostream &os) {
   for (int i = 0; i < (int)container_size; i++) {
     uint32_t current_sub_block = data[i];
     write_u32(os, current_sub_block);
+    bytes_written += sizeof(uint32_t);
   }
+
+  return bytes_written;
 }
 
-void write_tree_to_ostream(k2tree_data data, std::ostream &os) {
+unsigned long write_tree_to_ostream(k2tree_data data, std::ostream &os) {
   write_u16(os, data.max_node_count);
   write_u16(os, data.treedepth);
   auto start_pos = os.tellp();
   write_u32(os, 0);
-  uint32_t blocks_count = traverse_tree_write_to_ostream(data.root, os);
+
+  unsigned long bytes_written = sizeof(uint16_t) * 2 + sizeof(uint32_t);
+
+  uint32_t blocks_count =
+      traverse_tree_write_to_ostream(data.root, os, bytes_written);
   auto curr_pos = os.tellp();
   os.seekp(start_pos);
   write_u32(os, blocks_count);
   os.seekp(curr_pos);
+  return bytes_written;
 }
 
-uint32_t traverse_tree_write_to_ostream(struct block *b, std::ostream &os) {
+uint32_t traverse_tree_write_to_ostream(struct block *b, std::ostream &os,
+                                        unsigned long &bytes_written) {
   struct block **child_blocks = b->children_blocks;
 
   uint32_t blocks_counted = 1;
 
   for (int i = 0; i < b->children; i++) {
     struct block *current_child_block = child_blocks[i];
-    blocks_counted += traverse_tree_write_to_ostream(current_child_block, os);
+    blocks_counted +=
+        traverse_tree_write_to_ostream(current_child_block, os, bytes_written);
   }
 
-  write_block_to_ostream(b, os);
+  bytes_written += write_block_to_ostream(b, os);
   return blocks_counted;
 }
 

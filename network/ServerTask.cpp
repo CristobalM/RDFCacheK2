@@ -9,47 +9,17 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
-#include <openssl/md5.h>
-
 #include "ServerTask.hpp"
 
 #include <graph_result.pb.h>
 #include <message_type.pb.h>
 #include <response_msg.pb.h>
 
+#include <hashing.hpp>
 #include <serialization_util.hpp>
 
 ServerTask::ServerTask(int client_socket_fd, Cache &cache)
     : client_socket_fd(client_socket_fd), cache(cache) {}
-
-static std::vector<char> md5calc(const std::string &input) {
-  std::vector<char> result(16, 0);
-
-  MD5(reinterpret_cast<const unsigned char *>(input.data()), input.size(),
-      reinterpret_cast<unsigned char *>(result.data()));
-  return result;
-}
-
-static std::string md5_human_readable(const std::vector<char> &digest) {
-  static const char hexchars[] = "0123456789abcdef";
-
-  std::string result;
-
-  for (int i = 0; i < 16; i++) {
-    unsigned char b = digest[i];
-    char hex[3];
-
-    hex[0] = hexchars[b >> 4];
-    hex[1] = hexchars[b & 0xF];
-    hex[2] = 0;
-
-    result.append(hex);
-  }
-
-  std::for_each(result.begin(), result.end(),
-                [](char &c) { c = ::toupper(c); });
-  return result;
-}
 
 void send_response(int socket_client_fd,
                    proto_msg::CacheResponse &cache_response) {
@@ -103,7 +73,7 @@ void send_response(int socket_client_fd,
 
 static proto_msg::CacheResponse
 create_response_from_query_result(ServerTask &server_task,
-                                  QueryResult &query_result) {
+                                  QueryResult &query_result, Message &message) {
   auto &vim = query_result.get_vim();
   auto &table = query_result.table();
 
@@ -111,11 +81,31 @@ create_response_from_query_result(ServerTask &server_task,
   cache_response.set_response_type(
       proto_msg::MessageType::RESULT_TABLE_RESPONSE);
 
+  auto &tree =
+      message.get_cache_request().cache_run_query_algebra().sparql_tree();
+
+  auto &project_node = tree.root().project_node();
+
+  auto &headers = query_result.table().headers;
+  std::unordered_map<unsigned long, unsigned long> reversed_uindexes;
+  for (size_t i = 0; i < headers.size(); i++) {
+    reversed_uindexes[headers[i]] = i;
+  }
+
+  std::vector<unsigned long> resulting_vars_order;
+
+  for (int i = 0; i < project_node.vars_size(); i++) {
+    const auto &var = project_node.vars(i);
+    auto var_index = vim.var_indexes[var];
+    resulting_vars_order.push_back(reversed_uindexes[var_index]);
+  }
+
   std::set<uint64_t> keys; // will store values in ascending order
   for (const auto &row : table.get_data()) {
     auto *response_row =
         cache_response.mutable_query_result_response()->add_rows();
-    for (auto value : row) {
+    for (size_t i = 0; i < row.size(); i++) {
+      auto value = row[resulting_vars_order[i]];
       keys.insert(value);
       response_row->add_row(value);
     }
@@ -143,10 +133,9 @@ create_response_from_query_result(ServerTask &server_task,
     }
   }
 
-  auto reverse_map = vim.reverse();
-  for (auto header : table.headers) {
-    auto header_str = reverse_map[header];
-    cache_response.mutable_query_result_response()->add_header(header_str);
+  for (int i = 0; i < project_node.vars_size(); i++) {
+    const auto &var = project_node.vars(i);
+    cache_response.mutable_query_result_response()->add_header(var);
   }
 
   return cache_response;
@@ -157,7 +146,8 @@ void process_cache_query(ServerTask &server_task, Message &message) {
   auto &tree =
       message.get_cache_request().cache_run_query_algebra().sparql_tree();
   auto query_result = cache.run_query(tree);
-  auto response = create_response_from_query_result(server_task, query_result);
+  auto response =
+      create_response_from_query_result(server_task, query_result, message);
   int client_fd = server_task.get_client_socket_fd();
   send_response(client_fd, response);
 }

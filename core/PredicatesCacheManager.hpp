@@ -44,21 +44,24 @@ public:
 
   PredicatesIndexCacheMDFile &get_predicates_cache();
 
-  K2TreeMixed &get_tree_by_predicate_name(const std::string &predicate_name);
-  K2TreeMixed &get_tree_by_predicate_index(unsigned long index);
+  const K2TreeMixed &
+  get_tree_by_predicate_name(const std::string &predicate_name) const;
+  const K2TreeMixed &get_tree_by_predicate_index(unsigned long index) const;
 
   NaiveDynamicStringDictionary &get_dyn_dicts();
 
   void save_all(const std::string &fname, const std::string &dirname);
 
-  unsigned long get_iri_index(const std::string &value);
-  unsigned long get_literal_index(const std::string &value);
-  unsigned long get_blank_index(const std::string &value);
+  unsigned long get_iri_index(const std::string &value) const;
+  unsigned long get_literal_index(const std::string &value) const;
+  unsigned long get_blank_index(const std::string &value) const;
   RDFResource extract_resource(unsigned long index) const;
 
   PredicatesIndexCacheMDFile &get_predicates_index_cache();
 
   uint64_t get_resource_index(const RDFResource &resource) const;
+
+  ISDManager *get_isd_manager();
 
 private:
   void handle_not_found(unsigned long &resource_id, RDFResource &resource);

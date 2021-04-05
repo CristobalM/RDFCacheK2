@@ -51,13 +51,24 @@ set(PROC_SOURCE_FILES
 set(GRAPH_RESULT_CACHING_FILE
         gresults-caching/GraphResult.cpp
         gresults-caching/Cache.cpp
-        gresults-caching/QueryResult.cpp
         gresults-caching/CacheReplacementFactory.cpp
         gresults-caching/LRUCacheReplacement.cpp
         gresults-caching/cache_result/ExistingCacheResult.cpp
         gresults-caching/cache_result/NonExistingCacheResult.cpp
         gresults-caching/LRU/LRUQueue.cpp
         gresults-caching/LRUCacheReplacement.cpp
+        gresults-caching/query_processing/QueryProcessor.cpp
+        gresults-caching/query_processing/KeyPairStr.cpp
+        gresults-caching/query_processing/QueryResult.cpp
+        gresults-caching/query_processing/Triple.cpp
+        gresults-caching/query_processing/hash_pair.cpp
+        gresults-caching/query_processing/GroupedTriples.cpp
+        gresults-caching/query_processing/ChainedInput.cpp
+        gresults-caching/query_processing/BGPProcessor.cpp
+        gresults-caching/query_processing/VarIndexManager.cpp
+        gresults-caching/query_processing/BandMap.cpp
+        gresults-caching/query_processing/BandMapLazy.cpp
+
 )
 
         
@@ -73,7 +84,6 @@ set(NETWORK_SOURCE_FILES
 
 
 set(PROTO_MESSAGES
-        proto/generated/entities_mapping.pb.cc
         proto/generated/graph_result.pb.cc
         proto/generated/k2tree.pb.cc
         proto/generated/message_type.pb.cc
@@ -145,12 +155,13 @@ add_library(Proc STATIC ${PROC_SOURCE_FILES})
 
 add_library(CppBase64 ${LIB_CPPBASE64_PATH}/base64.cpp)
 
-add_library(Utils utils/serialization_util.cpp)
+add_library(Utils utils/serialization_util.cpp utils/hashing.cpp)
 
 add_dependencies(Proc CppBase64)
 
 # add_dependencies(RDFCacheK2 _k2tree_merged_noalloc)
 add_dependencies(RDFCacheK2 k2dyn Utils)
+add_dependencies(RDFCacheK2_Network RDFCacheK2)
 
 #add_dependencies(RDFCacheK2_GR RDFCacheK2)
 
@@ -175,6 +186,7 @@ set(BASE_LIBS
         CSD
         cds
         Utils
+        ${OPENSSL_LIBRARIES}
         )
         
 set(PROC_LIBS
@@ -259,6 +271,26 @@ add_executable(debug_read_k2trees_metadata scripts/debug_read_k2trees_metadata.c
 target_include_directories(debug_read_k2trees_metadata PUBLIC ${INCLUDES})
 target_link_libraries(debug_read_k2trees_metadata ${DEFAULT_LIBS} )
 
+add_executable(show_sds_map scripts/show_sds_map.cpp)
+target_include_directories(show_sds_map PUBLIC ${INCLUDES})
+target_link_libraries(show_sds_map ${DEFAULT_LIBS} )
+
+add_executable(validate_pcm scripts/validate_pcm.cpp)
+target_include_directories(validate_pcm PUBLIC ${INCLUDES})
+target_link_libraries(validate_pcm ${DEFAULT_LIBS} )
+
+
+add_executable(convert_triples_to_binary scripts/convert_triples_to_binary.cpp)
+target_include_directories(convert_triples_to_binary PUBLIC ${INCLUDES})
+target_link_libraries(convert_triples_to_binary ${DEFAULT_LIBS} )
+
+
+add_executable(traverse_k2tree_band scripts/traverse_k2tree_band.cpp)
+target_include_directories(traverse_k2tree_band PUBLIC ${INCLUDES})
+target_link_libraries(traverse_k2tree_band ${DEFAULT_LIBS} )
+
+
+
 
 add_executable(four_sided_queue_example example/four_sided_queue_example.cpp)
 
@@ -311,6 +343,9 @@ target_link_libraries(predicates_metadata_serialization_test ${DEFAULT_LIBS} ${G
 add_executable(join_util_test test/join_util_test.cpp)
 target_link_libraries(join_util_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES})
 
+add_executable(k2mixed_from_file test/k2mixed_from_file.cpp)
+target_link_libraries(k2mixed_from_file ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES})
+
 
 add_test(NAME serialization_test COMMAND ./serialization_test)
 add_test(NAME k2tree_serialization_test COMMAND ./k2tree_serialization_test)
@@ -325,6 +360,10 @@ add_test(NAME cache_replacement_test COMMAND ./cache_replacement_test)
 add_test(NAME test_external_sort COMMAND ./test_external_sort)
 add_test(NAME predicates_metadata_serialization_test COMMAND ./predicates_metadata_serialization_test)
 add_test(NAME join_util_test COMMAND ./join_util_test)
+add_test(NAME k2mixed_from_file COMMAND ./k2mixed_from_file)
+
+configure_file(test/k2tree_case_1.txt k2tree_case_1.txt COPYONLY)
+
 endif()
 
 

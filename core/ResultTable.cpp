@@ -59,8 +59,7 @@ void ResultTable::left_join_with(unsigned long left_column_index,
         data.erase(curr);
       else
         for (size_t i = 0; i < right.headers.size() - 1; i++)
-          ;
-      l.push_back(0);
+          l.push_back(0);
     } else {
       rit++;
     }
