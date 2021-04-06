@@ -68,6 +68,7 @@ set(GRAPH_RESULT_CACHING_FILE
         gresults-caching/query_processing/VarIndexManager.cpp
         gresults-caching/query_processing/BandMap.cpp
         gresults-caching/query_processing/BandMapLazy.cpp
+        gresults-caching/query_processing/UnionProcessor.cpp
 
 )
 

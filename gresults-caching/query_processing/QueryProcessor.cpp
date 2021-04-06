@@ -16,6 +16,7 @@
 #include "BGPProcessor.hpp"
 #include "QueryProcessor.hpp"
 #include "Term.hpp"
+#include "UnionProcessor.hpp"
 #include "VarIndexManager.hpp"
 
 QueryProcessor::QueryProcessor(const PredicatesCacheManager &cache_manager)
@@ -38,6 +39,10 @@ process_left_join_node(const proto_msg::LeftJoinNode &left_join_node,
 std::shared_ptr<ResultTable>
 process_project_node(const proto_msg::ProjectNode &project_node,
                      const PredicatesCacheManager &cm, VarIndexManager &vim);
+
+std::shared_ptr<ResultTable>
+process_union_node(const proto_msg::UnionNode &union_node,
+                   const PredicatesCacheManager &cm, VarIndexManager &vim);
 
 void process_triple_node(const proto_msg::TripleNode &,
                          std::shared_ptr<ResultTable> &,
@@ -195,6 +200,10 @@ process_project_node(const proto_msg::ProjectNode &project_node,
     result_table =
         process_left_join_node(project_node.sub_op().left_join_node(), cm, vim);
     break;
+  case proto_msg::SparqlNode::NodeCase::kUnionNode:
+    result_table =
+        process_union_node(project_node.sub_op().union_node(), cm, vim);
+    break;
   default:
     throw std::runtime_error("Unsupported nodetype on process_project_node: " +
                              std::to_string(project_node.sub_op().node_case()));
@@ -222,4 +231,17 @@ QueryResult QueryProcessor::run_query(proto_msg::SparqlTree const &query_tree) {
   VarIndexManager vim;
   auto result = process_node(query_tree.root(), cache_manager, vim);
   return QueryResult(result, std::move(vim));
+}
+
+std::shared_ptr<ResultTable>
+process_union_node(const proto_msg::UnionNode &union_node,
+                   const PredicatesCacheManager &cm, VarIndexManager &vim) {
+
+  UnionProcessor union_processor(vim);
+  for (int i = 0; i < union_node.nodes_list_size(); i++) {
+    auto &node = union_node.nodes_list(i);
+    auto table = process_node(node, cm, vim);
+    union_processor.combine_table(std::move(table));
+  }
+  return union_processor.get_result();
 }

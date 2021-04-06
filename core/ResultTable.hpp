@@ -8,7 +8,6 @@
 struct ResultTable {
   using vul_t = std::vector<unsigned long>;
   using lvul_t = std::list<vul_t>;
-  using map_t = std::unordered_map<unsigned long, unsigned long>;
 
   vul_t headers;
   lvul_t data;
