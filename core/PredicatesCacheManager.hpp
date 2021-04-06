@@ -42,8 +42,6 @@ public:
   void replace_index_cache(
       std::unique_ptr<PredicatesIndexCacheMDFile> &&predicates_index);
 
-  PredicatesIndexCacheMDFile &get_predicates_cache();
-
   const K2TreeMixed &
   get_tree_by_predicate_name(const std::string &predicate_name) const;
   const K2TreeMixed &get_tree_by_predicate_index(unsigned long index) const;

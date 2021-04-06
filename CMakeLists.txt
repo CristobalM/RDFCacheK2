@@ -280,6 +280,10 @@ add_executable(validate_pcm scripts/validate_pcm.cpp)
 target_include_directories(validate_pcm PUBLIC ${INCLUDES})
 target_link_libraries(validate_pcm ${DEFAULT_LIBS} )
 
+add_executable(dataset_stats scripts/dataset_stats.cpp)
+target_include_directories(dataset_stats PUBLIC ${INCLUDES})
+target_link_libraries(dataset_stats ${DEFAULT_LIBS} )
+
 
 add_executable(convert_triples_to_binary scripts/convert_triples_to_binary.cpp)
 target_include_directories(convert_triples_to_binary PUBLIC ${INCLUDES})

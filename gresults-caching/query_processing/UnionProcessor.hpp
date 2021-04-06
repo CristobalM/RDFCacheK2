@@ -14,14 +14,15 @@
 
 class UnionProcessor {
 
-  VarIndexManager &vim;
+  // VarIndexManager &vim;
 
   std::shared_ptr<ResultTable> current_table;
 
   std::set<unsigned long> current_headers;
 
 public:
-  UnionProcessor(VarIndexManager &vim);
+  // UnionProcessor(VarIndexManager &vim);
+  UnionProcessor();
 
   // Doesn't delete duplicates
   void combine_table(std::shared_ptr<ResultTable> table);

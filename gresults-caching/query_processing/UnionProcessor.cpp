@@ -4,8 +4,11 @@
 #include <algorithm>
 #include <stdexcept>
 
+/*
 UnionProcessor::UnionProcessor(VarIndexManager &vim)
     : vim(vim), current_table(nullptr) {}
+*/
+UnionProcessor::UnionProcessor() : current_table(nullptr) {}
 
 std::shared_ptr<ResultTable> UnionProcessor::get_result() {
   return current_table;
@@ -84,9 +87,9 @@ UnionProcessor::find_table_permutation(const ResultTable &table) {
   return table_permutation_inverse;
 }
 
-std::vector<unsigned long>
-permutate_row(const std::vector<unsigned long> &table_permutation,
-              std::vector<unsigned long> &input_row) {
+std::vector<unsigned long> UnionProcessor::permutate_row(
+    const std::vector<unsigned long> &table_permutation,
+    std::vector<unsigned long> &input_row) {
   std::vector<unsigned long> result(input_row.size(), 0);
   for (size_t i = 0; i < input_row.size(); i++) {
     result[i] = input_row[table_permutation[i]];

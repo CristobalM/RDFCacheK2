@@ -1,0 +1,165 @@
+//
+// Created by Cristobal Miranda, 2020
+//
+#include <fstream>
+#include <getopt.h>
+#include <iostream>
+#include <memory>
+#include <string>
+
+#include <PredicatesCacheManager.hpp>
+#include <SDEntitiesMapping.hpp>
+#include <StringDictionaryHASHRPDAC.h>
+#include <StringDictionaryHASHRPDACBlocks.h>
+#include <StringDictionaryHTFC.h>
+#include <StringDictionaryPFC.h>
+#include <StringDictionaryRPDAC.h>
+
+#include <exception>
+
+struct parsed_options {
+  std::string iris_file;
+  std::string blanks_file;
+  std::string literals_file;
+  std::string k2trees_file;
+  std::string output_file;
+};
+
+parsed_options parse_cmline(int argc, char **argv);
+
+void print_help();
+
+int main(int argc, char **argv) {
+  parsed_options parsed = parse_cmline(argc, argv);
+
+  std::ifstream ifs_iris(parsed.iris_file, std::ios::in | std::ios::binary);
+  std::ifstream ifs_blanks(parsed.blanks_file, std::ios::in | std::ios::binary);
+  std::ifstream ifs_literals(parsed.literals_file,
+                             std::ios::in | std::ios::binary);
+
+  auto sds_tmp = std::make_unique<
+      SDEntitiesMapping<StringDictionaryPFC, StringDictionaryPFC,
+                        StringDictionaryHASHRPDACBlocks>>(ifs_iris, ifs_blanks,
+                                                          ifs_literals);
+
+  PredicatesCacheManager pcm(std::move(sds_tmp), parsed.k2trees_file);
+
+  auto *sds = pcm.get_isd_manager();
+
+  auto &predicates_index = pcm.get_predicates_index_cache();
+  const auto &predicates_ids = predicates_index.get_predicates_ids();
+
+  std::ofstream ofs(parsed.output_file, std::ios::out | std::ios::trunc);
+
+  unsigned long total_points = 0;
+
+  ofs << "#,predicate,points\n";
+  for (auto predicate_id : predicates_ids) {
+    auto &k2tree = predicates_index.fetch_k2tree(predicate_id);
+    total_points += k2tree.size();
+    auto pred_resource = pcm.get_isd_manager()->get_resource(predicate_id);
+    ofs << predicate_id << "," << pred_resource.value << "," << k2tree.size()
+        << "\n";
+  }
+
+  std::cout << "Different strings: " << sds->last_id() << "\n"
+            << "Total triples: " << total_points << "\n"
+            << std::endl;
+
+  return 0;
+}
+
+parsed_options parse_cmline(int argc, char **argv) {
+  const char short_options[] = "i:b:l:k:o:";
+  struct option long_options[] = {
+      {"iris-file", required_argument, nullptr, 'i'},
+      {"blanks-file", required_argument, nullptr, 'b'},
+      {"literals-file", required_argument, nullptr, 'l'},
+      {"k2trees-file", required_argument, nullptr, 'l'},
+      {"output-file", required_argument, nullptr, 'o'},
+  };
+
+  int opt, opt_index;
+
+  bool has_iris = false;
+  bool has_blanks = false;
+  bool has_literals = false;
+  bool has_k2trees = false;
+  bool has_output_file = false;
+
+  parsed_options out{};
+
+  std::string given_type;
+  while ((
+      opt = getopt_long(argc, argv, short_options, long_options, &opt_index))) {
+    if (opt == -1) {
+      break;
+    }
+
+    switch (opt) {
+    case 'i':
+      out.iris_file = optarg;
+      has_iris = true;
+      break;
+    case 'b':
+      out.blanks_file = optarg;
+      has_blanks = true;
+      break;
+    case 'l':
+      out.literals_file = optarg;
+      has_literals = true;
+      break;
+    case 'k':
+      out.k2trees_file = optarg;
+      has_k2trees = true;
+      break;
+    case 'o':
+      out.output_file = optarg;
+      has_output_file = true;
+      break;
+    case 'h': // to implement
+    case '?':
+    default:
+      print_help();
+      break;
+    }
+  }
+
+  if (!has_iris) {
+    std::cerr << "Missing option --iris-file\n" << std::endl;
+    print_help();
+    exit(1);
+  }
+  if (!has_blanks) {
+    std::cerr << "Missing option --blanks-file\n" << std::endl;
+    print_help();
+    exit(1);
+  }
+  if (!has_literals) {
+    std::cerr << "Missing option --literals-file\n" << std::endl;
+    print_help();
+    exit(1);
+  }
+  if (!has_k2trees) {
+    std::cerr << "Missing option --k2trees-file\n" << std::endl;
+    print_help();
+    exit(1);
+  }
+
+  if (!has_output_file) {
+    std::cerr << "Missing option --output-file\n" << std::endl;
+    print_help();
+    exit(1);
+  }
+
+  return out;
+}
+
+void print_help() {
+  std::cout << "--iris-file\t(-i)\t\t(string-required)\n"
+            << "--blanks-file\t(-b)\t\t(string-required)\n"
+            << "--literals-file\t(-l)\t\t(string-required)\n"
+            << "--k2trees-file\t(-k)\t\t(string-required)\n"
+            << "--output-file\t(-o)\t\t(string-required)\n"
+            << std::endl;
+}

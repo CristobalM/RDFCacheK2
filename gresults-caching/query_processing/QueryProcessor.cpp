@@ -237,7 +237,8 @@ std::shared_ptr<ResultTable>
 process_union_node(const proto_msg::UnionNode &union_node,
                    const PredicatesCacheManager &cm, VarIndexManager &vim) {
 
-  UnionProcessor union_processor(vim);
+  // UnionProcessor union_processor(vim);
+  UnionProcessor union_processor;
   for (int i = 0; i < union_node.nodes_list_size(); i++) {
     auto &node = union_node.nodes_list(i);
     auto table = process_node(node, cm, vim);
