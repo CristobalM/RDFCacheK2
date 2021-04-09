@@ -35,8 +35,6 @@ class Cache {
 
   CacheReplacement cache_replacement;
 
-  QueryProcessor query_processor;
-
 public:
   using cm_t = std::shared_ptr<PredicatesCacheManager>;
   using pcm_t = PredicatesCacheManager;
