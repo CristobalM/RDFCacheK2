@@ -17,6 +17,8 @@ message SparqlNode {
     TripleNode triple_node = 4;
     ExprNode expr_node = 5;
     UnionNode union_node = 6;
+    DistinctNode distinct_node = 7;
+    OptionalNode optional_node = 8;
   }
 }
 
@@ -50,6 +52,15 @@ message BGPNode{
 
 message UnionNode{
   repeated SparqlNode nodes_list = 1;
+}
+
+message DistinctNode{
+  SparqlNode sub_node = 1;
+}
+
+message OptionalNode {
+  SparqlNode left_node = 1;
+  SparqlNode right_node = 2;
 }
 
 message TripleNode{

@@ -69,6 +69,7 @@ set(GRAPH_RESULT_CACHING_FILE
         gresults-caching/query_processing/BandMap.cpp
         gresults-caching/query_processing/BandMapLazy.cpp
         gresults-caching/query_processing/UnionProcessor.cpp
+        gresults-caching/query_processing/OptionalProcessor.cpp
 
 )
 
@@ -188,6 +189,7 @@ set(BASE_LIBS
         cds
         Utils
         ${OPENSSL_LIBRARIES}
+        stdc++fs
         )
         
 set(PROC_LIBS
@@ -211,6 +213,7 @@ set(DEFAULT_LIBS
         cds
         Utils
         ${OPENSSL_LIBRARIES}
+        stdc++fs
         )
 
 
@@ -218,7 +221,7 @@ set(DEFAULT_LIBS
 
 add_executable(validate_sd_from_nt scripts/validate_sd_from_nt.cpp)
 target_include_directories(validate_sd_from_nt PUBLIC ${LIB_CPPBASE64_PATH})
-target_link_libraries(validate_sd_from_nt ${BASE_LIBS} CppBase64 ntparser stdc++fs)
+target_link_libraries(validate_sd_from_nt ${BASE_LIBS} CppBase64 ntparser)
 
 
 #add_executable(index_by_k2tree_with_sd scripts/index_by_k2tree_with_sd.cpp)
@@ -244,7 +247,7 @@ target_link_libraries(base64_transform ${PROC_LIBS})
 
 add_executable(external_sort scripts/external_sort.cpp)
 target_include_directories(external_sort PUBLIC ${INCLUDES})
-target_link_libraries(external_sort pthread Utils)
+target_link_libraries(external_sort pthread Utils stdc++fs)
 
 add_executable(convert_nt_to_binary scripts/convert_nt_to_binary.cpp)
 target_include_directories(convert_nt_to_binary PUBLIC ${INCLUDES})
@@ -367,7 +370,6 @@ add_test(NAME predicates_metadata_serialization_test COMMAND ./predicates_metada
 add_test(NAME join_util_test COMMAND ./join_util_test)
 add_test(NAME k2mixed_from_file COMMAND ./k2mixed_from_file)
 
-configure_file(test/k2tree_case_1.txt k2tree_case_1.txt COPYONLY)
 
 endif()
 

@@ -65,11 +65,11 @@ int main(int argc, char **argv) {
 }
 
 parsed_options parse_cmline(int argc, char **argv) {
-  const char short_options[] = "f:o:t::bp::c::B::";
+  const char short_options[] = "f:o:t:bp::c::B::";
   struct option long_options[] = {
       {"input-file", required_argument, nullptr, 'f'},
       {"output-file", required_argument, nullptr, 'o'},
-      {"sd-type", optional_argument, nullptr, 't'},
+      {"sd-type", required_argument, nullptr, 't'},
       {"base64", optional_argument, nullptr, 'b'},
       {"thread-count", optional_argument, nullptr, 'p'},
       {"cut-size", optional_argument, nullptr, 'c'},

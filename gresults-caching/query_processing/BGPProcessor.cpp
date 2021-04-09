@@ -25,7 +25,7 @@ std::shared_ptr<ResultTable> BGPProcessor::execute() {
 
 void BGPProcessor::set_triples_from_proto() {
   for (int i = 0; i < bgp_node.triple_size(); i++) {
-    const auto &triple = bgp_node.triple().at(i);
+    const auto &triple = bgp_node.triple()[i];
     triples.push_back(Triple(triple, cm));
   }
 }
