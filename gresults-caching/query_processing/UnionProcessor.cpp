@@ -4,10 +4,6 @@
 #include <algorithm>
 #include <stdexcept>
 
-/*
-UnionProcessor::UnionProcessor(VarIndexManager &vim)
-    : vim(vim), current_table(nullptr) {}
-*/
 UnionProcessor::UnionProcessor() : current_table(nullptr) {}
 
 std::shared_ptr<ResultTable> UnionProcessor::get_result() {
@@ -23,6 +19,89 @@ intersect_ul_sets(std::set<unsigned long> &first,
   return result;
 }
 
+/*
+static void debug_print_table(const ResultTable &table) {
+  std::cout << "table...\n";
+  for (const auto &row : table.data) {
+    for (auto val : row) {
+      std::cout << val << ",";
+    }
+    std::cout << "\n";
+  }
+}
+*/
+
+std::vector<unsigned long> UnionProcessor::as_current_table(
+    const std::vector<unsigned long> &row,
+    const std::vector<unsigned long> &extra_headers_positions,
+    const std::vector<unsigned long> &current_table_same_headers_positions,
+    const std::vector<unsigned long> &table_same_headers_positions
+
+) const {
+  std::vector<unsigned long> result(current_table->headers.size(), 0);
+
+  for (size_t i = 0; i < result.size() - extra_headers_positions.size(); i++) {
+    result[current_table_same_headers_positions[i]] =
+        row[table_same_headers_positions[i]];
+  }
+
+  for (size_t i = result.size() - extra_headers_positions.size(), j = 0;
+       i < result.size(); i++, j++) {
+    result[i] = row[extra_headers_positions[j]];
+  }
+
+  return result;
+}
+
+std::vector<unsigned long> UnionProcessor::find_extra_headers_positions(
+    const ResultTable &table,
+    const std::set<unsigned long> &extra_headers) const {
+  std::vector<unsigned long> result;
+
+  // The order should be the same as in the set, table.headers should always be
+  // small
+  for (auto it = extra_headers.begin(); it != extra_headers.end(); it++) {
+    for (size_t i = 0; i < table.headers.size(); i++) {
+      if (*it == table.headers[i]) {
+        result.push_back(i);
+      }
+    }
+  }
+
+  return result;
+}
+
+std::pair<std::vector<unsigned long>, std::vector<unsigned long>>
+UnionProcessor::find_same_headers_positions(
+    const ResultTable &table,
+    const std::set<unsigned long> &extra_headers) const {
+  std::vector<unsigned long> current_table_same_headers_positions;
+  std::vector<unsigned long> table_same_headers_positions;
+
+  std::set<unsigned long> all_new_table_headers(table.headers.begin(),
+                                                table.headers.end());
+  std::set<unsigned long> same_headers;
+  std::set_difference(all_new_table_headers.begin(),
+                      all_new_table_headers.end(), extra_headers.begin(),
+                      extra_headers.end(),
+                      std::inserter(same_headers, same_headers.begin()));
+
+  for (size_t i = 0; i < current_table->headers.size() - extra_headers.size();
+       i++) {
+    if (same_headers.find(current_table->headers[i]) != same_headers.end()) {
+      current_table_same_headers_positions.push_back(i);
+    }
+  }
+
+  for (size_t i = 0; i < table.headers.size(); i++) {
+    if (same_headers.find(table.headers[i]) != same_headers.end()) {
+      table_same_headers_positions.push_back(i);
+    }
+  }
+
+  return {current_table_same_headers_positions, table_same_headers_positions};
+}
+
 void UnionProcessor::combine_table(std::shared_ptr<ResultTable> table) {
   if (!current_table) {
     current_table = std::move(table);
@@ -30,14 +109,51 @@ void UnionProcessor::combine_table(std::shared_ptr<ResultTable> table) {
     return;
   }
 
-  validate_table(*table);
-  auto table_permutation = find_table_permutation(*table);
+  auto extra_headers = select_extra_headers(*table);
+  adjust_current_table(extra_headers);
+
+  auto extra_headers_positions =
+      find_extra_headers_positions(*table, extra_headers);
+
+  auto [current_table_same_headers_positions, table_same_headers_positions] =
+      find_same_headers_positions(*table, extra_headers);
 
   auto &table_data = table->data;
   while (!table_data.empty()) {
     auto row = table_data.front();
-    current_table->data.push_back(permutate_row(table_permutation, row));
+    current_table->data.push_back(as_current_table(
+        row, extra_headers_positions, current_table_same_headers_positions,
+        table_same_headers_positions));
     table_data.pop_front();
+  }
+}
+
+std::set<unsigned long>
+UnionProcessor::select_extra_headers(const ResultTable &table) const {
+  std::set<unsigned long> extra_headers;
+  std::set<unsigned long> current_headers(current_table->headers.begin(),
+                                          current_table->headers.end());
+  std::set<unsigned long> table_headers(table.headers.begin(),
+                                        table.headers.end());
+
+  std::set_difference(current_headers.begin(), current_headers.end(),
+                      table_headers.begin(), table_headers.end(),
+                      std::inserter(extra_headers, extra_headers.begin()));
+
+  return extra_headers;
+}
+
+void UnionProcessor::adjust_current_table(
+    const std::set<unsigned long> &extra_headers) {
+
+  for (auto value : extra_headers) {
+    current_table->headers.push_back(value);
+  }
+
+  for (auto &row : current_table->data) {
+    for (size_t i = 0; i < extra_headers.size(); i++) {
+      row.push_back(0);
+    }
   }
 }
 
@@ -64,35 +180,4 @@ void UnionProcessor::validate_table(const ResultTable &table) {
     throw std::runtime_error(
         "UnionProcessor::combine_table: Invalid header set values for tables");
   }
-}
-
-std::vector<unsigned long>
-UnionProcessor::find_table_permutation(const ResultTable &table) {
-  std::vector<unsigned long> table_permutation(table.headers.size(), 0);
-  std::vector<unsigned long> table_permutation_inverse(table.headers.size(), 0);
-  std::unordered_map<unsigned long, unsigned long> curr_header_inv_map;
-
-  for (unsigned long i = 0; i < current_table->headers.size(); i++) {
-    curr_header_inv_map[current_table->headers[i]] = i;
-  }
-
-  for (unsigned long i = 0; i < table.headers.size(); i++) {
-    table_permutation[i] = curr_header_inv_map[table.headers[i]];
-  }
-
-  for (unsigned long i = 0; i < table_permutation.size(); i++) {
-    table_permutation_inverse[table_permutation[i]] = i;
-  }
-
-  return table_permutation_inverse;
-}
-
-std::vector<unsigned long> UnionProcessor::permutate_row(
-    const std::vector<unsigned long> &table_permutation,
-    std::vector<unsigned long> &input_row) {
-  std::vector<unsigned long> result(input_row.size(), 0);
-  for (size_t i = 0; i < input_row.size(); i++) {
-    result[i] = input_row[table_permutation[i]];
-  }
-  return result;
 }

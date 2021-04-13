@@ -34,12 +34,238 @@ translate_table(ResultTable &input_table, Cache &cache) {
   for (auto &row : input_table.data) {
     std::vector<RDFResource> translated_row;
     for (auto col : row) {
-      auto col_resource = cache.extract_resource(col);
-      translated_row.push_back(col_resource);
+      if (col == 0) {
+        RDFResource null_resource("NULL", RDFResourceType::RDF_TYPE_LITERAL);
+        translated_row.push_back(null_resource);
+      } else {
+
+        auto col_resource = cache.extract_resource(col);
+        translated_row.push_back(col_resource);
+      }
     }
     translated_table.push_back(std::move(translated_row));
   }
   return translated_table;
+}
+
+/*
+static void print_table_debug(
+    ResultTable &table,
+    std::unordered_map<unsigned long, std::string> &reverse_map,
+    const std::vector<std::vector<RDFResource>> &translated_table) {
+  for (auto header : table.headers) {
+    std::cout << reverse_map[header] << "\t\t";
+  }
+  std::cout << std::endl;
+
+  for (auto &row : translated_table) {
+    for (auto &res : row) {
+      std::cout << res.value << "\t\t";
+    }
+    std::cout << std::endl;
+  }
+
+  std::cout << "total size: " << translated_table.size() << std::endl;
+}
+
+static void print_table_debug2(QueryResult &query_result, Cache &cache) {
+  auto &table = query_result.table();
+  auto translated_table = translate_table(table, cache);
+
+  auto &vim = query_result.get_vim();
+  auto reverse_map = vim.reverse();
+  print_table_debug(table, reverse_map, translated_table);
+}
+*/
+
+TEST(QueryProcTests, test_optional_1) {
+  proto_msg::SparqlTree tree;
+  auto *project_node = tree.mutable_root()->mutable_project_node();
+  project_node->add_vars("?x");
+  project_node->add_vars("?y");
+  auto *optional = project_node->mutable_sub_op()->mutable_optional_node();
+  // auto *bgp = project_node->mutable_sub_op()->mutable_bgp_node();
+  auto *bgp = optional->mutable_left_node()->mutable_bgp_node();
+  auto *bgp_right = optional->mutable_right_node()->mutable_bgp_node();
+  // proto_msg::TripleNode().mutable_subject()
+  auto *first_triple = bgp->mutable_triple()->Add();
+  auto *first_subject = first_triple->mutable_subject();
+  first_subject->set_term_type(proto_msg::TermType::VARIABLE);
+  first_subject->set_basic_type(proto_msg::BasicType::STRING);
+  first_subject->set_term_value("?x");
+
+  auto *first_predicate = first_triple->mutable_predicate();
+  first_predicate->set_term_type(proto_msg::TermType::IRI);
+  first_predicate->set_basic_type(proto_msg::BasicType::STRING);
+  first_predicate->set_term_value("<pred1>");
+
+  auto *first_object = first_triple->mutable_object();
+  first_object->set_term_type(proto_msg::TermType::LITERAL);
+  first_object->set_basic_type(proto_msg::BasicType::STRING);
+  first_object->set_term_value("obj1");
+
+  auto *r_first_triple = bgp_right->mutable_triple()->Add();
+
+  auto *r_first_subject = r_first_triple->mutable_subject();
+  r_first_subject->set_term_type(proto_msg::TermType::VARIABLE);
+  r_first_subject->set_basic_type(proto_msg::BasicType::STRING);
+  r_first_subject->set_term_value("?x");
+
+  auto *r_first_predicate = r_first_triple->mutable_predicate();
+  r_first_predicate->set_term_type(proto_msg::TermType::IRI);
+  r_first_predicate->set_basic_type(proto_msg::BasicType::STRING);
+  r_first_predicate->set_term_value("<pred2>");
+
+  auto *r_first_object = r_first_triple->mutable_object();
+  r_first_object->set_term_type(proto_msg::TermType::VARIABLE);
+  r_first_object->set_basic_type(proto_msg::BasicType::STRING);
+  r_first_object->set_term_value("?y");
+
+  std::string fname = "predicates.bin";
+  build_cache_test_file(fname, {});
+  auto pcm = std::make_shared<PredicatesCacheManager>(
+      std::make_unique<EmptyISDManager>(), fname);
+  pcm->add_triple(RDFTripleResource(RDFResource("<subj1>", RDF_TYPE_IRI),
+                                    RDFResource("<pred1>", RDF_TYPE_IRI),
+                                    RDFResource("obj1", RDF_TYPE_LITERAL)));
+  pcm->add_triple(RDFTripleResource(RDFResource("<subj3>", RDF_TYPE_IRI),
+                                    RDFResource("<pred1>", RDF_TYPE_IRI),
+                                    RDFResource("obj1", RDF_TYPE_LITERAL)));
+  pcm->add_triple(RDFTripleResource(RDFResource("<subj2>", RDF_TYPE_IRI),
+                                    RDFResource("<pred1>", RDF_TYPE_IRI),
+                                    RDFResource("obj1", RDF_TYPE_LITERAL)));
+
+  pcm->add_triple(RDFTripleResource(RDFResource("<subj1>", RDF_TYPE_IRI),
+                                    RDFResource("<pred2>", RDF_TYPE_IRI),
+                                    RDFResource("obj2", RDF_TYPE_LITERAL)));
+
+  pcm->add_triple(RDFTripleResource(RDFResource("<subj2>", RDF_TYPE_IRI),
+                                    RDFResource("<pred2>", RDF_TYPE_IRI),
+                                    RDFResource("obj2", RDF_TYPE_LITERAL)));
+
+  pcm->add_triple(RDFTripleResource(RDFResource("<subj4>", RDF_TYPE_IRI),
+                                    RDFResource("<pred1>", RDF_TYPE_IRI),
+                                    RDFResource("obj1", RDF_TYPE_LITERAL)));
+
+  pcm->add_triple(RDFTripleResource(RDFResource("<subj4>", RDF_TYPE_IRI),
+                                    RDFResource("<pred2>", RDF_TYPE_IRI),
+                                    RDFResource("obj3", RDF_TYPE_LITERAL)));
+
+  Cache cache(pcm, CacheReplacement::STRATEGY::LRU, 100'000);
+
+  auto result = cache.run_query(tree);
+
+  /*
+  ASSERT_EQ(header_str, "?x");
+
+  ASSERT_EQ(translated_table[0][0].value, "<subj1>");
+  ASSERT_EQ(translated_table[1][0].value, "<subj3>");
+  ASSERT_EQ(translated_table[2][0].value, "<subj2>");
+*/
+
+  // std::cout << "optional\n";
+  // print_table_debug2(result, cache);
+  fs::remove(fname);
+}
+
+TEST(QueryProcTests, test_union_1) {
+  proto_msg::SparqlTree tree;
+  auto *project_node = tree.mutable_root()->mutable_project_node();
+  project_node->add_vars("?x");
+  project_node->add_vars("?y");
+  auto *union_node = project_node->mutable_sub_op()->mutable_union_node();
+  // auto *bgp = project_node->mutable_sub_op()->mutable_bgp_node();
+  auto *bgp = union_node->mutable_nodes_list()->Add()->mutable_bgp_node();
+  auto *bgp_right = union_node->mutable_nodes_list()->Add()->mutable_bgp_node();
+  // proto_msg::TripleNode().mutable_subject()
+  auto *first_triple = bgp->mutable_triple()->Add();
+  auto *first_subject = first_triple->mutable_subject();
+  first_subject->set_term_type(proto_msg::TermType::VARIABLE);
+  first_subject->set_basic_type(proto_msg::BasicType::STRING);
+  first_subject->set_term_value("?x");
+
+  auto *first_predicate = first_triple->mutable_predicate();
+  first_predicate->set_term_type(proto_msg::TermType::IRI);
+  first_predicate->set_basic_type(proto_msg::BasicType::STRING);
+  first_predicate->set_term_value("<pred1>");
+
+  auto *first_object = first_triple->mutable_object();
+  first_object->set_term_type(proto_msg::TermType::VARIABLE);
+  first_object->set_basic_type(proto_msg::BasicType::STRING);
+  first_object->set_term_value("?y");
+
+  auto *r_first_triple = bgp_right->mutable_triple()->Add();
+
+  auto *r_first_subject = r_first_triple->mutable_subject();
+  r_first_subject->set_term_type(proto_msg::TermType::VARIABLE);
+  r_first_subject->set_basic_type(proto_msg::BasicType::STRING);
+  r_first_subject->set_term_value("?x");
+
+  auto *r_first_predicate = r_first_triple->mutable_predicate();
+  r_first_predicate->set_term_type(proto_msg::TermType::IRI);
+  r_first_predicate->set_basic_type(proto_msg::BasicType::STRING);
+  r_first_predicate->set_term_value("<pred2>");
+
+  auto *r_first_object = r_first_triple->mutable_object();
+  r_first_object->set_term_type(proto_msg::TermType::VARIABLE);
+  r_first_object->set_basic_type(proto_msg::BasicType::STRING);
+  r_first_object->set_term_value("?y");
+
+  std::string fname = "predicates.bin";
+  build_cache_test_file(fname, {});
+  auto pcm = std::make_shared<PredicatesCacheManager>(
+      std::make_unique<EmptyISDManager>(), fname);
+  pcm->add_triple(RDFTripleResource(RDFResource("<subj1>", RDF_TYPE_IRI),
+                                    RDFResource("<pred1>", RDF_TYPE_IRI),
+                                    RDFResource("obj1", RDF_TYPE_LITERAL)));
+  pcm->add_triple(RDFTripleResource(RDFResource("<subj3>", RDF_TYPE_IRI),
+                                    RDFResource("<pred1>", RDF_TYPE_IRI),
+                                    RDFResource("obj1", RDF_TYPE_LITERAL)));
+  pcm->add_triple(RDFTripleResource(RDFResource("<subj2>", RDF_TYPE_IRI),
+                                    RDFResource("<pred1>", RDF_TYPE_IRI),
+                                    RDFResource("obj1", RDF_TYPE_LITERAL)));
+
+  pcm->add_triple(RDFTripleResource(RDFResource("<subj1>", RDF_TYPE_IRI),
+                                    RDFResource("<pred2>", RDF_TYPE_IRI),
+                                    RDFResource("obj2", RDF_TYPE_LITERAL)));
+
+  pcm->add_triple(RDFTripleResource(RDFResource("<subj2>", RDF_TYPE_IRI),
+                                    RDFResource("<pred2>", RDF_TYPE_IRI),
+                                    RDFResource("obj2", RDF_TYPE_LITERAL)));
+
+  pcm->add_triple(RDFTripleResource(RDFResource("<subj4>", RDF_TYPE_IRI),
+                                    RDFResource("<pred1>", RDF_TYPE_IRI),
+                                    RDFResource("obj1", RDF_TYPE_LITERAL)));
+
+  pcm->add_triple(RDFTripleResource(RDFResource("<subj4>", RDF_TYPE_IRI),
+                                    RDFResource("<pred2>", RDF_TYPE_IRI),
+                                    RDFResource("obj3", RDF_TYPE_LITERAL)));
+
+  Cache cache(pcm, CacheReplacement::STRATEGY::LRU, 100'000);
+
+  auto plain_mapping = pcm->get_plain_mapping_debug();
+
+  /*
+  std::cout << "mapping\n";
+  for (const auto &pair : plain_mapping) {
+    std::cout << pair.first << "," << pair.second << "\n";
+  }
+*/
+  auto result = cache.run_query(tree);
+
+  /*
+  ASSERT_EQ(header_str, "?x");
+
+  ASSERT_EQ(translated_table[0][0].value, "<subj1>");
+  ASSERT_EQ(translated_table[1][0].value, "<subj3>");
+  ASSERT_EQ(translated_table[2][0].value, "<subj2>");
+*/
+
+  // std::cout << "union\n";
+
+  // print_table_debug2(result, cache);
+
+  fs::remove(fname);
 }
 
 TEST(QueryProcTests, test_bgp_node_1) {
@@ -65,9 +291,10 @@ TEST(QueryProcTests, test_bgp_node_1) {
   first_object->set_term_value("obj1");
 
   std::string fname = "predicates.bin";
-  build_cache_test_file(fname, build_initial_values_triples_vector(10000));
+  build_cache_test_file(fname, {});
   auto pcm = std::make_shared<PredicatesCacheManager>(
       std::make_unique<EmptyISDManager>(), fname);
+
   pcm->add_triple(RDFTripleResource(RDFResource("<subj1>", RDF_TYPE_IRI),
                                     RDFResource("<pred1>", RDF_TYPE_IRI),
                                     RDFResource("obj1", RDF_TYPE_LITERAL)));
@@ -88,11 +315,13 @@ TEST(QueryProcTests, test_bgp_node_1) {
 
   auto translated_table = translate_table(table, cache);
   auto header_str = reverse_map[table.headers[0]];
+
   ASSERT_EQ(header_str, "?x");
 
   ASSERT_EQ(translated_table[0][0].value, "<subj1>");
   ASSERT_EQ(translated_table[1][0].value, "<subj3>");
   ASSERT_EQ(translated_table[2][0].value, "<subj2>");
+
   fs::remove(fname);
 }
 
@@ -136,7 +365,7 @@ TEST(QueryProcTests, test_bgp_node_2) {
   second_object->set_term_value("?y");
 
   std::string fname = "predicates.bin";
-  build_cache_test_file(fname, build_initial_values_triples_vector(10000));
+  build_cache_test_file(fname, {});
   auto pcm = std::make_shared<PredicatesCacheManager>(
       std::make_unique<EmptyISDManager>(), fname);
   pcm->add_triple(RDFTripleResource(RDFResource("<subj1>", RDF_TYPE_IRI),
@@ -242,7 +471,7 @@ TEST(QueryProcTests, test_bgp_node_3) {
   third_object->set_term_value("?z");
 
   std::string fname = "predicates.bin";
-  build_cache_test_file(fname, build_initial_values_triples_vector(10000));
+  build_cache_test_file(fname, {});
   auto pcm = std::make_shared<PredicatesCacheManager>(
       std::make_unique<EmptyISDManager>(), fname);
   pcm->add_triple(RDFTripleResource(RDFResource("<subj1>", RDF_TYPE_IRI),
@@ -305,6 +534,10 @@ TEST(QueryProcTests, test_bgp_node_3) {
 
   ASSERT_EQ(translated_table[1][0].value, "<subj2>");
   ASSERT_EQ(translated_table[1][1].value, "obj2");
+
+  // std::cout << "test_bgp_node_3\n";
+  // print_table_debug2(result, cache);
+
   fs::remove(fname);
 }
 
@@ -683,7 +916,7 @@ TEST(QueryProcTests, join_two_two_vars) {
   second_object->set_term_value("?z");
 
   std::string fname = "predicates.bin";
-  build_cache_test_file(fname, build_initial_values_triples_vector(10000));
+  build_cache_test_file(fname, {});
   auto pcm = std::make_shared<PredicatesCacheManager>(
       std::make_unique<EmptyISDManager>(), fname);
   pcm->add_triple(RDFTripleResource(RDFResource("<res1>", RDF_TYPE_IRI),

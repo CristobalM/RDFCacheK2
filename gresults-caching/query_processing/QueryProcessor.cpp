@@ -158,6 +158,8 @@ QueryProcessor::process_node(const proto_msg::SparqlNode &node) {
     return process_union_node(node.union_node());
   case proto_msg::SparqlNode::NodeCase::kDistinctNode:
     return process_distinct_node(node.distinct_node());
+  case proto_msg::SparqlNode::NodeCase::kOptionalNode:
+    return process_optional_node(node.optional_node());
   default:
     throw std::runtime_error("Unsupported nodetype on process_node: " +
                              std::to_string(node.node_case()));

@@ -32,13 +32,14 @@ std::shared_ptr<ResultTable> OptionalProcessor::execute() {
     left_table->headers.push_back(h);
   }
 
-  for (auto it = left_table->data.begin(); it != left_table->data.end(); it++) {
+  for (auto it = left_table->data.begin(); it != left_table->data.end();) {
     select_values(values, *it, lt_real_indexes);
     if (join_map.find(values) != join_map.end()) {
       join_values(it, join_map[values]);
     } else {
       for (size_t i = 0; i < right_only_headers.size(); i++)
         it->push_back(0);
+      it++;
     }
   }
   return left_table;
@@ -89,11 +90,11 @@ std::set<unsigned long> OptionalProcessor::get_join_vars() const {
                                            left_table->headers.end());
   std::set<unsigned long> right_headers_set(right_table->headers.begin(),
                                             right_table->headers.end());
-  std::vector<unsigned long> result;
+  std::set<unsigned long> result;
   std::set_intersection(left_headers_set.begin(), left_headers_set.end(),
                         right_headers_set.begin(), right_headers_set.end(),
-                        result.begin());
-  return std::set(result.begin(), result.end());
+                        std::inserter(result, result.begin()));
+  return result;
 }
 
 void OptionalProcessor::join_values(

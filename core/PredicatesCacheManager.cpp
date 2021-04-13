@@ -201,3 +201,14 @@ PredicatesCacheManager::get_predicates_index_cache() {
 ISDManager *PredicatesCacheManager::get_isd_manager() {
   return isd_manager.get();
 }
+
+std::vector<std::pair<unsigned long, std::string>>
+PredicatesCacheManager::get_plain_mapping_debug() {
+  std::vector<std::pair<unsigned long, std::string>> result;
+  for (unsigned long i = 1; i <= isd_manager->last_id() + extra_dicts.size();
+       i++) {
+    auto res = extract_resource(i);
+    result.push_back({i, res.value});
+  }
+  return result;
+}
