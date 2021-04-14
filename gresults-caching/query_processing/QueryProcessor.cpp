@@ -45,43 +45,14 @@ QueryProcessor::process_join_node(const proto_msg::SparqlNode &join_node) {
 
 std::shared_ptr<ResultTable> QueryProcessor::process_left_join_node(
     const proto_msg::LeftJoinNode &left_join_node) {
-  // TODO: FIX
-  auto left_result = process_join_node(left_join_node.left_node());
-  const auto right_type = left_join_node.right_node().node_case();
-  if (right_type == proto_msg::SparqlNode::NodeCase::kBgpNode) {
-    const auto &bgp_node = left_join_node.right_node().bgp_node();
-    for (int i = 0; i < bgp_node.triple_size(); i++) {
-      const auto &current_triple = bgp_node.triple(i);
-      /*
-      K2TreeMixed *current_k2tree =
-          k2trees_map[current_triple.subject().term_value()];
-          */
-      auto subject_is_var =
-          current_triple.subject().term_type() == proto_msg::TermType::VARIABLE;
-      auto object_is_var =
-          current_triple.object().term_type() == proto_msg::TermType::VARIABLE;
-      if (subject_is_var && object_is_var) {
+  auto left_table = process_node(left_join_node.left_node());
+  auto right_table = process_node(left_join_node.right_node());
+  auto resulting_table = OptionalProcessor(left_table, right_table).execute();
 
-      } else if (subject_is_var) {
-
-      } else if (object_is_var) {
-
-      } else {
-        throw std::runtime_error("found triple without variables: " +
-                                 current_triple.subject().term_value() + ", " +
-                                 current_triple.predicate().term_value() +
-                                 ", " + current_triple.object().term_value());
-      }
-    }
-  } else if (right_type == proto_msg::SparqlNode::NodeCase::kLeftJoinNode) {
-
-  } else {
-    throw std::runtime_error(
-        "process_left_join_node: unexpected right node type: " +
-        std::to_string(right_type));
+  for (int i = 0; i < left_join_node.expr_list_size(); i++) {
+    auto expr_node = left_join_node.expr_list(i);
+    resulting_table = ExprProcessor(resulting_table, expr_node).execute();
   }
-
-  return left_result;
 }
 
 void QueryProcessor::remove_extra_vars_from_table(

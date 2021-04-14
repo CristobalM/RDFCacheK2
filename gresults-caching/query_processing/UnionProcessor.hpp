@@ -29,7 +29,6 @@ private:
   void init_headers_set();
   std::set<unsigned long>
   get_headers_set(const std::vector<unsigned long> &headers_list);
-  void validate_table(const ResultTable &table);
   void adjust_current_table(const std::set<unsigned long> &extra_headers);
 
   std::set<unsigned long> select_extra_headers(const ResultTable &table) const;

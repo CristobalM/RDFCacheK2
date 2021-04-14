@@ -60,3 +60,7 @@ std::vector<TripleValue> build_initial_values_triples_vector(uint64_t size) {
 
   return result;
 }
+
+void build_cache_test_file(const std::string &fname) {
+  build_cache_test_file(fname, {});
+}

@@ -10,15 +10,6 @@ std::shared_ptr<ResultTable> UnionProcessor::get_result() {
   return current_table;
 }
 
-static std::set<unsigned long>
-intersect_ul_sets(std::set<unsigned long> &first,
-                  std::set<unsigned long> &second) {
-  std::set<unsigned long> result;
-  std::set_intersection(first.begin(), first.end(), second.begin(),
-                        second.end(), std::inserter(result, result.begin()));
-  return result;
-}
-
 /*
 static void debug_print_table(const ResultTable &table) {
   std::cout << "table...\n";
@@ -109,13 +100,14 @@ void UnionProcessor::combine_table(std::shared_ptr<ResultTable> table) {
     return;
   }
 
-  auto extra_headers = select_extra_headers(*table);
+  const auto extra_headers = select_extra_headers(*table);
   adjust_current_table(extra_headers);
 
-  auto extra_headers_positions =
+  const auto extra_headers_positions =
       find_extra_headers_positions(*table, extra_headers);
 
-  auto [current_table_same_headers_positions, table_same_headers_positions] =
+  const auto [current_table_same_headers_positions,
+              table_same_headers_positions] =
       find_same_headers_positions(*table, extra_headers);
 
   auto &table_data = table->data;
@@ -164,20 +156,4 @@ void UnionProcessor::init_headers_set() {
 std::set<unsigned long> UnionProcessor::get_headers_set(
     const std::vector<unsigned long> &headers_list) {
   return std::set<unsigned long>(headers_list.begin(), headers_list.end());
-}
-
-void UnionProcessor::validate_table(const ResultTable &table) {
-
-  if (table.headers.size() != current_table->headers.size()) {
-    throw std::runtime_error("UnionProcessor::combine_table: Header list with "
-                             "diferent sizes for tables");
-  }
-
-  auto table_headers_set = get_headers_set(table.headers);
-  auto intersection = intersect_ul_sets(current_headers, table_headers_set);
-
-  if (intersection != current_headers) {
-    throw std::runtime_error(
-        "UnionProcessor::combine_table: Invalid header set values for tables");
-  }
 }

@@ -1,13 +1,10 @@
 syntax = "proto3";
 package proto_msg;
 
-
 option java_package = "com.github.cristobalm.proto";
 option java_outer_classname = "SparqlTreeMessage";
 
-message SparqlTree {
-  SparqlNode root = 1;
-}
+message SparqlTree { SparqlNode root = 1; }
 
 message SparqlNode {
   oneof node {
@@ -25,45 +22,38 @@ message SparqlNode {
 message ExprNode {
   oneof expr {
     FunctionNode function_node = 1;
-    string variable_node = 2;
-    RDFTerm constant_node = 3;
+    RDFTerm term_node = 2;
   }
 }
 
-message FunctionNode{
+message FunctionNode {
   FunctionOP function_op = 1;
   repeated ExprNode exprs = 2;
 }
 
-message ProjectNode{
+message ProjectNode {
   repeated string vars = 1;
   SparqlNode sub_op = 2;
 }
 
-message LeftJoinNode{
+message LeftJoinNode {
   SparqlNode left_node = 1;
   SparqlNode right_node = 2;
   repeated ExprNode expr_list = 3;
 }
 
-message BGPNode{
-  repeated TripleNode triple = 1;
-}
+message BGPNode { repeated TripleNode triple = 1; }
 
-message UnionNode{
-  repeated SparqlNode nodes_list = 1;
-}
+message UnionNode { repeated SparqlNode nodes_list = 1; }
 
-message DistinctNode{
-  SparqlNode sub_node = 1;
-}
+message DistinctNode { SparqlNode sub_node = 1; }
 
 message OptionalNode {
   SparqlNode left_node = 1;
   SparqlNode right_node = 2;
 }
 
-message TripleNode{
+message TripleNode {
   RDFTerm subject = 1;
   RDFTerm predicate = 2;
   RDFTerm object = 3;
@@ -75,14 +65,14 @@ message RDFTerm {
   string term_value = 3;
 }
 
-enum TermType{
+enum TermType {
   IRI = 0;
   LITERAL = 1;
   BLANK_NODE = 2;
   VARIABLE = 3;
 }
 
-enum BasicType{
+enum BasicType {
   NUMBER = 0;
   STRING = 1;
   BOOLEAN = 2;
@@ -90,19 +80,74 @@ enum BasicType{
   TIME = 4;
 }
 
-enum FunctionOP{
-  LT = 0;
-  LTE = 1;
-  GT = 2;
-  GTE = 3;
-  EQ = 4;
-  NEQ = 5;
-  PLUS = 6;
-  MINUS = 7;
-  MULTIPLY = 8;
-  DIVIDE = 9; 
-  OR = 10;
-  AND = 11;
-  NOT = 12;
-  IN = 13;
+enum FunctionOP {
+  // one value function
+  IS_LITERAL = 0;
+  BOUND = 1;
+  DATA_TYPE = 2;
+  DATE_TIME_DAY = 3;
+  DATE_TIME_HOURS = 4;
+  DATE_TIME_MINUTES = 5;
+  DATE_TIME_MONTH = 6;
+  DATE_TIME_TZ = 7;
+  DATE_TIME_YEAR = 8;
+  FUN_IRI = 9;
+  IS_BLANK = 10;
+  IS_IRI = 11;
+  IS_NUMERIC = 12;
+  LANG = 13;
+  LOGICAL_NOT = 14;
+  NUM_ABS = 15;
+  NUM_CEILING = 16;
+  NUM_FLOOR = 17;
+  NUM_ROUND = 18;
+  STR = 19;
+  STR_ENCODE_FOR_URI = 20;
+  STR_LENGTH = 21;
+  STR_LOWER_CASE = 22;
+  STR_UPPER_CASE = 23;
+  UNARY_MINUS = 24;
+  UNARY_PLUS = 25;
+  DIGEST_SHA1 = 26;
+  DIGEST_MD5 = 27;
+  DIGEST_SHA224 = 28;
+  DIGEST_SHA256 = 29;
+  DIGEST_SHA384 = 30;
+  DIGEST_SHA512 = 31;
+  // two values function
+  LANG_MATCHES = 32;
+  ADD = 33;
+  CAST = 34;
+  DIVIDE = 35;
+  EQUALS = 36;
+  GREATER_THAN = 37;
+  GREATER_THAN_OR_EQUAL = 38;
+  LESS_THAN = 39;
+  LESS_THAN_OR_EQUAL = 40;
+  LOGICAL_AND = 41;
+  LOGICAL_OR = 42;
+  MULTIPLY = 43;
+  NOT_EQUALS = 44;
+  SAME_TERM = 45;
+  STR_AFTER = 46;
+  STR_BEFORE = 47;
+  STR_CONTAINS = 48;
+  STR_DATA_TYPE = 49;
+  STR_ENDS_WITH = 50;
+  STR_LANG = 51;
+  STR_STARTS_WITH = 52;
+  SUBSTRACT = 53;
+  // three values function
+  CONDITIONAL = 54;
+  // N values function
+  SECURED_FUNCTION = 55;
+  BNODE = 56;
+  CALL = 57;
+  COALESCE = 58;
+  FUNCTION = 59;
+  ONE_OF_BASE = 60;
+  REGEX = 61;
+  STR_CONCAT = 62;
+  STR_REPLACE = 63;
+  STR_SUBSTRING = 64;
 }

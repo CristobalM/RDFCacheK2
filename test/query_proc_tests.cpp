@@ -48,7 +48,6 @@ translate_table(ResultTable &input_table, Cache &cache) {
   return translated_table;
 }
 
-/*
 static void print_table_debug(
     ResultTable &table,
     std::unordered_map<unsigned long, std::string> &reverse_map,
@@ -76,7 +75,6 @@ static void print_table_debug2(QueryResult &query_result, Cache &cache) {
   auto reverse_map = vim.reverse();
   print_table_debug(table, reverse_map, translated_table);
 }
-*/
 
 TEST(QueryProcTests, test_optional_1) {
   proto_msg::SparqlTree tree;
@@ -122,7 +120,7 @@ TEST(QueryProcTests, test_optional_1) {
   r_first_object->set_term_value("?y");
 
   std::string fname = "predicates.bin";
-  build_cache_test_file(fname, {});
+  build_cache_test_file(fname);
   auto pcm = std::make_shared<PredicatesCacheManager>(
       std::make_unique<EmptyISDManager>(), fname);
   pcm->add_triple(RDFTripleResource(RDFResource("<subj1>", RDF_TYPE_IRI),
@@ -212,7 +210,7 @@ TEST(QueryProcTests, test_union_1) {
   r_first_object->set_term_value("?y");
 
   std::string fname = "predicates.bin";
-  build_cache_test_file(fname, {});
+  build_cache_test_file(fname);
   auto pcm = std::make_shared<PredicatesCacheManager>(
       std::make_unique<EmptyISDManager>(), fname);
   pcm->add_triple(RDFTripleResource(RDFResource("<subj1>", RDF_TYPE_IRI),
@@ -261,9 +259,9 @@ TEST(QueryProcTests, test_union_1) {
   ASSERT_EQ(translated_table[2][0].value, "<subj2>");
 */
 
-  // std::cout << "union\n";
+  std::cout << "union\n";
 
-  // print_table_debug2(result, cache);
+  print_table_debug2(result, cache);
 
   fs::remove(fname);
 }
@@ -291,7 +289,7 @@ TEST(QueryProcTests, test_bgp_node_1) {
   first_object->set_term_value("obj1");
 
   std::string fname = "predicates.bin";
-  build_cache_test_file(fname, {});
+  build_cache_test_file(fname);
   auto pcm = std::make_shared<PredicatesCacheManager>(
       std::make_unique<EmptyISDManager>(), fname);
 
@@ -365,7 +363,7 @@ TEST(QueryProcTests, test_bgp_node_2) {
   second_object->set_term_value("?y");
 
   std::string fname = "predicates.bin";
-  build_cache_test_file(fname, {});
+  build_cache_test_file(fname);
   auto pcm = std::make_shared<PredicatesCacheManager>(
       std::make_unique<EmptyISDManager>(), fname);
   pcm->add_triple(RDFTripleResource(RDFResource("<subj1>", RDF_TYPE_IRI),
@@ -471,7 +469,7 @@ TEST(QueryProcTests, test_bgp_node_3) {
   third_object->set_term_value("?z");
 
   std::string fname = "predicates.bin";
-  build_cache_test_file(fname, {});
+  build_cache_test_file(fname);
   auto pcm = std::make_shared<PredicatesCacheManager>(
       std::make_unique<EmptyISDManager>(), fname);
   pcm->add_triple(RDFTripleResource(RDFResource("<subj1>", RDF_TYPE_IRI),
@@ -701,7 +699,7 @@ TEST(QueryProcTests, test_bgp_node_4_compact_dicts) {
   ASSERT_TRUE(union_set.find(union_set.size() + 1) == union_set.end());
 
   std::string fname = "predicates.bin";
-  build_cache_test_file(fname, {});
+  build_cache_test_file(fname);
   auto pcm = std::make_shared<PredicatesCacheManager>(std::move(sdent), fname);
 
   auto predicate_str = iris_data[iris_data.size() / 2 + 1];
@@ -916,7 +914,7 @@ TEST(QueryProcTests, join_two_two_vars) {
   second_object->set_term_value("?z");
 
   std::string fname = "predicates.bin";
-  build_cache_test_file(fname, {});
+  build_cache_test_file(fname);
   auto pcm = std::make_shared<PredicatesCacheManager>(
       std::make_unique<EmptyISDManager>(), fname);
   pcm->add_triple(RDFTripleResource(RDFResource("<res1>", RDF_TYPE_IRI),

@@ -70,6 +70,7 @@ set(GRAPH_RESULT_CACHING_FILE
         gresults-caching/query_processing/BandMapLazy.cpp
         gresults-caching/query_processing/UnionProcessor.cpp
         gresults-caching/query_processing/OptionalProcessor.cpp
+        gresults-caching/query_processing/ExprProcessor.cpp
 
 )
 
