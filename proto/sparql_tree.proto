@@ -16,7 +16,14 @@ message SparqlNode {
     UnionNode union_node = 6;
     DistinctNode distinct_node = 7;
     OptionalNode optional_node = 8;
+    MinusNode minus_node = 9;
+    FilterNode filter_node = 10;
   }
+}
+
+message FilterNode{
+  SparqlNode node = 1;
+  repeated ExprNode exprs = 2;
 }
 
 message ExprNode {
@@ -40,6 +47,11 @@ message LeftJoinNode {
   SparqlNode left_node = 1;
   SparqlNode right_node = 2;
   repeated ExprNode expr_list = 3;
+}
+
+message MinusNode {
+  SparqlNode left_node = 1;
+  SparqlNode right_node = 2;
 }
 
 message BGPNode { repeated TripleNode triple = 1; }

@@ -1,0 +1,47 @@
+#include "ExprListProcessor.hpp"
+#include "ExprProcessor.hpp"
+
+ExprListProcessor::ExprListProcessor(
+    ResultTable &table, const VarIndexManager &vim,
+    const std::vector<const proto_msg::ExprNode *> &expr_list, const PredicatesCacheManager &cm)
+    : table(table), vim(vim), expr_list(expr_list), cm(cm) {}
+
+
+std::unordered_map<std::string, unsigned long> ExprListProcessor::get_var_pos_mapping(){
+  std::unordered_map<std::string, unsigned long> result;
+  auto rev_map = vim.reverse();
+
+  for(unsigned long i = 0; i < static_cast<unsigned long>(table.headers.size()); i++){
+    auto header = table.headers[i];
+    result[rev_map[header]] = i;
+  }
+  return result;
+}
+
+void ExprListProcessor::execute() {
+  auto &data = table.data;
+
+  
+  auto var_pos_mapping = get_var_pos_mapping();
+
+  std::vector<ExprProcessor> expr_processors;
+  for(const auto *node: expr_list){
+      expr_processors.push_back(ExprProcessor(table, *node, vim, cm, var_pos_mapping));
+  }
+
+  
+
+  for (auto it = data.begin(); it != data.end();) {
+    auto next = std::next(it);
+    bool accepted = true;
+    for (const auto &expr_processor : expr_processors) {
+      accepted = expr_processor.evaluate(*it);
+      if (!accepted)
+        break;
+    }
+    if (!accepted) {
+      data.erase(it);
+    }
+    it = next;
+  }
+}

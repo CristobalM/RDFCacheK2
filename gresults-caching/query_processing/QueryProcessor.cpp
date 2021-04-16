@@ -19,6 +19,7 @@
 #include "Term.hpp"
 #include "UnionProcessor.hpp"
 #include "VarIndexManager.hpp"
+#include "ExprListProcessor.hpp"
 
 QueryProcessor::QueryProcessor(const PredicatesCacheManager &cache_manager)
     : cm(cache_manager), vim(std::make_unique<VarIndexManager>()) {}
@@ -49,10 +50,16 @@ std::shared_ptr<ResultTable> QueryProcessor::process_left_join_node(
   auto right_table = process_node(left_join_node.right_node());
   auto resulting_table = OptionalProcessor(left_table, right_table).execute();
 
+  std::vector<const proto_msg::ExprNode *> nodes;
+  
   for (int i = 0; i < left_join_node.expr_list_size(); i++) {
     auto expr_node = left_join_node.expr_list(i);
-    resulting_table = ExprProcessor(resulting_table, expr_node).execute();
+    nodes.push_back(&expr_node);
   }
+
+  ExprListProcessor(*resulting_table, *vim, nodes, cm).execute();
+
+  return resulting_table;
 }
 
 void QueryProcessor::remove_extra_vars_from_table(

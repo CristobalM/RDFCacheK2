@@ -9,7 +9,7 @@ struct VarIndexManager {
 
   VarIndexManager();
   void assign_index_if_not_found(const std::string &var_name);
-  std::unordered_map<unsigned long, std::string> reverse();
+  std::unordered_map<unsigned long, std::string> reverse() const;
 };
 
 #endif /* _VAR_INDEX_MANAGER_HPP_ */
