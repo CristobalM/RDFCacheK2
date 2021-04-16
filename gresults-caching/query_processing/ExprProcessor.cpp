@@ -2,9 +2,131 @@
 
 #include "ExprProcessor.hpp"
 
+#include "expr/IsLiteralEval.hpp"
+#include "expr/IsBlankEval.hpp"
+#include "expr/IsIRIEval.hpp"
+#include "expr/BoundEval.hpp"
+
 ExprProcessor::ExprProcessor(const ResultTable &table,
                              const proto_msg::ExprNode &expr_node,const VarIndexManager &vim, const PredicatesCacheManager &cm, const std::unordered_map<std::string, unsigned long> &var_pos_mapping)
-    : table(table), expr_node(expr_node), vim(vim), cm(cm), var_pos_mapping(var_pos_mapping) {}
+    : eval_data(table, vim, cm, var_pos_mapping), expr_node(expr_node) {}
+
+
+std::unique_ptr<BoolExprEval> ExprProcessor::create_evaluator(const proto_msg::FunctionNode &function_node){
+switch(function_node.function_op()){
+    case proto_msg::FunctionOP::IS_LITERAL:
+      return BoolExprEval::create_unary<IsLiteralEval>(eval_data, function_node.exprs(0));
+    case proto_msg::FunctionOP::BOUND:
+      return BoolExprEval::create_unary<BoundEval>(eval_data, function_node.exprs(0));
+    case proto_msg::FunctionOP::IS_BLANK:
+      return BoolExprEval::create_unary<IsBlankEval>(eval_data, function_node.exprs(0));
+    case proto_msg::FunctionOP::IS_IRI:
+      return BoolExprEval::create_unary<IsIRIEval>(eval_data, function_node.exprs(0));
+    case proto_msg::FunctionOP::IS_NUMERIC:
+      return process_is_numeric(row, function_node.exprs(0));
+    case proto_msg::FunctionOP::LANG:
+      return process_lang(row, function_node.exprs(0));
+    case proto_msg::FunctionOP::LOGICAL_NOT:
+      return process_logical_not(row, function_node.exprs(0));    
+    case proto_msg::FunctionOP::NUM_ABS:
+      return process_num_abs(row, function_node.exprs(0));
+    case proto_msg::FunctionOP::NUM_CEILING:
+      return process_num_ceiling(row, function_node.exprs(0));
+    case proto_msg::FunctionOP::NUM_FLOOR:
+      return process_num_floor(row, function_node.exprs(0));
+    case proto_msg::FunctionOP::NUM_ROUND:
+      return process_num_round(row, function_node.exprs(0));
+    case proto_msg::FunctionOP::STR:
+      return process_str(row, function_node.exprs(0));
+    case proto_msg::FunctionOP::STR_ENCODE_FOR_URI:
+      return process_str_encode_for_uri(row, function_node.exprs(0));
+    case proto_msg::FunctionOP::STR_LENGTH:
+      return process_str_length(row, function_node.exprs(0));
+    case proto_msg::FunctionOP::STR_LOWER_CASE:
+      return process_str_lowercase(row, function_node.exprs(0));
+    case proto_msg::FunctionOP::STR_UPPER_CASE:
+      return process_str_uppercase(row, function_node.exprs(0));
+    case proto_msg::FunctionOP::UNARY_MINUS:
+      return process_unary_minus(row, function_node.exprs(0));
+    case proto_msg::FunctionOP::UNARY_PLUS:
+      return process_unary_plus(row, function_node.exprs(0));
+    case proto_msg::FunctionOP::DIGEST_SHA1:
+      return process_digest_sha1(row, function_node.exprs(0));
+    case proto_msg::FunctionOP::DIGEST_MD5:
+      return process_digest_md5(row, function_node.exprs(0));
+    case proto_msg::FunctionOP::DIGEST_SHA224:
+      return process_sha224(row, function_node.exprs(0));
+    case proto_msg::FunctionOP::DIGEST_SHA256:
+      return process_sha256(row, function_node.exprs(0));
+    case proto_msg::FunctionOP::DIGEST_SHA384:
+      return process_sha384(row, function_node.exprs(0));
+    case proto_msg::FunctionOP::DIGEST_SHA512:
+      return process_sha512(row, function_node.exprs(0));
+    case proto_msg::FunctionOP::LANG_MATCHES:
+      return process_lang_matches(row, function_node.exprs(0), function_node.exprs(1));
+    case proto_msg::FunctionOP::ADD:
+      return process_add(row, function_node.exprs(0), function_node.exprs(1));
+    case proto_msg::FunctionOP::CAST:
+      return process_cast(row, function_node.exprs(0), function_node.exprs(1));
+    case proto_msg::FunctionOP::DIVIDE:
+      return process_divide(row, function_node.exprs(0), function_node.exprs(1));
+    case proto_msg::FunctionOP::EQUALS:
+      return process_equals(row, function_node.exprs(0), function_node.exprs(1));
+    case proto_msg::FunctionOP::GREATER_THAN:
+      return process_greater_than(row, function_node.exprs(0), function_node.exprs(1));
+    case proto_msg::FunctionOP::GREATER_THAN_OR_EQUAL:
+      return process_greater_than_or_equal(row, function_node.exprs(0), function_node.exprs(1));
+    case proto_msg::FunctionOP::LESS_THAN:
+      return process_less_than(row, function_node.exprs(0), function_node.exprs(1));
+    case proto_msg::FunctionOP::LESS_THAN_OR_EQUAL:
+      return process_less_than_or_equal(row, function_node.exprs(0), function_node.exprs(1));
+    case proto_msg::FunctionOP::LOGICAL_AND:
+      return process_logical_and(row, function_node.exprs(0), function_node.exprs(1));
+    case proto_msg::FunctionOP::LOGICAL_OR:
+      return process_logical_or(row, function_node.exprs(0), function_node.exprs(1));
+    case proto_msg::FunctionOP::MULTIPLY:
+      return process_multiply(row, function_node.exprs(0), function_node.exprs(1));
+    case proto_msg::FunctionOP::NOT_EQUALS:
+      return process_not_equals(row, function_node.exprs(0), function_node.exprs(1));
+    case proto_msg::FunctionOP::SAME_TERM:
+      return process_same_term(row, function_node.exprs(0), function_node.exprs(1));
+    case proto_msg::FunctionOP::STR_AFTER:
+      return process_str_after(row, function_node.exprs(0), function_node.exprs(1));
+    case proto_msg::FunctionOP::STR_BEFORE:
+      return process_str_before(row, function_node.exprs(0), function_node.exprs(1));
+    case proto_msg::FunctionOP::STR_CONTAINS:
+      return process_str_contains(row, function_node.exprs(0), function_node.exprs(1));
+    case proto_msg::FunctionOP::STR_DATA_TYPE:
+      return process_str_data_type(row, function_node.exprs(0), function_node.exprs(1));
+    case proto_msg::FunctionOP::STR_ENDS_WITH:
+      return process_str_ends_with(row, function_node.exprs(0), function_node.exprs(1));
+    case proto_msg::FunctionOP::STR_LANG:
+      return process_str_lang(row, function_node.exprs(0), function_node.exprs(1));
+    case proto_msg::FunctionOP::STR_STARTS_WITH:
+      return process_str_starts_with(row, function_node.exprs(0), function_node.exprs(1));
+    case proto_msg::FunctionOP::SUBSTRACT:
+      return process_substract(row, function_node.exprs(0), function_node.exprs(1));
+    case proto_msg::FunctionOP::CONDITIONAL:
+      return process_conditional(row, function_node.exprs(0), function_node.exprs(1), function_node.exprs(2));
+    case proto_msg::FunctionOP::BNODE:
+      return process_bnode(row, function_node);
+    case proto_msg::FunctionOP::CALL:
+      return process_call(row, function_node);
+    case proto_msg::FunctionOP::COALESCE:
+      return process_coalesce(row, function_node);
+    case proto_msg::FunctionOP::FUNCTION:
+      return process_function(row, function_node);
+    case proto_msg::FunctionOP::REGEX:
+      return process_regex(row, function_node);
+    case proto_msg::FunctionOP::STR_CONCAT:
+      return process_str_concat(row, function_node);
+    case proto_msg::FunctionOP::STR_REPLACE:
+      return process_str_replace(row, function_node);
+    case proto_msg::FunctionOP::STR_SUBSTRING:
+      return process_str_substring(row, function_node);
+    default:
+    throw std::runtime_error("Unknown function op : " + std::to_string(function_node.function_op()));
+}
 
 
 

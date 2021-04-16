@@ -26,7 +26,7 @@ void ExprListProcessor::execute() {
 
   std::vector<ExprProcessor> expr_processors;
   for(const auto *node: expr_list){
-      expr_processors.push_back(ExprProcessor(table, *node, vim, cm, var_pos_mapping));
+      expr_processors.push_back(ExprProcessor(table, *node, vim, cm, var_pos_mapping).create_evaluator());
   }
 
   

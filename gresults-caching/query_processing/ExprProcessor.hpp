@@ -15,13 +15,12 @@
 #include "ResultTable.hpp"
 #include "VarIndexManager.hpp"
 #include "PredicatesCacheManager.hpp"
+#include "expr/BoolExprEval.hpp"
+#include "expr/EvalData.hpp"
 
 class ExprProcessor {
-  const ResultTable &table;
+  EvalData eval_data;
   const proto_msg::ExprNode &expr_node;
-  const VarIndexManager &vim;
-  const PredicatesCacheManager &cm;
-  const std::unordered_map<std::string, unsigned long> &var_pos_mapping;
 
   using row_t = std::vector<unsigned long>;
 
@@ -33,6 +32,7 @@ public:
                 const std::unordered_map<std::string, unsigned long> &var_pos_mapping);
 
   bool evaluate(const std::vector<unsigned long> &row) const;
+  std::unique_ptr<BoolExprEval> create_evaluator(const proto_msg::FunctionNode &function_node);
 
 private:
 bool process_function_node(const row_t &row, const proto_msg::FunctionNode &function_node) const;

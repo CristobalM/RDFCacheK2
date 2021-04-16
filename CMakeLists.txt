@@ -72,6 +72,10 @@ set(GRAPH_RESULT_CACHING_FILE
         gresults-caching/query_processing/OptionalProcessor.cpp
         gresults-caching/query_processing/ExprProcessor.cpp
         gresults-caching/query_processing/ExprListProcessor.cpp
+        gresults-caching/query_processing/expr/IsLiteralEval.cpp
+        gresults-caching/query_processing/expr/IsBlankEval.cpp
+        gresults-caching/query_processing/expr/IsIRIEval.cpp
+        gresults-caching/query_processing/expr/BoundEval.cpp
 
 )
 
