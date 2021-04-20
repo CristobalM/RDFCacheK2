@@ -10,10 +10,9 @@
 
 #include "BoolExprEval.hpp"
 
-class IsIRIEval : public BoolExprEval{
-  public:
+class IsIRIEval : public BoolExprEval {
+public:
   bool eval(const std::vector<unsigned long> &row) const override;
-
 };
 
 #endif

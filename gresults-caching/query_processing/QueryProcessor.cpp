@@ -14,12 +14,12 @@
 #include <utility>
 
 #include "BGPProcessor.hpp"
+#include "ExprListProcessor.hpp"
 #include "OptionalProcessor.hpp"
 #include "QueryProcessor.hpp"
 #include "Term.hpp"
 #include "UnionProcessor.hpp"
 #include "VarIndexManager.hpp"
-#include "ExprListProcessor.hpp"
 
 QueryProcessor::QueryProcessor(const PredicatesCacheManager &cache_manager)
     : cm(cache_manager), vim(std::make_unique<VarIndexManager>()) {}
@@ -51,7 +51,7 @@ std::shared_ptr<ResultTable> QueryProcessor::process_left_join_node(
   auto resulting_table = OptionalProcessor(left_table, right_table).execute();
 
   std::vector<const proto_msg::ExprNode *> nodes;
-  
+
   for (int i = 0; i < left_join_node.expr_list_size(); i++) {
     auto expr_node = left_join_node.expr_list(i);
     nodes.push_back(&expr_node);

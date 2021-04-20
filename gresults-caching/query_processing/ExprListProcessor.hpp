@@ -7,14 +7,14 @@
 #define RDFCACHEK2_EXPR_LIST_PROCESSOR_HPP
 
 #include <memory>
-#include <unordered_map>
 #include <string>
+#include <unordered_map>
 
 #include <request_msg.pb.h>
 
+#include "PredicatesCacheManager.hpp"
 #include "ResultTable.hpp"
 #include "VarIndexManager.hpp"
-#include "PredicatesCacheManager.hpp"
 
 class ExprListProcessor {
   ResultTable &table;
@@ -24,7 +24,8 @@ class ExprListProcessor {
 
 public:
   ExprListProcessor(ResultTable &table, const VarIndexManager &vim,
-                    const std::vector<const proto_msg::ExprNode *> &expr_list, const PredicatesCacheManager &cm);
+                    const std::vector<const proto_msg::ExprNode *> &expr_list,
+                    const PredicatesCacheManager &cm);
   void execute();
   std::unordered_map<std::string, unsigned long> get_var_pos_mapping();
 };

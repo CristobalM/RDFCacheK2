@@ -8,7 +8,8 @@ void VarIndexManager::assign_index_if_not_found(const std::string &var_name) {
   }
 }
 
-std::unordered_map<unsigned long, std::string> VarIndexManager::reverse() const {
+std::unordered_map<unsigned long, std::string>
+VarIndexManager::reverse() const {
   std::unordered_map<unsigned long, std::string> result;
   for (auto &item : var_indexes) {
     result[item.second] = item.first;

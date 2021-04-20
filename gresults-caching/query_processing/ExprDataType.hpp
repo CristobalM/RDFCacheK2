@@ -6,7 +6,8 @@
 #ifndef RDFCACHEK2_EXPR_DATATYPE_HPP
 #define RDFCACHEK2_EXPR_DATATYPE_HPP
 
-enum  ExprDataType {
+enum ExprDataType {
+  EDT_UNKNOWN = -1,
   EDT_INTEGER = 0,
   EDT_DECIMAL = 1,
   EDT_FLOAT = 2,
@@ -15,6 +16,5 @@ enum  ExprDataType {
   EDT_BOOOLEAN = 5,
   EDT_DATETIME = 6
 };
-
 
 #endif

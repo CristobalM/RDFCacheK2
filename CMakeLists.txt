@@ -72,10 +72,14 @@ set(GRAPH_RESULT_CACHING_FILE
         gresults-caching/query_processing/OptionalProcessor.cpp
         gresults-caching/query_processing/ExprProcessor.cpp
         gresults-caching/query_processing/ExprListProcessor.cpp
+        gresults-caching/query_processing/ExprProcessorPersistentData.cpp
+        gresults-caching/query_processing/expr/BoolExprEval.cpp
         gresults-caching/query_processing/expr/IsLiteralEval.cpp
         gresults-caching/query_processing/expr/IsBlankEval.cpp
         gresults-caching/query_processing/expr/IsIRIEval.cpp
         gresults-caching/query_processing/expr/BoundEval.cpp
+        gresults-caching/query_processing/expr/IsNumericEval.cpp
+        gresults-caching/query_processing/expr/LogicalNotEval.cpp
 
 )
 
@@ -181,6 +185,8 @@ include_directories(${Protobuf_INCLUDE_DIRS})
 find_package(OpenSSL REQUIRED)
 include_directories(${OPENSSL_INCLUDE_DIRS})
 
+find_package(PCRE2 REQUIRED)
+include_directories(${PCRE2_INCLUDE_DIRS})
 
 
 #add_executable(start_cache_server_example example/start_cache_server_example.cpp)
@@ -196,6 +202,7 @@ set(BASE_LIBS
         Utils
         ${OPENSSL_LIBRARIES}
         stdc++fs
+        pcrecpp
         )
         
 set(PROC_LIBS
@@ -220,6 +227,7 @@ set(DEFAULT_LIBS
         Utils
         ${OPENSSL_LIBRARIES}
         stdc++fs
+        pcrecpp
         )
 
 
