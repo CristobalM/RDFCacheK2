@@ -1,26 +1,11 @@
-#include <request_msg.pb.h>
-#include <stdexcept>
+//
+// Created by cristobal on 4/20/21.
+//
 
 #include "IsNumericEval.hpp"
-#include <RDFTriple.hpp>
-
-bool IsNumericEval::eval(const std::vector<unsigned long> &row) const {
-  const proto_msg::ExprNode &node = this->expr_node;
-  const EvalData &ed = this->eval_data;
-  if (node.expr_case() != proto_msg::ExprNode::kTermNode ||
-      node.term_node().term_type() != proto_msg::TermType::VARIABLE)
-    throw std::runtime_error(
-        "Invalid operand for IS_LITERAL(), expected a variable");
-  const auto &var = node.term_node().term_value();
-  if (ed.var_pos_mapping.find(var) == ed.var_pos_mapping.end())
-    throw std::runtime_error("Variable " + var + " not in table");
-  auto pos = ed.var_pos_mapping.at(var);
-  auto value_id = row[pos];
-  auto resource = ed.cm.extract_resource(value_id);
-  auto datatype =
-      this->persistent_data.extract_data_type_from_string(resource.value);
-  return datatype == ExprDataType::EDT_INTEGER ||
-         datatype == ExprDataType::EDT_DECIMAL ||
-         datatype == ExprDataType::EDT_DOUBLE ||
-         datatype == ExprDataType::EDT_FLOAT;
+bool IsNumericEval::eval_boolean(const ExprEval::row_t &row) const {
+  return false;
 }
+
+void IsNumericEval::validate() { ExprEval::validate(); }
+void IsNumericEval::init() { ExprEval::init(); }

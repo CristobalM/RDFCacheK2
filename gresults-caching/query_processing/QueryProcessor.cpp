@@ -15,14 +15,18 @@
 
 #include "BGPProcessor.hpp"
 #include "ExprListProcessor.hpp"
+#include "ExprProcessorPersistentData.hpp"
 #include "OptionalProcessor.hpp"
 #include "QueryProcessor.hpp"
 #include "Term.hpp"
 #include "UnionProcessor.hpp"
 #include "VarIndexManager.hpp"
 
-QueryProcessor::QueryProcessor(const PredicatesCacheManager &cache_manager)
-    : cm(cache_manager), vim(std::make_unique<VarIndexManager>()) {}
+QueryProcessor::QueryProcessor(
+    const PredicatesCacheManager &cache_manager,
+    const ExprProcessorPersistentData &expr_processor_persistent_data)
+    : cm(cache_manager), vim(std::make_unique<VarIndexManager>()),
+      expr_processor_persistent_data(expr_processor_persistent_data) {}
 
 std::shared_ptr<ResultTable>
 QueryProcessor::process_join_node(const proto_msg::SparqlNode &join_node) {
@@ -57,7 +61,9 @@ std::shared_ptr<ResultTable> QueryProcessor::process_left_join_node(
     nodes.push_back(&expr_node);
   }
 
-  ExprListProcessor(*resulting_table, *vim, nodes, cm).execute();
+  ExprListProcessor(*resulting_table, *vim, nodes, cm,
+                    expr_processor_persistent_data)
+      .execute();
 
   return resulting_table;
 }

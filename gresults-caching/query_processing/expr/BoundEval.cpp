@@ -1,15 +1,22 @@
-#include <request_msg.pb.h>
-#include <stdexcept>
+//
+// Created by cristobal on 4/20/21.
+//
 
 #include "BoundEval.hpp"
 
-bool BoundEval::eval(const std::vector<unsigned long> &) const {
-  const proto_msg::ExprNode &node = this->expr_node;
-  const EvalData &ed = this->eval_data;
-  if (node.expr_case() != proto_msg::ExprNode::kTermNode ||
-      node.term_node().term_type() != proto_msg::TermType::VARIABLE)
-    throw std::runtime_error(
-        "Invalid operand for BOUND(), expected a variable");
-  const auto &var = node.term_node().term_value();
-  return ed.var_pos_mapping.find(var) != ed.var_pos_mapping.end();
+bool BoundEval::eval_boolean(const ExprEval::row_t &) { return result; }
+
+void BoundEval::init() {
+  ExprEval::init();
+  const auto &child_node = expr_node.function_node().exprs(0);
+  const auto &var = child_node.term_node().term_value();
+  result = this->eval_data.var_pos_mapping.find(var) !=
+           this->eval_data.var_pos_mapping.end();
+}
+
+void BoundEval::validate() {
+  ExprEval::validate();
+  assert_fsize(1);
+  const auto &child_node = expr_node.function_node().exprs(0);
+  assert_is_variable(child_node);
 }

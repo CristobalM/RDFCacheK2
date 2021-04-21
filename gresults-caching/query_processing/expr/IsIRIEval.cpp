@@ -1,21 +1,17 @@
-#include <request_msg.pb.h>
-#include <stdexcept>
+//
+// Created by cristobal on 4/20/21.
+//
 
 #include "IsIRIEval.hpp"
-#include <RDFTriple.hpp>
 
-bool IsIRIEval::eval(const std::vector<unsigned long> &row) const {
-  const proto_msg::ExprNode &node = this->expr_node;
-  const EvalData &ed = this->eval_data;
-  if (node.expr_case() != proto_msg::ExprNode::kTermNode ||
-      node.term_node().term_type() != proto_msg::TermType::VARIABLE)
-    throw std::runtime_error(
-        "Invalid operand for IS_IRI(), expected a variable");
-  const auto &var = node.term_node().term_value();
-  if (ed.var_pos_mapping.find(var) == ed.var_pos_mapping.end())
-    throw std::runtime_error("Variable " + var + " not in table");
-  auto pos = ed.var_pos_mapping.at(var);
-  auto value_id = row[pos];
-  auto resource = ed.cm.extract_resource(value_id);
-  return resource.resource_type == RDFResourceType::RDF_TYPE_IRI;
+bool IsIRIEval::eval_boolean(const ExprEval::row_t &row) const {
+  const auto &child = *children[0];
+  return child.eval_resource(row).resource_type == RDFResourceType::RDF_TYPE_IRI
+}
+void IsIRIEval::init() {
+  ExprEval::init();
+  assert_fsize(1);
+  const auto &child_node = expr_node.function_node().exprs(0);
+  assert_is_rdf_term(child_node);
+  add_child(child_node);
 }

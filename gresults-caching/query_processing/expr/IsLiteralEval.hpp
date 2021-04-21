@@ -1,18 +1,15 @@
-
 //
-// Created by Cristobal Miranda, 2021
+// Created by cristobal on 4/20/21.
 //
 
-#ifndef RDFCACHEK2_IS_LITERAL_EVAL_HPP
-#define RDFCACHEK2_IS_LITERAL_EVAL_HPP
+#ifndef RDFCACHEK2_ISLITERALEVAL_HPP
+#define RDFCACHEK2_ISLITERALEVAL_HPP
 
-#include <memory>
-
-#include "BoolExprEval.hpp"
-
-class IsLiteralEval : public BoolExprEval {
+#include "ExprEval.hpp"
+class IsLiteralEval : public ExprEval {
 public:
-  bool eval(const std::vector<unsigned long> &row) const override;
+  bool eval_boolean(const row_t &row) const override;
+  void init() override;
 };
 
-#endif
+#endif // RDFCACHEK2_ISLITERALEVAL_HPP

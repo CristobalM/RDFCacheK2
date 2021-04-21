@@ -8,11 +8,14 @@
 
 #include <memory>
 
-#include "BoolExprEval.hpp"
+#include "ExprEval.hpp"
 
-class IsBlankEval : public BoolExprEval {
+#include <request_msg.pb.h>
+
+class IsBlankEval : public ExprEval {
 public:
-  bool eval(const std::vector<unsigned long> &row) const override;
+  [[nodiscard]] bool eval_boolean(const row_t &row) const override;
+  void init() override;
 };
 
 #endif

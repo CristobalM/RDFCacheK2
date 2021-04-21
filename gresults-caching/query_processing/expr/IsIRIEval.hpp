@@ -1,18 +1,15 @@
-
 //
-// Created by Cristobal Miranda, 2021
+// Created by cristobal on 4/20/21.
 //
 
-#ifndef RDFCACHEK2_IS_IRI_EVAL_HPP
-#define RDFCACHEK2_IS_IRI_EVAL_HPP
+#ifndef RDFCACHEK2_ISIRIEVAL_HPP
+#define RDFCACHEK2_ISIRIEVAL_HPP
 
-#include <memory>
-
-#include "BoolExprEval.hpp"
-
-class IsIRIEval : public BoolExprEval {
+#include "ExprEval.hpp"
+class IsIRIEval : public ExprEval {
 public:
-  bool eval(const std::vector<unsigned long> &row) const override;
+  bool eval_boolean(const row_t &row) const override;
+  void init() override;
 };
 
-#endif
+#endif // RDFCACHEK2_ISIRIEVAL_HPP

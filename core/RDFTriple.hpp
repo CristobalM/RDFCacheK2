@@ -9,6 +9,8 @@
 #include <memory>
 #include <string>
 
+#include <request_msg.pb.h>
+
 struct RDFTriple {
   uint64_t subject;
   uint64_t predicate;
@@ -19,6 +21,7 @@ enum RDFResourceType {
   RDF_TYPE_IRI = 0,
   RDF_TYPE_BLANK = 1,
   RDF_TYPE_LITERAL = 2,
+  NULL_RESOURCE_TYPE,
 };
 
 struct RDFResource {
@@ -35,6 +38,10 @@ struct RDFResource {
   RDFResource(RDFResource &&other) noexcept
       : value(std::move(other.value)), resource_type(other.resource_type) {}
 
+  RDFResource(const proto_msg::RDFTerm &term)
+      : value(term.term_value()),
+        resource_type(select_type_from_proto(term.term_type())) {}
+
   RDFResource &operator=(const RDFResource &other) {
     value = other.value;
     resource_type = other.resource_type;
@@ -49,6 +56,24 @@ struct RDFResource {
 
   bool operator==(const RDFResource &other) const {
     return value == other.value && resource_type == other.resource_type;
+  }
+
+  static RDFResource null_resource() {
+    return RDFResource("", NULL_RESOURCE_TYPE);
+  }
+
+private:
+  RDFResourceType select_type_from_proto(proto_msg::TermType proto_type) {
+    switch (proto_type) {
+    case proto_msg::TermType::BLANK_NODE:
+      return RDFResourceType::RDF_TYPE_BLANK;
+    case proto_msg::TermType::IRI:
+      return RDFResourceType::RDF_TYPE_IRI;
+    case proto_msg::TermType::LITERAL:
+      return RDFResourceType::RDF_TYPE_LITERAL;
+    }
+    throw std::runtime_error("Unknown proto type: " +
+                             std::to_string(proto_type));
   }
 };
 

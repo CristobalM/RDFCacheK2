@@ -1,18 +1,16 @@
-
 //
-// Created by Cristobal Miranda, 2021
+// Created by cristobal on 4/20/21.
 //
 
-#ifndef RDFCACHEK2_IS_NUMERIC_EVAL_HPP
-#define RDFCACHEK2_IS_NUMERIC_EVAL_HPP
+#ifndef RDFCACHEK2_ISNUMERICEVAL_HPP
+#define RDFCACHEK2_ISNUMERICEVAL_HPP
 
-#include <memory>
-
-#include "BoolExprEval.hpp"
-
-class IsNumericEval : public BoolExprEval {
+#include "ExprEval.hpp"
+class IsNumericEval : public ExprEval {
 public:
-  bool eval(const std::vector<unsigned long> &row) const override;
+  bool eval_boolean(const row_t &row) const override;
+  void validate() override;
+  void init() override;
 };
 
-#endif
+#endif // RDFCACHEK2_ISNUMERICEVAL_HPP

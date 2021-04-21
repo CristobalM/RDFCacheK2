@@ -12,14 +12,19 @@
 #include <request_msg.pb.h>
 
 #include "CacheReplacement.hpp"
+#include "ExprProcessorPersistentData.hpp"
 #include "QueryResult.hpp"
 
 class QueryProcessor {
   const PredicatesCacheManager &cm;
   std::unique_ptr<VarIndexManager> vim;
 
+  const ExprProcessorPersistentData &expr_processor_persistent_data;
+
 public:
-  QueryProcessor(const PredicatesCacheManager &cache_manager);
+  QueryProcessor(
+      const PredicatesCacheManager &cache_manager,
+      const ExprProcessorPersistentData &expr_processor_persistent_data);
   QueryResult run_query(proto_msg::SparqlTree const &query_tree);
 
 private:

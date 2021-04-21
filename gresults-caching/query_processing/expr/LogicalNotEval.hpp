@@ -1,24 +1,11 @@
-
 //
-// Created by Cristobal Miranda, 2021
+// Created by cristobal on 4/20/21.
 //
 
-#ifndef RDFCACHEK2_LOGICAL_NOT_EVAL_HPP
-#define RDFCACHEK2_LOGICAL_NOT_EVAL_HPP
+#ifndef RDFCACHEK2_LOGICALNOTEVAL_HPP
+#define RDFCACHEK2_LOGICALNOTEVAL_HPP
 
-#include <memory>
+#include "ExprEval.hpp"
+class LogicalNotEval : public ExprEval {};
 
-#include "BoolExprEval.hpp"
-
-class LogicalNotEval : public BoolExprEval {
-  std::unique_ptr<BoolExprEval> child;
-
-public:
-  LogicalNotEval(const EvalData &eval_data,
-                 const proto_msg::ExprNode &expr_node,
-                 const ExprProcessorPersistentData &persistent_data);
-
-  bool eval(const std::vector<unsigned long> &row) const override;
-};
-
-#endif
+#endif // RDFCACHEK2_LOGICALNOTEVAL_HPP

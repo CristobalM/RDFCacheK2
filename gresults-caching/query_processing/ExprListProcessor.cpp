@@ -1,11 +1,14 @@
 #include "ExprListProcessor.hpp"
 #include "ExprProcessor.hpp"
+#include "expr/EvalData.hpp"
 
 ExprListProcessor::ExprListProcessor(
     ResultTable &table, const VarIndexManager &vim,
     const std::vector<const proto_msg::ExprNode *> &expr_list,
-    const PredicatesCacheManager &cm)
-    : table(table), vim(vim), expr_list(expr_list), cm(cm) {}
+    const PredicatesCacheManager &cm,
+    const ExprProcessorPersistentData &expr_processor_persistent_data)
+    : table(table), vim(vim), expr_list(expr_list), cm(cm),
+      expr_processor_persistent_data(expr_processor_persistent_data) {}
 
 std::unordered_map<std::string, unsigned long>
 ExprListProcessor::get_var_pos_mapping() {
@@ -25,10 +28,12 @@ void ExprListProcessor::execute() {
 
   auto var_pos_mapping = get_var_pos_mapping();
 
-  std::vector<std::unique_ptr<BoolExprEval>> bool_expressions;
+  std::vector<std::unique_ptr<ExprEval>> bool_expressions;
+
+  EvalData eval_data(table, vim, cm, var_pos_mapping);
   for (const auto *node : expr_list) {
     bool_expressions.push_back(
-        ExprProcessor(table, *node, vim, cm, var_pos_mapping)
+        ExprProcessor(eval_data, *node, expr_processor_persistent_data)
             .create_evaluator());
   }
 
@@ -36,7 +41,7 @@ void ExprListProcessor::execute() {
     auto next = std::next(it);
     bool accepted = true;
     for (const auto &bool_expr : bool_expressions) {
-      accepted = bool_expr->eval(*it);
+      accepted = bool_expr->eval_boolean(*it);
       if (!accepted)
         break;
     }

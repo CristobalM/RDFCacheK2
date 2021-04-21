@@ -1,18 +1,18 @@
-
 //
-// Created by Cristobal Miranda, 2021
+// Created by cristobal on 4/20/21.
 //
 
-#ifndef RDFCACHEK2_BOUND_EVAL_HPP
-#define RDFCACHEK2_BOUND_EVAL_HPP
+#ifndef RDFCACHEK2_BOUNDEVAL_HPP
+#define RDFCACHEK2_BOUNDEVAL_HPP
 
-#include <memory>
+#include "ExprEval.hpp"
+class BoundEval : public ExprEval {
+  bool result;
 
-#include "BoolExprEval.hpp"
-
-class BoundEval : public BoolExprEval {
 public:
-  bool eval(const std::vector<unsigned long> &row) const override;
+  bool eval_boolean(const row_t &row) override;
+  void init() override;
+  void validate() override;
 };
 
-#endif
+#endif // RDFCACHEK2_BOUNDEVAL_HPP

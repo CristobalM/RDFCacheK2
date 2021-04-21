@@ -9,6 +9,7 @@
 #include <string>
 
 #include <PredicatesCacheManager.hpp>
+#include <query_processing/ExprProcessorPersistentData.hpp>
 #include <request_msg.pb.h>
 
 #include "CacheReplacement.hpp"
@@ -34,6 +35,8 @@ class Cache {
   std::shared_ptr<PredicatesCacheManager> cache_manager;
 
   CacheReplacement cache_replacement;
+
+  ExprProcessorPersistentData expr_processor_persistent_data;
 
 public:
   using cm_t = std::shared_ptr<PredicatesCacheManager>;

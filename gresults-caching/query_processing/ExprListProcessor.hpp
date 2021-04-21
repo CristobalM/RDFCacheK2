@@ -12,6 +12,7 @@
 
 #include <request_msg.pb.h>
 
+#include "ExprProcessorPersistentData.hpp"
 #include "PredicatesCacheManager.hpp"
 #include "ResultTable.hpp"
 #include "VarIndexManager.hpp"
@@ -21,11 +22,14 @@ class ExprListProcessor {
   const VarIndexManager &vim;
   const std::vector<const proto_msg::ExprNode *> &expr_list;
   const PredicatesCacheManager &cm;
+  const ExprProcessorPersistentData &expr_processor_persistent_data;
 
 public:
-  ExprListProcessor(ResultTable &table, const VarIndexManager &vim,
-                    const std::vector<const proto_msg::ExprNode *> &expr_list,
-                    const PredicatesCacheManager &cm);
+  ExprListProcessor(
+      ResultTable &table, const VarIndexManager &vim,
+      const std::vector<const proto_msg::ExprNode *> &expr_list,
+      const PredicatesCacheManager &cm,
+      const ExprProcessorPersistentData &expr_processor_persistent_data);
   void execute();
   std::unordered_map<std::string, unsigned long> get_var_pos_mapping();
 };
