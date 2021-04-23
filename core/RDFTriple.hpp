@@ -31,6 +31,8 @@ struct RDFResource {
       : value(std::move(value)), resource_type(resource_type) {}
   RDFResource(const std::string &value, RDFResourceType resource_type)
       : value(value), resource_type(resource_type) {}
+  RDFResource(const char * value, RDFResourceType resource_type)
+      : value(value), resource_type(resource_type) {}
 
   RDFResource(const RDFResource &other)
       : value(other.value), resource_type(other.resource_type) {}
@@ -71,9 +73,11 @@ private:
       return RDFResourceType::RDF_TYPE_IRI;
     case proto_msg::TermType::LITERAL:
       return RDFResourceType::RDF_TYPE_LITERAL;
+    default:
+      throw std::runtime_error("Unknown proto type: " +
+                               std::to_string(proto_type));
     }
-    throw std::runtime_error("Unknown proto type: " +
-                             std::to_string(proto_type));
+
   }
 };
 

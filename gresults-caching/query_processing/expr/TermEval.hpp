@@ -5,14 +5,34 @@
 #ifndef RDFCACHEK2_TERMEVAL_HPP
 #define RDFCACHEK2_TERMEVAL_HPP
 
+#include <unicode/smpdtfmt.h>
+
 #include "ExprEval.hpp"
 class TermEval : public ExprEval {
 public:
-  [[nodiscard]] RDFResource eval_resource(const row_t &row) const override;
   void validate() override;
+  std::unique_ptr<TermResource> eval_resource(const row_t &row) override;
+  bool eval_boolean(const row_t &row) override;
+  int eval_integer(const row_t &row) override;
+  float eval_float(const row_t &row) override;
+  double eval_double(const row_t &row) override;
+  UDate eval_date_time(const row_t &row) override;
+
+  void init() override;
 
 private:
-  [[nodiscard]] RDFResource eval_variable_get_resource(const row_t &row) const;
+  RDFResource eval_variable_get_resource(const row_t &row) const;
+  RDFResource eval_concrete_resource(const row_t &row) const;
+
+  bool eval_boolean_from_resource(const RDFResource &resource);
+  bool eval_boolean_from_string(const std::string &input_string);
+  int eval_integer_from_resource(const RDFResource &resource);
+  int eval_integer_from_string(const std::string &basic_string);
+  float eval_float_from_resource(const RDFResource &resource);
+  float eval_float_from_string(const std::string &basic_string);
+  double eval_double_from_resource(const RDFResource &resource);
+  double eval_double_from_string(const std::string &basic_string);
+
 };
 
 #endif // RDFCACHEK2_TERMEVAL_HPP

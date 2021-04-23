@@ -1,0 +1,23 @@
+//
+// Created by cristobal on 4/21/21.
+//
+
+#ifndef RDFCACHEK2_CONCRETERDFRESOURCE_HPP
+#define RDFCACHEK2_CONCRETERDFRESOURCE_HPP
+
+#include "TermResource.hpp"
+#include <RDFTriple.hpp>
+class ConcreteRDFResource  : public TermResource {
+  RDFResource resource;
+public:
+  ConcreteRDFResource(RDFResource &&resource);
+  ConcreteRDFResource(const RDFResource &resource);
+  bool operator==(const TermResource &rhs) const override;
+  bool is_concrete() const override;
+  const RDFResource &get_resource() const override;
+
+  static ConcreteRDFResource null_resource();
+  static std::unique_ptr<TermResource> null_resource_ptr();
+};
+
+#endif // RDFCACHEK2_CONCRETERDFRESOURCE_HPP

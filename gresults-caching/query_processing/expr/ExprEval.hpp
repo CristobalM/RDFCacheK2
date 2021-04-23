@@ -11,8 +11,13 @@
 #include <memory>
 #include <vector>
 
+#include <unicode/smpdtfmt.h>
+
 #include "../ExprProcessorPersistentData.hpp"
 #include "EvalData.hpp"
+#include "TermResource.hpp"
+
+
 
 class ExprEval {
 protected:
@@ -32,14 +37,15 @@ public:
            const ExprProcessorPersistentData &persistent_data,
            const proto_msg::ExprNode &expr_node);
 
-  [[nodiscard]] virtual RDFResource eval_resource(const row_t &row) = 0;
-  [[nodiscard]] virtual bool eval_boolean(const row_t &row) = 0;
-  [[nodiscard]] virtual int eval_integer(const row_t &row) = 0;
-  [[nodiscard]] virtual float eval_float(const row_t &row) = 0;
-  [[nodiscard]] virtual double eval_double(const row_t &row) = 0;
+  virtual std::unique_ptr<TermResource> eval_resource(const row_t &row);
+  virtual bool eval_boolean(const row_t &row);
+  virtual int eval_integer(const row_t &row);
+  virtual float eval_float(const row_t &row);
+  virtual double eval_double(const row_t &row);
+  virtual UDate eval_date_time(const row_t &row);
 
-  virtual void validate() {}
-  virtual void init() { validate(); }
+  virtual void validate();
+  virtual void init();
 
   void assert_fsize(int size);
   static void assert_is_rdf_term(const proto_msg::ExprNode &expr_node);
@@ -60,6 +66,8 @@ public:
                    const proto_msg::ExprNode &expr_node);
 
   void add_child(const proto_msg::ExprNode &child_node);
+  void add_children(int count);
+  void add_children();
 
   bool has_error() const;
 };

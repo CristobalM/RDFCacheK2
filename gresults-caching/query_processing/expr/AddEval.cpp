@@ -15,8 +15,7 @@ double AddEval::eval_double(const ExprEval::row_t &row) {
 
 void AddEval::init() {
   ExprEval::init();
-  add_child(expr_node.function_node().exprs(0));
-  add_child(expr_node.function_node().exprs(1));
+  add_children();
 }
 void AddEval::validate() {
   ExprEval::validate();

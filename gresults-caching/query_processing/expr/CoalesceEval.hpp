@@ -6,9 +6,11 @@
 #define RDFCACHEK2_COALESCEEVAL_HPP
 
 #include "ExprEval.hpp"
+#include <memory>
+
 class CoalesceEval : public ExprEval {
 public:
-  RDFResource eval_resource(const row_t &row) override;
+  std::unique_ptr<TermResource> eval_resource(const row_t &row) override;
   void validate() override;
   void init() override;
 };

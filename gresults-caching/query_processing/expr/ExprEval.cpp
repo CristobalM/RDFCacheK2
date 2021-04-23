@@ -316,3 +316,31 @@ void ExprEval::add_child(const proto_msg::ExprNode &child_node) {
 }
 
 bool ExprEval::has_error() const { return with_error; }
+void ExprEval::add_children(int count) {
+  for (int i = 0; i < count; i++) {
+    add_child(expr_node.function_node().exprs(i));
+  }
+}
+void ExprEval::add_children() {
+  add_children(expr_node.function_node().exprs_size());
+}
+void ExprEval::init() { validate(); }
+void ExprEval::validate() {}
+std::unique_ptr<TermResource> ExprEval::eval_resource(const ExprEval::row_t &) {
+  throw std::runtime_error("ExprEval::eval_resource not implemented");
+}
+bool ExprEval::eval_boolean(const ExprEval::row_t &) {
+  throw std::runtime_error("ExprEval::eval_boolean not implemented");
+}
+int ExprEval::eval_integer(const ExprEval::row_t &) {
+  throw std::runtime_error("ExprEval::eval_integer not implemented");
+}
+float ExprEval::eval_float(const ExprEval::row_t &) {
+  throw std::runtime_error("ExprEval::eval_float not implemented");
+}
+double ExprEval::eval_double(const ExprEval::row_t &) {
+  throw std::runtime_error("ExprEval::eval_double not implemented");
+}
+UDate ExprEval::eval_date_time(const ExprEval::row_t &) {
+  throw std::runtime_error("ExprEval::eval_date_time not implemented");
+}

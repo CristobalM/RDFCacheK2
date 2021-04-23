@@ -13,7 +13,7 @@ enum ExprDataType {
   EDT_FLOAT = 2,
   EDT_DOUBLE = 3,
   EDT_STRING = 4,
-  EDT_BOOOLEAN = 5,
+  EDT_BOOLEAN = 5,
   EDT_DATETIME = 6
 };
 

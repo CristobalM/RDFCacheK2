@@ -140,7 +140,11 @@ set(GRAPH_RESULT_CACHING_FILE
         gresults-caching/query_processing/expr/RegexEval.cpp
         gresults-caching/query_processing/expr/StrConcatEval.cpp
         gresults-caching/query_processing/expr/StrReplaceEval.cpp
-        gresults-caching/query_processing/expr/StrSubstringEval.cpp)
+        gresults-caching/query_processing/expr/StrSubstringEval.cpp
+        gresults-caching/query_processing/expr/TermResource.cpp
+        gresults-caching/query_processing/expr/ConcreteRDFResource.cpp
+        gresults-caching/query_processing/expr/DataTypeResource.cpp
+        gresults-caching/query_processing/expr/NullResource.cpp)
 
 
 set(NETWORK_SOURCE_FILES
@@ -244,6 +248,9 @@ include_directories(${OPENSSL_INCLUDE_DIRS})
 find_package(PCRE2 REQUIRED)
 include_directories(${PCRE2_INCLUDE_DIRS})
 
+find_package(ICU REQUIRED COMPONENTS i18n)
+include_directories(${ICU_INCLUDE_DIRS})
+
 
 #add_executable(start_cache_server_example example/start_cache_server_example.cpp)
 
@@ -259,6 +266,7 @@ set(BASE_LIBS
         ${OPENSSL_LIBRARIES}
         stdc++fs
         pcrecpp
+        ${ICU_LIBRARIES}
         )
 
 set(PROC_LIBS
@@ -284,6 +292,7 @@ set(DEFAULT_LIBS
         ${OPENSSL_LIBRARIES}
         stdc++fs
         pcrecpp
+        ${ICU_LIBRARIES}
         )
 
 

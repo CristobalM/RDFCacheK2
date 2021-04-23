@@ -4,9 +4,16 @@
 #include "IsBlankEval.hpp"
 #include <RDFTriple.hpp>
 
-bool IsBlankEval::eval_boolean(const row_t &row) const {
-  const auto &child = *children[0];
-  return child.eval_resource(row).resource_type ==
+bool IsBlankEval::eval_boolean(const row_t &row)  {
+  auto resource = children[0]->eval_resource(row);
+  if(!resource->is_concrete()){
+    this->with_error = true;
+    return false;
+  }
+
+  
+
+  return children[0]->eval_resource(row).resource_type ==
          RDFResourceType::RDF_TYPE_BLANK;
 }
 
