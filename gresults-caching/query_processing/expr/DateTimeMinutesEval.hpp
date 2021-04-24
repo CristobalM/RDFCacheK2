@@ -6,6 +6,10 @@
 #define RDFCACHEK2_DATETIMEMINUTESEVAL_HPP
 
 #include "ExprEval.hpp"
-class DateTimeMinutesEval : ExprEval {};
+class DateTimeMinutesEval : ExprEval {
+  int eval_integer(const row_t &row) override;
+  void validate() override;
+  void init() override;
+};
 
 #endif // RDFCACHEK2_DATETIMEMINUTESEVAL_HPP

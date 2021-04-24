@@ -7,8 +7,9 @@
 
 #include "TermResource.hpp"
 #include <RDFTriple.hpp>
-class ConcreteRDFResource  : public TermResource {
+class ConcreteRDFResource : public TermResource {
   RDFResource resource;
+
 public:
   ConcreteRDFResource(RDFResource &&resource);
   ConcreteRDFResource(const RDFResource &resource);

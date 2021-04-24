@@ -11,6 +11,7 @@ public:
   std::unique_ptr<TermResource> eval_resource(const row_t &row) override;
   void validate() override;
   void init() override;
+
 private:
   // static RDFResource resource_from_datatype(ExprDataType type);
 };

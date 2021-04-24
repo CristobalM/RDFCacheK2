@@ -14,8 +14,9 @@
 
 class IsBlankEval : public ExprEval {
 public:
-  bool eval_boolean(const row_t &row)  override;
+  bool eval_boolean(const row_t &row) override;
   void init() override;
+  void validate() override;
 };
 
 #endif

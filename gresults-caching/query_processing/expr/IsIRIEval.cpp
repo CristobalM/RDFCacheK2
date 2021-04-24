@@ -4,14 +4,21 @@
 
 #include "IsIRIEval.hpp"
 
-bool IsIRIEval::eval_boolean(const ExprEval::row_t &row) const {
-  const auto &child = *children[0];
-  return child.eval_resource(row).resource_type == RDFResourceType::RDF_TYPE_IRI
+bool IsIRIEval::eval_boolean(const ExprEval::row_t &row) {
+  auto resource = children[0]->eval_resource(row);
+  if (children_with_error() || !resource->is_concrete()) {
+    this->with_error = true;
+    return false;
+  }
+  const auto &concrete_resource = resource->get_resource();
+  return concrete_resource.resource_type == RDFResourceType::RDF_TYPE_IRI;
 }
 void IsIRIEval::init() {
   ExprEval::init();
+  add_children();
+}
+
+void IsIRIEval::validate() {
+  ExprEval::validate();
   assert_fsize(1);
-  const auto &child_node = expr_node.function_node().exprs(0);
-  assert_is_rdf_term(child_node);
-  add_child(child_node);
 }

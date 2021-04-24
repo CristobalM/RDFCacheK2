@@ -17,14 +17,12 @@
 #include "EvalData.hpp"
 #include "TermResource.hpp"
 
-
-
 class ExprEval {
 protected:
   std::vector<std::unique_ptr<ExprEval>> children;
 
   const EvalData &eval_data;
-  const ExprProcessorPersistentData &persistent_data;
+  ExprProcessorPersistentData &persistent_data;
   const proto_msg::ExprNode &expr_node;
 
   bool with_error;
@@ -34,10 +32,11 @@ public:
   virtual ~ExprEval() = default;
 
   ExprEval(const EvalData &eval_data,
-           const ExprProcessorPersistentData &persistent_data,
+           ExprProcessorPersistentData &persistent_data,
            const proto_msg::ExprNode &expr_node);
 
   virtual std::unique_ptr<TermResource> eval_resource(const row_t &row);
+  virtual std::unique_ptr<TermResource> eval_datatype(const row_t &row);
   virtual bool eval_boolean(const row_t &row);
   virtual int eval_integer(const row_t &row);
   virtual float eval_float(const row_t &row);
@@ -70,6 +69,8 @@ public:
   void add_children();
 
   bool has_error() const;
+
+  bool children_with_error() const;
 };
 
 #endif

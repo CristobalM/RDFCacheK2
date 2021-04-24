@@ -6,13 +6,14 @@
 
 #include <unicode/gregocal.h>
 
-
 int DateTimeDayEval::eval_integer(const ExprEval::row_t &row) {
   auto dtepoch = children[0]->eval_date_time(row);
-  UErrorCode err = U_ZERO_ERROR;
-  icu::GregorianCalendar gregorian_calendar(err);
-  gregorian_calendar.setTime(dtepoch, err);
-  return gregorian_calendar.get(icu::Calendar::EDateFields::DAY_OF_WEEK_IN_MONTH, err);
+  if (children_with_error()) {
+    with_error = true;
+    return 0;
+  }
+  return persistent_data.extract_date_portion(dtepoch,
+                                              icu::Calendar::EDateFields::DATE);
 }
 
 void DateTimeDayEval::validate() {

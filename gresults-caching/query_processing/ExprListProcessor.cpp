@@ -6,7 +6,7 @@ ExprListProcessor::ExprListProcessor(
     ResultTable &table, const VarIndexManager &vim,
     const std::vector<const proto_msg::ExprNode *> &expr_list,
     const PredicatesCacheManager &cm,
-    const ExprProcessorPersistentData &expr_processor_persistent_data)
+    ExprProcessorPersistentData &expr_processor_persistent_data)
     : table(table), vim(vim), expr_list(expr_list), cm(cm),
       expr_processor_persistent_data(expr_processor_persistent_data) {}
 

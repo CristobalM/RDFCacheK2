@@ -31,7 +31,7 @@ struct RDFResource {
       : value(std::move(value)), resource_type(resource_type) {}
   RDFResource(const std::string &value, RDFResourceType resource_type)
       : value(value), resource_type(resource_type) {}
-  RDFResource(const char * value, RDFResourceType resource_type)
+  RDFResource(const char *value, RDFResourceType resource_type)
       : value(value), resource_type(resource_type) {}
 
   RDFResource(const RDFResource &other)
@@ -77,7 +77,6 @@ private:
       throw std::runtime_error("Unknown proto type: " +
                                std::to_string(proto_type));
     }
-
   }
 };
 

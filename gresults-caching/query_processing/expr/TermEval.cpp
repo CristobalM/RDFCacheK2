@@ -4,8 +4,9 @@
 
 #include <algorithm>
 
-#include "TermEval.hpp"
 #include "ConcreteRDFResource.hpp"
+#include "DataTypeResource.hpp"
+#include "TermEval.hpp"
 RDFResource TermEval::eval_concrete_resource(const ExprEval::row_t &row) const {
   switch (expr_node.term_node().term_type()) {
   case proto_msg::TermType::VARIABLE:
@@ -108,11 +109,12 @@ bool TermEval::eval_boolean_from_resource(const RDFResource &resource) {
   return eval_boolean_from_string(resource.value);
 }
 bool TermEval::eval_boolean_from_string(const std::string &input_string) {
-  auto parsed_string = persistent_data.extract_literal_content_from_string(input_string);
-  std::for_each(parsed_string.begin(), parsed_string.end(), [](char &c){
-    c = std::tolower(c);
-  });
-  if(parsed_string == "false") return false;
+  auto parsed_string =
+      persistent_data.extract_literal_content_from_string(input_string);
+  std::for_each(parsed_string.begin(), parsed_string.end(),
+                [](char &c) { c = std::tolower(c); });
+  if (parsed_string == "false")
+    return false;
   return true;
 }
 
@@ -123,8 +125,9 @@ int TermEval::eval_integer_from_resource(const RDFResource &resource) {
 }
 
 int TermEval::eval_integer_from_string(const std::string &input_string) {
-  auto parsed_string = persistent_data.extract_literal_content_from_string(input_string);
-  if(!persistent_data.string_is_numeric(parsed_string)){
+  auto parsed_string =
+      persistent_data.extract_literal_content_from_string(input_string);
+  if (!persistent_data.string_is_numeric(parsed_string)) {
     this->with_error = true;
     return 0;
   }
@@ -137,8 +140,9 @@ float TermEval::eval_float_from_resource(const RDFResource &resource) {
 }
 
 float TermEval::eval_float_from_string(const std::string &input_string) {
-  auto parsed_string = persistent_data.extract_literal_content_from_string(input_string);
-  if(!persistent_data.string_is_numeric(parsed_string)){
+  auto parsed_string =
+      persistent_data.extract_literal_content_from_string(input_string);
+  if (!persistent_data.string_is_numeric(parsed_string)) {
     this->with_error = true;
     return 0;
   }
@@ -151,8 +155,9 @@ double TermEval::eval_double_from_resource(const RDFResource &resource) {
 }
 
 double TermEval::eval_double_from_string(const std::string &input_string) {
-  auto parsed_string = persistent_data.extract_literal_content_from_string(input_string);
-  if(!persistent_data.string_is_numeric(parsed_string)){
+  auto parsed_string =
+      persistent_data.extract_literal_content_from_string(input_string);
+  if (!persistent_data.string_is_numeric(parsed_string)) {
     this->with_error = true;
     return 0;
   }
@@ -165,7 +170,7 @@ UDate TermEval::eval_date_time(const ExprEval::row_t &row) {
   static icu::SimpleDateFormat parser(pattern, parser_err);
 
   auto resource = eval_concrete_resource(row);
-  if(resource.resource_type != RDFResourceType::RDF_TYPE_LITERAL){
+  if (resource.resource_type != RDFResourceType::RDF_TYPE_LITERAL) {
     with_error = true;
     return -1;
   }
@@ -173,9 +178,27 @@ UDate TermEval::eval_date_time(const ExprEval::row_t &row) {
   icu::UnicodeString source(resource.value.c_str());
   UErrorCode err = U_ZERO_ERROR;
   auto date_time = parser.parse(source, err);
-  if(err != U_ZERO_ERROR){
+
+  if (err != U_ZERO_ERROR) {
     with_error = true;
     return -1;
   }
   return date_time;
+}
+
+std::unique_ptr<TermResource>
+TermEval::eval_datatype(const ExprEval::row_t &row) {
+  auto resource = eval_resource(row);
+  if (!resource->is_concrete()) {
+    this->with_error = true;
+    return TermResource::null();
+  }
+  const auto &concrete_resource = resource->get_resource();
+  if (concrete_resource.resource_type != RDFResourceType::RDF_TYPE_LITERAL) {
+    this->with_error = true;
+    return TermResource::null();
+  }
+  auto datatype =
+      persistent_data.extract_data_type_from_string(concrete_resource.value);
+  return std::make_unique<DataTypeResource>(datatype);
 }

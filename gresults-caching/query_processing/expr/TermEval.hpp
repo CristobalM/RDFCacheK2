@@ -12,6 +12,7 @@ class TermEval : public ExprEval {
 public:
   void validate() override;
   std::unique_ptr<TermResource> eval_resource(const row_t &row) override;
+  std::unique_ptr<TermResource> eval_datatype(const row_t &row) override;
   bool eval_boolean(const row_t &row) override;
   int eval_integer(const row_t &row) override;
   float eval_float(const row_t &row) override;
@@ -32,7 +33,6 @@ private:
   float eval_float_from_string(const std::string &basic_string);
   double eval_double_from_resource(const RDFResource &resource);
   double eval_double_from_string(const std::string &basic_string);
-
 };
 
 #endif // RDFCACHEK2_TERMEVAL_HPP

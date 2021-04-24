@@ -12,26 +12,26 @@ std::string datatype_regex = "\\^\\^(?:<http://www\\.w3\\.org/2001/XMLSchema#" +
 
 const std::string iri_letter = "[^\\x00-\\x20<>\"\\{\\}|\\^`\\\\]";
 const std::string hex_letter = "[0-9a-fA-F]";
-const std::string uchar_word = "\\\\u(?:" + hex_letter + "{8}|" + hex_letter + "{4})";
+const std::string uchar_word =
+    "\\\\u(?:" + hex_letter + "{8}|" + hex_letter + "{4})";
 const std::string iri_valid = "(?:" + iri_letter + "|" + uchar_word + ")*";
-const std::string iri_ref = "(?:<" + iri_valid +  ">)";
+const std::string iri_ref = "(?:<" + iri_valid + ">)";
 const std::string echar = "\\\\[tbnrf\"'\\\\]";
-const std::string string_literal_q = "\"((?:[^\\x22\\x5C\\xA\\xD]|" + echar + "|" + uchar_word+")*)\"";
+const std::string string_literal_q =
+    "\"((?:[^\\x22\\x5C\\xA\\xD]|" + echar + "|" + uchar_word + ")*)\"";
 const std::string lang_tag = "@[a-zA-Z]+(?:-[a-zA-Z0-9]+)*";
 const std::string suffix_literal = "(\\^\\^" + iri_ref + "|" + lang_tag + ")?";
-const std::string string_literal = "(" + string_literal_q + suffix_literal + ")";
+const std::string string_literal =
+    "(" + string_literal_q + suffix_literal + ")";
 
 const std::string decimal_number = "(^[-+]?[0-9]\\d*(?:\\.\\d+)?$)";
 
 } // namespace
 
 ExprProcessorPersistentData::ExprProcessorPersistentData()
-    :
-      re_datatype(datatype_regex),
-      re_literal(string_literal),
+    : re_datatype(datatype_regex), re_literal(string_literal),
       re_decimal_number(decimal_number),
-      mutable_calendar(create_icu_calendar())
-{}
+      mutable_calendar(create_icu_calendar()) {}
 
 ExprDataType ExprProcessorPersistentData::extract_data_type_from_string(
     const std::string &input_string) const {
@@ -71,24 +71,72 @@ std::string ExprProcessorPersistentData::extract_literal_content_from_string(
   std::string full_word;
   std::string content;
   std::string metadata;
-  bool matched = re_literal.PartialMatch(re_input, &full_word, &content, &metadata);
-  if(!matched) return "";
+  bool matched =
+      re_literal.PartialMatch(re_input, &full_word, &content, &metadata);
+  if (!matched)
+    return "";
   return content;
 }
 
-bool ExprProcessorPersistentData::string_is_numeric(const std::string &input_string) const {
+bool ExprProcessorPersistentData::string_is_numeric(
+    const std::string &input_string) const {
   pcrecpp::StringPiece re_input(input_string);
   std::string full_word;
   return re_decimal_number.FullMatch(re_input, &full_word);
 }
 
-icu::TimeZone *ExprProcessorPersistentData::get_utc_timezone()  {
+icu::TimeZone *ExprProcessorPersistentData::get_utc_timezone() {
   auto *tz = icu::TimeZone::createDefault();
   tz->setRawOffset(0);
   return tz;
 }
+
 std::unique_ptr<icu::Calendar>
 ExprProcessorPersistentData::create_icu_calendar() {
   UErrorCode err = U_ZERO_ERROR;
-  return std::unique_ptr<icu::Calendar>(icu::Calendar::createInstance(get_utc_timezone(), err));
+  return std::unique_ptr<icu::Calendar>(
+      icu::Calendar::createInstance(get_utc_timezone(), err));
+}
+
+int ExprProcessorPersistentData::extract_date_portion(
+    UDate epoch_value, icu::Calendar::EDateFields date_fields) {
+  UErrorCode err = U_ZERO_ERROR;
+  mutable_calendar->setTime(epoch_value, err);
+  return mutable_calendar->get(date_fields, err);
+}
+ISO8601Parsed ExprProcessorPersistentData::parse_iso8601(const string &input) {
+  static const std::string regex_str(
+      "^((\\d{4})-([01]\\d)-([0-3]\\d)T([0-2]\\d):([0-5]\\d):([0-5]\\d)(?:\\.("
+      "\\d+))?(?:([+-])([0-2]\\d):?([0-5]\\d)|(Z)))$");
+  static const pcrecpp::RE re(regex_str);
+  pcrecpp::StringPiece sp(input);
+  std::string full_match, year, month, day, hour, minute, second, secfrac,
+      offset_sign, offset_hour, offset_minute, utc_z;
+  bool matched = re.PartialMatch(sp, &full_match, &year, &month, &day, &hour,
+                                 &minute, &second, &secfrac, &offset_sign,
+                                 &offset_hour, &offset_minute, &utc_z);
+  ISO8601Parsed result{};
+  if (!matched) {
+    result.matched = false;
+    return result;
+  }
+  result.matched = true;
+  result.year = std::stoi(year);
+  result.month = std::stoi(month);
+  result.day = std::stoi(day);
+  result.hour = std::stoi(hour);
+  result.minute = std::stoi(minute);
+  result.second = std::stoi(second);
+  if (!secfrac.empty())
+    result.second_fraction = std::stoi(secfrac);
+  if (!offset_sign.empty()) {
+    result.offset_sign = offset_sign == "+" ? 1 : -1;
+    result.offset_hour = std::stoi(offset_hour);
+    result.offset_minute = std::stoi(offset_minute);
+  } else {
+    result.offset_sign = 1;
+    result.offset_hour = 0;
+    result.offset_minute = 0;
+  }
+  return result;
 }

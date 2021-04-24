@@ -7,8 +7,10 @@ bool ConcreteRDFResource::operator==(const TermResource &rhs) const {
   return rhs.is_concrete() && resource == rhs.get_resource();
 }
 
-ConcreteRDFResource::ConcreteRDFResource(RDFResource &&resource) : resource(std::move(resource)) {}
-ConcreteRDFResource::ConcreteRDFResource(const RDFResource &resource) : resource(resource) {}
+ConcreteRDFResource::ConcreteRDFResource(RDFResource &&resource)
+    : resource(std::move(resource)) {}
+ConcreteRDFResource::ConcreteRDFResource(const RDFResource &resource)
+    : resource(resource) {}
 bool ConcreteRDFResource::is_concrete() const { return true; }
 const RDFResource &ConcreteRDFResource::get_resource() const {
   return resource;

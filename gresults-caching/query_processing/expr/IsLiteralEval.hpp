@@ -8,8 +8,9 @@
 #include "ExprEval.hpp"
 class IsLiteralEval : public ExprEval {
 public:
-  bool eval_boolean(const row_t &row) const override;
+  bool eval_boolean(const row_t &row) override;
   void init() override;
+  void validate() override;
 };
 
 #endif // RDFCACHEK2_ISLITERALEVAL_HPP

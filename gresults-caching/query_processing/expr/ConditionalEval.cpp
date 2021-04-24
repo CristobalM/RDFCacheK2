@@ -5,7 +5,7 @@
 #include "ConditionalEval.hpp"
 std::unique_ptr<TermResource>
 ConditionalEval::eval_resource(const ExprEval::row_t &row) {
-  if(children[0]->eval_boolean(row))
+  if (children[0]->eval_boolean(row))
     return children[1]->eval_resource(row);
   else
     return children[2]->eval_resource(row);

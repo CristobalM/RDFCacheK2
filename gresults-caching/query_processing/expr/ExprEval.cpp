@@ -73,7 +73,7 @@
 #include "UnaryPlusEval.hpp"
 
 ExprEval::ExprEval(const EvalData &eval_data,
-                   const ExprProcessorPersistentData &persistent_data,
+                   ExprProcessorPersistentData &persistent_data,
                    const proto_msg::ExprNode &expr_node)
     : eval_data(eval_data), persistent_data(persistent_data),
       expr_node(expr_node), with_error(false) {}
@@ -343,4 +343,15 @@ double ExprEval::eval_double(const ExprEval::row_t &) {
 }
 UDate ExprEval::eval_date_time(const ExprEval::row_t &) {
   throw std::runtime_error("ExprEval::eval_date_time not implemented");
+}
+std::unique_ptr<TermResource> ExprEval::eval_datatype(const ExprEval::row_t &) {
+  throw std::runtime_error("ExprEval::eval_datatype not implemented");
+}
+
+bool ExprEval::children_with_error() const {
+  for (const auto &child : children) {
+    if (child->has_error())
+      return true;
+  }
+  return false;
 }

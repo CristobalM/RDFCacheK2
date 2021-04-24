@@ -24,7 +24,7 @@
 
 QueryProcessor::QueryProcessor(
     const PredicatesCacheManager &cache_manager,
-    const ExprProcessorPersistentData &expr_processor_persistent_data)
+    ExprProcessorPersistentData &expr_processor_persistent_data)
     : cm(cache_manager), vim(std::make_unique<VarIndexManager>()),
       expr_processor_persistent_data(expr_processor_persistent_data) {}
 

@@ -5,6 +5,12 @@
 #ifndef RDFCACHEK2_DATETIMEHOURSEVAL_HPP
 #define RDFCACHEK2_DATETIMEHOURSEVAL_HPP
 
-class DateTimeHoursEval : public ExprEval {};
+#include "ExprEval.hpp"
+class DateTimeHoursEval : public ExprEval {
+public:
+  int eval_integer(const row_t &row) override;
+  void validate() override;
+  void init() override;
+};
 
 #endif // RDFCACHEK2_DATETIMEHOURSEVAL_HPP

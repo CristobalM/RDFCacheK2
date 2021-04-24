@@ -5,12 +5,12 @@
 #ifndef RDFCACHEK2_DATATYPERESOURCE_HPP
 #define RDFCACHEK2_DATATYPERESOURCE_HPP
 
-#include "TermResource.hpp"
 #include "../ExprDataType.hpp"
+#include "TermResource.hpp"
 class DataTypeResource : public TermResource {
   ExprDataType datatype;
-public:
 
+public:
   DataTypeResource(ExprDataType datatype);
 
   bool operator==(const TermResource &rhs) const override;

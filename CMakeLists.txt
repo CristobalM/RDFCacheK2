@@ -144,7 +144,7 @@ set(GRAPH_RESULT_CACHING_FILE
         gresults-caching/query_processing/expr/TermResource.cpp
         gresults-caching/query_processing/expr/ConcreteRDFResource.cpp
         gresults-caching/query_processing/expr/DataTypeResource.cpp
-        gresults-caching/query_processing/expr/NullResource.cpp)
+        gresults-caching/query_processing/expr/NullResource.cpp gresults-caching/query_processing/ISO8601Parsed.hpp)
 
 
 set(NETWORK_SOURCE_FILES
