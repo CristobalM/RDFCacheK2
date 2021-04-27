@@ -6,6 +6,11 @@
 #define RDFCACHEK2_LANGEVAL_HPP
 
 #include "ExprEval.hpp"
-class LangEval : public ExprEval {};
+class LangEval : public ExprEval {
+public:
+  std::unique_ptr<TermResource> eval_resource(const row_t &row) override;
+  void validate() override;
+  void init() override;
+};
 
 #endif // RDFCACHEK2_LANGEVAL_HPP

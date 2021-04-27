@@ -6,6 +6,12 @@
 #define RDFCACHEK2_NOTEQUALSEVAL_HPP
 
 #include "ExprEval.hpp"
-class NotEqualsEval : public ExprEval {};
+class NotEqualsEval : public ExprEval {
+public:
+  std::unique_ptr<TermResource> eval_resource(const row_t &row) override;
+  void validate() override;
+  void init() override;
+  bool eval_boolean(const row_t &row) override;
+};
 
 #endif // RDFCACHEK2_NOTEQUALSEVAL_HPP

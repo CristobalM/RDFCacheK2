@@ -2,10 +2,10 @@
 // Created by cristobal on 23-04-21.
 //
 
-#ifndef RDFCACHEK2_ISO8601PARSED_HPP
-#define RDFCACHEK2_ISO8601PARSED_HPP
+#ifndef RDFCACHEK2_DATEINFO_HPP
+#define RDFCACHEK2_DATEINFO_HPP
 
-struct ISO8601Parsed {
+struct DateInfo {
   bool matched;
   int year;
   int month;
@@ -19,4 +19,4 @@ struct ISO8601Parsed {
   int offset_minute;
 };
 
-#endif // RDFCACHEK2_ISO8601PARSED_HPP
+#endif // RDFCACHEK2_DATEINFO_HPP

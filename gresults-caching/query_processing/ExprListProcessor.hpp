@@ -22,14 +22,12 @@ class ExprListProcessor {
   const VarIndexManager &vim;
   const std::vector<const proto_msg::ExprNode *> &expr_list;
   const PredicatesCacheManager &cm;
-  ExprProcessorPersistentData &expr_processor_persistent_data;
 
 public:
   ExprListProcessor(
       ResultTable &table, const VarIndexManager &vim,
       const std::vector<const proto_msg::ExprNode *> &expr_list,
-      const PredicatesCacheManager &cm,
-      ExprProcessorPersistentData &expr_processor_persistent_data);
+      const PredicatesCacheManager &cm);
   void execute();
   std::unordered_map<std::string, unsigned long> get_var_pos_mapping();
 };

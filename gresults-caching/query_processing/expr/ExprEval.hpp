@@ -22,7 +22,6 @@ protected:
   std::vector<std::unique_ptr<ExprEval>> children;
 
   const EvalData &eval_data;
-  ExprProcessorPersistentData &persistent_data;
   const proto_msg::ExprNode &expr_node;
 
   bool with_error;
@@ -32,7 +31,6 @@ public:
   virtual ~ExprEval() = default;
 
   ExprEval(const EvalData &eval_data,
-           ExprProcessorPersistentData &persistent_data,
            const proto_msg::ExprNode &expr_node);
 
   virtual std::unique_ptr<TermResource> eval_resource(const row_t &row);
@@ -41,7 +39,7 @@ public:
   virtual int eval_integer(const row_t &row);
   virtual float eval_float(const row_t &row);
   virtual double eval_double(const row_t &row);
-  virtual UDate eval_date_time(const row_t &row);
+  virtual DateInfo eval_date_time(const row_t &row);
 
   virtual void validate();
   virtual void init();
@@ -54,14 +52,12 @@ public:
   template <typename T>
   static std::unique_ptr<ExprEval>
   create_eval_node_specific(const EvalData &eval_data,
-                            const ExprProcessorPersistentData &persistent_data,
                             const proto_msg::ExprNode &expr_node) {
-    return std::make_unique<T>(eval_data, persistent_data, expr_node);
+    return std::make_unique<T>(eval_data, expr_node);
   }
 
   static std::unique_ptr<ExprEval>
   create_eval_node(const EvalData &eval_data,
-                   const ExprProcessorPersistentData &persistent_data,
                    const proto_msg::ExprNode &expr_node);
 
   void add_child(const proto_msg::ExprNode &child_node);

@@ -104,7 +104,7 @@ int ExprProcessorPersistentData::extract_date_portion(
   mutable_calendar->setTime(epoch_value, err);
   return mutable_calendar->get(date_fields, err);
 }
-ISO8601Parsed ExprProcessorPersistentData::parse_iso8601(const string &input) {
+DateInfo ExprProcessorPersistentData::parse_iso8601(const std::string &input) {
   static const std::string regex_str(
       "^((\\d{4})-([01]\\d)-([0-3]\\d)T([0-2]\\d):([0-5]\\d):([0-5]\\d)(?:\\.("
       "\\d+))?(?:([+-])([0-2]\\d):?([0-5]\\d)|(Z)))$");
@@ -115,7 +115,7 @@ ISO8601Parsed ExprProcessorPersistentData::parse_iso8601(const string &input) {
   bool matched = re.PartialMatch(sp, &full_match, &year, &month, &day, &hour,
                                  &minute, &second, &secfrac, &offset_sign,
                                  &offset_hour, &offset_minute, &utc_z);
-  ISO8601Parsed result{};
+  DateInfo result{};
   if (!matched) {
     result.matched = false;
     return result;
@@ -140,3 +140,24 @@ ISO8601Parsed ExprProcessorPersistentData::parse_iso8601(const string &input) {
   }
   return result;
 }
+
+std::string
+ExprProcessorPersistentData::extract_language_tag(const std::string &input_string) const {
+  pcrecpp::StringPiece re_input(input_string);
+  std::string full_word;
+  std::string content;
+  std::string metadata;
+  bool matched =
+      re_literal.PartialMatch(re_input, &full_word, &content, &metadata);
+  if (!matched || metadata.empty() || metadata[0] != '@')
+    return "";
+
+  return metadata.substr(1, metadata.size()-1);
+}
+
+
+ExprProcessorPersistentData &ExprProcessorPersistentData::get() {
+  return instance;
+}
+
+ExprProcessorPersistentData ExprProcessorPersistentData::instance = ExprProcessorPersistentData();

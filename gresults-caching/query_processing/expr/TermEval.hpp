@@ -17,7 +17,7 @@ public:
   int eval_integer(const row_t &row) override;
   float eval_float(const row_t &row) override;
   double eval_double(const row_t &row) override;
-  UDate eval_date_time(const row_t &row) override;
+  DateInfo eval_date_time(const row_t &row) override;
 
   void init() override;
 

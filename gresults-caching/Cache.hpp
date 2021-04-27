@@ -36,8 +36,6 @@ class Cache {
 
   CacheReplacement cache_replacement;
 
-  ExprProcessorPersistentData expr_processor_persistent_data;
-
 public:
   using cm_t = std::shared_ptr<PredicatesCacheManager>;
   using pcm_t = PredicatesCacheManager;

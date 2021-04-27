@@ -6,13 +6,12 @@
 #include <unicode/smpdtfmt.h>
 
 int DateTimeMonthEval::eval_integer(const ExprEval::row_t &row) {
-  auto dtepoch = children[0]->eval_date_time(row);
+  auto date_info = children[0]->eval_date_time(row);
   if (children_with_error()) {
     with_error = true;
     return 0;
   }
-  return persistent_data.extract_date_portion(
-      dtepoch, icu::Calendar::EDateFields::MONTH);
+  return date_info.month;
 }
 
 void DateTimeMonthEval::validate() {

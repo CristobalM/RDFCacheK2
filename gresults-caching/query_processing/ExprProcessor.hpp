@@ -24,17 +24,15 @@ class ExprProcessor {
 
   const EvalData &eval_data;
   const proto_msg::ExprNode &expr_node;
-  const ExprProcessorPersistentData &persistent_data;
 
 public:
-  ExprProcessor(const EvalData &eval_data, const proto_msg::ExprNode &expr_node,
-                const ExprProcessorPersistentData &persistent_data);
+  ExprProcessor(const EvalData &eval_data, const proto_msg::ExprNode &expr_node);
 
   std::unique_ptr<ExprEval> create_evaluator();
 
 private:
   template <typename T> std::unique_ptr<ExprEval> create_expr_eval() {
-    return std::make_unique<T>(eval_data, persistent_data, expr_node);
+    return std::make_unique<T>(eval_data, expr_node);
   }
 };
 

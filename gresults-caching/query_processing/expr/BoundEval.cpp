@@ -3,6 +3,7 @@
 //
 
 #include "BoundEval.hpp"
+#include "BooleanResource.hpp"
 
 bool BoundEval::eval_boolean(const ExprEval::row_t &) { return result; }
 
@@ -19,4 +20,8 @@ void BoundEval::validate() {
   assert_fsize(1);
   const auto &child_node = expr_node.function_node().exprs(0);
   assert_is_variable(child_node);
+}
+std::unique_ptr<TermResource>
+BoundEval::eval_resource(const ExprEval::row_t &) {
+  return std::make_unique<BooleanResource>(result);
 }

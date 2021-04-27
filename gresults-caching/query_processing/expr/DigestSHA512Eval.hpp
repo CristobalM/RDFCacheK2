@@ -6,6 +6,11 @@
 #define RDFCACHEK2_DIGESTSHA512EVAL_HPP
 
 #include "ExprEval.hpp"
-class DigestSHA512Eval : public ExprEval {};
+class DigestSHA512Eval : public ExprEval {
+public:
+  std::unique_ptr<TermResource> eval_resource(const row_t &row) override;
+  void validate() override;
+  void init() override;
+};
 
 #endif // RDFCACHEK2_DIGESTSHA512EVAL_HPP

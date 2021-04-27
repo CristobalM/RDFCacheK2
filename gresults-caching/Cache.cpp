@@ -16,7 +16,7 @@ Cache::Cache(std::shared_ptr<PredicatesCacheManager> &cache_manager,
           cache_replacement_strategy, memory_budget_bytes, cache_manager)) {}
 
 QueryResult Cache::run_query(proto_msg::SparqlTree const &query_tree) {
-  return QueryProcessor(*cache_manager, expr_processor_persistent_data)
+  return QueryProcessor(*cache_manager)
       .run_query(query_tree);
 }
 

@@ -19,11 +19,9 @@ class QueryProcessor {
   const PredicatesCacheManager &cm;
   std::unique_ptr<VarIndexManager> vim;
 
-  ExprProcessorPersistentData &expr_processor_persistent_data;
 
 public:
-  QueryProcessor(const PredicatesCacheManager &cache_manager,
-                 ExprProcessorPersistentData &expr_processor_persistent_data);
+  QueryProcessor(const PredicatesCacheManager &cache_manager);
   QueryResult run_query(proto_msg::SparqlTree const &query_tree);
 
 private:

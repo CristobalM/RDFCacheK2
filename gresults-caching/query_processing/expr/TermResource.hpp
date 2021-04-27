@@ -15,9 +15,25 @@ public:
   virtual bool is_concrete() const;
   virtual bool is_datatype() const;
   virtual bool is_null() const;
+  virtual bool is_day_time_duration() const;
+  virtual bool is_string_literal() const;
+  virtual bool is_integer() const;
+  virtual bool is_float() const;
+  virtual bool is_double() const;
+  virtual bool is_numeric() const;
+  virtual bool is_boolean() const;
+
+  virtual const std::string &get_literal_string() const;
   virtual const RDFResource &get_resource() const;
+  virtual RDFResource get_resource_clone() const;
   virtual ExprDataType get_datatype() const;
+  virtual int get_integer() const;
+  virtual float get_float() const;
+  virtual double get_double() const;
+  virtual bool get_boolean() const;
+
   static std::unique_ptr<TermResource> null();
+
 };
 
 #endif // RDFCACHEK2_TERMRESOURCE_HPP

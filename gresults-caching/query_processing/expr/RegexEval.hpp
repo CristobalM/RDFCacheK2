@@ -6,6 +6,16 @@
 #define RDFCACHEK2_REGEXEVAL_HPP
 
 #include "ExprEval.hpp"
-class RegexEval : public ExprEval {};
+class RegexEval : public ExprEval {
+public:
+  std::unique_ptr<TermResource> eval_resource(const row_t &row) override;
+  bool eval_boolean(const row_t &row) override;
+  void validate() override;
+  void init() override;
+
+private:
+  static bool match_pattern(const std::string &input_string,
+                     const std::string &pattern);
+};
 
 #endif // RDFCACHEK2_REGEXEVAL_HPP

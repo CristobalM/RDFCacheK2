@@ -144,7 +144,15 @@ set(GRAPH_RESULT_CACHING_FILE
         gresults-caching/query_processing/expr/TermResource.cpp
         gresults-caching/query_processing/expr/ConcreteRDFResource.cpp
         gresults-caching/query_processing/expr/DataTypeResource.cpp
-        gresults-caching/query_processing/expr/NullResource.cpp gresults-caching/query_processing/ISO8601Parsed.hpp)
+        gresults-caching/query_processing/expr/NullResource.cpp
+        gresults-caching/query_processing/expr/DayTimeDurationResource.cpp
+        gresults-caching/query_processing/expr/StringLiteralResource.cpp
+        gresults-caching/query_processing/expr/IntegerResource.cpp
+        gresults-caching/query_processing/expr/FloatResource.cpp
+        gresults-caching/query_processing/expr/DoubleResource.cpp
+        gresults-caching/query_processing/expr/BooleanResource.cpp
+        gresults-caching/query_processing/DateInfo.hpp
+        )
 
 
 set(NETWORK_SOURCE_FILES
