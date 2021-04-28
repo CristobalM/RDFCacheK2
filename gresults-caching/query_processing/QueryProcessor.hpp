@@ -19,7 +19,6 @@ class QueryProcessor {
   const PredicatesCacheManager &cm;
   std::unique_ptr<VarIndexManager> vim;
 
-
 public:
   QueryProcessor(const PredicatesCacheManager &cache_manager);
   QueryResult run_query(proto_msg::SparqlTree const &query_tree);

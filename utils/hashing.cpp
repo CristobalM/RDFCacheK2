@@ -56,17 +56,16 @@ std::string md5_human_readable_lowercase(const std::array<char, 16> &digest) {
   return result;
 }
 
-std::string md5_human_readable_lowercase(const std::string &input){
+std::string md5_human_readable_lowercase(const std::string &input) {
   auto digest = md5calc(input);
   return md5_human_readable_lowercase(digest);
 }
-
 
 std::array<char, 16> sha1calc(const std::string &input) {
   std::array<char, 16> result;
 
   SHA1(reinterpret_cast<const unsigned char *>(input.data()), input.size(),
-      reinterpret_cast<unsigned char *>(result.data()));
+       reinterpret_cast<unsigned char *>(result.data()));
   return result;
 }
 
@@ -74,7 +73,7 @@ std::array<char, 16> sha1calc(const std::vector<char> &input) {
   std::array<char, 16> result;
 
   SHA1(reinterpret_cast<const unsigned char *>(input.data()), input.size(),
-      reinterpret_cast<unsigned char *>(result.data()));
+       reinterpret_cast<unsigned char *>(result.data()));
   return result;
 }
 
@@ -112,7 +111,7 @@ std::string sha1_human_readable_lowercase(const std::array<char, 16> &digest) {
   return result;
 }
 
-std::string sha1_human_readable_lowercase(const std::string &input){
+std::string sha1_human_readable_lowercase(const std::string &input) {
   auto digest = sha1calc(input);
   return sha1_human_readable_lowercase(digest);
 }
@@ -121,7 +120,7 @@ std::array<char, 16> sha224calc(const std::string &input) {
   std::array<char, 16> result;
 
   SHA224(reinterpret_cast<const unsigned char *>(input.data()), input.size(),
-      reinterpret_cast<unsigned char *>(result.data()));
+         reinterpret_cast<unsigned char *>(result.data()));
   return result;
 }
 
@@ -129,7 +128,7 @@ std::array<char, 16> sha224calc(const std::vector<char> &input) {
   std::array<char, 16> result;
 
   SHA224(reinterpret_cast<const unsigned char *>(input.data()), input.size(),
-      reinterpret_cast<unsigned char *>(result.data()));
+         reinterpret_cast<unsigned char *>(result.data()));
   return result;
 }
 
@@ -160,14 +159,15 @@ std::string sha224_human_readable(const std::array<char, 16> &digest) {
   return result;
 }
 
-std::string sha224_human_readable_lowercase(const std::array<char, 16> &digest) {
+std::string
+sha224_human_readable_lowercase(const std::array<char, 16> &digest) {
   auto result = sha224_human_readable_common(digest);
   std::for_each(result.begin(), result.end(),
                 [](char &c) { c = ::tolower(c); });
   return result;
 }
 
-std::string sha224_human_readable_lowercase(const std::string &input){
+std::string sha224_human_readable_lowercase(const std::string &input) {
   auto digest = sha224calc(input);
   return sha224_human_readable_lowercase(digest);
 }
@@ -176,7 +176,7 @@ std::array<char, 16> sha256calc(const std::string &input) {
   std::array<char, 16> result;
 
   SHA256(reinterpret_cast<const unsigned char *>(input.data()), input.size(),
-      reinterpret_cast<unsigned char *>(result.data()));
+         reinterpret_cast<unsigned char *>(result.data()));
   return result;
 }
 
@@ -184,7 +184,7 @@ std::array<char, 16> sha256calc(const std::vector<char> &input) {
   std::array<char, 16> result;
 
   SHA256(reinterpret_cast<const unsigned char *>(input.data()), input.size(),
-      reinterpret_cast<unsigned char *>(result.data()));
+         reinterpret_cast<unsigned char *>(result.data()));
   return result;
 }
 
@@ -215,14 +215,15 @@ std::string sha256_human_readable(const std::array<char, 16> &digest) {
   return result;
 }
 
-std::string sha256_human_readable_lowercase(const std::array<char, 16> &digest) {
+std::string
+sha256_human_readable_lowercase(const std::array<char, 16> &digest) {
   auto result = sha256_human_readable_common(digest);
   std::for_each(result.begin(), result.end(),
                 [](char &c) { c = ::tolower(c); });
   return result;
 }
 
-std::string sha256_human_readable_lowercase(const std::string &input){
+std::string sha256_human_readable_lowercase(const std::string &input) {
   auto digest = sha256calc(input);
   return sha256_human_readable_lowercase(digest);
 }

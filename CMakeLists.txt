@@ -147,6 +147,7 @@ set(GRAPH_RESULT_CACHING_FILE
         gresults-caching/query_processing/expr/NullResource.cpp
         gresults-caching/query_processing/expr/DayTimeDurationResource.cpp
         gresults-caching/query_processing/expr/StringLiteralResource.cpp
+        gresults-caching/query_processing/expr/StringLiteralLangResource.cpp
         gresults-caching/query_processing/expr/IntegerResource.cpp
         gresults-caching/query_processing/expr/FloatResource.cpp
         gresults-caching/query_processing/expr/DoubleResource.cpp

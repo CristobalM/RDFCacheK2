@@ -7,7 +7,7 @@
 std::unique_ptr<TermResource>
 LogicalAndEval::eval_resource(const ExprEval::row_t &row) {
   auto result = eval_boolean(row);
-  if(has_error()){
+  if (has_error()) {
     return TermResource::null();
   }
   return std::make_unique<BooleanResource>(result);
@@ -15,7 +15,7 @@ LogicalAndEval::eval_resource(const ExprEval::row_t &row) {
 bool LogicalAndEval::eval_boolean(const ExprEval::row_t &row) {
   auto first_resource = children[0]->eval_boolean(row);
   auto second_resource = children[1]->eval_boolean(row);
-  if(children_with_error()){
+  if (children_with_error()) {
     this->with_error = true;
     return false;
   }

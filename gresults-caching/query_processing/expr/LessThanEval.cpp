@@ -7,7 +7,7 @@
 std::unique_ptr<TermResource>
 LessThanEval::eval_resource(const ExprEval::row_t &row) {
   auto value = eval_boolean(row);
-  if(has_error()){
+  if (has_error()) {
     return TermResource::null();
   }
   return std::make_unique<BooleanResource>(value);

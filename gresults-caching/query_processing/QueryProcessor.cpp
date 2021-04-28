@@ -22,9 +22,8 @@
 #include "UnionProcessor.hpp"
 #include "VarIndexManager.hpp"
 
-QueryProcessor::QueryProcessor(
-    const PredicatesCacheManager &cache_manager)
-    : cm(cache_manager), vim(std::make_unique<VarIndexManager>()){}
+QueryProcessor::QueryProcessor(const PredicatesCacheManager &cache_manager)
+    : cm(cache_manager), vim(std::make_unique<VarIndexManager>()) {}
 
 std::shared_ptr<ResultTable>
 QueryProcessor::process_join_node(const proto_msg::SparqlNode &join_node) {
@@ -59,8 +58,7 @@ std::shared_ptr<ResultTable> QueryProcessor::process_left_join_node(
     nodes.push_back(&expr_node);
   }
 
-  ExprListProcessor(*resulting_table, *vim, nodes, cm)
-      .execute();
+  ExprListProcessor(*resulting_table, *vim, nodes, cm).execute();
 
   return resulting_table;
 }

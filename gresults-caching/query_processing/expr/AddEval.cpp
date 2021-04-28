@@ -10,7 +10,7 @@
 int AddEval::eval_integer(const ExprEval::row_t &row) {
   auto left_value = children[0]->eval_integer(row);
   auto right_value = children[1]->eval_integer(row);
-  if(children_with_error()){
+  if (children_with_error()) {
     this->with_error = true;
     return 0;
   }
@@ -20,7 +20,7 @@ int AddEval::eval_integer(const ExprEval::row_t &row) {
 float AddEval::eval_float(const ExprEval::row_t &row) {
   auto left_value = children[0]->eval_float(row);
   auto right_value = children[1]->eval_float(row);
-  if(children_with_error()){
+  if (children_with_error()) {
     this->with_error = true;
     return 0;
   }
@@ -29,7 +29,7 @@ float AddEval::eval_float(const ExprEval::row_t &row) {
 double AddEval::eval_double(const ExprEval::row_t &row) {
   auto left_value = children[0]->eval_double(row);
   auto right_value = children[1]->eval_double(row);
-  if(children_with_error()){
+  if (children_with_error()) {
     this->with_error = true;
     return 0;
   }
@@ -49,17 +49,21 @@ AddEval::eval_resource(const ExprEval::row_t &row) {
   auto left_resource = children[0]->eval_resource(row);
   auto right_resource = children[1]->eval_resource(row);
 
-  if( children_with_error() || !left_resource->is_numeric() || !right_resource->is_numeric()){
+  if (children_with_error() || !left_resource->is_numeric() ||
+      !right_resource->is_numeric()) {
     with_error = true;
     return TermResource::null();
   }
 
-  if(left_resource->is_double() || right_resource->is_double()){
-    return std::make_unique<DoubleResource>(left_resource->get_double() + right_resource->get_double());
+  if (left_resource->is_double() || right_resource->is_double()) {
+    return std::make_unique<DoubleResource>(left_resource->get_double() +
+                                            right_resource->get_double());
   }
-  if(left_resource->is_float() || right_resource->is_float()){
-    return std::make_unique<FloatResource>(left_resource->get_float() + right_resource->get_float());
+  if (left_resource->is_float() || right_resource->is_float()) {
+    return std::make_unique<FloatResource>(left_resource->get_float() +
+                                           right_resource->get_float());
   }
 
-  return std::make_unique<IntegerResource>(left_resource->get_integer() + right_resource->get_integer());
+  return std::make_unique<IntegerResource>(left_resource->get_integer() +
+                                           right_resource->get_integer());
 }

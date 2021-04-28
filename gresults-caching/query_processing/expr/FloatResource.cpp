@@ -14,15 +14,15 @@ double FloatResource::get_double() const { return static_cast<double>(value); }
 FloatResource::FloatResource(float value) : value(value) {}
 
 bool FloatResource::operator==(const TermResource &rhs) const {
-  if(rhs.is_integer() || rhs.is_float()){
+  if (rhs.is_integer() || rhs.is_float()) {
     return rhs.get_float() == value;
   }
 
-  if(rhs.is_double()){
+  if (rhs.is_double()) {
     return static_cast<double>(value) == rhs.get_double();
   }
 
-  if(rhs.is_numeric()){
+  if (rhs.is_numeric()) {
     // never should happen but to cover any number as a double
     return static_cast<double>(value) == rhs.get_double();
   }

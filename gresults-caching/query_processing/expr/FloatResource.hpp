@@ -8,6 +8,7 @@
 #include "TermResource.hpp"
 class FloatResource : public TermResource {
   float value;
+
 public:
   explicit FloatResource(float value);
   bool is_float() const override;

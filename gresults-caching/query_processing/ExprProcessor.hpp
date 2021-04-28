@@ -26,7 +26,8 @@ class ExprProcessor {
   const proto_msg::ExprNode &expr_node;
 
 public:
-  ExprProcessor(const EvalData &eval_data, const proto_msg::ExprNode &expr_node);
+  ExprProcessor(const EvalData &eval_data,
+                const proto_msg::ExprNode &expr_node);
 
   std::unique_ptr<ExprEval> create_evaluator();
 

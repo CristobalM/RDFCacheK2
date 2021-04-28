@@ -43,3 +43,10 @@ double TermResource::get_double() const {
 bool TermResource::get_boolean() const {
   throw std::runtime_error("get_boolean not implemented");
 }
+bool TermResource::is_string_literal_lang() const { return false; }
+const std::string &TermResource::get_literal_lang_string() const {
+  throw std::runtime_error("get_literal_lang_string not implemented");
+}
+const std::string &TermResource::get_lang_tag() const {
+  throw std::runtime_error("get_lang_tag not implemented");
+}

@@ -16,8 +16,7 @@ Cache::Cache(std::shared_ptr<PredicatesCacheManager> &cache_manager,
           cache_replacement_strategy, memory_budget_bytes, cache_manager)) {}
 
 QueryResult Cache::run_query(proto_msg::SparqlTree const &query_tree) {
-  return QueryProcessor(*cache_manager)
-      .run_query(query_tree);
+  return QueryProcessor(*cache_manager).run_query(query_tree);
 }
 
 RDFResource Cache::extract_resource(unsigned long index) const {

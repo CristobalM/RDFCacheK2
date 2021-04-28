@@ -4,19 +4,19 @@
 
 #include "IntegerResource.hpp"
 bool IntegerResource::operator==(const TermResource &rhs) const {
-  if(rhs.is_integer()){
+  if (rhs.is_integer()) {
     return rhs.get_integer() == value;
   }
 
-  if(rhs.is_float()){
+  if (rhs.is_float()) {
     return static_cast<float>(value) == rhs.get_float();
   }
 
-  if(rhs.is_double()){
+  if (rhs.is_double()) {
     return static_cast<double>(value) == rhs.get_double();
   }
 
-  if(rhs.is_numeric()){
+  if (rhs.is_numeric()) {
     // never should happen but to cover any number as a double
     return static_cast<double>(value) == rhs.get_double();
   }

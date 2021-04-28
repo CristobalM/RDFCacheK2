@@ -12,8 +12,10 @@ class DayTimeDurationResource : public TermResource {
   int hours;
   int minutes;
   int seconds;
+
 public:
-  DayTimeDurationResource(int sign, int days, int hours, int minutes, int seconds);
+  DayTimeDurationResource(int sign, int days, int hours, int minutes,
+                          int seconds);
   DayTimeDurationResource();
 
   void set_sign(int sign);

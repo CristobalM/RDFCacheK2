@@ -10,7 +10,7 @@
 std::unique_ptr<TermResource>
 LangMatchesEval::eval_resource(const ExprEval::row_t &row) {
   auto result = eval_boolean(row);
-  if(has_error()){
+  if (has_error()) {
     return TermResource::null();
   }
   return std::make_unique<BooleanResource>(result);

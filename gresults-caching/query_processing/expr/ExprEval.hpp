@@ -30,8 +30,7 @@ public:
   using row_t = std::vector<unsigned long>;
   virtual ~ExprEval() = default;
 
-  ExprEval(const EvalData &eval_data,
-           const proto_msg::ExprNode &expr_node);
+  ExprEval(const EvalData &eval_data, const proto_msg::ExprNode &expr_node);
 
   virtual std::unique_ptr<TermResource> eval_resource(const row_t &row);
   virtual std::unique_ptr<TermResource> eval_datatype(const row_t &row);

@@ -17,6 +17,7 @@ public:
   virtual bool is_null() const;
   virtual bool is_day_time_duration() const;
   virtual bool is_string_literal() const;
+  virtual bool is_string_literal_lang() const;
   virtual bool is_integer() const;
   virtual bool is_float() const;
   virtual bool is_double() const;
@@ -24,6 +25,8 @@ public:
   virtual bool is_boolean() const;
 
   virtual const std::string &get_literal_string() const;
+  virtual const std::string &get_literal_lang_string() const;
+  virtual const std::string &get_lang_tag() const;
   virtual const RDFResource &get_resource() const;
   virtual RDFResource get_resource_clone() const;
   virtual ExprDataType get_datatype() const;
@@ -33,7 +36,6 @@ public:
   virtual bool get_boolean() const;
 
   static std::unique_ptr<TermResource> null();
-
 };
 
 #endif // RDFCACHEK2_TERMRESOURCE_HPP

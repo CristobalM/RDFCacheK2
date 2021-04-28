@@ -24,10 +24,9 @@ class ExprListProcessor {
   const PredicatesCacheManager &cm;
 
 public:
-  ExprListProcessor(
-      ResultTable &table, const VarIndexManager &vim,
-      const std::vector<const proto_msg::ExprNode *> &expr_list,
-      const PredicatesCacheManager &cm);
+  ExprListProcessor(ResultTable &table, const VarIndexManager &vim,
+                    const std::vector<const proto_msg::ExprNode *> &expr_list,
+                    const PredicatesCacheManager &cm);
   void execute();
   std::unordered_map<std::string, unsigned long> get_var_pos_mapping();
 };

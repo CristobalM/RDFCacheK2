@@ -10,28 +10,28 @@
 std::unique_ptr<TermResource>
 NumRoundEval::eval_resource(const ExprEval::row_t &row) {
   auto resource = children[0]->eval_resource(row);
-  if(children_with_error()){
+  if (children_with_error()) {
     this->with_error = true;
     return TermResource::null();
   }
 
-  if(resource->is_double()){
+  if (resource->is_double()) {
     return std::make_unique<DoubleResource>(std::round(resource->get_double()));
   }
-  if(resource->is_float()){
+  if (resource->is_float()) {
     return std::make_unique<FloatResource>(std::round(resource->get_float()));
   }
-  if(resource->is_integer()){
-    return std::make_unique<IntegerResource>(std::round(resource->get_integer()));
+  if (resource->is_integer()) {
+    return std::make_unique<IntegerResource>(
+        std::round(resource->get_integer()));
   }
 
   this->with_error = true;
   return TermResource::null();
-
 }
 int NumRoundEval::eval_integer(const ExprEval::row_t &row) {
   auto inner_value = children[0]->eval_integer(row);
-  if(children_with_error()){
+  if (children_with_error()) {
     this->with_error = true;
     return 0;
   }
@@ -40,7 +40,7 @@ int NumRoundEval::eval_integer(const ExprEval::row_t &row) {
 
 float NumRoundEval::eval_float(const ExprEval::row_t &row) {
   auto inner_value = children[0]->eval_float(row);
-  if(children_with_error()){
+  if (children_with_error()) {
     this->with_error = true;
     return 0;
   }
@@ -48,7 +48,7 @@ float NumRoundEval::eval_float(const ExprEval::row_t &row) {
 }
 double NumRoundEval::eval_double(const ExprEval::row_t &row) {
   auto inner_value = children[0]->eval_double(row);
-  if(children_with_error()){
+  if (children_with_error()) {
     this->with_error = true;
     return 0;
   }

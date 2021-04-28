@@ -20,14 +20,13 @@ class ExprProcessorPersistentData {
   const pcrecpp::RE re_datatype;
   const pcrecpp::RE re_literal;
   const pcrecpp::RE re_decimal_number;
+  const pcrecpp::RE re_iri;
   std::unique_ptr<icu::Calendar> mutable_calendar;
-
 
   static ExprProcessorPersistentData instance;
   ExprProcessorPersistentData();
 
 public:
-
   ExprDataType
   extract_data_type_from_string(const std::string &input_string) const;
 
@@ -43,7 +42,9 @@ public:
 
   std::string extract_language_tag(const std::string &input_string) const;
 
-  static ExprProcessorPersistentData & get();
+  std::string extract_inside_iri(const std::string &input_string) const;
+
+  static ExprProcessorPersistentData &get();
 
 private:
   ExprDataType select_data_type(const std::string &data_type_string) const;

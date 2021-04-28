@@ -8,6 +8,7 @@
 #include "TermResource.hpp"
 class BooleanResource : public TermResource {
   bool value;
+
 public:
   explicit BooleanResource(bool value);
 

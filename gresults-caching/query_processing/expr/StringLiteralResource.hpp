@@ -9,6 +9,7 @@
 class StringLiteralResource : public TermResource {
   std::string value;
   ExprDataType data_type;
+
 public:
   StringLiteralResource(std::string &&value, ExprDataType data_type);
   bool is_string_literal() const override;

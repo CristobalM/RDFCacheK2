@@ -10,12 +10,9 @@ std::string dtype = "(integer|decimal|float|double|string|boolean|dateTime)";
 std::string datatype_regex = "\\^\\^(?:<http://www\\.w3\\.org/2001/XMLSchema#" +
                              dtype + ">|xsd:" + dtype + ")";
 
-const std::string iri_letter = "[^\\x00-\\x20<>\"\\{\\}|\\^`\\\\]";
 const std::string hex_letter = "[0-9a-fA-F]";
 const std::string uchar_word =
     "\\\\u(?:" + hex_letter + "{8}|" + hex_letter + "{4})";
-const std::string iri_valid = "(?:" + iri_letter + "|" + uchar_word + ")*";
-const std::string iri_ref = "(?:<" + iri_valid + ">)";
 const std::string echar = "\\\\[tbnrf\"'\\\\]";
 const std::string string_literal_q =
     "\"((?:[^\\x22\\x5C\\xA\\xD]|" + echar + "|" + uchar_word + ")*)\"";
@@ -26,11 +23,14 @@ const std::string string_literal =
 
 const std::string decimal_number = "(^[-+]?[0-9]\\d*(?:\\.\\d+)?$)";
 
+const std::string iri_letter = "[^\\x00-\\x20<>\"\\{\\}|\\^`\\\\]";
+const std::string iri_valid = "<((?:" + iri_letter + "|" + uchar_word + ")*)>";
+
 } // namespace
 
 ExprProcessorPersistentData::ExprProcessorPersistentData()
     : re_datatype(datatype_regex), re_literal(string_literal),
-      re_decimal_number(decimal_number),
+      re_decimal_number(decimal_number), re_iri(iri_valid),
       mutable_calendar(create_icu_calendar()) {}
 
 ExprDataType ExprProcessorPersistentData::extract_data_type_from_string(
@@ -141,8 +141,8 @@ DateInfo ExprProcessorPersistentData::parse_iso8601(const std::string &input) {
   return result;
 }
 
-std::string
-ExprProcessorPersistentData::extract_language_tag(const std::string &input_string) const {
+std::string ExprProcessorPersistentData::extract_language_tag(
+    const std::string &input_string) const {
   pcrecpp::StringPiece re_input(input_string);
   std::string full_word;
   std::string content;
@@ -152,12 +152,23 @@ ExprProcessorPersistentData::extract_language_tag(const std::string &input_strin
   if (!matched || metadata.empty() || metadata[0] != '@')
     return "";
 
-  return metadata.substr(1, metadata.size()-1);
+  return metadata.substr(1, metadata.size() - 1);
 }
 
+std::string ExprProcessorPersistentData::extract_inside_iri(
+    const std::string &input_string) const {
+
+  pcrecpp::StringPiece piece(input_string);
+  std::string inner_string;
+  bool matched = re_iri.FullMatch(piece, &inner_string);
+  if (!matched)
+    return "";
+  return inner_string;
+}
 
 ExprProcessorPersistentData &ExprProcessorPersistentData::get() {
   return instance;
 }
 
-ExprProcessorPersistentData ExprProcessorPersistentData::instance = ExprProcessorPersistentData();
+ExprProcessorPersistentData ExprProcessorPersistentData::instance =
+    ExprProcessorPersistentData();

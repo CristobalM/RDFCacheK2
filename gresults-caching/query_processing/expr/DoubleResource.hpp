@@ -6,8 +6,9 @@
 #define RDFCACHEK2_DOUBLERESOURCE_HPP
 
 #include "TermResource.hpp"
-class DoubleResource : public TermResource{
+class DoubleResource : public TermResource {
   double value;
+
 public:
   explicit DoubleResource(double value);
   bool is_double() const override;

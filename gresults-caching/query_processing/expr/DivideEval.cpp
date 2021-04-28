@@ -10,7 +10,7 @@
 int DivideEval::eval_integer(const ExprEval::row_t &row) {
   auto dividend = children[0]->eval_integer(row);
   auto divisor = children[1]->eval_integer(row);
-  if(children_with_error() || divisor == 0){
+  if (children_with_error() || divisor == 0) {
     this->with_error = true;
     return 0;
   }
@@ -19,7 +19,7 @@ int DivideEval::eval_integer(const ExprEval::row_t &row) {
 float DivideEval::eval_float(const ExprEval::row_t &row) {
   auto dividend = children[0]->eval_float(row);
   auto divisor = children[1]->eval_float(row);
-  if(children_with_error() || divisor == 0){
+  if (children_with_error() || divisor == 0) {
     this->with_error = true;
     return 0;
   }
@@ -29,7 +29,7 @@ float DivideEval::eval_float(const ExprEval::row_t &row) {
 double DivideEval::eval_double(const ExprEval::row_t &row) {
   auto dividend = children[0]->eval_double(row);
   auto divisor = children[1]->eval_double(row);
-  if(children_with_error() || divisor == 0){
+  if (children_with_error() || divisor == 0) {
     this->with_error = true;
     return 0;
   }
@@ -49,32 +49,33 @@ DivideEval::eval_resource(const ExprEval::row_t &row) {
   auto dividend = children[0]->eval_resource(row);
   auto divisor = children[1]->eval_resource(row);
 
-  if(children_with_error()){
+  if (children_with_error()) {
     this->with_error = true;
     return TermResource::null();
   }
 
-  if(dividend->is_double() || divisor->is_double()){
-    if(divisor->get_double() == 0){
+  if (dividend->is_double() || divisor->is_double()) {
+    if (divisor->get_double() == 0) {
       this->with_error = true;
       return TermResource::null();
     }
-    return std::make_unique<DoubleResource>(dividend->get_double() / divisor->get_double());
+    return std::make_unique<DoubleResource>(dividend->get_double() /
+                                            divisor->get_double());
   }
-  if(dividend->is_float() || divisor->is_float()){
-    if(divisor->get_float() == 0){
+  if (dividend->is_float() || divisor->is_float()) {
+    if (divisor->get_float() == 0) {
       this->with_error = true;
       return TermResource::null();
     }
-    return std::make_unique<FloatResource>(dividend->get_float() / divisor->get_float());
+    return std::make_unique<FloatResource>(dividend->get_float() /
+                                           divisor->get_float());
   }
 
-  if(divisor->get_integer() == 0){
+  if (divisor->get_integer() == 0) {
     this->with_error = true;
     return TermResource::null();
   }
 
-  return std::make_unique<IntegerResource>(dividend->get_float() / divisor->get_float());
-
-
+  return std::make_unique<IntegerResource>(dividend->get_float() /
+                                           divisor->get_float());
 }

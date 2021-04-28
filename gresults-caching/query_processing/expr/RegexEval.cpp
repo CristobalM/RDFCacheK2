@@ -9,7 +9,7 @@
 std::unique_ptr<TermResource>
 RegexEval::eval_resource(const ExprEval::row_t &row) {
   auto result = eval_boolean(row);
-  if(has_error()){
+  if (has_error()) {
     return TermResource::null();
   }
   return std::make_unique<BooleanResource>(result);
@@ -17,29 +17,30 @@ RegexEval::eval_resource(const ExprEval::row_t &row) {
 bool RegexEval::eval_boolean(const ExprEval::row_t &row) {
   auto resource = children[0]->eval_resource(row);
   auto pattern_resource = children[1]->eval_resource(row);
-  if(children_with_error()){
+  if (children_with_error()) {
     this->with_error = true;
     return false;
   }
   std::string pattern_string;
-  if(pattern_resource->is_concrete()){
-    pattern_string = ExprProcessorPersistentData::get().extract_literal_content_from_string(pattern_resource->get_resource().value);
-  }
-  else if(pattern_resource->is_string_literal()){
+  if (pattern_resource->is_concrete()) {
+    pattern_string =
+        ExprProcessorPersistentData::get().extract_literal_content_from_string(
+            pattern_resource->get_resource().value);
+  } else if (pattern_resource->is_string_literal()) {
     pattern_string = pattern_resource->get_literal_string();
-  }
-  else{
+  } else {
     this->with_error = true;
     return false;
   }
 
-
-  if(resource->is_concrete()){
-    auto literal_content = ExprProcessorPersistentData::get().extract_literal_content_from_string(resource->get_resource().value);
+  if (resource->is_concrete()) {
+    auto literal_content =
+        ExprProcessorPersistentData::get().extract_literal_content_from_string(
+            resource->get_resource().value);
     return match_pattern(literal_content, pattern_string);
   }
 
-  if(resource->is_string_literal()){
+  if (resource->is_string_literal()) {
     return match_pattern(resource->get_literal_string(), pattern_string);
   }
 

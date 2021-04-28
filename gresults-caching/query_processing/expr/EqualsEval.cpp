@@ -16,7 +16,7 @@ void EqualsEval::init() {
 bool EqualsEval::eval_boolean(const ExprEval::row_t &row) {
   auto left_resource = children[0]->eval_resource(row);
   auto right_resource = children[1]->eval_resource(row);
-  if(children_with_error()){
+  if (children_with_error()) {
     this->with_error = true;
     return false;
   }
@@ -26,7 +26,7 @@ bool EqualsEval::eval_boolean(const ExprEval::row_t &row) {
 std::unique_ptr<TermResource>
 EqualsEval::eval_resource(const ExprEval::row_t &row) {
   auto result = eval_boolean(row);
-  if(has_error()){
+  if (has_error()) {
     return TermResource::null();
   }
   return std::make_unique<BooleanResource>(result);

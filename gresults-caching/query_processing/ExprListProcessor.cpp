@@ -6,7 +6,7 @@ ExprListProcessor::ExprListProcessor(
     ResultTable &table, const VarIndexManager &vim,
     const std::vector<const proto_msg::ExprNode *> &expr_list,
     const PredicatesCacheManager &cm)
-    : table(table), vim(vim), expr_list(expr_list), cm(cm){}
+    : table(table), vim(vim), expr_list(expr_list), cm(cm) {}
 
 std::unordered_map<std::string, unsigned long>
 ExprListProcessor::get_var_pos_mapping() {
@@ -31,8 +31,7 @@ void ExprListProcessor::execute() {
   EvalData eval_data(table, vim, cm, var_pos_mapping);
   for (const auto *node : expr_list) {
     bool_expressions.push_back(
-        ExprProcessor(eval_data, *node)
-            .create_evaluator());
+        ExprProcessor(eval_data, *node).create_evaluator());
   }
 
   for (auto it = data.begin(); it != data.end();) {

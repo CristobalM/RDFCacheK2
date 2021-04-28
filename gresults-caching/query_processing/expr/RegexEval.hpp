@@ -15,7 +15,7 @@ public:
 
 private:
   static bool match_pattern(const std::string &input_string,
-                     const std::string &pattern);
+                            const std::string &pattern);
 };
 
 #endif // RDFCACHEK2_REGEXEVAL_HPP

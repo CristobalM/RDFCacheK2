@@ -22,6 +22,4 @@ std::unique_ptr<TermResource> ConcreteRDFResource::null_resource_ptr() {
   return std::make_unique<ConcreteRDFResource>(RDFResource::null_resource());
 }
 
-RDFResource ConcreteRDFResource::get_resource_clone() const {
-  return resource;
-}
+RDFResource ConcreteRDFResource::get_resource_clone() const { return resource; }

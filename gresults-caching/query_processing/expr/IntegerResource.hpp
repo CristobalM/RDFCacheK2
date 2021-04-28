@@ -8,6 +8,7 @@
 #include "TermResource.hpp"
 class IntegerResource : public TermResource {
   int value;
+
 public:
   explicit IntegerResource(int value);
   bool operator==(const TermResource &rhs) const override;

@@ -6,6 +6,11 @@
 #define RDFCACHEK2_STREVAL_HPP
 
 #include "ExprEval.hpp"
-class StrEval : public ExprEval {};
+class StrEval : public ExprEval {
+public:
+  std::unique_ptr<TermResource> eval_resource(const row_t &row) override;
+  void validate() override;
+  void init() override;
+};
 
 #endif // RDFCACHEK2_STREVAL_HPP
