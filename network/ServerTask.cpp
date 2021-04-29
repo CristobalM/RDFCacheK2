@@ -128,6 +128,7 @@ create_response_from_query_result(ServerTask &server_task,
       break;
 
     case RDFResourceType::RDF_TYPE_LITERAL:
+    case NULL_RESOURCE_TYPE:
       kv->set_type(proto_msg::TermType::LITERAL);
       break;
     }

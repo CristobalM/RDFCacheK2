@@ -10,6 +10,7 @@
 #include "ExprEval.hpp"
 class TermEval : public ExprEval {
 public:
+  using ExprEval::ExprEval;
   void validate() override;
   std::unique_ptr<TermResource> eval_resource(const row_t &row) override;
   std::unique_ptr<TermResource> eval_datatype(const row_t &row) override;

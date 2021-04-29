@@ -227,3 +227,115 @@ std::string sha256_human_readable_lowercase(const std::string &input) {
   auto digest = sha256calc(input);
   return sha256_human_readable_lowercase(digest);
 }
+
+std::array<char, 16> sha384calc(const std::string &input) {
+  std::array<char, 16> result;
+
+  SHA384(reinterpret_cast<const unsigned char *>(input.data()), input.size(),
+         reinterpret_cast<unsigned char *>(result.data()));
+  return result;
+}
+
+std::array<char, 16> sha384calc(const std::vector<char> &input) {
+  std::array<char, 16> result;
+
+  SHA384(reinterpret_cast<const unsigned char *>(input.data()), input.size(),
+         reinterpret_cast<unsigned char *>(result.data()));
+  return result;
+}
+
+static std::string
+sha384_human_readable_common(const std::array<char, 16> &digest) {
+  static const char hexchars[] = "0123456789abcdef";
+
+  std::string result;
+
+  for (int i = 0; i < 16; i++) {
+    unsigned char b = digest[i];
+    char hex[3];
+
+    hex[0] = hexchars[b >> 4];
+    hex[1] = hexchars[b & 0xF];
+    hex[2] = 0;
+
+    result.append(hex);
+  }
+
+  return result;
+}
+
+std::string sha384_human_readable(const std::array<char, 16> &digest) {
+  auto result = sha384_human_readable_common(digest);
+  std::for_each(result.begin(), result.end(),
+                [](char &c) { c = ::toupper(c); });
+  return result;
+}
+
+std::string
+sha384_human_readable_lowercase(const std::array<char, 16> &digest) {
+  auto result = sha384_human_readable_common(digest);
+  std::for_each(result.begin(), result.end(),
+                [](char &c) { c = ::tolower(c); });
+  return result;
+}
+
+std::string sha384_human_readable_lowercase(const std::string &input) {
+  auto digest = sha384calc(input);
+  return sha384_human_readable_lowercase(digest);
+}
+
+std::array<char, 16> sha512calc(const std::string &input) {
+  std::array<char, 16> result;
+
+  SHA512(reinterpret_cast<const unsigned char *>(input.data()), input.size(),
+         reinterpret_cast<unsigned char *>(result.data()));
+  return result;
+}
+
+std::array<char, 16> sha512calc(const std::vector<char> &input) {
+  std::array<char, 16> result;
+
+  SHA512(reinterpret_cast<const unsigned char *>(input.data()), input.size(),
+         reinterpret_cast<unsigned char *>(result.data()));
+  return result;
+}
+
+static std::string
+sha512_human_readable_common(const std::array<char, 16> &digest) {
+  static const char hexchars[] = "0123456789abcdef";
+
+  std::string result;
+
+  for (int i = 0; i < 16; i++) {
+    unsigned char b = digest[i];
+    char hex[3];
+
+    hex[0] = hexchars[b >> 4];
+    hex[1] = hexchars[b & 0xF];
+    hex[2] = 0;
+
+    result.append(hex);
+  }
+
+  return result;
+}
+
+std::string sha512_human_readable(const std::array<char, 16> &digest) {
+  auto result = sha512_human_readable_common(digest);
+  std::for_each(result.begin(), result.end(),
+                [](char &c) { c = ::toupper(c); });
+  return result;
+}
+
+std::string
+sha512_human_readable_lowercase(const std::array<char, 16> &digest) {
+  auto result = sha512_human_readable_common(digest);
+  std::for_each(result.begin(), result.end(),
+                [](char &c) { c = ::tolower(c); });
+  return result;
+}
+
+std::string sha512_human_readable_lowercase(const std::string &input) {
+  auto digest = sha512calc(input);
+  return sha512_human_readable_lowercase(digest);
+}

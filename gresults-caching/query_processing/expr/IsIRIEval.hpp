@@ -8,6 +8,7 @@
 #include "ExprEval.hpp"
 class IsIRIEval : public ExprEval {
 public:
+  using ExprEval::ExprEval;
   bool eval_boolean(const row_t &row) override;
   void init() override;
   void validate() override;

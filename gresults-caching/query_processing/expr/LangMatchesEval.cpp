@@ -31,7 +31,7 @@ bool LangMatchesEval::eval_boolean(const ExprEval::row_t &row) {
   std::for_each(resource_language_tag.begin(), resource_language_tag.end(),
                 [](char &c) { c = std::tolower(c); });
 
-  const auto query_lang_tag = second_resource->get_literal_string();
+  auto query_lang_tag = second_resource->get_literal_string();
 
   std::for_each(query_lang_tag.begin(), query_lang_tag.end(),
                 [](char &c) { c = std::tolower(c); });

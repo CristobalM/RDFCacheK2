@@ -12,10 +12,8 @@ class DataTypeResource : public TermResource {
 
 public:
   DataTypeResource(ExprDataType datatype);
-
   bool operator==(const TermResource &rhs) const override;
   bool is_concrete() const override;
-  const RDFResource &get_resource() const override;
   bool is_datatype() const override;
   ExprDataType get_datatype() const override;
 };

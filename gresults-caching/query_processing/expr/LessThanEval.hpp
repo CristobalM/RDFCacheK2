@@ -8,6 +8,7 @@
 #include "ExprEval.hpp"
 class LessThanEval : public ExprEval {
 public:
+  using ExprEval::ExprEval;
   std::unique_ptr<TermResource> eval_resource(const row_t &row) override;
   bool eval_boolean(const row_t &row) override;
   void validate() override;

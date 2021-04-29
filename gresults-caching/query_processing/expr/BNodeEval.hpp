@@ -6,6 +6,9 @@
 #define RDFCACHEK2_BNODEEVAL_HPP
 
 #include "ExprEval.hpp"
-class BNodeEval : public ExprEval {};
+class BNodeEval : public ExprEval {
+public:
+  using ExprEval::ExprEval;
+};
 
 #endif // RDFCACHEK2_BNODEEVAL_HPP

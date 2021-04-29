@@ -5,8 +5,7 @@
 #include <pcrecpp.h>
 
 ExprProcessor::ExprProcessor(const EvalData &eval_data,
-                             const proto_msg::ExprNode &expr_node,
-                             const ExprProcessorPersistentData &persistent_data)
+                             const proto_msg::ExprNode &expr_node)
     : eval_data(eval_data), expr_node(expr_node) {}
 
 std::unique_ptr<ExprEval> ExprProcessor::create_evaluator() {

@@ -4,7 +4,7 @@
 
 #include "DigestSHA384Eval.hpp"
 #include "StringLiteralResource.hpp"
-#include <hashing.hpp>
+#include "hashing.hpp"
 
 std::unique_ptr<TermResource>
 DigestSHA384Eval::eval_resource(const ExprEval::row_t &row) {

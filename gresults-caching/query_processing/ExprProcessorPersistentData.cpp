@@ -13,6 +13,11 @@ std::string datatype_regex = "\\^\\^(?:<http://www\\.w3\\.org/2001/XMLSchema#" +
 const std::string hex_letter = "[0-9a-fA-F]";
 const std::string uchar_word =
     "\\\\u(?:" + hex_letter + "{8}|" + hex_letter + "{4})";
+
+const std::string iri_letter = "[^\\x00-\\x20<>\"\\{\\}|\\^`\\\\]";
+const std::string iri_valid = "<((?:" + iri_letter + "|" + uchar_word + ")*)>";
+const std::string iri_ref = "(?:<" + iri_valid + ">)";
+
 const std::string echar = "\\\\[tbnrf\"'\\\\]";
 const std::string string_literal_q =
     "\"((?:[^\\x22\\x5C\\xA\\xD]|" + echar + "|" + uchar_word + ")*)\"";
@@ -22,9 +27,6 @@ const std::string string_literal =
     "(" + string_literal_q + suffix_literal + ")";
 
 const std::string decimal_number = "(^[-+]?[0-9]\\d*(?:\\.\\d+)?$)";
-
-const std::string iri_letter = "[^\\x00-\\x20<>\"\\{\\}|\\^`\\\\]";
-const std::string iri_valid = "<((?:" + iri_letter + "|" + uchar_word + ")*)>";
 
 } // namespace
 
@@ -99,7 +101,7 @@ ExprProcessorPersistentData::create_icu_calendar() {
 }
 
 int ExprProcessorPersistentData::extract_date_portion(
-    UDate epoch_value, icu::Calendar::EDateFields date_fields) {
+    UDate epoch_value, UCalendarDateFields date_fields) {
   UErrorCode err = U_ZERO_ERROR;
   mutable_calendar->setTime(epoch_value, err);
   return mutable_calendar->get(date_fields, err);

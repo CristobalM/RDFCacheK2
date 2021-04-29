@@ -35,6 +35,5 @@ void ConditionalEval::validate() {
 }
 void ConditionalEval::init() {
   ExprEval::init();
-  const auto &function_node = expr_node.function_node();
   add_children();
 }

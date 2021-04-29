@@ -258,8 +258,13 @@ include_directories(${OPENSSL_INCLUDE_DIRS})
 find_package(PCRE2 REQUIRED)
 include_directories(${PCRE2_INCLUDE_DIRS})
 
-find_package(ICU REQUIRED COMPONENTS i18n)
+find_package(ICU REQUIRED COMPONENTS i18n )
 include_directories(${ICU_INCLUDE_DIRS})
+
+
+find_package(CURL REQUIRED)
+include_directories(${CURL_INCLUDE_DIR})
+
 
 
 #add_executable(start_cache_server_example example/start_cache_server_example.cpp)
@@ -276,7 +281,8 @@ set(BASE_LIBS
         ${OPENSSL_LIBRARIES}
         stdc++fs
         pcrecpp
-        ${ICU_LIBRARIES}
+        ICU::ICU
+        ${CURL_LIBRARIES}
         )
 
 set(PROC_LIBS
@@ -302,7 +308,8 @@ set(DEFAULT_LIBS
         ${OPENSSL_LIBRARIES}
         stdc++fs
         pcrecpp
-        ${ICU_LIBRARIES}
+        ICU::ICU
+        ${CURL_LIBRARIES}
         )
 
 

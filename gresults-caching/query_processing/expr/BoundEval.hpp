@@ -10,6 +10,7 @@ class BoundEval : public ExprEval {
   bool result;
 
 public:
+  using ExprEval::ExprEval;
   bool eval_boolean(const row_t &row) override;
   void init() override;
   void validate() override;

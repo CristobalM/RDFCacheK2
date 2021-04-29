@@ -6,6 +6,9 @@
 #define RDFCACHEK2_FUNCTIONEVAL_HPP
 
 #include "ExprEval.hpp"
-class FunctionEval : public ExprEval {};
+class FunctionEval : public ExprEval {
+public:
+  using ExprEval::ExprEval;
+};
 
 #endif // RDFCACHEK2_FUNCTIONEVAL_HPP

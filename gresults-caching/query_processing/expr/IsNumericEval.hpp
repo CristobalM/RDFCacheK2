@@ -8,6 +8,7 @@
 #include "ExprEval.hpp"
 class IsNumericEval : public ExprEval {
 public:
+  using ExprEval::ExprEval;
   bool eval_boolean(const row_t &row) override;
   void validate() override;
   void init() override;

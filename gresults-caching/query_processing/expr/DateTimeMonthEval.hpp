@@ -8,6 +8,7 @@
 #include "ExprEval.hpp"
 class DateTimeMonthEval : public ExprEval {
 public:
+  using ExprEval::ExprEval;
   int eval_integer(const row_t &row) override;
   void validate() override;
   void init() override;

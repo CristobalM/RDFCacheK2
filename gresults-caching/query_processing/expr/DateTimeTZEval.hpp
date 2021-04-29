@@ -8,6 +8,7 @@
 #include "ExprEval.hpp"
 class DateTimeTZEval : public ExprEval {
 public:
+  using ExprEval::ExprEval;
   void validate() override;
   void init() override;
   std::unique_ptr<TermResource> eval_resource(const row_t &row) override;

@@ -6,6 +6,9 @@
 #define RDFCACHEK2_CALLEVAL_HPP
 
 #include "ExprEval.hpp"
-class CallEval : public ExprEval {};
+class CallEval : public ExprEval {
+public:
+  using ExprEval::ExprEval;
+};
 
 #endif // RDFCACHEK2_CALLEVAL_HPP

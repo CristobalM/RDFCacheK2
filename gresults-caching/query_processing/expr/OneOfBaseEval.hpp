@@ -5,6 +5,10 @@
 #ifndef RDFCACHEK2_ONEOFBASEEVAL_HPP
 #define RDFCACHEK2_ONEOFBASEEVAL_HPP
 
-class OneOfBaseEval {};
+#include "ExprEval.hpp"
+class OneOfBaseEval : public ExprEval {
+public:
+  using ExprEval::ExprEval;
+};
 
 #endif // RDFCACHEK2_ONEOFBASEEVAL_HPP

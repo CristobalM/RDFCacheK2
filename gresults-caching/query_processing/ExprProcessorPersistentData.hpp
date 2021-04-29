@@ -35,8 +35,7 @@ public:
 
   bool string_is_numeric(const std::string &input_string) const;
 
-  int extract_date_portion(UDate epoch_value,
-                           icu::Calendar::EDateFields date_fields);
+  int extract_date_portion(UDate epoch_value, UCalendarDateFields date_fields);
 
   DateInfo parse_iso8601(const std::string &input);
 
