@@ -292,3 +292,23 @@ bool ExprEval::children_with_error() const {
   }
   return false;
 }
+std::unique_ptr<TermResource> ExprEval::resource_with_error() {
+  with_error = true;
+  return TermResource::null();
+}
+bool ExprEval::bool_with_error() {
+  with_error = true;
+  return false;
+}
+int ExprEval::integer_with_error() {
+  with_error = true;
+  return 0;
+}
+float ExprEval::float_with_error() {
+  with_error = true;
+  return 0;
+}
+double ExprEval::double_with_error() {
+  with_error = true;
+  return 0;
+}

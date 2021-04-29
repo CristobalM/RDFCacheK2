@@ -6,6 +6,12 @@
 #define RDFCACHEK2_STRSTARTSWITHEVAL_HPP
 
 #include "ExprEval.hpp"
-class StrStartsWithEval : public ExprEval {};
+class StrStartsWithEval : public ExprEval {
+public:
+  std::unique_ptr<TermResource> eval_resource(const row_t &row) override;
+  bool eval_boolean(const row_t &row) override;
+  void validate() override;
+  void init() override;
+};
 
 #endif // RDFCACHEK2_STRSTARTSWITHEVAL_HPP

@@ -66,6 +66,12 @@ public:
   bool has_error() const;
 
   bool children_with_error() const;
+
+  std::unique_ptr<TermResource> resource_with_error();
+  bool bool_with_error();
+  int integer_with_error();
+  float float_with_error();
+  double double_with_error();
 };
 
 #endif

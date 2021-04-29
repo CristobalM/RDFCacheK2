@@ -4,6 +4,7 @@
 
 #include "RegexEval.hpp"
 #include "BooleanResource.hpp"
+#include "StringHandlingUtil.hpp"
 #include <pcrecpp.h>
 
 std::unique_ptr<TermResource>
@@ -17,49 +18,52 @@ RegexEval::eval_resource(const ExprEval::row_t &row) {
 bool RegexEval::eval_boolean(const ExprEval::row_t &row) {
   auto resource = children[0]->eval_resource(row);
   auto pattern_resource = children[1]->eval_resource(row);
+  auto flags_resource = children[2]->eval_resource(row);
+
   if (children_with_error()) {
     this->with_error = true;
     return false;
   }
-  std::string pattern_string;
-  if (pattern_resource->is_concrete()) {
-    pattern_string =
-        ExprProcessorPersistentData::get().extract_literal_content_from_string(
-            pattern_resource->get_resource().value);
-  } else if (pattern_resource->is_string_literal()) {
-    pattern_string = pattern_resource->get_literal_string();
-  } else {
-    this->with_error = true;
-    return false;
-  }
 
-  if (resource->is_concrete()) {
-    auto literal_content =
-        ExprProcessorPersistentData::get().extract_literal_content_from_string(
-            resource->get_resource().value);
-    return match_pattern(literal_content, pattern_string);
-  }
+  auto pattern_literal_data =
+      StringHandlingUtil::extract_literal_data_from_term_resource(
+          *pattern_resource);
+  auto resource_literal_data =
+      StringHandlingUtil::extract_literal_data_from_term_resource(*resource);
+  auto flag_literal_data =
+      StringHandlingUtil::extract_literal_data_from_term_resource(
+          *flags_resource);
 
-  if (resource->is_string_literal()) {
-    return match_pattern(resource->get_literal_string(), pattern_string);
-  }
+  if (pattern_literal_data.error || resource_literal_data.error ||
+      flag_literal_data.error)
+    return bool_with_error();
 
-  this->with_error = true;
-  return false;
+  return match_pattern(resource_literal_data.value, pattern_literal_data.value,
+                       flag_literal_data.value);
 }
 
 void RegexEval::validate() {
   ExprEval::validate();
-  assert_fsize(3); // ignore the third for now, it's a flag
+  assert_fsize(3);
 }
 void RegexEval::init() {
   ExprEval::init();
-  add_children(2);
+  add_children();
 }
 
 bool RegexEval::match_pattern(const std::string &input_string,
                               const std::string &pattern) {
   pcrecpp::StringPiece piece(input_string);
   pcrecpp::RE regex(pattern);
+  return regex.FullMatch(piece);
+}
+bool RegexEval::match_pattern(const std::string &input_string,
+                              const std::string &pattern,
+                              const std::string &flags) {
+
+  int flags_options = StringHandlingUtil::regex_flag_options_from_string(flags);
+  pcrecpp::RE_Options re_options(flags_options);
+  pcrecpp::StringPiece piece(input_string);
+  pcrecpp::RE regex(pattern, re_options);
   return regex.FullMatch(piece);
 }

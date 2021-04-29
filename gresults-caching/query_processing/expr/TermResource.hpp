@@ -36,6 +36,8 @@ public:
   virtual bool get_boolean() const;
 
   static std::unique_ptr<TermResource> null();
+
+  virtual bool contains(TermResource &pattern_resource) const;
 };
 
 #endif // RDFCACHEK2_TERMRESOURCE_HPP

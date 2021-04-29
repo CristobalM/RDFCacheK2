@@ -6,6 +6,12 @@
 #define RDFCACHEK2_STRLENGTHEVAL_HPP
 
 #include "ExprEval.hpp"
-class StrLengthEval : public ExprEval {};
+class StrLengthEval : public ExprEval {
+public:
+  std::unique_ptr<TermResource> eval_resource(const row_t &row) override;
+  int eval_integer(const row_t &row) override;
+  void validate() override;
+  void init() override;
+};
 
 #endif // RDFCACHEK2_STRLENGTHEVAL_HPP

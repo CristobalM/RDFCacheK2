@@ -15,8 +15,7 @@ public:
   bool is_string_literal_lang() const override;
   const std::string &get_literal_lang_string() const override;
   bool operator==(const TermResource &rhs) const override;
-
-private:
+  bool contains(TermResource &pattern_resource) const override;
   const std::string &get_lang_tag() const override;
 };
 

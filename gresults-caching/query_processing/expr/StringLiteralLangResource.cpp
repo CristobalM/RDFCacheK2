@@ -39,3 +39,25 @@ bool StringLiteralLangResource::operator==(const TermResource &rhs) const {
 const std::string &StringLiteralLangResource::get_lang_tag() const {
   return lang_tag;
 }
+
+bool StringLiteralLangResource::contains(TermResource &pattern_resource) const {
+  if (pattern_resource.is_string_literal()) {
+    return false;
+  }
+  if (pattern_resource.is_string_literal_lang()) {
+    if (pattern_resource.get_lang_tag() != lang_tag)
+      return false;
+    return value.find(pattern_resource.get_literal_lang_string()) !=
+           std::string::npos;
+  }
+  if (pattern_resource.is_concrete()) {
+    const auto &pattern_full_string = pattern_resource.get_resource().value;
+    auto pattern_lang_tag =
+        ExprProcessorPersistentData::get().extract_language_tag(
+            pattern_full_string);
+    if (pattern_lang_tag != lang_tag)
+      return false;
+    return value.find(pattern_full_string) != std::string::npos;
+  }
+  return false;
+}

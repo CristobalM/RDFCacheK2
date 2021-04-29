@@ -20,6 +20,7 @@ public:
   static ConcreteRDFResource null_resource();
   static std::unique_ptr<TermResource> null_resource_ptr();
   RDFResource get_resource_clone() const override;
+  bool contains(TermResource &pattern_resource) const override;
 };
 
 #endif // RDFCACHEK2_CONCRETERDFRESOURCE_HPP

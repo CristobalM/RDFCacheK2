@@ -50,3 +50,5 @@ const std::string &TermResource::get_literal_lang_string() const {
 const std::string &TermResource::get_lang_tag() const {
   throw std::runtime_error("get_lang_tag not implemented");
 }
+
+bool TermResource::contains(TermResource &) const { return false; }

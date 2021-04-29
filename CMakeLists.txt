@@ -152,6 +152,7 @@ set(GRAPH_RESULT_CACHING_FILE
         gresults-caching/query_processing/expr/FloatResource.cpp
         gresults-caching/query_processing/expr/DoubleResource.cpp
         gresults-caching/query_processing/expr/BooleanResource.cpp
+        gresults-caching/query_processing/expr/StringHandlingUtil.cpp
         gresults-caching/query_processing/DateInfo.hpp
         )
 

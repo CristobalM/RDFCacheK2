@@ -40,3 +40,24 @@ bool StringLiteralResource::operator==(const TermResource &rhs) const {
 
   return false;
 }
+bool StringLiteralResource::contains(TermResource &pattern_resource) const {
+  if (pattern_resource.is_string_literal()) {
+    if (pattern_resource.get_datatype() != data_type)
+      return false;
+    return value.find(pattern_resource.get_literal_string()) !=
+           std::string::npos;
+  }
+  if (pattern_resource.is_string_literal_lang()) {
+    return false;
+  }
+  if (pattern_resource.is_concrete()) {
+    const auto &pattern_full_string = pattern_resource.get_resource().value;
+    auto pattern_data_type =
+        ExprProcessorPersistentData::get().extract_data_type_from_string(
+            pattern_full_string);
+    if (pattern_data_type != data_type)
+      return false;
+    return value.find(pattern_full_string) != std::string::npos;
+  }
+  return false;
+}

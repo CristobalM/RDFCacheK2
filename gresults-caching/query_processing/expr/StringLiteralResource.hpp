@@ -16,6 +16,7 @@ public:
   const std::string &get_literal_string() const override;
   ExprDataType get_datatype() const override;
   bool operator==(const TermResource &rhs) const override;
+  bool contains(TermResource &pattern_resource) const override;
 };
 
 #endif // RDFCACHEK2_STRINGLITERALRESOURCE_HPP
