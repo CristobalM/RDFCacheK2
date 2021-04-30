@@ -42,6 +42,8 @@ private:
                                     const std::vector<std::string> &vars);
   void remove_repeated_rows(ResultTable &input_table);
   void left_to_right_sort(ResultTable &input_table);
+  std::shared_ptr<ResultTable>
+  process_filter_node(const proto_msg::FilterNode &node);
 };
 
 #endif /* RDFCACHEK2_QUERY_PROCESSOR_HPP */

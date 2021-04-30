@@ -3,6 +3,7 @@
 
 #include <filesystem>
 #include <fstream>
+#include <iostream>
 
 #include <K2TreeMixed.hpp>
 #include <PredicatesIndexFileBuilder.hpp>
@@ -63,4 +64,52 @@ std::vector<TripleValue> build_initial_values_triples_vector(uint64_t size) {
 
 void build_cache_test_file(const std::string &fname) {
   build_cache_test_file(fname, {});
+}
+
+std::vector<std::vector<RDFResource>> translate_table(ResultTable &input_table,
+                                                      Cache &cache) {
+  std::vector<std::vector<RDFResource>> translated_table;
+  for (auto &row : input_table.data) {
+    std::vector<RDFResource> translated_row;
+    for (auto col : row) {
+      if (col == 0) {
+        RDFResource null_resource("NULL", RDFResourceType::RDF_TYPE_LITERAL);
+        translated_row.push_back(null_resource);
+      } else {
+
+        auto col_resource = cache.extract_resource(col);
+        translated_row.push_back(col_resource);
+      }
+    }
+    translated_table.push_back(std::move(translated_row));
+  }
+  return translated_table;
+}
+
+void print_table_debug(
+    ResultTable &table,
+    std::unordered_map<unsigned long, std::string> &reverse_map,
+    const std::vector<std::vector<RDFResource>> &translated_table) {
+  for (auto header : table.headers) {
+    std::cout << reverse_map[header] << "\t\t";
+  }
+  std::cout << std::endl;
+
+  for (auto &row : translated_table) {
+    for (auto &res : row) {
+      std::cout << res.value << "\t\t";
+    }
+    std::cout << std::endl;
+  }
+
+  std::cout << "total size: " << translated_table.size() << std::endl;
+}
+
+void print_table_debug2(QueryResult &query_result, Cache &cache) {
+  auto &table = query_result.table();
+  auto translated_table = translate_table(table, cache);
+
+  auto &vim = query_result.get_vim();
+  auto reverse_map = vim.reverse();
+  print_table_debug(table, reverse_map, translated_table);
 }

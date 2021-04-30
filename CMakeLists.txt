@@ -13,7 +13,7 @@ endif ()
 #set(CMAKE_CXX_FLAGS "-Wall -Wextra")
 set(CMAKE_C_FLAGS "-Wall -Wextra -std=c99 -pedantic -Wmissing-prototypes -Wstrict-prototypes -Wold-style-definition")
 set(CMAKE_CXX_FLAGS "-Wall -Wextra -std=c++17 -pedantic -Werror")
-set(CMAKE_CXX_FLAGS_DEBUG "-g")
+set(CMAKE_CXX_FLAGS_DEBUG "-g -fstandalone-debug")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 
@@ -448,6 +448,9 @@ if (GTest_FOUND)
     add_executable(k2mixed_from_file test/k2mixed_from_file.cpp)
     target_link_libraries(k2mixed_from_file ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES})
 
+    add_executable(query_filters_test test/query_filters_test.cpp test/cache_test_util.cpp)
+    target_link_libraries(query_filters_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES})
+
 
     add_test(NAME serialization_test COMMAND ./serialization_test)
     add_test(NAME k2tree_serialization_test COMMAND ./k2tree_serialization_test)
@@ -462,6 +465,7 @@ if (GTest_FOUND)
     add_test(NAME test_external_sort COMMAND ./test_external_sort)
     add_test(NAME predicates_metadata_serialization_test COMMAND ./predicates_metadata_serialization_test)
     add_test(NAME join_util_test COMMAND ./join_util_test)
+    add_test(NAME query_filters_test COMMAND ./query_filters_test)
 
 endif ()
 

@@ -105,6 +105,7 @@ ExprEval::create_eval_node(const EvalData &eval_data,
     return create_eval_node_specific<TermEval>(eval_data, child_node);
   }
   const auto &function_node = child_node.function_node();
+
   switch (function_node.function_op()) {
 
   case proto_msg::IS_LITERAL:
@@ -249,7 +250,9 @@ ExprEval::create_eval_node(const EvalData &eval_data,
 }
 
 void ExprEval::add_child(const proto_msg::ExprNode &child_node) {
-  children.push_back(create_eval_node(eval_data, child_node));
+  auto eval_node = create_eval_node(eval_data, child_node);
+  eval_node->init();
+  children.push_back(std::move(eval_node));
 }
 
 bool ExprEval::has_error() const { return with_error; }

@@ -24,7 +24,7 @@ public:
 
 private:
   RDFResource eval_variable_get_resource(const row_t &row) const;
-  RDFResource eval_concrete_resource(const row_t &row) const;
+  RDFResource eval_term_node(const row_t &row) const;
 
   bool eval_boolean_from_resource(const RDFResource &resource);
   bool eval_boolean_from_string(const std::string &input_string);
@@ -34,6 +34,8 @@ private:
   float eval_float_from_string(const std::string &basic_string);
   double eval_double_from_resource(const RDFResource &resource);
   double eval_double_from_string(const std::string &basic_string);
+  std::unique_ptr<TermResource>
+  make_data_type_resource(std::string &&input_string, ExprDataType data_type);
 };
 
 #endif // RDFCACHEK2_TERMEVAL_HPP

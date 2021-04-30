@@ -4,10 +4,16 @@
 
 #include <algorithm>
 
+#include "BooleanResource.hpp"
 #include "ConcreteRDFResource.hpp"
 #include "DataTypeResource.hpp"
+#include "DoubleResource.hpp"
+#include "FloatResource.hpp"
+#include "IntegerResource.hpp"
+#include "StringLiteralLangResource.hpp"
+#include "StringLiteralResource.hpp"
 #include "TermEval.hpp"
-RDFResource TermEval::eval_concrete_resource(const ExprEval::row_t &row) const {
+RDFResource TermEval::eval_term_node(const ExprEval::row_t &row) const {
   switch (expr_node.term_node().term_type()) {
   case proto_msg::TermType::VARIABLE:
     return eval_variable_get_resource(row);
@@ -42,7 +48,26 @@ void TermEval::validate() {
 }
 std::unique_ptr<TermResource>
 TermEval::eval_resource(const ExprEval::row_t &row) {
-  return std::make_unique<ConcreteRDFResource>(eval_concrete_resource(row));
+  auto resource = eval_term_node(row);
+  auto data_type =
+      ExprProcessorPersistentData::get().extract_data_type_from_string(
+          resource.value);
+  auto content =
+      ExprProcessorPersistentData::get().extract_literal_content_from_string(
+          resource.value);
+  if (data_type != EDT_UNKNOWN) {
+    return make_data_type_resource(std::move(content), data_type);
+  }
+
+  auto lang_tag =
+      ExprProcessorPersistentData::get().extract_language_tag(resource.value);
+  if (!lang_tag.empty()) {
+    return std::make_unique<StringLiteralLangResource>(std::move(content),
+                                                       std::move(lang_tag));
+  }
+
+  return std::make_unique<StringLiteralResource>(std::move(content),
+                                                 EDT_UNKNOWN);
 }
 
 bool TermEval::eval_boolean(const ExprEval::row_t &row) {
@@ -178,7 +203,7 @@ DateInfo TermEval::eval_date_time(const ExprEval::row_t &row) {
   static icu::UnicodeString pattern("YYYY-MM-DDThh:mm:ss.sTZD");
   static icu::SimpleDateFormat parser(pattern, parser_err);
 
-  auto resource = eval_concrete_resource(row);
+  auto resource = eval_term_node(row);
   if (resource.resource_type != RDFResourceType::RDF_TYPE_LITERAL) {
     with_error = true;
     return DateInfo{};
@@ -209,4 +234,28 @@ TermEval::eval_datatype(const ExprEval::row_t &row) {
       ExprProcessorPersistentData::get().extract_data_type_from_string(
           concrete_resource.value);
   return std::make_unique<DataTypeResource>(datatype);
+}
+std::unique_ptr<TermResource>
+TermEval::make_data_type_resource(std::string &&input_string,
+                                  ExprDataType data_type) {
+  switch (data_type) {
+  case EDT_UNKNOWN:
+    return TermResource::null();
+  case EDT_INTEGER:
+    return std::make_unique<IntegerResource>(std::stoi(input_string));
+  case EDT_DECIMAL:
+  case EDT_FLOAT:
+    return std::make_unique<FloatResource>(std::stof(input_string));
+  case EDT_DOUBLE:
+    return std::make_unique<DoubleResource>(std::stod(input_string));
+
+  case EDT_BOOLEAN:
+    std::for_each(input_string.begin(), input_string.end(),
+                  [](char &c) { c = std::tolower(c); });
+    return std::make_unique<BooleanResource>(input_string != "false");
+  case EDT_DATETIME:
+  case EDT_STRING:
+    return std::make_unique<StringLiteralResource>(std::move(input_string),
+                                                   data_type);
+  }
 }

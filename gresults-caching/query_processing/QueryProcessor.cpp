@@ -54,7 +54,7 @@ std::shared_ptr<ResultTable> QueryProcessor::process_left_join_node(
   std::vector<const proto_msg::ExprNode *> nodes;
 
   for (int i = 0; i < left_join_node.expr_list_size(); i++) {
-    auto expr_node = left_join_node.expr_list(i);
+    const auto &expr_node = left_join_node.expr_list(i);
     nodes.push_back(&expr_node);
   }
 
@@ -139,6 +139,8 @@ QueryProcessor::process_node(const proto_msg::SparqlNode &node) {
     return process_distinct_node(node.distinct_node());
   case proto_msg::SparqlNode::NodeCase::kOptionalNode:
     return process_optional_node(node.optional_node());
+  case proto_msg::SparqlNode::NodeCase::kFilterNode:
+    return process_filter_node(node.filter_node());
   default:
     throw std::runtime_error("Unsupported nodetype on process_node: " +
                              std::to_string(node.node_case()));
@@ -204,4 +206,20 @@ void QueryProcessor::left_to_right_sort(ResultTable &input_table) {
     }
     return true;
   });
+}
+
+std::shared_ptr<ResultTable>
+QueryProcessor::process_filter_node(const proto_msg::FilterNode &node) {
+
+  auto resulting_table = process_node(node.node());
+  std::vector<const proto_msg::ExprNode *> nodes;
+
+  for (int i = 0; i < node.exprs_size(); i++) {
+    const auto &expr_node = node.exprs(i);
+    nodes.push_back(&expr_node);
+  }
+
+  ExprListProcessor(*resulting_table, *vim, nodes, cm).execute();
+
+  return resulting_table;
 }
