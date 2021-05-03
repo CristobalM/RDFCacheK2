@@ -13,7 +13,10 @@ endif ()
 #set(CMAKE_CXX_FLAGS "-Wall -Wextra")
 set(CMAKE_C_FLAGS "-Wall -Wextra -std=c99 -pedantic -Wmissing-prototypes -Wstrict-prototypes -Wold-style-definition")
 set(CMAKE_CXX_FLAGS "-Wall -Wextra -std=c++17 -pedantic -Werror")
-set(CMAKE_CXX_FLAGS_DEBUG "-g -fstandalone-debug")
+set(CMAKE_CXX_FLAGS_DEBUG "-g")
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fstandalone-debug")
+endif()
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 
@@ -299,7 +302,7 @@ set(DEFAULT_LIBS
         RDFCacheK2_Network
         k2dyn
         MemoryManager
-        pthread
+
         ProtoMessages
         ${Protobuf_LIBRARIES}
         CSD
@@ -310,6 +313,7 @@ set(DEFAULT_LIBS
         pcrecpp
         ICU::ICU
         ${CURL_LIBRARIES}
+        pthread
         )
 
 
@@ -317,7 +321,7 @@ set(DEFAULT_LIBS
 
 add_executable(validate_sd_from_nt scripts/validate_sd_from_nt.cpp)
 target_include_directories(validate_sd_from_nt PUBLIC ${LIB_CPPBASE64_PATH})
-target_link_libraries(validate_sd_from_nt ${BASE_LIBS} CppBase64 ntparser)
+target_link_libraries(validate_sd_from_nt ${BASE_LIBS} CppBase64 ntparser pthread)
 
 
 #add_executable(index_by_k2tree_with_sd scripts/index_by_k2tree_with_sd.cpp)
@@ -407,13 +411,13 @@ if (GTest_FOUND)
     enable_testing()
     include_directories(${GTEST_INCLUDE_DIRS})
     add_executable(serialization_test test/serialization_tests.cpp)
-    target_link_libraries(serialization_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES})
+    target_link_libraries(serialization_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} pthread)
 
     add_executable(k2tree_serialization_test test/k2tree_serialization_test.cpp)
-    target_link_libraries(k2tree_serialization_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES})
+    target_link_libraries(k2tree_serialization_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} pthread)
 
     add_executable(predicates_cache_manager_test test/predicates_cache_manager_test.cpp test/cache_test_util.cpp)
-    target_link_libraries(predicates_cache_manager_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES})
+    target_link_libraries(predicates_cache_manager_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} pthread)
 
     add_executable(four_sided_queue_test test/four_sided_queue_test.cpp)
     target_link_libraries(four_sided_queue_test ${GTEST_BOTH_LIBRARIES} pthread)
@@ -443,7 +447,7 @@ if (GTest_FOUND)
     target_link_libraries(predicates_metadata_serialization_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} pthread)
 
     add_executable(join_util_test test/join_util_test.cpp)
-    target_link_libraries(join_util_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES})
+    target_link_libraries(join_util_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} pthread)
 
     add_executable(k2mixed_from_file test/k2mixed_from_file.cpp)
     target_link_libraries(k2mixed_from_file ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES})

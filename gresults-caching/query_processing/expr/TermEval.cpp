@@ -258,4 +258,5 @@ TermEval::make_data_type_resource(std::string &&input_string,
     return std::make_unique<StringLiteralResource>(std::move(input_string),
                                                    data_type);
   }
+  return TermResource::null();
 }

@@ -2,13 +2,15 @@
 // Created by cristobal on 4/30/21.
 //
 
-#include "cache_test_util.hpp"
-#include <Cache.hpp>
-#include <EmptyISDManager.hpp>
-#include <PredicatesCacheManager.hpp>
 #include <filesystem>
 #include <gtest/gtest.h>
 #include <memory>
+
+#include "cache_test_util.hpp"
+
+#include <Cache.hpp>
+#include <EmptyISDManager.hpp>
+#include <PredicatesCacheManager.hpp>
 
 namespace fs = std::filesystem;
 class QueryFiltersFixture : public ::testing::Test {
@@ -21,49 +23,20 @@ public:
   static std::string fname;
   static std::shared_ptr<PredicatesCacheManager> pcm;
   static std::unique_ptr<Cache> cache;
+  static std::set<int> values1;
   static void SetUpTestCase() {
     fname = "predicates.bin";
     build_cache_test_file(fname);
     pcm = std::make_shared<PredicatesCacheManager>(
         std::make_unique<EmptyISDManager>(), fname);
-    pcm->add_triple(RDFTripleResource(
-        RDFResource("<some_integer_ref1>", RDFResourceType::RDF_TYPE_IRI),
-        RDFResource("<has_integer>", RDFResourceType::RDF_TYPE_IRI),
-        RDFResource("\"42\"^^xsd:integer", RDFResourceType::RDF_TYPE_LITERAL)));
-    pcm->add_triple(RDFTripleResource(
-        RDFResource("<some_integer_ref1>", RDFResourceType::RDF_TYPE_IRI),
-        RDFResource("<has_integer>", RDFResourceType::RDF_TYPE_IRI),
-        RDFResource("\"1\"^^xsd:integer", RDFResourceType::RDF_TYPE_LITERAL)));
-    pcm->add_triple(RDFTripleResource(
-        RDFResource("<some_integer_ref1>", RDFResourceType::RDF_TYPE_IRI),
-        RDFResource("<has_integer>", RDFResourceType::RDF_TYPE_IRI),
-        RDFResource("\"2\"^^xsd:integer", RDFResourceType::RDF_TYPE_LITERAL)));
-    pcm->add_triple(RDFTripleResource(
-        RDFResource("<some_integer_ref1>", RDFResourceType::RDF_TYPE_IRI),
-        RDFResource("<has_integer>", RDFResourceType::RDF_TYPE_IRI),
-        RDFResource("\"3\"^^xsd:integer", RDFResourceType::RDF_TYPE_LITERAL)));
-    pcm->add_triple(RDFTripleResource(
-        RDFResource("<some_integer_ref1>", RDFResourceType::RDF_TYPE_IRI),
-        RDFResource("<has_integer>", RDFResourceType::RDF_TYPE_IRI),
-        RDFResource("\"-1\"^^xsd:integer", RDFResourceType::RDF_TYPE_LITERAL)));
-    pcm->add_triple(RDFTripleResource(
-        RDFResource("<some_integer_ref1>", RDFResourceType::RDF_TYPE_IRI),
-        RDFResource("<has_integer>", RDFResourceType::RDF_TYPE_IRI),
-        RDFResource("\"4\"^^xsd:integer", RDFResourceType::RDF_TYPE_LITERAL)));
-    pcm->add_triple(RDFTripleResource(
-        RDFResource("<some_integer_ref1>", RDFResourceType::RDF_TYPE_IRI),
-        RDFResource("<has_integer>", RDFResourceType::RDF_TYPE_IRI),
-        RDFResource("\"400\"^^xsd:integer",
-                    RDFResourceType::RDF_TYPE_LITERAL)));
-    pcm->add_triple(RDFTripleResource(
-        RDFResource("<some_integer_ref1>", RDFResourceType::RDF_TYPE_IRI),
-        RDFResource("<has_integer>", RDFResourceType::RDF_TYPE_IRI),
-        RDFResource("\"98\"^^xsd:integer", RDFResourceType::RDF_TYPE_LITERAL)));
-
-    pcm->add_triple(RDFTripleResource(
-        RDFResource("<some_integer_ref1>", RDFResourceType::RDF_TYPE_IRI),
-        RDFResource("<has_integer>", RDFResourceType::RDF_TYPE_IRI),
-        RDFResource("\"99\"^^xsd:integer", RDFResourceType::RDF_TYPE_LITERAL)));
+    values1 = {42, 1, 2, 3, -1, 4, 400, 98, 99};
+    for (auto value : values1) {
+      pcm->add_triple(RDFTripleResource(
+          RDFResource("<some_integer_ref1>", RDFResourceType::RDF_TYPE_IRI),
+          RDFResource("<has_integer>", RDFResourceType::RDF_TYPE_IRI),
+          RDFResource("\"" + std::to_string(value) + "\"^^xsd:integer",
+                      RDFResourceType::RDF_TYPE_LITERAL)));
+    }
 
     cache =
         std::make_unique<Cache>(pcm, CacheReplacement::STRATEGY::LRU, 100'000);
@@ -79,6 +52,7 @@ public:
 std::string QueryFiltersFixture::fname = std::string();
 std::shared_ptr<PredicatesCacheManager> QueryFiltersFixture::pcm = nullptr;
 std::unique_ptr<Cache> QueryFiltersFixture::cache = nullptr;
+std::set<int> QueryFiltersFixture::values1 = std::set<int>();
 
 TEST_F(QueryFiltersFixture, test_add_filter_1) {
   proto_msg::SparqlTree tree;
