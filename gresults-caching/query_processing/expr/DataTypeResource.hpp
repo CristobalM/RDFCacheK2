@@ -21,6 +21,7 @@ public:
   ExprDataType get_datatype() const override;
 
   static std::unique_ptr<TermResource> create(ExprDataType datatype);
+  bool is_literal() const override;
 };
 
 #endif // RDFCACHEK2_DATATYPERESOURCE_HPP

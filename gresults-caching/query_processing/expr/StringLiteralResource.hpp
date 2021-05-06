@@ -12,11 +12,13 @@ class StringLiteralResource : public TermResource {
 
 public:
   StringLiteralResource(std::string &&value, ExprDataType data_type);
+  explicit StringLiteralResource(std::string &&value);
   bool is_string_literal() const override;
   const std::string &get_literal_string() const override;
   ExprDataType get_datatype() const override;
   bool operator==(const TermResource &rhs) const override;
   bool contains(TermResource &pattern_resource) const override;
+  bool is_literal() const override;
 };
 
 #endif // RDFCACHEK2_STRINGLITERALRESOURCE_HPP

@@ -18,6 +18,7 @@ public:
   float get_float() const override;
   double get_double() const override;
   bool operator==(const TermResource &rhs) const override;
+  bool is_literal() const override;
 };
 
 #endif // RDFCACHEK2_FLOATRESOURCE_HPP

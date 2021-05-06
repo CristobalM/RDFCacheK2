@@ -26,3 +26,4 @@ void DayTimeDurationResource::set_minutes(int new_minutes) {
 void DayTimeDurationResource::set_seconds(int new_seconds) {
   seconds = new_seconds;
 }
+bool DayTimeDurationResource::is_literal() const { return true; }

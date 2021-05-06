@@ -4,6 +4,9 @@
 
 #include "DateTimeTZEval.hpp"
 #include "DayTimeDurationResource.hpp"
+#include "StringLiteralResource.hpp"
+#include <iomanip>
+#include <sstream>
 #include <unicode/smpdtfmt.h>
 
 void DateTimeTZEval::validate() {
@@ -23,7 +26,16 @@ DateTimeTZEval::eval_resource(const ExprEval::row_t &row) {
     return TermResource::null();
   }
 
-  return std::make_unique<DayTimeDurationResource>(date_info.offset_sign, 0,
-                                                   date_info.offset_hour,
-                                                   date_info.offset_minute, 0);
+  if (date_info.offset_hour == 0 && date_info.offset_minute == 0)
+    return std::make_unique<StringLiteralResource>("Z", EDT_UNKNOWN);
+
+  return std::make_unique<StringLiteralResource>(format_offset(date_info),
+                                                 EDT_UNKNOWN);
+}
+std::string DateTimeTZEval::format_offset(const DateInfo &info) {
+  std::stringstream ss;
+  ss << ((info.offset_sign >= 0) ? '+' : '-') << std::setw(2)
+     << std::setfill('0') << info.offset_hour << ":" << std::setw(2)
+     << std::setfill('0') << info.offset_minute;
+  return ss.str();
 }

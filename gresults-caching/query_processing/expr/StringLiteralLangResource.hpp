@@ -17,6 +17,7 @@ public:
   bool operator==(const TermResource &rhs) const override;
   bool contains(TermResource &pattern_resource) const override;
   const std::string &get_lang_tag() const override;
+  bool is_literal() const override;
 };
 
 #endif // RDFCACHEK2_STRINGLITERALLANGRESOURCE_HPP

@@ -29,3 +29,4 @@ bool FloatResource::operator==(const TermResource &rhs) const {
 
   return false;
 }
+bool FloatResource::is_literal() const { return true; }

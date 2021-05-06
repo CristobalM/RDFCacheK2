@@ -22,8 +22,7 @@ DigestSHA224Eval::eval_resource(const ExprEval::row_t &row) {
   } else {
     this->with_error = true;
   }
-  return std::make_unique<StringLiteralResource>(std::move(result),
-                                                 ExprDataType::EDT_STRING);
+  return std::make_unique<StringLiteralResource>(std::move(result));
 }
 
 void DigestSHA224Eval::validate() {

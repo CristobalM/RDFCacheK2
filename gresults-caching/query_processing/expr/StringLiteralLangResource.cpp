@@ -61,3 +61,4 @@ bool StringLiteralLangResource::contains(TermResource &pattern_resource) const {
   }
   return false;
 }
+bool StringLiteralLangResource::is_literal() const { return true; }

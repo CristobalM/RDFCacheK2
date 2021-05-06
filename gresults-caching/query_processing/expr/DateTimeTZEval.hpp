@@ -12,6 +12,7 @@ public:
   void validate() override;
   void init() override;
   std::unique_ptr<TermResource> eval_resource(const row_t &row) override;
+  std::string format_offset(const DateInfo &info);
 };
 
 #endif // RDFCACHEK2_DATETIMETZEVAL_HPP

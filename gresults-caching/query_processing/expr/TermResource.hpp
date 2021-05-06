@@ -24,6 +24,7 @@ public:
   virtual bool is_numeric() const;
   virtual bool is_boolean() const;
   virtual bool is_iri() const;
+  virtual bool is_literal() const;
 
   virtual const std::string &get_literal_string() const;
   virtual const std::string &get_literal_lang_string() const;

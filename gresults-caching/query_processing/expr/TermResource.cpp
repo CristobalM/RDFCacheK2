@@ -57,3 +57,4 @@ bool TermResource::is_iri() const { return false; }
 const std::string &TermResource::get_iri_string() const {
   throw std::runtime_error("get_iri_string not implemented");
 }
+bool TermResource::is_literal() const { return false; }

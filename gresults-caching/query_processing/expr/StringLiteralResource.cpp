@@ -16,7 +16,7 @@ StringLiteralResource::StringLiteralResource(std::string &&value,
     : value(std::move(value)), data_type(data_type) {}
 
 bool StringLiteralResource::operator==(const TermResource &rhs) const {
-  if (!rhs.is_concrete() || !rhs.is_string_literal())
+  if (!rhs.is_concrete() && !rhs.is_string_literal())
     return false;
 
   if (rhs.is_string_literal()) {
@@ -61,3 +61,6 @@ bool StringLiteralResource::contains(TermResource &pattern_resource) const {
   }
   return false;
 }
+StringLiteralResource::StringLiteralResource(std::string &&value)
+    : StringLiteralResource(std::move(value), EDT_UNKNOWN) {}
+bool StringLiteralResource::is_literal() const { return true; }

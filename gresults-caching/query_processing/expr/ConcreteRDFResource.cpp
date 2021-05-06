@@ -62,3 +62,6 @@ bool ConcreteRDFResource::contains(TermResource &pattern_resource) const {
   }
   return false;
 }
+bool ConcreteRDFResource::is_literal() const {
+  return resource.resource_type == RDFResourceType::RDF_TYPE_LITERAL;
+}

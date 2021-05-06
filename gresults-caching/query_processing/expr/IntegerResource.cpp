@@ -35,3 +35,4 @@ double IntegerResource::get_double() const {
   return static_cast<double>(value);
 }
 IntegerResource::IntegerResource(int value) : value(value) {}
+bool IntegerResource::is_literal() const { return true; }

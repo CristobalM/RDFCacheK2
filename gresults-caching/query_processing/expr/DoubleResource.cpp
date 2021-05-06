@@ -19,3 +19,4 @@ bool DoubleResource::operator==(const TermResource &rhs) const {
 
   return false;
 }
+bool DoubleResource::is_literal() const { return true; }

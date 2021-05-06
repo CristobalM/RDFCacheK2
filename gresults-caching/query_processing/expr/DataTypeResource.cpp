@@ -18,3 +18,4 @@ std::unique_ptr<TermResource> DataTypeResource::create(ExprDataType datatype) {
 const std::string DataTypeResource::short_prefix = "xsd:";
 const std::string DataTypeResource::long_prefix =
     "<http://www.w3.org/2001/XMLSchema#";
+bool DataTypeResource::is_literal() const { return true; }
