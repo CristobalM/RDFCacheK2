@@ -9,6 +9,7 @@
 
 #include "AddEval.hpp"
 #include "BNodeEval.hpp"
+#include "BooleanResource.hpp"
 #include "BoundEval.hpp"
 #include "CallEval.hpp"
 #include "CastEval.hpp"
@@ -19,6 +20,7 @@
 #include "DateTimeHoursEval.hpp"
 #include "DateTimeMinutesEval.hpp"
 #include "DateTimeMonthEval.hpp"
+#include "DateTimeSecondsEval.hpp"
 #include "DateTimeTZEval.hpp"
 #include "DateTimeYearEval.hpp"
 #include "DigestMD5Eval.hpp"
@@ -33,6 +35,7 @@
 #include "FunctionEval.hpp"
 #include "GreaterThanEval.hpp"
 #include "GreaterThanOrEqualEval.hpp"
+#include "IntegerResource.hpp"
 #include "IsBlankEval.hpp"
 #include "IsIRIEval.hpp"
 #include "IsLiteralEval.hpp"
@@ -120,6 +123,9 @@ ExprEval::create_eval_node(const EvalData &eval_data,
     return create_eval_node_specific<DateTimeHoursEval>(eval_data, child_node);
   case proto_msg::DATE_TIME_MINUTES:
     return create_eval_node_specific<DateTimeMinutesEval>(eval_data,
+                                                          child_node);
+  case proto_msg::DATE_TIME_SECONDS:
+    return create_eval_node_specific<DateTimeSecondsEval>(eval_data,
                                                           child_node);
   case proto_msg::DATE_TIME_MONTH:
     return create_eval_node_specific<DateTimeMonthEval>(eval_data, child_node);
@@ -314,4 +320,18 @@ float ExprEval::float_with_error() {
 double ExprEval::double_with_error() {
   with_error = true;
   return 0;
+}
+std::unique_ptr<TermResource>
+ExprEval::generate_from_eval_boolean(const row_t &row) {
+  bool result = eval_boolean(row);
+  if (has_error())
+    return TermResource::null();
+  return std::make_unique<BooleanResource>(result);
+}
+std::unique_ptr<TermResource>
+ExprEval::generate_from_eval_integer(const ExprEval::row_t &row) {
+  int result = eval_integer(row);
+  if (has_error())
+    return TermResource::null();
+  return std::make_unique<IntegerResource>(result);
 }

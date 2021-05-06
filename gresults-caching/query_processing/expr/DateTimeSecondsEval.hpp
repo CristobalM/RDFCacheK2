@@ -1,12 +1,12 @@
 //
-// Created by cristobal on 4/20/21.
+// Created by cristobal on 5/5/21.
 //
 
-#ifndef RDFCACHEK2_DATETIMEHOURSEVAL_HPP
-#define RDFCACHEK2_DATETIMEHOURSEVAL_HPP
+#ifndef RDFCACHEK2_DATETIMESECONDSEVAL_HPP
+#define RDFCACHEK2_DATETIMESECONDSEVAL_HPP
 
 #include "ExprEval.hpp"
-class DateTimeHoursEval : public ExprEval {
+class DateTimeSecondsEval : public ExprEval {
 public:
   using ExprEval::ExprEval;
   int eval_integer(const row_t &row) override;
@@ -15,4 +15,4 @@ public:
   std::unique_ptr<TermResource> eval_resource(const row_t &row) override;
 };
 
-#endif // RDFCACHEK2_DATETIMEHOURSEVAL_HPP
+#endif // RDFCACHEK2_DATETIMESECONDEVAL_HPP

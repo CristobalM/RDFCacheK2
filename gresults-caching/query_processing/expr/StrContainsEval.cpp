@@ -5,7 +5,7 @@
 #include "StrContainsEval.hpp"
 std::unique_ptr<TermResource>
 StrContainsEval::eval_resource(const ExprEval::row_t &row) {
-  return ExprEval::eval_resource(row);
+  return generate_from_eval_boolean(row);
 }
 bool StrContainsEval::eval_boolean(const ExprEval::row_t &row) {
   auto input_resource = children[0]->eval_resource(row);

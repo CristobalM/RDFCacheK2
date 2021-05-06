@@ -11,6 +11,7 @@ class QueryResult {
   std::unique_ptr<VarIndexManager> vim;
 
 public:
+  QueryResult();
   explicit QueryResult(std::shared_ptr<ResultTable> &result_table,
                        std::unique_ptr<VarIndexManager> &&vim);
 

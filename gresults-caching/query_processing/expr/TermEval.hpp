@@ -36,6 +36,9 @@ private:
   double eval_double_from_string(const std::string &basic_string);
   std::unique_ptr<TermResource>
   make_data_type_resource(std::string &&input_string, ExprDataType data_type);
+  std::unique_ptr<TermResource> eval_iri_resource(RDFResource &&resource);
+  std::unique_ptr<TermResource> create_datatype_resource(RDFResource &&resource,
+                                                         bool matches_short);
 };
 
 #endif // RDFCACHEK2_TERMEVAL_HPP

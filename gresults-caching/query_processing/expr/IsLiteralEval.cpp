@@ -3,6 +3,7 @@
 //
 
 #include "IsLiteralEval.hpp"
+#include "BooleanResource.hpp"
 
 bool IsLiteralEval::eval_boolean(const ExprEval::row_t &row) {
   auto resource = children[0]->eval_resource(row);
@@ -21,4 +22,8 @@ void IsLiteralEval::init() {
 void IsLiteralEval::validate() {
   ExprEval::validate();
   assert_fsize(1);
+}
+std::unique_ptr<TermResource>
+IsLiteralEval::eval_resource(const ExprEval::row_t &row) {
+  return generate_from_eval_boolean(row);
 }

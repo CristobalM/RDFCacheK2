@@ -10,6 +10,7 @@
 #include "DoubleResource.hpp"
 #include "FloatResource.hpp"
 #include "IntegerResource.hpp"
+#include "StringHandlingUtil.hpp"
 #include "StringLiteralLangResource.hpp"
 #include "StringLiteralResource.hpp"
 #include "TermEval.hpp"
@@ -49,6 +50,13 @@ void TermEval::validate() {
 std::unique_ptr<TermResource>
 TermEval::eval_resource(const ExprEval::row_t &row) {
   auto resource = eval_term_node(row);
+
+  if (resource.resource_type == RDFResourceType::RDF_TYPE_IRI) {
+    return eval_iri_resource(std::move(resource));
+  } else if (resource.resource_type == RDFResourceType::RDF_TYPE_BLANK) {
+    return std::make_unique<ConcreteRDFResource>(std::move(resource));
+  }
+
   auto data_type =
       ExprProcessorPersistentData::get().extract_data_type_from_string(
           resource.value);
@@ -209,8 +217,11 @@ DateInfo TermEval::eval_date_time(const ExprEval::row_t &row) {
     return DateInfo{};
   }
 
+  auto literal_content =
+      StringHandlingUtil::extract_literal_data_from_rdf_resource(resource);
+
   const auto parsed_date_info =
-      ExprProcessorPersistentData::get().parse_iso8601(resource.value);
+      ExprProcessorPersistentData::get().parse_iso8601(literal_content.value);
   if (!parsed_date_info.matched) {
     with_error = true;
     return DateInfo{};
@@ -221,20 +232,9 @@ DateInfo TermEval::eval_date_time(const ExprEval::row_t &row) {
 std::unique_ptr<TermResource>
 TermEval::eval_datatype(const ExprEval::row_t &row) {
   auto resource = eval_resource(row);
-  if (!resource->is_concrete()) {
-    this->with_error = true;
-    return TermResource::null();
-  }
-  const auto &concrete_resource = resource->get_resource();
-  if (concrete_resource.resource_type != RDFResourceType::RDF_TYPE_LITERAL) {
-    this->with_error = true;
-    return TermResource::null();
-  }
-  auto datatype =
-      ExprProcessorPersistentData::get().extract_data_type_from_string(
-          concrete_resource.value);
-  return std::make_unique<DataTypeResource>(datatype);
+  return std::make_unique<DataTypeResource>(resource->get_datatype());
 }
+
 std::unique_ptr<TermResource>
 TermEval::make_data_type_resource(std::string &&input_string,
                                   ExprDataType data_type) {
@@ -259,4 +259,50 @@ TermEval::make_data_type_resource(std::string &&input_string,
                                                    data_type);
   }
   return TermResource::null();
+}
+std::unique_ptr<TermResource>
+TermEval::eval_iri_resource(RDFResource &&resource) {
+
+  auto matches_short = StringHandlingUtil::starts_with(
+      resource.value, DataTypeResource::short_prefix);
+  auto matches_long = StringHandlingUtil::starts_with(
+      resource.value, DataTypeResource::long_prefix);
+
+  if (matches_short || matches_long) {
+    return create_datatype_resource(std::move(resource), matches_short);
+  }
+
+  return std::make_unique<ConcreteRDFResource>(std::move(resource));
+}
+
+std::unique_ptr<TermResource>
+TermEval::create_datatype_resource(RDFResource &&resource, bool matches_short) {
+  std::string type_s;
+
+  if (matches_short) {
+    type_s = resource.value.substr(DataTypeResource::short_prefix.size());
+  } else {
+    // ignore the last character ">"
+    type_s = resource.value.substr(DataTypeResource::long_prefix.size(),
+                                   resource.value.size() - 1);
+  }
+  std::for_each(type_s.begin(), type_s.end(),
+                [](char &c) { c = std::tolower(c); });
+  if (type_s == "integer") {
+    return DataTypeResource::create(ExprDataType::EDT_INTEGER);
+  } else if (type_s == "string") {
+    return DataTypeResource::create(ExprDataType::EDT_STRING);
+  } else if (type_s == "float") {
+    return DataTypeResource::create(ExprDataType::EDT_FLOAT);
+  } else if (type_s == "double") {
+    return DataTypeResource::create(ExprDataType::EDT_DOUBLE);
+  } else if (type_s == "decimal") {
+    return DataTypeResource::create(ExprDataType::EDT_DECIMAL);
+  } else if (type_s == "datetime") {
+    return DataTypeResource::create(ExprDataType::EDT_DATETIME);
+  } else if (type_s == "boolean") {
+    return DataTypeResource::create(ExprDataType::EDT_BOOLEAN);
+  }
+
+  return DataTypeResource::create(ExprDataType::EDT_UNKNOWN);
 }

@@ -11,6 +11,10 @@ int DateTimeYearEval::eval_integer(const ExprEval::row_t &row) {
   }
   return date_info.year;
 }
+std::unique_ptr<TermResource>
+DateTimeYearEval::eval_resource(const ExprEval::row_t &row) {
+  return generate_from_eval_integer(row);
+}
 
 void DateTimeYearEval::validate() {
   ExprEval::validate();

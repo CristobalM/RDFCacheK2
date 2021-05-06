@@ -20,3 +20,11 @@ void CoalesceEval::init() {
   ExprEval::init();
   add_children();
 }
+bool CoalesceEval::eval_boolean(const ExprEval::row_t &row) {
+  auto resource = eval_resource(row);
+  if (has_error())
+    return false;
+  if (!resource->is_boolean())
+    return false;
+  return resource->get_boolean();
+}

@@ -6,7 +6,7 @@
 #include "DataTypeResource.hpp"
 std::unique_ptr<TermResource>
 DataTypeEval::eval_resource(const ExprEval::row_t &row) {
-  auto result = children[0]->eval_resource(row);
+  auto result = children[0]->eval_datatype(row);
   with_error = children[0]->has_error();
   return result;
 }

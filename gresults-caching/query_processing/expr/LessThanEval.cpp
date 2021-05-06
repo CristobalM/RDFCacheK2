@@ -6,11 +6,7 @@
 #include "BooleanResource.hpp"
 std::unique_ptr<TermResource>
 LessThanEval::eval_resource(const ExprEval::row_t &row) {
-  auto value = eval_boolean(row);
-  if (has_error()) {
-    return TermResource::null();
-  }
-  return std::make_unique<BooleanResource>(value);
+  return generate_from_eval_boolean(row);
 }
 bool LessThanEval::eval_boolean(const ExprEval::row_t &row) {
   auto left_resource = children[0]->eval_resource(row);

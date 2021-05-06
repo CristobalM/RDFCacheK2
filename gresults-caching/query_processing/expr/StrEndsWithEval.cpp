@@ -7,11 +7,7 @@
 #include "StringHandlingUtil.hpp"
 std::unique_ptr<TermResource>
 StrEndsWithEval::eval_resource(const ExprEval::row_t &row) {
-  auto result = eval_boolean(row);
-  if (has_error()) {
-    return resource_with_error();
-  }
-  return std::make_unique<BooleanResource>(result);
+  return generate_from_eval_boolean(row);
 }
 
 bool StrEndsWithEval::eval_boolean(const ExprEval::row_t &row) {
@@ -41,9 +37,8 @@ bool StrEndsWithEval::eval_boolean(const ExprEval::row_t &row) {
     return false;
   }
 
-  auto start_pos = input_literal_data.value.find(pattern_literal_data.value);
-  return start_pos ==
-         input_literal_data.value.size() - pattern_literal_data.value.size();
+  return StringHandlingUtil::ends_with(input_literal_data.value,
+                                       pattern_literal_data.value);
 }
 void StrEndsWithEval::validate() {
   ExprEval::validate();

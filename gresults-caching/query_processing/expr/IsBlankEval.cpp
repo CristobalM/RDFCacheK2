@@ -1,5 +1,6 @@
 
 #include "IsBlankEval.hpp"
+#include "BooleanResource.hpp"
 #include <RDFTriple.hpp>
 
 bool IsBlankEval::eval_boolean(const row_t &row) {
@@ -19,4 +20,8 @@ void IsBlankEval::init() {
 void IsBlankEval::validate() {
   ExprEval::validate();
   assert_fsize(1);
+}
+std::unique_ptr<TermResource>
+IsBlankEval::eval_resource(const ExprEval::row_t &row) {
+  return generate_from_eval_boolean(row);
 }

@@ -6,7 +6,8 @@
 #include "NullResource.hpp"
 
 ExprDataType TermResource::get_datatype() const {
-  throw std::runtime_error("get_datatype not implemented");
+  // throw std::runtime_error("get_datatype not implemented");
+  return EDT_UNKNOWN;
 }
 bool TermResource::is_concrete() const { return false; }
 bool TermResource::is_datatype() const { return false; }
@@ -52,3 +53,7 @@ const std::string &TermResource::get_lang_tag() const {
 }
 
 bool TermResource::contains(TermResource &) const { return false; }
+bool TermResource::is_iri() const { return false; }
+const std::string &TermResource::get_iri_string() const {
+  throw std::runtime_error("get_iri_string not implemented");
+}

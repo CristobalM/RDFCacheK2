@@ -14,6 +14,7 @@ public:
   std::unique_ptr<TermResource> eval_resource(const row_t &row) override;
   void validate() override;
   void init() override;
+  bool eval_boolean(const row_t &row) override;
 };
 
 #endif // RDFCACHEK2_COALESCEEVAL_HPP

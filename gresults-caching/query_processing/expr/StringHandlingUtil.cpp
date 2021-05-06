@@ -9,15 +9,8 @@ StringLiteralData StringHandlingUtil::extract_literal_data_from_term_resource(
   StringLiteralData result{};
   result.type = EDT_UNKNOWN;
   if (term_resource.is_concrete()) {
-    const auto &resource_str = term_resource.get_resource().value;
-    result.value =
-        ExprProcessorPersistentData::get().extract_literal_content_from_string(
-            resource_str);
-    result.lang_tag =
-        ExprProcessorPersistentData::get().extract_language_tag(resource_str);
-    result.type =
-        ExprProcessorPersistentData::get().extract_data_type_from_string(
-            resource_str);
+    result =
+        extract_literal_data_from_rdf_resource(term_resource.get_resource());
   } else if (term_resource.is_string_literal_lang()) {
     result.value = term_resource.get_literal_lang_string();
     result.lang_tag = term_resource.get_lang_tag();
@@ -49,4 +42,43 @@ int StringHandlingUtil::regex_flag_options_from_string(
     }
   }
   return options;
+}
+StringLiteralData StringHandlingUtil::extract_literal_data_from_rdf_resource(
+    const RDFResource &rdf_resource) {
+  return extract_literal_data_from_string(rdf_resource.value);
+}
+
+bool StringHandlingUtil::starts_with(const std::string &input,
+                                     const std::string &pattern) {
+  if (pattern.size() > input.size())
+    return false;
+  for (size_t i = 0; i < pattern.size(); i++) {
+    if (input[i] != pattern[i])
+      return false;
+  }
+  return true;
+}
+bool StringHandlingUtil::ends_with(const std::string &input,
+                                   const std::string &pattern) {
+  if (pattern.size() > input.size())
+    return false;
+  for (size_t input_i = input.size() - 1, pattern_i = pattern.size() - 1;
+       input_i >= input.size() - pattern.size(); input_i--, pattern_i--) {
+    if (input[input_i] != pattern[pattern_i])
+      return false;
+  }
+  return true;
+}
+StringLiteralData StringHandlingUtil::extract_literal_data_from_string(
+    const std::string &input_string) {
+  StringLiteralData result;
+  result.value =
+      ExprProcessorPersistentData::get().extract_literal_content_from_string(
+          input_string);
+  result.lang_tag =
+      ExprProcessorPersistentData::get().extract_language_tag(input_string);
+  result.type =
+      ExprProcessorPersistentData::get().extract_data_type_from_string(
+          input_string);
+  return result;
 }

@@ -88,6 +88,7 @@ set(GRAPH_RESULT_CACHING_FILE
         gresults-caching/query_processing/expr/DateTimeDayEval.cpp
         gresults-caching/query_processing/expr/DateTimeHoursEval.cpp
         gresults-caching/query_processing/expr/DateTimeMinutesEval.cpp
+        gresults-caching/query_processing/expr/DateTimeSecondsEval.cpp
         gresults-caching/query_processing/expr/DateTimeMonthEval.cpp
         gresults-caching/query_processing/expr/DateTimeTZEval.cpp
         gresults-caching/query_processing/expr/DateTimeYearEval.cpp
@@ -155,6 +156,7 @@ set(GRAPH_RESULT_CACHING_FILE
         gresults-caching/query_processing/expr/FloatResource.cpp
         gresults-caching/query_processing/expr/DoubleResource.cpp
         gresults-caching/query_processing/expr/BooleanResource.cpp
+        gresults-caching/query_processing/expr/IRIResource.cpp
         gresults-caching/query_processing/expr/StringHandlingUtil.cpp
         gresults-caching/query_processing/DateInfo.hpp
         )

@@ -72,6 +72,10 @@ public:
   int integer_with_error();
   float float_with_error();
   double double_with_error();
+
+protected:
+  std::unique_ptr<TermResource> generate_from_eval_boolean(const row_t &row);
+  std::unique_ptr<TermResource> generate_from_eval_integer(const row_t &row);
 };
 
 #endif

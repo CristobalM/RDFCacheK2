@@ -20,7 +20,15 @@ class StringHandlingUtil {
 public:
   static StringLiteralData
   extract_literal_data_from_term_resource(const TermResource &term_resource);
+  static StringLiteralData
+  extract_literal_data_from_rdf_resource(const RDFResource &rdf_resource);
+  static StringLiteralData
+  extract_literal_data_from_string(const std::string &input_string);
+
   static int regex_flag_options_from_string(const std::string &input_flags);
+
+  static bool starts_with(const std::string &input, const std::string &pattern);
+  static bool ends_with(const std::string &input, const std::string &pattern);
 };
 
 #endif // RDFCACHEK2_STRINGHANDLINGUTIL_HPP

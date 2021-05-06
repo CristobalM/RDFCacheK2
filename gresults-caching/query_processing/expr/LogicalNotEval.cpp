@@ -7,11 +7,7 @@
 
 std::unique_ptr<TermResource>
 LogicalNotEval::eval_resource(const ExprEval::row_t &row) {
-  auto result = eval_boolean(row);
-  if (has_error()) {
-    return TermResource::null();
-  }
-  return std::make_unique<BooleanResource>(result);
+  return generate_from_eval_boolean(row);
 }
 bool LogicalNotEval::eval_boolean(const ExprEval::row_t &row) {
   auto result = children[0]->eval_boolean(row);

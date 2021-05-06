@@ -8,3 +8,4 @@ QueryResult::QueryResult(std::shared_ptr<ResultTable> &result_table,
 ResultTable &QueryResult::table() { return *result_table; }
 
 VarIndexManager &QueryResult::get_vim() { return *vim; }
+QueryResult::QueryResult() = default;

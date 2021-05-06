@@ -162,4 +162,6 @@ enum FunctionOP {
   STR_CONCAT = 62;
   STR_REPLACE = 63;
   STR_SUBSTRING = 64;
+  // extra added afterwards
+  DATE_TIME_SECONDS = 65; // one var
 }
