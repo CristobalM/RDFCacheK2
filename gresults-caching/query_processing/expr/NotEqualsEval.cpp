@@ -20,7 +20,7 @@ bool NotEqualsEval::eval_boolean(const ExprEval::row_t &row) {
     this->with_error = true;
     return false;
   }
-  return left_resource != right_resource;
+  return *left_resource != *right_resource;
 }
 
 std::unique_ptr<TermResource>

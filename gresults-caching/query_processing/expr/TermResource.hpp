@@ -12,6 +12,7 @@ class TermResource {
 public:
   virtual ~TermResource() = default;
   virtual bool operator==(const TermResource &rhs) const = 0;
+  bool operator!=(const TermResource &rhs) const;
   virtual bool is_concrete() const;
   virtual bool is_datatype() const;
   virtual bool is_null() const;

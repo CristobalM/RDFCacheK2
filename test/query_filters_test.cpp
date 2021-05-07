@@ -2,6 +2,7 @@
 // Created by cristobal on 4/30/21.
 //
 
+#include <cmath>
 #include <filesystem>
 #include <gtest/gtest.h>
 #include <memory>
@@ -26,6 +27,7 @@ public:
   static std::shared_ptr<PredicatesCacheManager> pcm;
   static std::unique_ptr<Cache> cache;
   static std::set<int> values1;
+  static std::set<double> values_double1;
   static std::vector<std::string> dates;
   static std::vector<DateInfo> date_infos_expected;
 
@@ -34,12 +36,21 @@ public:
     build_cache_test_file(fname);
     pcm = std::make_shared<PredicatesCacheManager>(
         std::make_unique<EmptyISDManager>(), fname);
-    values1 = {42, 1, 2, 3, -1, 4, 400, 98, 99, 49, 50};
+    values1 = {-100, 42, 1, 2, 3, -1, 4, 400, 98, 99, 49, 50};
+    values_double1 = {-100.54, 42.33,    1.123,   2.65,     3.14,    -1.024,
+                      4.99,    400.8974, 98.0023, 99.00005, 49.0123, 50.99991};
     for (auto value : values1) {
       pcm->add_triple(RDFTripleResource(
           RDFResource("<some_integer_ref1>", RDFResourceType::RDF_TYPE_IRI),
           RDFResource("<has_integer>", RDFResourceType::RDF_TYPE_IRI),
           RDFResource("\"" + std::to_string(value) + "\"^^xsd:integer",
+                      RDFResourceType::RDF_TYPE_LITERAL)));
+    }
+    for (auto value : values_double1) {
+      pcm->add_triple(RDFTripleResource(
+          RDFResource("<some_double_ref1>", RDFResourceType::RDF_TYPE_IRI),
+          RDFResource("<has_double>", RDFResourceType::RDF_TYPE_IRI),
+          RDFResource("\"" + std::to_string(value) + "\"^^xsd:double",
                       RDFResourceType::RDF_TYPE_LITERAL)));
     }
 
@@ -86,10 +97,11 @@ public:
   }
 };
 
-std::string QueryFiltersFixture::fname = std::string();
-std::shared_ptr<PredicatesCacheManager> QueryFiltersFixture::pcm = nullptr;
-std::unique_ptr<Cache> QueryFiltersFixture::cache = nullptr;
-std::set<int> QueryFiltersFixture::values1 = std::set<int>();
+std::string QueryFiltersFixture::fname;
+std::shared_ptr<PredicatesCacheManager> QueryFiltersFixture::pcm;
+std::unique_ptr<Cache> QueryFiltersFixture::cache;
+std::set<int> QueryFiltersFixture::values1;
+std::set<double> QueryFiltersFixture::values_double1;
 std::vector<std::string> QueryFiltersFixture::dates;
 std::vector<DateInfo> QueryFiltersFixture::date_infos_expected;
 
@@ -119,6 +131,22 @@ get_values_from_result_table(const ResultTable &result_table,
     if (literal_data.type != EDT_INTEGER)
       throw std::runtime_error("Expected integer resource");
     result.insert(std::stoi(literal_data.value));
+  }
+  return result;
+}
+static std::set<double>
+get_values_double_from_result_table(const ResultTable &result_table,
+                                    const PredicatesCacheManager &pcm) {
+  std::set<double> result;
+  if (result_table.headers.size() != 1)
+    throw std::runtime_error("result_table must have 1 column");
+  for (const auto &row : result_table.data) {
+    auto resource = pcm.extract_resource(row[0]);
+    auto literal_data =
+        StringHandlingUtil::extract_literal_data_from_rdf_resource(resource);
+    if (literal_data.type != EDT_DOUBLE)
+      throw std::runtime_error("Expected double resource");
+    result.insert(std::stod(literal_data.value));
   }
   return result;
 }
@@ -1173,6 +1201,444 @@ TEST_F(QueryFiltersFixture, test_lte_eval_1) {
   std::set<int> expected_values;
   for (auto value : QueryFiltersFixture::values1) {
     if (value + 1 <= 50)
+      expected_values.insert(value);
+  }
+
+  ASSERT_EQ(query_values_set, expected_values);
+}
+
+TEST_F(QueryFiltersFixture, test_logical_and_eval_1) {
+  proto_msg::SparqlTree tree;
+  auto *distinct_node = tree.mutable_root()->mutable_distinct_node();
+  auto *project_node =
+      distinct_node->mutable_sub_node()->mutable_project_node();
+  project_node->add_vars("?x");
+  auto *filter_node = project_node->mutable_sub_op()->mutable_filter_node();
+  auto *bgp_node = filter_node->mutable_node()->mutable_bgp_node();
+  auto *first_triple = bgp_node->mutable_triple()->Add();
+  auto *first_subject = first_triple->mutable_subject();
+  auto *first_predicate = first_triple->mutable_predicate();
+  auto *first_object = first_triple->mutable_object();
+  first_subject->set_term_value("?y");
+  first_subject->set_term_type(proto_msg::TermType::VARIABLE);
+  first_predicate->set_term_value("<has_integer>");
+  first_predicate->set_term_type(proto_msg::TermType::IRI);
+  first_object->set_term_value("?x");
+  first_object->set_term_type(proto_msg::TermType::VARIABLE);
+
+  auto *logical_and_expr = filter_node->mutable_exprs()->Add();
+  auto *logical_and_fnode = logical_and_expr->mutable_function_node();
+  logical_and_fnode->set_function_op(proto_msg::FunctionOP::LOGICAL_AND);
+
+  auto *gt_expr = logical_and_fnode->mutable_exprs()->Add();
+  auto *gt_fnode = gt_expr->mutable_function_node();
+  gt_fnode->set_function_op(proto_msg::FunctionOP::GREATER_THAN);
+  auto *term_expr_left = gt_fnode->mutable_exprs()->Add();
+  auto *term_left = term_expr_left->mutable_term_node();
+  term_left->set_term_value("?x");
+  term_left->set_term_type(proto_msg::TermType::VARIABLE);
+  auto *term_expr_right = gt_fnode->mutable_exprs()->Add();
+  auto *term_right = term_expr_right->mutable_term_node();
+  term_right->set_term_value("\"0\"^^xsd:integer");
+  term_right->set_term_type(proto_msg::TermType::LITERAL);
+
+  auto *eq_expr = logical_and_fnode->mutable_exprs()->Add();
+  auto *eq_fnode = eq_expr->mutable_function_node();
+  eq_fnode->set_function_op(proto_msg::FunctionOP::EQUALS);
+
+  auto *lhs_eq_expr = eq_fnode->mutable_exprs()->Add();
+  auto *rhs_eq_expr = eq_fnode->mutable_exprs()->Add();
+
+  lhs_eq_expr->mutable_term_node()->set_term_value("?x");
+  lhs_eq_expr->mutable_term_node()->set_term_type(
+      proto_msg::TermType::VARIABLE);
+
+  auto *mult_fnode = rhs_eq_expr->mutable_function_node();
+  mult_fnode->set_function_op(proto_msg::FunctionOP::MULTIPLY);
+  auto *lhs_div_expr = mult_fnode->mutable_exprs()->Add();
+  auto *rhs_div_expr = mult_fnode->mutable_exprs()->Add();
+  auto *div_fnode = lhs_div_expr->mutable_function_node();
+  div_fnode->set_function_op(proto_msg::FunctionOP::DIVIDE);
+
+  rhs_div_expr->mutable_term_node()->set_term_value("\"2\"^^xsd:integer");
+  rhs_div_expr->mutable_term_node()->set_term_type(
+      proto_msg::TermType::LITERAL);
+
+  auto *div_lhs_expr = div_fnode->mutable_exprs()->Add();
+  auto *div_rhs_expr = div_fnode->mutable_exprs()->Add();
+
+  div_lhs_expr->mutable_term_node()->set_term_type(
+      proto_msg::TermType::VARIABLE);
+  div_lhs_expr->mutable_term_node()->set_term_value("?x");
+
+  div_rhs_expr->mutable_term_node()->set_term_type(
+      proto_msg::TermType::LITERAL);
+  div_rhs_expr->mutable_term_node()->set_term_value("\"2\"^^xsd:integer");
+
+  auto result = QueryFiltersFixture::cache->run_query(tree);
+
+  auto query_values_set =
+      get_values_from_result_table(result.table(), *QueryFiltersFixture::pcm);
+
+  std::set<int> expected_values;
+
+  for (auto value : values1) {
+    if (value > 0 && value % 2 == 0) {
+      expected_values.insert(value);
+    }
+  }
+
+  ASSERT_EQ(query_values_set, expected_values);
+}
+
+TEST_F(QueryFiltersFixture, test_logical_or_eval_1) {
+  proto_msg::SparqlTree tree;
+  auto *distinct_node = tree.mutable_root()->mutable_distinct_node();
+  auto *project_node =
+      distinct_node->mutable_sub_node()->mutable_project_node();
+  project_node->add_vars("?x");
+  auto *filter_node = project_node->mutable_sub_op()->mutable_filter_node();
+  auto *bgp_node = filter_node->mutable_node()->mutable_bgp_node();
+  auto *first_triple = bgp_node->mutable_triple()->Add();
+  auto *first_subject = first_triple->mutable_subject();
+  auto *first_predicate = first_triple->mutable_predicate();
+  auto *first_object = first_triple->mutable_object();
+  first_subject->set_term_value("?y");
+  first_subject->set_term_type(proto_msg::TermType::VARIABLE);
+  first_predicate->set_term_value("<has_integer>");
+  first_predicate->set_term_type(proto_msg::TermType::IRI);
+  first_object->set_term_value("?x");
+  first_object->set_term_type(proto_msg::TermType::VARIABLE);
+
+  auto *logical_and_expr = filter_node->mutable_exprs()->Add();
+  auto *logical_and_fnode = logical_and_expr->mutable_function_node();
+  logical_and_fnode->set_function_op(proto_msg::FunctionOP::LOGICAL_OR);
+
+  auto *gt_expr = logical_and_fnode->mutable_exprs()->Add();
+  auto *gt_fnode = gt_expr->mutable_function_node();
+  gt_fnode->set_function_op(proto_msg::FunctionOP::GREATER_THAN);
+  auto *term_expr_left = gt_fnode->mutable_exprs()->Add();
+  auto *term_left = term_expr_left->mutable_term_node();
+  term_left->set_term_value("?x");
+  term_left->set_term_type(proto_msg::TermType::VARIABLE);
+  auto *term_expr_right = gt_fnode->mutable_exprs()->Add();
+  auto *term_right = term_expr_right->mutable_term_node();
+  term_right->set_term_value("\"0\"^^xsd:integer");
+  term_right->set_term_type(proto_msg::TermType::LITERAL);
+
+  auto *eq_expr = logical_and_fnode->mutable_exprs()->Add();
+  auto *eq_fnode = eq_expr->mutable_function_node();
+  eq_fnode->set_function_op(proto_msg::FunctionOP::EQUALS);
+
+  auto *lhs_eq_expr = eq_fnode->mutable_exprs()->Add();
+  auto *rhs_eq_expr = eq_fnode->mutable_exprs()->Add();
+
+  lhs_eq_expr->mutable_term_node()->set_term_value("?x");
+  lhs_eq_expr->mutable_term_node()->set_term_type(
+      proto_msg::TermType::VARIABLE);
+
+  auto *mult_fnode = rhs_eq_expr->mutable_function_node();
+  mult_fnode->set_function_op(proto_msg::FunctionOP::MULTIPLY);
+  auto *lhs_div_expr = mult_fnode->mutable_exprs()->Add();
+  auto *rhs_div_expr = mult_fnode->mutable_exprs()->Add();
+  auto *div_fnode = lhs_div_expr->mutable_function_node();
+  div_fnode->set_function_op(proto_msg::FunctionOP::DIVIDE);
+
+  rhs_div_expr->mutable_term_node()->set_term_value("\"2\"^^xsd:integer");
+  rhs_div_expr->mutable_term_node()->set_term_type(
+      proto_msg::TermType::LITERAL);
+
+  auto *div_lhs_expr = div_fnode->mutable_exprs()->Add();
+  auto *div_rhs_expr = div_fnode->mutable_exprs()->Add();
+
+  div_lhs_expr->mutable_term_node()->set_term_type(
+      proto_msg::TermType::VARIABLE);
+  div_lhs_expr->mutable_term_node()->set_term_value("?x");
+
+  div_rhs_expr->mutable_term_node()->set_term_type(
+      proto_msg::TermType::LITERAL);
+  div_rhs_expr->mutable_term_node()->set_term_value("\"2\"^^xsd:integer");
+
+  auto result = QueryFiltersFixture::cache->run_query(tree);
+
+  auto query_values_set =
+      get_values_from_result_table(result.table(), *QueryFiltersFixture::pcm);
+
+  std::set<int> expected_values;
+
+  for (auto value : values1) {
+    if (value > 0 || value % 2 == 0) {
+      expected_values.insert(value);
+    }
+  }
+
+  ASSERT_EQ(query_values_set, expected_values);
+}
+
+TEST_F(QueryFiltersFixture, test_logical_not_eval_1) {
+  proto_msg::SparqlTree tree;
+  auto *distinct_node = tree.mutable_root()->mutable_distinct_node();
+  auto *project_node =
+      distinct_node->mutable_sub_node()->mutable_project_node();
+  project_node->add_vars("?x");
+  auto *filter_node = project_node->mutable_sub_op()->mutable_filter_node();
+  auto *bgp_node = filter_node->mutable_node()->mutable_bgp_node();
+  auto *first_triple = bgp_node->mutable_triple()->Add();
+  auto *first_subject = first_triple->mutable_subject();
+  auto *first_predicate = first_triple->mutable_predicate();
+  auto *first_object = first_triple->mutable_object();
+  first_subject->set_term_value("?y");
+  first_subject->set_term_type(proto_msg::TermType::VARIABLE);
+  first_predicate->set_term_value("<has_integer>");
+  first_predicate->set_term_type(proto_msg::TermType::IRI);
+  first_object->set_term_value("?x");
+  first_object->set_term_type(proto_msg::TermType::VARIABLE);
+
+  auto *logical_not_expr = filter_node->mutable_exprs()->Add();
+  auto *logical_not_fnode = logical_not_expr->mutable_function_node();
+  logical_not_fnode->set_function_op(proto_msg::FunctionOP::LOGICAL_NOT);
+
+  auto *eq_expr = logical_not_fnode->mutable_exprs()->Add();
+  auto *eq_fnode = eq_expr->mutable_function_node();
+  eq_fnode->set_function_op(proto_msg::FunctionOP::EQUALS);
+
+  auto *lhs_eq_expr = eq_fnode->mutable_exprs()->Add();
+  auto *rhs_eq_expr = eq_fnode->mutable_exprs()->Add();
+
+  lhs_eq_expr->mutable_term_node()->set_term_value("?x");
+  lhs_eq_expr->mutable_term_node()->set_term_type(
+      proto_msg::TermType::VARIABLE);
+
+  auto *mult_fnode = rhs_eq_expr->mutable_function_node();
+  mult_fnode->set_function_op(proto_msg::FunctionOP::MULTIPLY);
+  auto *lhs_div_expr = mult_fnode->mutable_exprs()->Add();
+  auto *rhs_div_expr = mult_fnode->mutable_exprs()->Add();
+  auto *div_fnode = lhs_div_expr->mutable_function_node();
+  div_fnode->set_function_op(proto_msg::FunctionOP::DIVIDE);
+
+  rhs_div_expr->mutable_term_node()->set_term_value("\"2\"^^xsd:integer");
+  rhs_div_expr->mutable_term_node()->set_term_type(
+      proto_msg::TermType::LITERAL);
+
+  auto *div_lhs_expr = div_fnode->mutable_exprs()->Add();
+  auto *div_rhs_expr = div_fnode->mutable_exprs()->Add();
+
+  div_lhs_expr->mutable_term_node()->set_term_type(
+      proto_msg::TermType::VARIABLE);
+  div_lhs_expr->mutable_term_node()->set_term_value("?x");
+
+  div_rhs_expr->mutable_term_node()->set_term_type(
+      proto_msg::TermType::LITERAL);
+  div_rhs_expr->mutable_term_node()->set_term_value("\"2\"^^xsd:integer");
+
+  auto result = QueryFiltersFixture::cache->run_query(tree);
+
+  auto query_values_set =
+      get_values_from_result_table(result.table(), *QueryFiltersFixture::pcm);
+
+  std::set<int> expected_values;
+
+  for (auto value : values1) {
+    if (value % 2 != 0) {
+      expected_values.insert(value);
+    }
+  }
+
+  ASSERT_EQ(query_values_set, expected_values);
+}
+
+TEST_F(QueryFiltersFixture, test_not_equals_eval_1) {
+  proto_msg::SparqlTree tree;
+  auto *distinct_node = tree.mutable_root()->mutable_distinct_node();
+  auto *project_node =
+      distinct_node->mutable_sub_node()->mutable_project_node();
+  project_node->add_vars("?x");
+  auto *filter_node = project_node->mutable_sub_op()->mutable_filter_node();
+  auto *bgp_node = filter_node->mutable_node()->mutable_bgp_node();
+  auto *first_triple = bgp_node->mutable_triple()->Add();
+  auto *first_subject = first_triple->mutable_subject();
+  auto *first_predicate = first_triple->mutable_predicate();
+  auto *first_object = first_triple->mutable_object();
+  first_subject->set_term_value("?y");
+  first_subject->set_term_type(proto_msg::TermType::VARIABLE);
+  first_predicate->set_term_value("<has_integer>");
+  first_predicate->set_term_type(proto_msg::TermType::IRI);
+  first_object->set_term_value("?x");
+  first_object->set_term_type(proto_msg::TermType::VARIABLE);
+
+  auto *eq_expr = filter_node->mutable_exprs()->Add();
+  auto *eq_fnode = eq_expr->mutable_function_node();
+  eq_fnode->set_function_op(proto_msg::FunctionOP::NOT_EQUALS);
+
+  auto *lhs_eq_expr = eq_fnode->mutable_exprs()->Add();
+  auto *rhs_eq_expr = eq_fnode->mutable_exprs()->Add();
+
+  lhs_eq_expr->mutable_term_node()->set_term_value("?x");
+  lhs_eq_expr->mutable_term_node()->set_term_type(
+      proto_msg::TermType::VARIABLE);
+
+  auto *mult_fnode = rhs_eq_expr->mutable_function_node();
+  mult_fnode->set_function_op(proto_msg::FunctionOP::MULTIPLY);
+  auto *lhs_div_expr = mult_fnode->mutable_exprs()->Add();
+  auto *rhs_div_expr = mult_fnode->mutable_exprs()->Add();
+  auto *div_fnode = lhs_div_expr->mutable_function_node();
+  div_fnode->set_function_op(proto_msg::FunctionOP::DIVIDE);
+
+  rhs_div_expr->mutable_term_node()->set_term_value("\"2\"^^xsd:integer");
+  rhs_div_expr->mutable_term_node()->set_term_type(
+      proto_msg::TermType::LITERAL);
+
+  auto *div_lhs_expr = div_fnode->mutable_exprs()->Add();
+  auto *div_rhs_expr = div_fnode->mutable_exprs()->Add();
+
+  div_lhs_expr->mutable_term_node()->set_term_type(
+      proto_msg::TermType::VARIABLE);
+  div_lhs_expr->mutable_term_node()->set_term_value("?x");
+
+  div_rhs_expr->mutable_term_node()->set_term_type(
+      proto_msg::TermType::LITERAL);
+  div_rhs_expr->mutable_term_node()->set_term_value("\"2\"^^xsd:integer");
+
+  auto result = QueryFiltersFixture::cache->run_query(tree);
+
+  auto query_values_set =
+      get_values_from_result_table(result.table(), *QueryFiltersFixture::pcm);
+
+  std::set<int> expected_values;
+
+  for (auto value : values1) {
+    if (value % 2 != 0) {
+      expected_values.insert(value);
+    }
+  }
+
+  ASSERT_EQ(query_values_set, expected_values);
+}
+
+TEST_F(QueryFiltersFixture, test_num_abs_eval_1) {
+  proto_msg::SparqlTree tree;
+  auto *distinct_node = tree.mutable_root()->mutable_distinct_node();
+  auto *project_node =
+      distinct_node->mutable_sub_node()->mutable_project_node();
+  project_node->add_vars("?x");
+  auto *filter_node = project_node->mutable_sub_op()->mutable_filter_node();
+  auto *bgp_node = filter_node->mutable_node()->mutable_bgp_node();
+  auto *first_triple = bgp_node->mutable_triple()->Add();
+  auto *first_subject = first_triple->mutable_subject();
+  auto *first_predicate = first_triple->mutable_predicate();
+  auto *first_object = first_triple->mutable_object();
+  first_subject->set_term_value("?y");
+  first_subject->set_term_type(proto_msg::TermType::VARIABLE);
+  first_predicate->set_term_value("<has_integer>");
+  first_predicate->set_term_type(proto_msg::TermType::IRI);
+  first_object->set_term_value("?x");
+  first_object->set_term_type(proto_msg::TermType::VARIABLE);
+
+  auto *eq_expr = filter_node->mutable_exprs()->Add();
+  auto *eq_fnode = eq_expr->mutable_function_node();
+  eq_fnode->set_function_op(proto_msg::FunctionOP::LESS_THAN_OR_EQUAL);
+
+  auto *abs_expr = eq_fnode->mutable_exprs()->Add();
+
+  auto *abs_fnode = abs_expr->mutable_function_node();
+  abs_fnode->set_function_op(proto_msg::FunctionOP::NUM_ABS);
+  auto *abs_term_expr = abs_fnode->mutable_exprs()->Add();
+  auto *abs_term = abs_term_expr->mutable_term_node();
+  abs_term->set_term_value("?x");
+  abs_term->set_term_type(proto_msg::VARIABLE);
+
+  auto *lhs_eq_expr = eq_fnode->mutable_exprs()->Add();
+  lhs_eq_expr->mutable_term_node()->set_term_type(proto_msg::TermType::LITERAL);
+  lhs_eq_expr->mutable_term_node()->set_term_value("\"50\"^^xsd:integer");
+
+  auto result = QueryFiltersFixture::cache->run_query(tree);
+
+  auto query_values_set =
+      get_values_from_result_table(result.table(), *QueryFiltersFixture::pcm);
+
+  std::set<int> expected_values;
+
+  for (auto value : values1) {
+    if (std::abs(value) <= 50)
+      expected_values.insert(value);
+  }
+
+  ASSERT_EQ(query_values_set, expected_values);
+}
+
+TEST_F(QueryFiltersFixture, test_num_ceiling_floor_eval_1) {
+  proto_msg::SparqlTree tree;
+  auto *distinct_node = tree.mutable_root()->mutable_distinct_node();
+  auto *project_node =
+      distinct_node->mutable_sub_node()->mutable_project_node();
+  project_node->add_vars("?x");
+  auto *filter_node = project_node->mutable_sub_op()->mutable_filter_node();
+  auto *bgp_node = filter_node->mutable_node()->mutable_bgp_node();
+  auto *first_triple = bgp_node->mutable_triple()->Add();
+  auto *first_subject = first_triple->mutable_subject();
+  auto *first_predicate = first_triple->mutable_predicate();
+  auto *first_object = first_triple->mutable_object();
+  first_subject->set_term_value("?y");
+  first_subject->set_term_type(proto_msg::TermType::VARIABLE);
+  first_predicate->set_term_value("<has_double>");
+  first_predicate->set_term_type(proto_msg::TermType::IRI);
+  first_object->set_term_value("?x");
+  first_object->set_term_type(proto_msg::TermType::VARIABLE);
+
+  auto *eq_expr = filter_node->mutable_exprs()->Add();
+  auto *eq_fnode = eq_expr->mutable_function_node();
+  eq_fnode->set_function_op(proto_msg::FunctionOP::EQUALS);
+
+  auto *lhs_eq_expr = eq_fnode->mutable_exprs()->Add();
+  auto *rhs_eq_expr = eq_fnode->mutable_exprs()->Add();
+
+  auto *ceil_fnode = lhs_eq_expr->mutable_function_node();
+  ceil_fnode->set_function_op(proto_msg::FunctionOP::NUM_CEILING);
+  auto *lhs_var_expr = ceil_fnode->mutable_exprs()->Add();
+  auto *lhs_var_term = lhs_var_expr->mutable_term_node();
+  lhs_var_term->set_term_value("?x");
+  lhs_var_term->set_term_type(proto_msg::TermType::VARIABLE);
+
+  auto *mult_fnode = rhs_eq_expr->mutable_function_node();
+  mult_fnode->set_function_op(proto_msg::FunctionOP::MULTIPLY);
+  auto *lhs_div_expr = mult_fnode->mutable_exprs()->Add();
+  auto *rhs_div_expr = mult_fnode->mutable_exprs()->Add();
+  auto *floor_fnode = lhs_div_expr->mutable_function_node();
+  floor_fnode->set_function_op(proto_msg::FunctionOP::NUM_FLOOR);
+
+  auto *div_fnode =
+      floor_fnode->mutable_exprs()->Add()->mutable_function_node();
+  div_fnode->set_function_op(proto_msg::FunctionOP::DIVIDE);
+
+  rhs_div_expr->mutable_term_node()->set_term_value("\"2\"^^xsd:integer");
+  rhs_div_expr->mutable_term_node()->set_term_type(
+      proto_msg::TermType::LITERAL);
+
+  auto *div_lhs_expr = div_fnode->mutable_exprs()->Add();
+  auto *div_rhs_expr = div_fnode->mutable_exprs()->Add();
+
+  auto *abs_fnode = div_lhs_expr->mutable_function_node();
+  abs_fnode->set_function_op(proto_msg::FunctionOP::NUM_CEILING);
+  auto *var_expr = abs_fnode->mutable_exprs()->Add();
+  auto *var_term = var_expr->mutable_term_node();
+  var_term->set_term_value("?x");
+  var_term->set_term_type(proto_msg::TermType::VARIABLE);
+
+  div_rhs_expr->mutable_term_node()->set_term_type(
+      proto_msg::TermType::LITERAL);
+  div_rhs_expr->mutable_term_node()->set_term_value("\"2\"^^xsd:double");
+
+  std::cout << tree.DebugString() << std::endl;
+
+  auto result = QueryFiltersFixture::cache->run_query(tree);
+
+  auto query_values_set = get_values_double_from_result_table(
+      result.table(), *QueryFiltersFixture::pcm);
+
+  std::set<double> expected_values;
+
+  for (auto value : values_double1) {
+    if ((int)std::ceil(value) % 2 == 0)
       expected_values.insert(value);
   }
 
