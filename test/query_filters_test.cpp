@@ -1628,8 +1628,6 @@ TEST_F(QueryFiltersFixture, test_num_ceiling_floor_eval_1) {
       proto_msg::TermType::LITERAL);
   div_rhs_expr->mutable_term_node()->set_term_value("\"2\"^^xsd:double");
 
-  std::cout << tree.DebugString() << std::endl;
-
   auto result = QueryFiltersFixture::cache->run_query(tree);
 
   auto query_values_set = get_values_double_from_result_table(
@@ -1643,4 +1641,138 @@ TEST_F(QueryFiltersFixture, test_num_ceiling_floor_eval_1) {
   }
 
   ASSERT_EQ(query_values_set, expected_values);
+}
+
+TEST_F(QueryFiltersFixture, test_num_round_floor_eval_1) {
+  proto_msg::SparqlTree tree;
+  auto *distinct_node = tree.mutable_root()->mutable_distinct_node();
+  auto *project_node =
+      distinct_node->mutable_sub_node()->mutable_project_node();
+  project_node->add_vars("?x");
+  auto *filter_node = project_node->mutable_sub_op()->mutable_filter_node();
+  auto *bgp_node = filter_node->mutable_node()->mutable_bgp_node();
+  auto *first_triple = bgp_node->mutable_triple()->Add();
+  auto *first_subject = first_triple->mutable_subject();
+  auto *first_predicate = first_triple->mutable_predicate();
+  auto *first_object = first_triple->mutable_object();
+  first_subject->set_term_value("?y");
+  first_subject->set_term_type(proto_msg::TermType::VARIABLE);
+  first_predicate->set_term_value("<has_double>");
+  first_predicate->set_term_type(proto_msg::TermType::IRI);
+  first_object->set_term_value("?x");
+  first_object->set_term_type(proto_msg::TermType::VARIABLE);
+
+  auto *eq_expr = filter_node->mutable_exprs()->Add();
+  auto *eq_fnode = eq_expr->mutable_function_node();
+  eq_fnode->set_function_op(proto_msg::FunctionOP::EQUALS);
+
+  auto *lhs_eq_expr = eq_fnode->mutable_exprs()->Add();
+  auto *rhs_eq_expr = eq_fnode->mutable_exprs()->Add();
+
+  auto *ceil_fnode = lhs_eq_expr->mutable_function_node();
+  ceil_fnode->set_function_op(proto_msg::FunctionOP::NUM_ROUND);
+  auto *lhs_var_expr = ceil_fnode->mutable_exprs()->Add();
+  auto *lhs_var_term = lhs_var_expr->mutable_term_node();
+  lhs_var_term->set_term_value("?x");
+  lhs_var_term->set_term_type(proto_msg::TermType::VARIABLE);
+
+  auto *mult_fnode = rhs_eq_expr->mutable_function_node();
+  mult_fnode->set_function_op(proto_msg::FunctionOP::MULTIPLY);
+  auto *lhs_div_expr = mult_fnode->mutable_exprs()->Add();
+  auto *rhs_div_expr = mult_fnode->mutable_exprs()->Add();
+  auto *floor_fnode = lhs_div_expr->mutable_function_node();
+  floor_fnode->set_function_op(proto_msg::FunctionOP::NUM_FLOOR);
+
+  auto *div_fnode =
+      floor_fnode->mutable_exprs()->Add()->mutable_function_node();
+  div_fnode->set_function_op(proto_msg::FunctionOP::DIVIDE);
+
+  rhs_div_expr->mutable_term_node()->set_term_value("\"2\"^^xsd:integer");
+  rhs_div_expr->mutable_term_node()->set_term_type(
+      proto_msg::TermType::LITERAL);
+
+  auto *div_lhs_expr = div_fnode->mutable_exprs()->Add();
+  auto *div_rhs_expr = div_fnode->mutable_exprs()->Add();
+
+  auto *abs_fnode = div_lhs_expr->mutable_function_node();
+  abs_fnode->set_function_op(proto_msg::FunctionOP::NUM_ROUND);
+  auto *var_expr = abs_fnode->mutable_exprs()->Add();
+  auto *var_term = var_expr->mutable_term_node();
+  var_term->set_term_value("?x");
+  var_term->set_term_type(proto_msg::TermType::VARIABLE);
+
+  div_rhs_expr->mutable_term_node()->set_term_type(
+      proto_msg::TermType::LITERAL);
+  div_rhs_expr->mutable_term_node()->set_term_value("\"2\"^^xsd:double");
+
+
+  auto result = QueryFiltersFixture::cache->run_query(tree);
+
+  auto query_values_set = get_values_double_from_result_table(
+      result.table(), *QueryFiltersFixture::pcm);
+
+  std::set<double> expected_values;
+
+  for (auto value : values_double1) {
+    if ((int)std::round(value) % 2 == 0)
+      expected_values.insert(value);
+  }
+
+  ASSERT_EQ(query_values_set, expected_values);
+}
+
+TEST_F(QueryFiltersFixture, test_regex_eval_1) {
+  proto_msg::SparqlTree tree;
+  auto *distinct_node = tree.mutable_root()->mutable_distinct_node();
+  auto *project_node =
+      distinct_node->mutable_sub_node()->mutable_project_node();
+  project_node->add_vars("?x");
+  auto *filter_node = project_node->mutable_sub_op()->mutable_filter_node();
+  auto *bgp_node = filter_node->mutable_node()->mutable_bgp_node();
+  auto *first_triple = bgp_node->mutable_triple()->Add();
+  auto *first_subject = first_triple->mutable_subject();
+  auto *first_predicate = first_triple->mutable_predicate();
+  auto *first_object = first_triple->mutable_object();
+  first_subject->set_term_value("?y");
+  first_subject->set_term_type(proto_msg::TermType::VARIABLE);
+  first_predicate->set_term_value("<has_date>");
+  first_predicate->set_term_type(proto_msg::TermType::IRI);
+  first_object->set_term_value("?x");
+  first_object->set_term_type(proto_msg::TermType::VARIABLE);
+
+  auto *regex_fnode = filter_node->mutable_exprs()->Add()->mutable_function_node();
+  regex_fnode->set_function_op(proto_msg::FunctionOP::REGEX);
+
+  auto *text_term = regex_fnode->mutable_exprs()->Add()->mutable_term_node();
+  text_term->set_term_value("?x");
+  text_term->set_term_type(proto_msg::TermType::VARIABLE);
+
+  auto *pattern_term = regex_fnode->mutable_exprs()->Add()->mutable_term_node();
+  pattern_term->set_term_value("\"^2025-.*\"");
+  pattern_term->set_term_type(proto_msg::TermType::LITERAL);
+
+  auto *flags_term = regex_fnode->mutable_exprs()->Add()->mutable_term_node();
+  flags_term->set_term_value("\"i\"");
+  flags_term->set_term_type(proto_msg::TermType::LITERAL);
+
+  auto result = QueryFiltersFixture::cache->run_query(tree);
+
+  print_table_debug2(result, *cache);
+
+  auto query_values_set = get_string_values_from_result_table(
+      result.table(), *QueryFiltersFixture::pcm);
+
+  std::set<std::string> query_values_set_content;
+
+  for(const auto &single_result: query_values_set){
+    auto literal_data = StringHandlingUtil::extract_literal_data_from_string(single_result);
+    query_values_set_content.insert(std::move(literal_data.value));
+  }
+
+  std::set<std::string> expected_values;
+  for(const auto &date: dates){
+    if(StringHandlingUtil::starts_with(date, "2025-"))
+      expected_values.insert(date);
+  }
+  ASSERT_EQ(query_values_set_content, expected_values);
 }
