@@ -16,7 +16,7 @@ bool SameTermEval::eval_boolean(const ExprEval::row_t &row) {
     return false;
   }
 
-  return first_resource == second_resource;
+  return *first_resource == *second_resource;
 }
 void SameTermEval::validate() {
   ExprEval::validate();

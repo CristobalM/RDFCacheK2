@@ -1705,7 +1705,6 @@ TEST_F(QueryFiltersFixture, test_num_round_floor_eval_1) {
       proto_msg::TermType::LITERAL);
   div_rhs_expr->mutable_term_node()->set_term_value("\"2\"^^xsd:double");
 
-
   auto result = QueryFiltersFixture::cache->run_query(tree);
 
   auto query_values_set = get_values_double_from_result_table(
@@ -1740,7 +1739,8 @@ TEST_F(QueryFiltersFixture, test_regex_eval_1) {
   first_object->set_term_value("?x");
   first_object->set_term_type(proto_msg::TermType::VARIABLE);
 
-  auto *regex_fnode = filter_node->mutable_exprs()->Add()->mutable_function_node();
+  auto *regex_fnode =
+      filter_node->mutable_exprs()->Add()->mutable_function_node();
   regex_fnode->set_function_op(proto_msg::FunctionOP::REGEX);
 
   auto *text_term = regex_fnode->mutable_exprs()->Add()->mutable_term_node();
@@ -1764,15 +1764,215 @@ TEST_F(QueryFiltersFixture, test_regex_eval_1) {
 
   std::set<std::string> query_values_set_content;
 
-  for(const auto &single_result: query_values_set){
-    auto literal_data = StringHandlingUtil::extract_literal_data_from_string(single_result);
+  for (const auto &single_result : query_values_set) {
+    auto literal_data =
+        StringHandlingUtil::extract_literal_data_from_string(single_result);
     query_values_set_content.insert(std::move(literal_data.value));
   }
 
   std::set<std::string> expected_values;
-  for(const auto &date: dates){
-    if(StringHandlingUtil::starts_with(date, "2025-"))
+  for (const auto &date : dates) {
+    if (StringHandlingUtil::starts_with(date, "2025-"))
       expected_values.insert(date);
   }
   ASSERT_EQ(query_values_set_content, expected_values);
+}
+
+static void run_test_same_term_one(const std::string &predicate_str,
+                                   const std::string &term_str,
+                                   QueryResult &out_result,
+                                   std::set<std::string> &out_string_set) {
+  proto_msg::SparqlTree tree;
+  auto *distinct_node = tree.mutable_root()->mutable_distinct_node();
+  auto *project_node =
+      distinct_node->mutable_sub_node()->mutable_project_node();
+  project_node->add_vars("?x");
+  auto *filter_node = project_node->mutable_sub_op()->mutable_filter_node();
+  auto *bgp_node = filter_node->mutable_node()->mutable_bgp_node();
+  auto *first_triple = bgp_node->mutable_triple()->Add();
+  auto *first_subject = first_triple->mutable_subject();
+  auto *first_predicate = first_triple->mutable_predicate();
+  auto *first_object = first_triple->mutable_object();
+  first_subject->set_term_value("?y");
+  first_subject->set_term_type(proto_msg::TermType::VARIABLE);
+  first_predicate->set_term_value(predicate_str);
+  first_predicate->set_term_type(proto_msg::TermType::IRI);
+  first_object->set_term_value("?x");
+  first_object->set_term_type(proto_msg::TermType::VARIABLE);
+
+  auto *same_term_fnode =
+      filter_node->mutable_exprs()->Add()->mutable_function_node();
+  same_term_fnode->set_function_op(proto_msg::FunctionOP::SAME_TERM);
+
+  auto *lhs_term_node =
+      same_term_fnode->mutable_exprs()->Add()->mutable_term_node();
+  auto *rhs_term_node =
+      same_term_fnode->mutable_exprs()->Add()->mutable_term_node();
+
+  lhs_term_node->set_term_type(proto_msg::TermType::VARIABLE);
+  lhs_term_node->set_term_value("?x");
+
+  rhs_term_node->set_term_type(proto_msg::TermType::LITERAL);
+  rhs_term_node->set_term_value(term_str);
+
+  auto result = QueryFiltersFixture::cache->run_query(tree);
+
+  // print_table_debug2(result, *QueryFiltersFixture::cache);
+
+  auto query_values_set = get_string_values_from_result_table(
+      result.table(), *QueryFiltersFixture::pcm);
+
+  ASSERT_EQ(query_values_set.size(), 1);
+  ASSERT_NE(query_values_set.find(term_str), query_values_set.end());
+
+  out_result = std::move(result);
+  out_string_set = std::move(query_values_set);
+}
+
+TEST_F(QueryFiltersFixture, test_same_term_eval_dates_1) {
+  QueryResult query_result;
+  std::set<std::string> results_str_set;
+  for (const auto &date : dates) {
+    run_test_same_term_one("<has_date>", "\"" + date + "\"^^xsd:dateTime",
+                           query_result, results_str_set);
+  }
+}
+
+TEST_F(QueryFiltersFixture, test_same_term_eval_integers_1) {
+  QueryResult query_result;
+  std::set<std::string> results_str_set;
+  for (const auto &value : values1) {
+    run_test_same_term_one("<has_integer>",
+                           "\"" + std::to_string(value) + "\"^^xsd:integer",
+                           query_result, results_str_set);
+  }
+}
+
+TEST_F(QueryFiltersFixture, test_same_term_eval_doubles_1) {
+  QueryResult query_result;
+  std::set<std::string> results_str_set;
+  for (const auto &value : values_double1) {
+    run_test_same_term_one("<has_double>",
+                           "\"" + std::to_string(value) + "\"^^xsd:double",
+                           query_result, results_str_set);
+  }
+}
+
+TEST_F(QueryFiltersFixture, test_str_after_1) {
+  proto_msg::SparqlTree tree;
+  auto *distinct_node = tree.mutable_root()->mutable_distinct_node();
+  auto *project_node =
+      distinct_node->mutable_sub_node()->mutable_project_node();
+  project_node->add_vars("?x");
+  auto *filter_node = project_node->mutable_sub_op()->mutable_filter_node();
+  auto *bgp_node = filter_node->mutable_node()->mutable_bgp_node();
+  auto *first_triple = bgp_node->mutable_triple()->Add();
+  auto *first_subject = first_triple->mutable_subject();
+  auto *first_predicate = first_triple->mutable_predicate();
+  auto *first_object = first_triple->mutable_object();
+  first_subject->set_term_value("?y");
+  first_subject->set_term_type(proto_msg::TermType::VARIABLE);
+  first_predicate->set_term_value("<has_date>");
+  first_predicate->set_term_type(proto_msg::TermType::IRI);
+  first_object->set_term_value("?x");
+  first_object->set_term_type(proto_msg::TermType::VARIABLE);
+
+  auto *equals_fnode =
+      filter_node->mutable_exprs()->Add()->mutable_function_node();
+  equals_fnode->set_function_op(proto_msg::FunctionOP::EQUALS);
+
+  auto *str_after_fnode =
+      equals_fnode->mutable_exprs()->Add()->mutable_function_node();
+  auto *suffix_query_term =
+      equals_fnode->mutable_exprs()->Add()->mutable_term_node();
+
+  str_after_fnode->set_function_op(proto_msg::FunctionOP::STR_AFTER);
+  auto *text_term =
+      str_after_fnode->mutable_exprs()->Add()->mutable_term_node();
+  auto *pattern_term =
+      str_after_fnode->mutable_exprs()->Add()->mutable_term_node();
+
+  text_term->set_term_type(proto_msg::TermType::VARIABLE);
+  text_term->set_term_value("?x");
+
+  pattern_term->set_term_type(proto_msg::TermType::LITERAL);
+  pattern_term->set_term_value("\"19:50:44\"");
+
+  suffix_query_term->set_term_type(proto_msg::TermType::LITERAL);
+  suffix_query_term->set_term_value("\".988Z\"");
+
+  auto result = QueryFiltersFixture::cache->run_query(tree);
+
+  auto query_values_set = get_string_values_from_result_table(
+      result.table(), *QueryFiltersFixture::pcm);
+
+  std::set<std::string> expected_dates;
+
+  for (const auto &date : dates) {
+    if (StringHandlingUtil::ends_with(date, "19:50:44.988Z")) {
+      expected_dates.insert("\"" + date + "\"^^xsd:dateTime");
+    }
+  }
+
+  ASSERT_EQ(query_values_set, expected_dates);
+}
+
+TEST_F(QueryFiltersFixture, test_str_before_1) {
+  proto_msg::SparqlTree tree;
+  auto *distinct_node = tree.mutable_root()->mutable_distinct_node();
+  auto *project_node =
+      distinct_node->mutable_sub_node()->mutable_project_node();
+  project_node->add_vars("?x");
+  auto *filter_node = project_node->mutable_sub_op()->mutable_filter_node();
+  auto *bgp_node = filter_node->mutable_node()->mutable_bgp_node();
+  auto *first_triple = bgp_node->mutable_triple()->Add();
+  auto *first_subject = first_triple->mutable_subject();
+  auto *first_predicate = first_triple->mutable_predicate();
+  auto *first_object = first_triple->mutable_object();
+  first_subject->set_term_value("?y");
+  first_subject->set_term_type(proto_msg::TermType::VARIABLE);
+  first_predicate->set_term_value("<has_date>");
+  first_predicate->set_term_type(proto_msg::TermType::IRI);
+  first_object->set_term_value("?x");
+  first_object->set_term_type(proto_msg::TermType::VARIABLE);
+
+  auto *equals_fnode =
+      filter_node->mutable_exprs()->Add()->mutable_function_node();
+  equals_fnode->set_function_op(proto_msg::FunctionOP::STR_STARTS_WITH);
+
+  auto *str_after_fnode =
+      equals_fnode->mutable_exprs()->Add()->mutable_function_node();
+  auto *suffix_query_term =
+      equals_fnode->mutable_exprs()->Add()->mutable_term_node();
+
+  str_after_fnode->set_function_op(proto_msg::FunctionOP::STR_BEFORE);
+  auto *text_term =
+      str_after_fnode->mutable_exprs()->Add()->mutable_term_node();
+  auto *pattern_term =
+      str_after_fnode->mutable_exprs()->Add()->mutable_term_node();
+
+  text_term->set_term_type(proto_msg::TermType::VARIABLE);
+  text_term->set_term_value("?x");
+
+  pattern_term->set_term_type(proto_msg::TermType::LITERAL);
+  pattern_term->set_term_value("\"44.988Z\"");
+
+  suffix_query_term->set_term_type(proto_msg::TermType::LITERAL);
+  suffix_query_term->set_term_value("\"20\"");
+
+  auto result = QueryFiltersFixture::cache->run_query(tree);
+
+  auto query_values_set = get_string_values_from_result_table(
+      result.table(), *QueryFiltersFixture::pcm);
+
+  std::set<std::string> expected_dates;
+
+  for (const auto &date : dates) {
+    if (StringHandlingUtil::ends_with(date, "44.988Z") &&
+        StringHandlingUtil::starts_with(date, "20")) {
+      expected_dates.insert("\"" + date + "\"^^xsd:dateTime");
+    }
+  }
+
+  ASSERT_EQ(query_values_set, expected_dates);
 }

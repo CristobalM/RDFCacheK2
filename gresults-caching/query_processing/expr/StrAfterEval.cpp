@@ -79,23 +79,14 @@ StrAfterEval::eval_resource(const ExprEval::row_t &row) {
   }
 
   bool result_is_datatype = false;
-  bool result_is_simple = false;
-  if (first_data_type != EDT_UNKNOWN && first_data_type == second_data_type) {
+  if ((first_data_type == second_data_type ||
+       second_data_type == EDT_UNKNOWN) &&
+      first_language_tag.empty()) {
     result_is_datatype = true;
   } else if (!first_language_tag.empty() &&
-             first_language_tag == second_language_tag) {
-  } else if (first_data_type == EDT_UNKNOWN &&
-             second_data_type == EDT_UNKNOWN && first_language_tag.empty() &&
-             second_language_tag.empty()) {
-    result_is_simple = true;
+             (second_language_tag.empty() ||
+              first_language_tag == second_language_tag)) {
   } else {
-    this->with_error = true;
-    return TermResource::null();
-  }
-
-  if (first_data_type != second_data_type ||
-      (first_language_tag.empty() && !second_language_tag.empty()) ||
-      (first_language_tag != second_language_tag)) {
     this->with_error = true;
     return TermResource::null();
   }
@@ -105,19 +96,16 @@ StrAfterEval::eval_resource(const ExprEval::row_t &row) {
   // no match
   if (position == std::string::npos) {
     return std::make_unique<StringLiteralResource>("",
-                                                   ExprDataType::EDT_STRING);
+                                                   ExprDataType::EDT_UNKNOWN);
   }
 
   auto resulting_string = first_string.substr(position + second_string.size());
 
-  if (result_is_simple) {
-    return std::make_unique<StringLiteralResource>(std::move(resulting_string),
-                                                   ExprDataType::EDT_STRING);
-  }
-
   if (result_is_datatype) {
+    ExprDataType resulting_data_type =
+        (first_data_type == EDT_STRING) ? EDT_STRING : EDT_UNKNOWN;
     return std::make_unique<StringLiteralResource>(std::move(resulting_string),
-                                                   first_data_type);
+                                                   resulting_data_type);
   }
 
   return std::make_unique<StringLiteralLangResource>(
