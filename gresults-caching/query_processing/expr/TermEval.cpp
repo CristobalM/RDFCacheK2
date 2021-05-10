@@ -100,9 +100,7 @@ int TermEval::eval_integer(const ExprEval::row_t &row) {
   case proto_msg::TermType::VARIABLE:
     return eval_integer_from_resource(eval_variable_get_resource(row));
   case proto_msg::TermType::LITERAL:
-    return eval_integer_from_string(
-        ExprProcessorPersistentData::get().extract_literal_content_from_string(
-            term.term_value()));
+    return eval_integer_from_string(term.term_value());
   case proto_msg::TermType::BLANK_NODE:
   case proto_msg::TermType::IRI:
   default:

@@ -90,7 +90,10 @@ StrConcatEval::eval_resource(const ExprEval::row_t &row) {
                                                        std::move(lang_tag));
   }
   if (wdata_type) {
-    return std::make_unique<StringLiteralResource>(ss.str(), data_type);
+    ExprDataType resulting_data_type =
+        (data_type == EDT_STRING) ? EDT_STRING : EDT_UNKNOWN;
+    return std::make_unique<StringLiteralResource>(ss.str(),
+                                                   resulting_data_type);
   }
 
   return std::make_unique<StringLiteralResource>(ss.str(),

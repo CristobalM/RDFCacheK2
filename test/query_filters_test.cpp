@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "cache_test_util.hpp"
+#include <curl/curl.h>
 
 #include <Cache.hpp>
 #include <EmptyISDManager.hpp>
@@ -29,6 +30,7 @@ public:
   static std::set<int> values1;
   static std::set<double> values_double1;
   static std::vector<std::string> dates;
+  static std::vector<std::string> some_literal_strings1;
   static std::vector<DateInfo> date_infos_expected;
 
   static void SetUpTestCase() {
@@ -60,6 +62,13 @@ public:
         "2025-05-04T19:50:44.988Z",      "2026-12-02T19:50:44.988Z",
         "2025-05-04T19:50:44.988-05:31", "2026-12-02T19:50:44.988+09:31",
     };
+
+    some_literal_strings1 = {
+        "first_string",          "second_string",         "third_string",
+        "fourth_string",         "fifth_string",          "sixth_string",
+        "seventh_string",        "eighth_string",         "tenth_string",
+        "SOME_UPPERCASE_STRING", "some_lowercase_string",
+    };
     for (const auto &date : dates) {
       date_infos_expected.push_back(
           ExprProcessorPersistentData::get().parse_iso8601(date));
@@ -86,6 +95,14 @@ public:
         RDFResource("\"someLiteralStuff\"",
                     RDFResourceType::RDF_TYPE_LITERAL)));
 
+    for (const auto &str : some_literal_strings1) {
+      pcm->add_triple(RDFTripleResource(
+          RDFResource("<some_iri_referencing_a_str_literal>",
+                      RDFResourceType::RDF_TYPE_IRI),
+          RDFResource("<has_str_literal>", RDFResourceType::RDF_TYPE_IRI),
+          RDFResource("\"" + str + "\"", RDFResourceType::RDF_TYPE_LITERAL)));
+    }
+
     cache =
         std::make_unique<Cache>(pcm, CacheReplacement::STRATEGY::LRU, 100'000);
   }
@@ -103,6 +120,7 @@ std::unique_ptr<Cache> QueryFiltersFixture::cache;
 std::set<int> QueryFiltersFixture::values1;
 std::set<double> QueryFiltersFixture::values_double1;
 std::vector<std::string> QueryFiltersFixture::dates;
+std::vector<std::string> QueryFiltersFixture::some_literal_strings1;
 std::vector<DateInfo> QueryFiltersFixture::date_infos_expected;
 
 static std::set<std::string>
@@ -1757,8 +1775,6 @@ TEST_F(QueryFiltersFixture, test_regex_eval_1) {
 
   auto result = QueryFiltersFixture::cache->run_query(tree);
 
-  print_table_debug2(result, *cache);
-
   auto query_values_set = get_string_values_from_result_table(
       result.table(), *QueryFiltersFixture::pcm);
 
@@ -1816,8 +1832,6 @@ static void run_test_same_term_one(const std::string &predicate_str,
   rhs_term_node->set_term_value(term_str);
 
   auto result = QueryFiltersFixture::cache->run_query(tree);
-
-  // print_table_debug2(result, *QueryFiltersFixture::cache);
 
   auto query_values_set = get_string_values_from_result_table(
       result.table(), *QueryFiltersFixture::pcm);
@@ -1975,4 +1989,689 @@ TEST_F(QueryFiltersFixture, test_str_before_1) {
   }
 
   ASSERT_EQ(query_values_set, expected_dates);
+}
+
+TEST_F(QueryFiltersFixture, test_str_concat_1) {
+  proto_msg::SparqlTree tree;
+  auto *distinct_node = tree.mutable_root()->mutable_distinct_node();
+  auto *project_node =
+      distinct_node->mutable_sub_node()->mutable_project_node();
+  project_node->add_vars("?x");
+  auto *filter_node = project_node->mutable_sub_op()->mutable_filter_node();
+  auto *bgp_node = filter_node->mutable_node()->mutable_bgp_node();
+  auto *first_triple = bgp_node->mutable_triple()->Add();
+  auto *first_subject = first_triple->mutable_subject();
+  auto *first_predicate = first_triple->mutable_predicate();
+  auto *first_object = first_triple->mutable_object();
+  first_subject->set_term_value("?y");
+  first_subject->set_term_type(proto_msg::TermType::VARIABLE);
+  first_predicate->set_term_value("<has_date>");
+  first_predicate->set_term_type(proto_msg::TermType::IRI);
+  first_object->set_term_value("?x");
+  first_object->set_term_type(proto_msg::TermType::VARIABLE);
+
+  auto *equals_fnode =
+      filter_node->mutable_exprs()->Add()->mutable_function_node();
+  equals_fnode->set_function_op(proto_msg::FunctionOP::STR_ENDS_WITH);
+
+  auto *str_concat_fnode =
+      equals_fnode->mutable_exprs()->Add()->mutable_function_node();
+  auto *suffix_query_term =
+      equals_fnode->mutable_exprs()->Add()->mutable_term_node();
+
+  str_concat_fnode->set_function_op(proto_msg::FunctionOP::STR_CONCAT);
+  auto *concat_first_term =
+      str_concat_fnode->mutable_exprs()->Add()->mutable_term_node();
+  auto *concat_second_term =
+      str_concat_fnode->mutable_exprs()->Add()->mutable_term_node();
+
+  concat_first_term->set_term_type(proto_msg::TermType::VARIABLE);
+  concat_first_term->set_term_value("?x");
+
+  static const std::string some_suffix = "__SOME_SUFFIX";
+  static const std::string some_suffix_z = "Z__SOME_SUFFIX";
+  static const std::string some_suffix_quoted = "\"" + some_suffix + "\"";
+  static const std::string some_suffix_z_quoted = "\"" + some_suffix_z + "\"";
+
+  concat_second_term->set_term_type(proto_msg::TermType::LITERAL);
+  concat_second_term->set_term_value(some_suffix_quoted);
+
+  suffix_query_term->set_term_type(proto_msg::TermType::LITERAL);
+  suffix_query_term->set_term_value(some_suffix_z_quoted);
+
+  auto result = QueryFiltersFixture::cache->run_query(tree);
+
+  auto query_values_set = get_string_values_from_result_table(
+      result.table(), *QueryFiltersFixture::pcm);
+
+  std::set<std::string> expected_dates;
+
+  for (const auto &date : dates) {
+    if (StringHandlingUtil::ends_with(date, "Z"))
+      expected_dates.insert("\"" + date + "\"^^xsd:dateTime");
+  }
+
+  ASSERT_EQ(query_values_set, expected_dates);
+}
+
+TEST_F(QueryFiltersFixture, test_str_contains_1) {
+  proto_msg::SparqlTree tree;
+  auto *distinct_node = tree.mutable_root()->mutable_distinct_node();
+  auto *project_node =
+      distinct_node->mutable_sub_node()->mutable_project_node();
+  project_node->add_vars("?x");
+  auto *filter_node = project_node->mutable_sub_op()->mutable_filter_node();
+  auto *bgp_node = filter_node->mutable_node()->mutable_bgp_node();
+  auto *first_triple = bgp_node->mutable_triple()->Add();
+  auto *first_subject = first_triple->mutable_subject();
+  auto *first_predicate = first_triple->mutable_predicate();
+  auto *first_object = first_triple->mutable_object();
+  first_subject->set_term_value("?y");
+  first_subject->set_term_type(proto_msg::TermType::VARIABLE);
+  first_predicate->set_term_value("<has_date>");
+  first_predicate->set_term_type(proto_msg::TermType::IRI);
+  first_object->set_term_value("?x");
+  first_object->set_term_type(proto_msg::TermType::VARIABLE);
+
+  auto *str_contains_fnode =
+      filter_node->mutable_exprs()->Add()->mutable_function_node();
+  str_contains_fnode->set_function_op(proto_msg::FunctionOP::STR_CONTAINS);
+
+  auto *str_concat_fnode =
+      str_contains_fnode->mutable_exprs()->Add()->mutable_function_node();
+  auto *suffix_query_term =
+      str_contains_fnode->mutable_exprs()->Add()->mutable_term_node();
+
+  str_concat_fnode->set_function_op(proto_msg::FunctionOP::STR_CONCAT);
+  auto *concat_first_term =
+      str_concat_fnode->mutable_exprs()->Add()->mutable_term_node();
+  auto *concat_second_term =
+      str_concat_fnode->mutable_exprs()->Add()->mutable_term_node();
+
+  concat_first_term->set_term_type(proto_msg::TermType::VARIABLE);
+  concat_first_term->set_term_value("?x");
+
+  static const std::string some_suffix = "__SOME_SUFFIX";
+  static const std::string some_suffix_z = "Z__SOME_SUFFIX";
+  static const std::string some_suffix_quoted = "\"" + some_suffix + "\"";
+  static const std::string some_suffix_z_quoted = "\"" + some_suffix_z + "\"";
+
+  concat_second_term->set_term_type(proto_msg::TermType::LITERAL);
+  concat_second_term->set_term_value(some_suffix_quoted);
+
+  suffix_query_term->set_term_type(proto_msg::TermType::LITERAL);
+  suffix_query_term->set_term_value(some_suffix_z_quoted);
+
+  auto result = QueryFiltersFixture::cache->run_query(tree);
+
+  auto query_values_set = get_string_values_from_result_table(
+      result.table(), *QueryFiltersFixture::pcm);
+
+  std::set<std::string> expected_dates;
+
+  for (const auto &date : dates) {
+    if (StringHandlingUtil::ends_with(date, "Z"))
+      expected_dates.insert("\"" + date + "\"^^xsd:dateTime");
+  }
+
+  ASSERT_EQ(query_values_set, expected_dates);
+}
+
+static void
+run_str_encode_for_uri_query(const std::string &to_encode_date_str) {
+  proto_msg::SparqlTree tree;
+  auto *distinct_node = tree.mutable_root()->mutable_distinct_node();
+  auto *project_node =
+      distinct_node->mutable_sub_node()->mutable_project_node();
+  project_node->add_vars("?x");
+  auto *filter_node = project_node->mutable_sub_op()->mutable_filter_node();
+  auto *bgp_node = filter_node->mutable_node()->mutable_bgp_node();
+  auto *first_triple = bgp_node->mutable_triple()->Add();
+  auto *first_subject = first_triple->mutable_subject();
+  auto *first_predicate = first_triple->mutable_predicate();
+  auto *first_object = first_triple->mutable_object();
+  first_subject->set_term_value("?y");
+  first_subject->set_term_type(proto_msg::TermType::VARIABLE);
+  first_predicate->set_term_value("<has_date>");
+  first_predicate->set_term_type(proto_msg::TermType::IRI);
+  first_object->set_term_value("?x");
+  first_object->set_term_type(proto_msg::TermType::VARIABLE);
+
+  auto *equals_fnode =
+      filter_node->mutable_exprs()->Add()->mutable_function_node();
+  equals_fnode->set_function_op(proto_msg::FunctionOP::EQUALS);
+
+  auto *encode_for_uri_fnode =
+      equals_fnode->mutable_exprs()->Add()->mutable_function_node();
+  auto *rhs_equality_term =
+      equals_fnode->mutable_exprs()->Add()->mutable_term_node();
+
+  encode_for_uri_fnode->set_function_op(
+      proto_msg::FunctionOP::STR_ENCODE_FOR_URI);
+  auto *to_encode_term =
+      encode_for_uri_fnode->mutable_exprs()->Add()->mutable_term_node();
+
+  to_encode_term->set_term_type(proto_msg::TermType::VARIABLE);
+  to_encode_term->set_term_value("?x");
+
+  char *encoded_str_char_ptr = curl_easy_escape(
+      nullptr, to_encode_date_str.c_str(), to_encode_date_str.size());
+  std::string encoded_str(encoded_str_char_ptr);
+  curl_free(encoded_str_char_ptr);
+
+  rhs_equality_term->set_term_type(proto_msg::TermType::LITERAL);
+  rhs_equality_term->set_term_value("\"" + encoded_str + "\"");
+
+  auto result = QueryFiltersFixture::cache->run_query(tree);
+
+  auto query_values_set = get_string_values_from_result_table(
+      result.table(), *QueryFiltersFixture::pcm);
+
+  ASSERT_EQ(query_values_set.size(), 1);
+  ASSERT_NE(
+      query_values_set.find("\"" + to_encode_date_str + "\"^^xsd:dateTime"),
+      query_values_set.end());
+}
+
+TEST_F(QueryFiltersFixture, test_str_encode_for_uri_1) {
+  for (const auto &date : dates)
+    run_str_encode_for_uri_query(date);
+}
+
+TEST_F(QueryFiltersFixture, test_str_lang_eval_1) {
+  proto_msg::SparqlTree tree;
+  auto *distinct_node = tree.mutable_root()->mutable_distinct_node();
+  auto *project_node =
+      distinct_node->mutable_sub_node()->mutable_project_node();
+  project_node->add_vars("?x");
+  auto *filter_node = project_node->mutable_sub_op()->mutable_filter_node();
+  auto *bgp_node = filter_node->mutable_node()->mutable_bgp_node();
+  auto *first_triple = bgp_node->mutable_triple()->Add();
+  auto *first_subject = first_triple->mutable_subject();
+  auto *first_predicate = first_triple->mutable_predicate();
+  auto *first_object = first_triple->mutable_object();
+  first_subject->set_term_value("?y");
+  first_subject->set_term_type(proto_msg::TermType::VARIABLE);
+  first_predicate->set_term_value("<has_date>");
+  first_predicate->set_term_type(proto_msg::TermType::IRI);
+  first_object->set_term_value("?x");
+  first_object->set_term_type(proto_msg::TermType::VARIABLE);
+
+  auto *equals_fnode =
+      filter_node->mutable_exprs()->Add()->mutable_function_node();
+  equals_fnode->set_function_op(proto_msg::FunctionOP::LANG_MATCHES);
+
+  auto *str_lang_tag_fnode =
+      equals_fnode->mutable_exprs()->Add()->mutable_function_node();
+  auto *rhs_equality_term =
+      equals_fnode->mutable_exprs()->Add()->mutable_term_node();
+
+  str_lang_tag_fnode->set_function_op(proto_msg::FunctionOP::STR_LANG);
+
+  auto *lexical_form_term =
+      str_lang_tag_fnode->mutable_exprs()->Add()->mutable_term_node();
+  auto *lang_tag_term =
+      str_lang_tag_fnode->mutable_exprs()->Add()->mutable_term_node();
+
+  lexical_form_term->set_term_value("?x");
+  lexical_form_term->set_term_type(proto_msg::TermType::VARIABLE);
+
+  lang_tag_term->set_term_value("\"es-CL\"");
+  lang_tag_term->set_term_type(proto_msg::TermType::LITERAL);
+
+  rhs_equality_term->set_term_value("\"es\"");
+  rhs_equality_term->set_term_type(proto_msg::TermType::LITERAL);
+
+  auto result = QueryFiltersFixture::cache->run_query(tree);
+
+  auto query_values_set = get_string_values_from_result_table(
+      result.table(), *QueryFiltersFixture::pcm);
+
+  std::set<std::string> expected_set;
+  for (const auto &date : dates) {
+    expected_set.insert("\"" + date + "\"^^xsd:dateTime");
+  }
+
+  ASSERT_EQ(query_values_set, expected_set);
+}
+
+TEST_F(QueryFiltersFixture, test_str_length_eval_1) {
+  proto_msg::SparqlTree tree;
+  auto *distinct_node = tree.mutable_root()->mutable_distinct_node();
+  auto *project_node =
+      distinct_node->mutable_sub_node()->mutable_project_node();
+  project_node->add_vars("?x");
+  auto *filter_node = project_node->mutable_sub_op()->mutable_filter_node();
+  auto *bgp_node = filter_node->mutable_node()->mutable_bgp_node();
+  auto *first_triple = bgp_node->mutable_triple()->Add();
+  auto *first_subject = first_triple->mutable_subject();
+  auto *first_predicate = first_triple->mutable_predicate();
+  auto *first_object = first_triple->mutable_object();
+  first_subject->set_term_value("?y");
+  first_subject->set_term_type(proto_msg::TermType::VARIABLE);
+  first_predicate->set_term_value("<has_date>");
+  first_predicate->set_term_type(proto_msg::TermType::IRI);
+  first_object->set_term_value("?x");
+  first_object->set_term_type(proto_msg::TermType::VARIABLE);
+
+  auto *equals_fnode =
+      filter_node->mutable_exprs()->Add()->mutable_function_node();
+  equals_fnode->set_function_op(proto_msg::FunctionOP::EQUALS);
+
+  auto *str_length_fnode =
+      equals_fnode->mutable_exprs()->Add()->mutable_function_node();
+  auto *rhs_equality_term =
+      equals_fnode->mutable_exprs()->Add()->mutable_term_node();
+
+  str_length_fnode->set_function_op(proto_msg::FunctionOP::STR_LENGTH);
+
+  auto *str_length_term =
+      str_length_fnode->mutable_exprs()->Add()->mutable_term_node();
+
+  str_length_term->set_term_value("?x");
+  str_length_term->set_term_type(proto_msg::TermType::VARIABLE);
+
+  rhs_equality_term->set_term_value("\"" + std::to_string(dates[0].size()) +
+                                    "\"^^xsd:integer");
+  rhs_equality_term->set_term_type(proto_msg::TermType::LITERAL);
+
+  auto result = QueryFiltersFixture::cache->run_query(tree);
+
+  auto query_values_set = get_string_values_from_result_table(
+      result.table(), *QueryFiltersFixture::pcm);
+
+  std::set<std::string> expected_set;
+  for (const auto &date : dates) {
+    if (date.size() == dates[0].size())
+      expected_set.insert("\"" + date + "\"^^xsd:dateTime");
+  }
+
+  ASSERT_EQ(query_values_set, expected_set);
+}
+
+TEST_F(QueryFiltersFixture, test_str_lowercase_eval_1) {
+  proto_msg::SparqlTree tree;
+  auto *distinct_node = tree.mutable_root()->mutable_distinct_node();
+  auto *project_node =
+      distinct_node->mutable_sub_node()->mutable_project_node();
+  project_node->add_vars("?x");
+  auto *filter_node = project_node->mutable_sub_op()->mutable_filter_node();
+  auto *bgp_node = filter_node->mutable_node()->mutable_bgp_node();
+  auto *first_triple = bgp_node->mutable_triple()->Add();
+  auto *first_subject = first_triple->mutable_subject();
+  auto *first_predicate = first_triple->mutable_predicate();
+  auto *first_object = first_triple->mutable_object();
+  first_subject->set_term_value("?y");
+  first_subject->set_term_type(proto_msg::TermType::VARIABLE);
+  first_predicate->set_term_value("<has_str_literal>");
+  first_predicate->set_term_type(proto_msg::TermType::IRI);
+  first_object->set_term_value("?x");
+  first_object->set_term_type(proto_msg::TermType::VARIABLE);
+
+  auto *equals_fnode =
+      filter_node->mutable_exprs()->Add()->mutable_function_node();
+  equals_fnode->set_function_op(proto_msg::FunctionOP::EQUALS);
+
+  auto *str_lowercase_fnode =
+      equals_fnode->mutable_exprs()->Add()->mutable_function_node();
+  auto *rhs_equality_term =
+      equals_fnode->mutable_exprs()->Add()->mutable_term_node();
+
+  str_lowercase_fnode->set_function_op(proto_msg::FunctionOP::STR_LOWER_CASE);
+
+  auto *str_lowercase_term =
+      str_lowercase_fnode->mutable_exprs()->Add()->mutable_term_node();
+
+  str_lowercase_term->set_term_value("?x");
+  str_lowercase_term->set_term_type(proto_msg::TermType::VARIABLE);
+
+  rhs_equality_term->set_term_value("\"some_uppercase_string\"");
+  rhs_equality_term->set_term_type(proto_msg::TermType::LITERAL);
+
+  auto result = QueryFiltersFixture::cache->run_query(tree);
+
+  auto query_values_set = get_string_values_from_result_table(
+      result.table(), *QueryFiltersFixture::pcm);
+  ASSERT_GT(query_values_set.size(), 0);
+  ASSERT_NE(query_values_set.find("\"SOME_UPPERCASE_STRING\""),
+            query_values_set.end());
+}
+
+TEST_F(QueryFiltersFixture, test_str_uppercase_eval_1) {
+  proto_msg::SparqlTree tree;
+  auto *distinct_node = tree.mutable_root()->mutable_distinct_node();
+  auto *project_node =
+      distinct_node->mutable_sub_node()->mutable_project_node();
+  project_node->add_vars("?x");
+  auto *filter_node = project_node->mutable_sub_op()->mutable_filter_node();
+  auto *bgp_node = filter_node->mutable_node()->mutable_bgp_node();
+  auto *first_triple = bgp_node->mutable_triple()->Add();
+  auto *first_subject = first_triple->mutable_subject();
+  auto *first_predicate = first_triple->mutable_predicate();
+  auto *first_object = first_triple->mutable_object();
+  first_subject->set_term_value("?y");
+  first_subject->set_term_type(proto_msg::TermType::VARIABLE);
+  first_predicate->set_term_value("<has_str_literal>");
+  first_predicate->set_term_type(proto_msg::TermType::IRI);
+  first_object->set_term_value("?x");
+  first_object->set_term_type(proto_msg::TermType::VARIABLE);
+
+  auto *equals_fnode =
+      filter_node->mutable_exprs()->Add()->mutable_function_node();
+  equals_fnode->set_function_op(proto_msg::FunctionOP::EQUALS);
+
+  auto *str_lowercase_fnode =
+      equals_fnode->mutable_exprs()->Add()->mutable_function_node();
+  auto *rhs_equality_term =
+      equals_fnode->mutable_exprs()->Add()->mutable_term_node();
+
+  str_lowercase_fnode->set_function_op(proto_msg::FunctionOP::STR_UPPER_CASE);
+
+  auto *str_lowercase_term =
+      str_lowercase_fnode->mutable_exprs()->Add()->mutable_term_node();
+
+  str_lowercase_term->set_term_value("?x");
+  str_lowercase_term->set_term_type(proto_msg::TermType::VARIABLE);
+
+  rhs_equality_term->set_term_value("\"SOME_LOWERCASE_STRING\"");
+  rhs_equality_term->set_term_type(proto_msg::TermType::LITERAL);
+
+  auto result = QueryFiltersFixture::cache->run_query(tree);
+
+  auto query_values_set = get_string_values_from_result_table(
+      result.table(), *QueryFiltersFixture::pcm);
+  ASSERT_EQ(query_values_set.size(), 1);
+  ASSERT_NE(query_values_set.find("\"some_lowercase_string\""),
+            query_values_set.end());
+}
+
+TEST_F(QueryFiltersFixture, test_str_replace_eval_1) {
+  proto_msg::SparqlTree tree;
+  auto *distinct_node = tree.mutable_root()->mutable_distinct_node();
+  auto *project_node =
+      distinct_node->mutable_sub_node()->mutable_project_node();
+  project_node->add_vars("?x");
+  auto *filter_node = project_node->mutable_sub_op()->mutable_filter_node();
+  auto *bgp_node = filter_node->mutable_node()->mutable_bgp_node();
+  auto *first_triple = bgp_node->mutable_triple()->Add();
+  auto *first_subject = first_triple->mutable_subject();
+  auto *first_predicate = first_triple->mutable_predicate();
+  auto *first_object = first_triple->mutable_object();
+  first_subject->set_term_value("?y");
+  first_subject->set_term_type(proto_msg::TermType::VARIABLE);
+  first_predicate->set_term_value("<has_str_literal>");
+  first_predicate->set_term_type(proto_msg::TermType::IRI);
+  first_object->set_term_value("?x");
+  first_object->set_term_type(proto_msg::TermType::VARIABLE);
+
+  auto *equals_fnode =
+      filter_node->mutable_exprs()->Add()->mutable_function_node();
+  equals_fnode->set_function_op(proto_msg::FunctionOP::EQUALS);
+
+  auto *str_replace_fnode =
+      equals_fnode->mutable_exprs()->Add()->mutable_function_node();
+  auto *rhs_equality_term =
+      equals_fnode->mutable_exprs()->Add()->mutable_term_node();
+
+  str_replace_fnode->set_function_op(proto_msg::FunctionOP::STR_REPLACE);
+
+  auto *input_text_term =
+      str_replace_fnode->mutable_exprs()->Add()->mutable_term_node();
+  auto *input_pattern_term =
+      str_replace_fnode->mutable_exprs()->Add()->mutable_term_node();
+  auto *input_replacement_term =
+      str_replace_fnode->mutable_exprs()->Add()->mutable_term_node();
+  auto *input_flags_term =
+      str_replace_fnode->mutable_exprs()->Add()->mutable_term_node();
+
+  input_text_term->set_term_value("?x");
+  input_text_term->set_term_type(proto_msg::TermType::VARIABLE);
+
+  input_pattern_term->set_term_value("\"string\"");
+  input_pattern_term->set_term_type(proto_msg::TermType::LITERAL);
+
+  input_replacement_term->set_term_value("\"replaced\"");
+  input_replacement_term->set_term_type(proto_msg::TermType::LITERAL);
+
+  input_flags_term->set_term_value("\"\"");
+  input_flags_term->set_term_type(proto_msg::TermType::LITERAL);
+
+  rhs_equality_term->set_term_value("\"fourth_replaced\"");
+  rhs_equality_term->set_term_type(proto_msg::TermType::LITERAL);
+
+  auto result = QueryFiltersFixture::cache->run_query(tree);
+
+  auto query_values_set = get_string_values_from_result_table(
+      result.table(), *QueryFiltersFixture::pcm);
+  ASSERT_EQ(query_values_set.size(), 1);
+  ASSERT_NE(query_values_set.find("\"fourth_string\""), query_values_set.end());
+}
+
+TEST_F(QueryFiltersFixture, test_str_replace_eval_2) {
+  proto_msg::SparqlTree tree;
+  auto *distinct_node = tree.mutable_root()->mutable_distinct_node();
+  auto *project_node =
+      distinct_node->mutable_sub_node()->mutable_project_node();
+  project_node->add_vars("?x");
+  auto *filter_node = project_node->mutable_sub_op()->mutable_filter_node();
+  auto *bgp_node = filter_node->mutable_node()->mutable_bgp_node();
+  auto *first_triple = bgp_node->mutable_triple()->Add();
+  auto *first_subject = first_triple->mutable_subject();
+  auto *first_predicate = first_triple->mutable_predicate();
+  auto *first_object = first_triple->mutable_object();
+  first_subject->set_term_value("?y");
+  first_subject->set_term_type(proto_msg::TermType::VARIABLE);
+  first_predicate->set_term_value("<has_str_literal>");
+  first_predicate->set_term_type(proto_msg::TermType::IRI);
+  first_object->set_term_value("?x");
+  first_object->set_term_type(proto_msg::TermType::VARIABLE);
+
+  auto *equals_fnode =
+      filter_node->mutable_exprs()->Add()->mutable_function_node();
+  equals_fnode->set_function_op(proto_msg::FunctionOP::EQUALS);
+
+  auto *str_replace_fnode =
+      equals_fnode->mutable_exprs()->Add()->mutable_function_node();
+  auto *rhs_equality_term =
+      equals_fnode->mutable_exprs()->Add()->mutable_term_node();
+
+  str_replace_fnode->set_function_op(proto_msg::FunctionOP::STR_REPLACE);
+
+  auto *input_text_term =
+      str_replace_fnode->mutable_exprs()->Add()->mutable_term_node();
+  auto *input_pattern_term =
+      str_replace_fnode->mutable_exprs()->Add()->mutable_term_node();
+  auto *input_replacement_term =
+      str_replace_fnode->mutable_exprs()->Add()->mutable_term_node();
+  auto *input_flags_term =
+      str_replace_fnode->mutable_exprs()->Add()->mutable_term_node();
+
+  input_text_term->set_term_value("?x");
+  input_text_term->set_term_type(proto_msg::TermType::VARIABLE);
+
+  input_pattern_term->set_term_value("\"string\"");
+  input_pattern_term->set_term_type(proto_msg::TermType::LITERAL);
+
+  input_replacement_term->set_term_value("\"replaced\"");
+  input_replacement_term->set_term_type(proto_msg::TermType::LITERAL);
+
+  input_flags_term->set_term_value("\"i\"");
+  input_flags_term->set_term_type(proto_msg::TermType::LITERAL);
+
+  rhs_equality_term->set_term_value("\"SOME_UPPERCASE_replaced\"");
+  rhs_equality_term->set_term_type(proto_msg::TermType::LITERAL);
+
+  auto result = QueryFiltersFixture::cache->run_query(tree);
+
+  auto query_values_set = get_string_values_from_result_table(
+      result.table(), *QueryFiltersFixture::pcm);
+  ASSERT_EQ(query_values_set.size(), 1);
+  ASSERT_NE(query_values_set.find("\"SOME_UPPERCASE_STRING\""),
+            query_values_set.end());
+}
+
+TEST_F(QueryFiltersFixture, test_str_substring_eval_1) {
+  proto_msg::SparqlTree tree;
+  auto *distinct_node = tree.mutable_root()->mutable_distinct_node();
+  auto *project_node =
+      distinct_node->mutable_sub_node()->mutable_project_node();
+  project_node->add_vars("?x");
+  auto *filter_node = project_node->mutable_sub_op()->mutable_filter_node();
+  auto *bgp_node = filter_node->mutable_node()->mutable_bgp_node();
+  auto *first_triple = bgp_node->mutable_triple()->Add();
+  auto *first_subject = first_triple->mutable_subject();
+  auto *first_predicate = first_triple->mutable_predicate();
+  auto *first_object = first_triple->mutable_object();
+  first_subject->set_term_value("?y");
+  first_subject->set_term_type(proto_msg::TermType::VARIABLE);
+  first_predicate->set_term_value("<has_str_literal>");
+  first_predicate->set_term_type(proto_msg::TermType::IRI);
+  first_object->set_term_value("?x");
+  first_object->set_term_type(proto_msg::TermType::VARIABLE);
+
+  auto *equals_fnode =
+      filter_node->mutable_exprs()->Add()->mutable_function_node();
+  equals_fnode->set_function_op(proto_msg::FunctionOP::EQUALS);
+
+  auto *str_subtring_fnode =
+      equals_fnode->mutable_exprs()->Add()->mutable_function_node();
+  auto *rhs_equality_term =
+      equals_fnode->mutable_exprs()->Add()->mutable_term_node();
+
+  str_subtring_fnode->set_function_op(proto_msg::FunctionOP::STR_SUBSTRING);
+
+  auto *input_text_term =
+      str_subtring_fnode->mutable_exprs()->Add()->mutable_term_node();
+  auto *input_starting_loc_term =
+      str_subtring_fnode->mutable_exprs()->Add()->mutable_term_node();
+  auto *input_length_term =
+      str_subtring_fnode->mutable_exprs()->Add()->mutable_term_node();
+
+  input_text_term->set_term_value("?x");
+  input_text_term->set_term_type(proto_msg::TermType::VARIABLE);
+
+  input_starting_loc_term->set_term_value("\"6\"^^xsd:integer");
+  input_starting_loc_term->set_term_type(proto_msg::TermType::LITERAL);
+
+  input_length_term->set_term_value("\"6\"^^xsd:integer");
+  input_length_term->set_term_type(proto_msg::TermType::LITERAL);
+
+  rhs_equality_term->set_term_value("\"string\"");
+  rhs_equality_term->set_term_type(proto_msg::TermType::LITERAL);
+
+  auto result = QueryFiltersFixture::cache->run_query(tree);
+
+  auto query_values_set = get_string_values_from_result_table(
+      result.table(), *QueryFiltersFixture::pcm);
+
+  ASSERT_GE(query_values_set.size(), 1);
+  ASSERT_NE(query_values_set.find("\"first_string\""), query_values_set.end());
+}
+
+TEST_F(QueryFiltersFixture, test_unary_minus_eval_1) {
+  proto_msg::SparqlTree tree;
+  auto *distinct_node = tree.mutable_root()->mutable_distinct_node();
+  auto *project_node =
+      distinct_node->mutable_sub_node()->mutable_project_node();
+  project_node->add_vars("?x");
+  auto *filter_node = project_node->mutable_sub_op()->mutable_filter_node();
+  auto *bgp_node = filter_node->mutable_node()->mutable_bgp_node();
+  auto *first_triple = bgp_node->mutable_triple()->Add();
+  auto *first_subject = first_triple->mutable_subject();
+  auto *first_predicate = first_triple->mutable_predicate();
+  auto *first_object = first_triple->mutable_object();
+  first_subject->set_term_value("?y");
+  first_subject->set_term_type(proto_msg::TermType::VARIABLE);
+  first_predicate->set_term_value("<has_integer>");
+  first_predicate->set_term_type(proto_msg::TermType::IRI);
+  first_object->set_term_value("?x");
+  first_object->set_term_type(proto_msg::TermType::VARIABLE);
+
+  auto *equals_fnode =
+      filter_node->mutable_exprs()->Add()->mutable_function_node();
+  equals_fnode->set_function_op(proto_msg::FunctionOP::LESS_THAN);
+
+  auto *unary_minus_fnode =
+      equals_fnode->mutable_exprs()->Add()->mutable_function_node();
+  auto *rhs_equality_term =
+      equals_fnode->mutable_exprs()->Add()->mutable_term_node();
+
+  unary_minus_fnode->set_function_op(proto_msg::FunctionOP::UNARY_MINUS);
+
+  auto *var_term =
+      unary_minus_fnode->mutable_exprs()->Add()->mutable_term_node();
+
+  var_term->set_term_value("?x");
+  var_term->set_term_type(proto_msg::TermType::VARIABLE);
+
+  rhs_equality_term->set_term_value("\"0\"^^xsd:integer");
+  rhs_equality_term->set_term_type(proto_msg::TermType::LITERAL);
+
+  auto result = QueryFiltersFixture::cache->run_query(tree);
+
+  auto query_values_set =
+      get_values_from_result_table(result.table(), *QueryFiltersFixture::pcm);
+
+  std::set<int> expected_values;
+  for (auto value : values1) {
+    if (value > 0) {
+      expected_values.insert(value);
+    }
+  }
+  ASSERT_GT(query_values_set.size(), 0);
+  ASSERT_EQ(query_values_set, expected_values);
+}
+
+TEST_F(QueryFiltersFixture, test_unary_plus_eval_1) {
+  proto_msg::SparqlTree tree;
+  auto *distinct_node = tree.mutable_root()->mutable_distinct_node();
+  auto *project_node =
+      distinct_node->mutable_sub_node()->mutable_project_node();
+  project_node->add_vars("?x");
+  auto *filter_node = project_node->mutable_sub_op()->mutable_filter_node();
+  auto *bgp_node = filter_node->mutable_node()->mutable_bgp_node();
+  auto *first_triple = bgp_node->mutable_triple()->Add();
+  auto *first_subject = first_triple->mutable_subject();
+  auto *first_predicate = first_triple->mutable_predicate();
+  auto *first_object = first_triple->mutable_object();
+  first_subject->set_term_value("?y");
+  first_subject->set_term_type(proto_msg::TermType::VARIABLE);
+  first_predicate->set_term_value("<has_integer>");
+  first_predicate->set_term_type(proto_msg::TermType::IRI);
+  first_object->set_term_value("?x");
+  first_object->set_term_type(proto_msg::TermType::VARIABLE);
+
+  auto *equals_fnode =
+      filter_node->mutable_exprs()->Add()->mutable_function_node();
+  equals_fnode->set_function_op(proto_msg::FunctionOP::LESS_THAN);
+
+  auto *unary_minus_fnode =
+      equals_fnode->mutable_exprs()->Add()->mutable_function_node();
+  auto *rhs_equality_term =
+      equals_fnode->mutable_exprs()->Add()->mutable_term_node();
+
+  unary_minus_fnode->set_function_op(proto_msg::FunctionOP::UNARY_PLUS);
+
+  auto *var_term =
+      unary_minus_fnode->mutable_exprs()->Add()->mutable_term_node();
+
+  var_term->set_term_value("?x");
+  var_term->set_term_type(proto_msg::TermType::VARIABLE);
+
+  rhs_equality_term->set_term_value("\"0\"^^xsd:integer");
+  rhs_equality_term->set_term_type(proto_msg::TermType::LITERAL);
+
+  auto result = QueryFiltersFixture::cache->run_query(tree);
+
+  auto query_values_set =
+      get_values_from_result_table(result.table(), *QueryFiltersFixture::pcm);
+
+  std::set<int> expected_values;
+  for (auto value : values1) {
+    if (value < 0) {
+      expected_values.insert(value);
+    }
+  }
+  ASSERT_GT(query_values_set.size(), 0);
+  ASSERT_EQ(query_values_set, expected_values);
 }
