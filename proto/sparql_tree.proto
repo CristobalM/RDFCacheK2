@@ -18,7 +18,18 @@ message SparqlNode {
     OptionalNode optional_node = 8;
     MinusNode minus_node = 9;
     FilterNode filter_node = 10;
+    ExtendNode extend_node = 11;
   }
+}
+
+message AssignmentNode{
+  RDFTerm var = 1;
+  ExprNode expr = 2;
+}
+
+message ExtendNode{
+  SparqlNode node = 1;
+  repeated AssignmentNode assignments = 2;
 }
 
 message FilterNode{

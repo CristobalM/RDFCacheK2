@@ -141,6 +141,8 @@ QueryProcessor::process_node(const proto_msg::SparqlNode &node) {
     return process_optional_node(node.optional_node());
   case proto_msg::SparqlNode::NodeCase::kFilterNode:
     return process_filter_node(node.filter_node());
+  case proto_msg::SparqlNode::NodeCase::kExtendNode:
+    return process_extend_node(node.extend_node());
   default:
     throw std::runtime_error("Unsupported nodetype on process_node: " +
                              std::to_string(node.node_case()));
@@ -222,4 +224,12 @@ QueryProcessor::process_filter_node(const proto_msg::FilterNode &node) {
   ExprListProcessor(*resulting_table, *vim, nodes, cm).execute();
 
   return resulting_table;
+}
+std::shared_ptr<ResultTable>
+QueryProcessor::process_extend_node(const proto_msg::ExtendNode &node) {
+  auto resulting_table = process_node(node.node());
+  for(int i = 0; i < node.assignments_size(); i++){
+    const auto &assignment_node = node.assignments(i);
+
+  }
 }
