@@ -19,6 +19,7 @@ public:
   float get_float() const override;
   double get_double() const override;
   bool is_literal() const override;
+  RDFResource get_resource_clone() const override;
 };
 
 #endif // RDFCACHEK2_INTEGERRESOURCE_HPP

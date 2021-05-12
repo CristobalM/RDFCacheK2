@@ -3,6 +3,9 @@
 //
 
 #include "BooleanResource.hpp"
+
+#include <sstream>
+
 bool BooleanResource::operator==(const TermResource &rhs) const {
   if (!rhs.is_boolean())
     return false;
@@ -11,3 +14,8 @@ bool BooleanResource::operator==(const TermResource &rhs) const {
 bool BooleanResource::is_boolean() const { return true; }
 bool BooleanResource::get_boolean() const { return value; }
 BooleanResource::BooleanResource(bool value) : value(value) {}
+RDFResource BooleanResource::get_resource_clone() const {
+  std::stringstream ss;
+  ss << "\"" << (value ? "true" : "false") << "\"^^xsd::boolean";
+  return RDFResource(ss.str(), RDFResourceType::RDF_TYPE_LITERAL);
+}

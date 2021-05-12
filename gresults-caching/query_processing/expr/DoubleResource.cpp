@@ -3,6 +3,9 @@
 //
 
 #include "DoubleResource.hpp"
+
+#include <sstream>
+
 DoubleResource::DoubleResource(double value) : value(value) {}
 bool DoubleResource::is_double() const { return true; }
 bool DoubleResource::is_numeric() const { return true; }
@@ -20,3 +23,8 @@ bool DoubleResource::operator==(const TermResource &rhs) const {
   return false;
 }
 bool DoubleResource::is_literal() const { return true; }
+RDFResource DoubleResource::get_resource_clone() const {
+  std::stringstream ss;
+  ss << "\"" << std::to_string(value) << "\"^^xsd:double";
+  return RDFResource(ss.str(), RDFResourceType::RDF_TYPE_LITERAL);
+}

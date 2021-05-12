@@ -114,7 +114,14 @@ create_response_from_query_result(ServerTask &server_task,
   auto &cache = server_task.get_cache();
 
   for (auto key : keys) {
-    auto key_res = cache.extract_resource(key);
+    RDFResource key_res;
+    if (key > cache.get_pcm().get_last_id()) {
+      key_res = query_result.get_extra_dict().extract_resource(
+          key - cache.get_pcm().get_last_id());
+    } else {
+      key_res = cache.extract_resource(key);
+    }
+
     auto *kv = cache_response.mutable_query_result_response()->add_kvs();
     kv->set_key(key);
     kv->set_value(key_res.value);

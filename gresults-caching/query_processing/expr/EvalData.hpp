@@ -21,11 +21,14 @@ struct EvalData {
   const VarIndexManager &vim;
   const PredicatesCacheManager &cm;
   const std::unordered_map<std::string, unsigned long> &var_pos_mapping;
+  const NaiveDynamicStringDictionary &extra_dict;
   EvalData(
       const ResultTable &table, const VarIndexManager &vim,
       const PredicatesCacheManager &cm,
-      const std::unordered_map<std::string, unsigned long> &var_pos_mapping)
-      : table(table), vim(vim), cm(cm), var_pos_mapping(var_pos_mapping) {}
+      const std::unordered_map<std::string, unsigned long> &var_pos_mapping,
+      const NaiveDynamicStringDictionary &extra_dict)
+      : table(table), vim(vim), cm(cm), var_pos_mapping(var_pos_mapping),
+        extra_dict(extra_dict) {}
 };
 
 #endif

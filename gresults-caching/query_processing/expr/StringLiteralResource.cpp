@@ -4,6 +4,7 @@
 
 #include "StringLiteralResource.hpp"
 #include <query_processing/ExprProcessorPersistentData.hpp>
+#include <sstream>
 bool StringLiteralResource::is_string_literal() const { return true; }
 const std::string &StringLiteralResource::get_literal_string() const {
   return value;
@@ -64,3 +65,36 @@ bool StringLiteralResource::contains(TermResource &pattern_resource) const {
 StringLiteralResource::StringLiteralResource(std::string &&value)
     : StringLiteralResource(std::move(value), EDT_UNKNOWN) {}
 bool StringLiteralResource::is_literal() const { return true; }
+RDFResource StringLiteralResource::get_resource_clone() const {
+  std::stringstream ss;
+  std::string datatype_str;
+  switch (data_type) {
+  case EDT_UNKNOWN:
+    datatype_str = "";
+    break;
+  case EDT_STRING:
+    datatype_str = "^^xsd:string";
+    break;
+  case EDT_INTEGER:
+    datatype_str = "^^xsd:integer";
+    break;
+  case EDT_DECIMAL:
+    datatype_str = "^^xsd:decimal";
+    break;
+  case EDT_FLOAT:
+    datatype_str = "^^xsd:float";
+    break;
+  case EDT_DOUBLE:
+    datatype_str = "^^xsd:double";
+    break;
+
+  case EDT_BOOLEAN:
+    datatype_str = "^^xsd:boolean";
+    break;
+  case EDT_DATETIME:
+    datatype_str = "^^xsd:dateTime";
+    break;
+  }
+  ss << "\"" << value << "\"" << datatype_str;
+  return RDFResource(ss.str(), RDFResourceType::RDF_TYPE_LITERAL);
+}

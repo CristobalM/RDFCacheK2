@@ -60,7 +60,11 @@ std::shared_ptr<ResultTable> QueryProcessor::process_left_join_node(
     nodes.push_back(&expr_node);
   }
 
-  ExprListProcessor(*resulting_table, *vim, nodes, cm).execute();
+  if (extra_str_dict)
+    extra_str_dict = std::make_unique<NaiveDynamicStringDictionary>();
+
+  ExprListProcessor(*resulting_table, *vim, nodes, cm, *extra_str_dict)
+      .execute();
 
   return resulting_table;
 }
@@ -225,7 +229,11 @@ QueryProcessor::process_filter_node(const proto_msg::FilterNode &node) {
     nodes.push_back(&expr_node);
   }
 
-  ExprListProcessor(*resulting_table, *vim, nodes, cm).execute();
+  if (!extra_str_dict)
+    extra_str_dict = std::make_unique<NaiveDynamicStringDictionary>();
+
+  ExprListProcessor(*resulting_table, *vim, nodes, cm, *extra_str_dict)
+      .execute();
 
   return resulting_table;
 }
@@ -245,22 +253,21 @@ QueryProcessor::process_extend_node(const proto_msg::ExtendNode &node) {
     var_pos_mapping[rev_map[header]] = i;
   }
 
-  EvalData eval_data(*resulting_table, *vim, cm, var_pos_mapping);
+  EvalData eval_data(*resulting_table, *vim, cm, var_pos_mapping,
+                     *extra_str_dict);
   for (int i = 0; i < node.assignments_size(); i++) {
     const auto &assignment_node = node.assignments(i);
     const auto &var_value = assignment_node.var().term_value();
     vim->assign_index_if_not_found(var_value);
     auto new_header = vim->var_indexes[var_value];
     resulting_table->headers.push_back(new_header);
-    // exprs_eval.push_back(ExprEval::create_eval_node(eval_data,
-    // assignment_node.expr()));
     auto expr_eval =
         ExprEval::create_eval_node(eval_data, assignment_node.expr());
     expr_eval->init();
 
     for (auto &row : resulting_table->data) {
       auto resource = expr_eval->produce_resource(row);
-      auto concrete_resource = resource->get_resource();
+      auto concrete_resource = resource->get_resource_clone();
       auto resource_id = cm.get_resource_index(concrete_resource);
       if (resource_id == NORESULT) {
         auto extra_dict_value =

@@ -17,6 +17,8 @@ void build_cache_test_file(const std::string &fname,
 void build_cache_test_file(const std::string &fname);
 std::vector<TripleValue> build_initial_values_triples_vector(uint64_t size);
 
+std::vector<std::vector<RDFResource>>
+translate_table(QueryResult &input_query_result, Cache &cache);
 std::vector<std::vector<RDFResource>> translate_table(ResultTable &input_table,
                                                       Cache &cache);
 

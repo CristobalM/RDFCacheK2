@@ -3,6 +3,7 @@
 //
 
 #include "FloatResource.hpp"
+#include <sstream>
 bool FloatResource::is_float() const { return true; }
 bool FloatResource::is_numeric() const { return true; }
 ExprDataType FloatResource::get_datatype() const {
@@ -30,3 +31,8 @@ bool FloatResource::operator==(const TermResource &rhs) const {
   return false;
 }
 bool FloatResource::is_literal() const { return true; }
+RDFResource FloatResource::get_resource_clone() const {
+  std::stringstream ss;
+  ss << "\"" << std::to_string(value) << "\"^^xsd:float";
+  return RDFResource(ss.str(), RDFResourceType::RDF_TYPE_LITERAL);
+}

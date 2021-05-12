@@ -4,6 +4,7 @@
 
 #include "StringLiteralLangResource.hpp"
 #include <query_processing/ExprProcessorPersistentData.hpp>
+#include <sstream>
 StringLiteralLangResource::StringLiteralLangResource(std::string &&value,
                                                      std::string &&lang_tag)
     : value(std::move(value)), lang_tag(std::move(lang_tag)) {}
@@ -62,3 +63,8 @@ bool StringLiteralLangResource::contains(TermResource &pattern_resource) const {
   return false;
 }
 bool StringLiteralLangResource::is_literal() const { return true; }
+RDFResource StringLiteralLangResource::get_resource_clone() const {
+  std::stringstream ss;
+  ss << "\"" << value << "\"@" << lang_tag;
+  return RDFResource(ss.str(), RDFResourceType::RDF_TYPE_LITERAL);
+}

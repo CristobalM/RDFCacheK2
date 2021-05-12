@@ -15,6 +15,7 @@ public:
   bool operator==(const TermResource &rhs) const override;
   bool is_boolean() const override;
   bool get_boolean() const override;
+  RDFResource get_resource_clone() const override;
 };
 
 #endif // RDFCACHEK2_BOOLEANRESOURCE_HPP

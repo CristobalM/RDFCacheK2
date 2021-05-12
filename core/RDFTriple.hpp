@@ -27,6 +27,7 @@ enum RDFResourceType {
 struct RDFResource {
   std::string value;
   RDFResourceType resource_type;
+  RDFResource() : resource_type(NULL_RESOURCE_TYPE) {}
   RDFResource(std::string &&value, RDFResourceType resource_type)
       : value(std::move(value)), resource_type(resource_type) {}
   RDFResource(const std::string &value, RDFResourceType resource_type)

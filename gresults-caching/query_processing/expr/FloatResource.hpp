@@ -19,6 +19,7 @@ public:
   double get_double() const override;
   bool operator==(const TermResource &rhs) const override;
   bool is_literal() const override;
+  RDFResource get_resource_clone() const override;
 };
 
 #endif // RDFCACHEK2_FLOATRESOURCE_HPP

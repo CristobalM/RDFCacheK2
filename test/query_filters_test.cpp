@@ -152,6 +152,28 @@ get_values_from_result_table(const ResultTable &result_table,
   }
   return result;
 }
+static std::set<int>
+get_values_from_result_table(const ResultTable &result_table,
+                             const PredicatesCacheManager &pcm,
+                             NaiveDynamicStringDictionary &extra_dict) {
+  std::set<int> result;
+  if (result_table.headers.size() != 1)
+    throw std::runtime_error("result_table must have 1 column");
+  for (const auto &row : result_table.data) {
+    RDFResource resource;
+    if (row[0] > pcm.get_last_id())
+      resource = extra_dict.extract_resource(row[0] - pcm.get_last_id());
+    else
+      resource = pcm.extract_resource(row[0]);
+    auto literal_data =
+        StringHandlingUtil::extract_literal_data_from_rdf_resource(resource);
+    if (literal_data.type != EDT_INTEGER)
+      throw std::runtime_error("Expected integer resource");
+    result.insert(std::stoi(literal_data.value));
+  }
+  return result;
+}
+
 static std::set<double>
 get_values_double_from_result_table(const ResultTable &result_table,
                                     const PredicatesCacheManager &pcm) {
@@ -2670,6 +2692,73 @@ TEST_F(QueryFiltersFixture, test_unary_plus_eval_1) {
   for (auto value : values1) {
     if (value < 0) {
       expected_values.insert(value);
+    }
+  }
+  ASSERT_GT(query_values_set.size(), 0);
+  ASSERT_EQ(query_values_set, expected_values);
+}
+
+TEST_F(QueryFiltersFixture, test_extend_1) {
+  proto_msg::SparqlTree tree;
+  auto *distinct_node = tree.mutable_root()->mutable_distinct_node();
+  auto *project_node =
+      distinct_node->mutable_sub_node()->mutable_project_node();
+  // project_node->add_vars("?x");
+  project_node->add_vars("?z");
+  auto *filter_node = project_node->mutable_sub_op()->mutable_filter_node();
+  auto *extend_node = filter_node->mutable_node()->mutable_extend_node();
+  auto *bgp_node = extend_node->mutable_node()->mutable_bgp_node();
+  auto *first_triple = bgp_node->mutable_triple()->Add();
+  auto *first_subject = first_triple->mutable_subject();
+  auto *first_predicate = first_triple->mutable_predicate();
+  auto *first_object = first_triple->mutable_object();
+  first_subject->set_term_value("?y");
+  first_subject->set_term_type(proto_msg::TermType::VARIABLE);
+  first_predicate->set_term_value("<has_integer>");
+  first_predicate->set_term_type(proto_msg::TermType::IRI);
+  first_object->set_term_value("?x");
+  first_object->set_term_type(proto_msg::TermType::VARIABLE);
+
+  auto *assignment_1 = extend_node->mutable_assignments()->Add();
+  assignment_1->mutable_var()->set_term_type(proto_msg::TermType::VARIABLE);
+  assignment_1->mutable_var()->set_term_value("?z");
+
+  auto *assignment_1_rhs =
+      assignment_1->mutable_expr()->mutable_function_node();
+  assignment_1_rhs->set_function_op(proto_msg::FunctionOP::ADD);
+  auto *first_add =
+      assignment_1_rhs->mutable_exprs()->Add()->mutable_term_node();
+  auto *second_add =
+      assignment_1_rhs->mutable_exprs()->Add()->mutable_term_node();
+
+  first_add->set_term_type(proto_msg::TermType::VARIABLE);
+  first_add->set_term_value("?x");
+  second_add->set_term_type(proto_msg::TermType::LITERAL);
+  second_add->set_term_value("\"1000\"^^xsd:integer");
+
+  auto *gt_fnode = filter_node->mutable_exprs()->Add()->mutable_function_node();
+  gt_fnode->set_function_op(proto_msg::FunctionOP::GREATER_THAN);
+
+  auto *lhs_term = gt_fnode->mutable_exprs()->Add()->mutable_term_node();
+  auto *rhs_term = gt_fnode->mutable_exprs()->Add()->mutable_term_node();
+
+  lhs_term->set_term_value("?z");
+  lhs_term->set_term_type(proto_msg::TermType::VARIABLE);
+
+  rhs_term->set_term_value("\"1000\"^^xsd:integer");
+  rhs_term->set_term_type(proto_msg::TermType::LITERAL);
+
+  auto result = QueryFiltersFixture::cache->run_query(tree);
+
+  // print_table_debug2(result, *cache);
+
+  auto query_values_set = get_values_from_result_table(
+      result.table(), *QueryFiltersFixture::pcm, result.get_extra_dict());
+
+  std::set<int> expected_values;
+  for (auto value : values1) {
+    if (value + 1000 > 1000) {
+      expected_values.insert(value + 1000);
     }
   }
   ASSERT_GT(query_values_set.size(), 0);

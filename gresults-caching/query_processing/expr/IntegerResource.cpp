@@ -3,6 +3,7 @@
 //
 
 #include "IntegerResource.hpp"
+#include <sstream>
 bool IntegerResource::operator==(const TermResource &rhs) const {
   if (rhs.is_integer()) {
     return rhs.get_integer() == value;
@@ -36,3 +37,8 @@ double IntegerResource::get_double() const {
 }
 IntegerResource::IntegerResource(int value) : value(value) {}
 bool IntegerResource::is_literal() const { return true; }
+RDFResource IntegerResource::get_resource_clone() const {
+  std::stringstream ss;
+  ss << "\"" << std::to_string(value) << "\"^^xsd:integer";
+  return RDFResource(ss.str(), RDFResourceType::RDF_TYPE_LITERAL);
+}
