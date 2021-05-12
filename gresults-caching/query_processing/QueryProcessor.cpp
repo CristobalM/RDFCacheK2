@@ -76,7 +76,7 @@ void QueryProcessor::remove_extra_vars_from_table(
   // std::unordered_set<std::string> vars_set(vars.begin(), vars.end());
   std::unordered_set<unsigned long> vars_set;
   std::unordered_set<unsigned long> columns_to_erase;
-  for (auto var : vars) {
+  for (const auto &var : vars) {
     vars_set.insert(vim->var_indexes[var]);
   }
 
