@@ -22,7 +22,7 @@ void IsIRIEval::validate() {
   ExprEval::validate();
   assert_fsize(1);
 }
-std::unique_ptr<TermResource>
+std::shared_ptr<TermResource>
 IsIRIEval::eval_resource(const ExprEval::row_t &row) {
   return generate_from_eval_boolean(row);
 }

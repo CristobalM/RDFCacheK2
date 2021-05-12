@@ -19,8 +19,8 @@ const RDFResource &ConcreteRDFResource::get_resource() const {
 ConcreteRDFResource ConcreteRDFResource::null_resource() {
   return ConcreteRDFResource(RDFResource::null_resource());
 }
-std::unique_ptr<TermResource> ConcreteRDFResource::null_resource_ptr() {
-  return std::make_unique<ConcreteRDFResource>(RDFResource::null_resource());
+std::shared_ptr<TermResource> ConcreteRDFResource::null_resource_ptr() {
+  return std::make_shared<ConcreteRDFResource>(RDFResource::null_resource());
 }
 
 RDFResource ConcreteRDFResource::get_resource_clone() const { return resource; }

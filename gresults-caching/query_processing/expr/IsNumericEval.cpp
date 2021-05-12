@@ -24,7 +24,7 @@ void IsNumericEval::init() {
   ExprEval::init();
   add_children();
 }
-std::unique_ptr<TermResource>
+std::shared_ptr<TermResource>
 IsNumericEval::eval_resource(const ExprEval::row_t &row) {
   return generate_from_eval_boolean(row);
 }

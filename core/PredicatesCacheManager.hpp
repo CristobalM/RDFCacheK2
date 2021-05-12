@@ -63,6 +63,8 @@ public:
 
   std::vector<std::pair<unsigned long, std::string>> get_plain_mapping_debug();
 
+  unsigned long get_last_id() const;
+
 private:
   void handle_not_found(unsigned long &resource_id, RDFResource &resource);
   uint64_t get_resource_index_notfound_zero(const RDFResource &resource) const;

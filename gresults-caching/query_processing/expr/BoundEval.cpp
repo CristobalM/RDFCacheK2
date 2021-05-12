@@ -21,7 +21,7 @@ void BoundEval::validate() {
   const auto &child_node = expr_node.function_node().exprs(0);
   assert_is_variable(child_node);
 }
-std::unique_ptr<TermResource>
+std::shared_ptr<TermResource>
 BoundEval::eval_resource(const ExprEval::row_t &) {
-  return std::make_unique<BooleanResource>(result);
+  return std::make_shared<BooleanResource>(result);
 }

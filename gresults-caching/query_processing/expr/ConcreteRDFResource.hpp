@@ -18,7 +18,7 @@ public:
   const RDFResource &get_resource() const override;
 
   static ConcreteRDFResource null_resource();
-  static std::unique_ptr<TermResource> null_resource_ptr();
+  static std::shared_ptr<TermResource> null_resource_ptr();
   RDFResource get_resource_clone() const override;
   bool contains(TermResource &pattern_resource) const override;
   bool is_literal() const override;

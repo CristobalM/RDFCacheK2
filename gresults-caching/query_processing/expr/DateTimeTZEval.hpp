@@ -11,7 +11,7 @@ public:
   using ExprEval::ExprEval;
   void validate() override;
   void init() override;
-  std::unique_ptr<TermResource> eval_resource(const row_t &row) override;
+  std::shared_ptr<TermResource> eval_resource(const row_t &row) override;
   std::string format_offset(const DateInfo &info);
 };
 

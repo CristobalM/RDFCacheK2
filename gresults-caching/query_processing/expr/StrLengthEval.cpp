@@ -6,12 +6,12 @@
 #include "IntegerResource.hpp"
 #include "StringHandlingUtil.hpp"
 
-std::unique_ptr<TermResource>
+std::shared_ptr<TermResource>
 StrLengthEval::eval_resource(const ExprEval::row_t &row) {
   int result = eval_integer(row);
   if (has_error())
     return resource_with_error();
-  return std::make_unique<IntegerResource>(result);
+  return std::make_shared<IntegerResource>(result);
 }
 
 int StrLengthEval::eval_integer(const ExprEval::row_t &row) {

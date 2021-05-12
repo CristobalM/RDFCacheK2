@@ -11,8 +11,8 @@ DataTypeResource::DataTypeResource(ExprDataType datatype)
     : datatype(datatype) {}
 bool DataTypeResource::is_datatype() const { return true; }
 ExprDataType DataTypeResource::get_datatype() const { return datatype; }
-std::unique_ptr<TermResource> DataTypeResource::create(ExprDataType datatype) {
-  return std::make_unique<DataTypeResource>(datatype);
+std::shared_ptr<TermResource> DataTypeResource::create(ExprDataType datatype) {
+  return std::make_shared<DataTypeResource>(datatype);
 }
 
 const std::string DataTypeResource::short_prefix = "xsd:";

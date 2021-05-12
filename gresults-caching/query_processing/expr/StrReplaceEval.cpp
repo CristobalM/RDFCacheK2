@@ -5,12 +5,12 @@
 #include "StrReplaceEval.hpp"
 #include "StringHandlingUtil.hpp"
 #include "StringLiteralResource.hpp"
-std::unique_ptr<TermResource>
+std::shared_ptr<TermResource>
 StrReplaceEval::eval_resource(const ExprEval::row_t &row) {
-  auto text_resource = children[0]->eval_resource(row);
-  auto pattern_resource = children[1]->eval_resource(row);
-  auto replacement_resource = children[2]->eval_resource(row);
-  auto flags_resource = children[3]->eval_resource(row);
+  auto text_resource = children[0]->produce_resource(row);
+  auto pattern_resource = children[1]->produce_resource(row);
+  auto replacement_resource = children[2]->produce_resource(row);
+  auto flags_resource = children[3]->produce_resource(row);
   if (children_with_error())
     return resource_with_error();
   auto text_literal_data =
@@ -38,7 +38,7 @@ StrReplaceEval::eval_resource(const ExprEval::row_t &row) {
 
   re.GlobalReplace(replacement_literal_data.value, &text_literal_data.value);
 
-  return std::make_unique<StringLiteralResource>(
+  return std::make_shared<StringLiteralResource>(
       std::move(text_literal_data.value), text_literal_data.type);
 }
 void StrReplaceEval::validate() {

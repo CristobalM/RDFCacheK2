@@ -8,7 +8,7 @@
 #include "IntegerResource.hpp"
 #include <cmath>
 
-std::unique_ptr<TermResource>
+std::shared_ptr<TermResource>
 NumAbsEval::eval_resource(const ExprEval::row_t &row) {
   auto resource = children[0]->eval_resource(row);
   if (children_with_error()) {
@@ -17,13 +17,13 @@ NumAbsEval::eval_resource(const ExprEval::row_t &row) {
   }
 
   if (resource->is_double()) {
-    return std::make_unique<DoubleResource>(std::abs(resource->get_double()));
+    return std::make_shared<DoubleResource>(std::abs(resource->get_double()));
   }
   if (resource->is_float()) {
-    return std::make_unique<FloatResource>(std::abs(resource->get_float()));
+    return std::make_shared<FloatResource>(std::abs(resource->get_float()));
   }
   if (resource->is_integer()) {
-    return std::make_unique<IntegerResource>(std::abs(resource->get_integer()));
+    return std::make_shared<IntegerResource>(std::abs(resource->get_integer()));
   }
 
   this->with_error = true;

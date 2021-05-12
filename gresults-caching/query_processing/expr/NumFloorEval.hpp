@@ -9,7 +9,7 @@
 class NumFloorEval : public ExprEval {
 public:
   using ExprEval::ExprEval;
-  std::unique_ptr<TermResource> eval_resource(const row_t &row) override;
+  std::shared_ptr<TermResource> eval_resource(const row_t &row) override;
   int eval_integer(const row_t &row) override;
   float eval_float(const row_t &row) override;
   double eval_double(const row_t &row) override;

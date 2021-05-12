@@ -9,11 +9,11 @@
 #include <sstream>
 #include <vector>
 
-std::unique_ptr<TermResource>
+std::shared_ptr<TermResource>
 StrConcatEval::eval_resource(const ExprEval::row_t &row) {
-  std::vector<std::unique_ptr<TermResource>> resources;
+  std::vector<std::shared_ptr<TermResource>> resources;
   for (const auto &child_ptr : children) {
-    resources.push_back(child_ptr->eval_resource(row));
+    resources.push_back(child_ptr->produce_resource(row));
     if (child_ptr->has_error()) {
       this->with_error = true;
       return TermResource::null();
@@ -86,17 +86,17 @@ StrConcatEval::eval_resource(const ExprEval::row_t &row) {
     }
   }
   if (wlang_tag) {
-    return std::make_unique<StringLiteralLangResource>(ss.str(),
+    return std::make_shared<StringLiteralLangResource>(ss.str(),
                                                        std::move(lang_tag));
   }
   if (wdata_type) {
     ExprDataType resulting_data_type =
         (data_type == EDT_STRING) ? EDT_STRING : EDT_UNKNOWN;
-    return std::make_unique<StringLiteralResource>(ss.str(),
+    return std::make_shared<StringLiteralResource>(ss.str(),
                                                    resulting_data_type);
   }
 
-  return std::make_unique<StringLiteralResource>(ss.str(),
+  return std::make_shared<StringLiteralResource>(ss.str(),
                                                  ExprDataType::EDT_UNKNOWN);
 }
 void StrConcatEval::validate() {

@@ -5,6 +5,7 @@
 //
 
 #include <chrono>
+#include <query_processing/expr/ExprEval.hpp>
 #include <set>
 #include <sstream>
 #include <stdexcept>
@@ -12,6 +13,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
+#include <utils/Utils.h>
 
 #include "BGPProcessor.hpp"
 #include "ExprListProcessor.hpp"
@@ -151,6 +153,8 @@ QueryProcessor::process_node(const proto_msg::SparqlNode &node) {
 
 QueryResult QueryProcessor::run_query(proto_msg::SparqlTree const &query_tree) {
   auto result = process_node(query_tree.root());
+  if (extra_str_dict)
+    return QueryResult(result, std::move(vim), std::move(extra_str_dict));
   return QueryResult(result, std::move(vim));
 }
 
@@ -228,8 +232,48 @@ QueryProcessor::process_filter_node(const proto_msg::FilterNode &node) {
 std::shared_ptr<ResultTable>
 QueryProcessor::process_extend_node(const proto_msg::ExtendNode &node) {
   auto resulting_table = process_node(node.node());
-  for(int i = 0; i < node.assignments_size(); i++){
-    const auto &assignment_node = node.assignments(i);
-
+  if (!extra_str_dict) {
+    extra_str_dict = std::make_unique<NaiveDynamicStringDictionary>();
   }
+
+  std::unordered_map<std::string, unsigned long> var_pos_mapping;
+  auto rev_map = vim->reverse();
+
+  for (unsigned long i = 0;
+       i < static_cast<unsigned long>(resulting_table->headers.size()); i++) {
+    auto header = resulting_table->headers[i];
+    var_pos_mapping[rev_map[header]] = i;
+  }
+
+  EvalData eval_data(*resulting_table, *vim, cm, var_pos_mapping);
+  for (int i = 0; i < node.assignments_size(); i++) {
+    const auto &assignment_node = node.assignments(i);
+    const auto &var_value = assignment_node.var().term_value();
+    vim->assign_index_if_not_found(var_value);
+    auto new_header = vim->var_indexes[var_value];
+    resulting_table->headers.push_back(new_header);
+    // exprs_eval.push_back(ExprEval::create_eval_node(eval_data,
+    // assignment_node.expr()));
+    auto expr_eval =
+        ExprEval::create_eval_node(eval_data, assignment_node.expr());
+    expr_eval->init();
+
+    for (auto &row : resulting_table->data) {
+      auto resource = expr_eval->produce_resource(row);
+      auto concrete_resource = resource->get_resource();
+      auto resource_id = cm.get_resource_index(concrete_resource);
+      if (resource_id == NORESULT) {
+        auto extra_dict_value =
+            extra_str_dict->locate_resource(concrete_resource);
+        if (extra_dict_value == NORESULT) {
+          extra_str_dict->add_resource(concrete_resource);
+          extra_dict_value = extra_str_dict->locate_resource(concrete_resource);
+        }
+        resource_id = extra_dict_value + cm.get_last_id();
+      }
+      row.push_back(resource_id);
+    }
+  }
+
+  return resulting_table;
 }

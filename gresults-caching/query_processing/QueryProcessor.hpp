@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include <NaiveDynamicStringDictionary.hpp>
 #include <PredicatesCacheManager.hpp>
 #include <request_msg.pb.h>
 
@@ -18,6 +19,7 @@
 class QueryProcessor {
   const PredicatesCacheManager &cm;
   std::unique_ptr<VarIndexManager> vim;
+  std::unique_ptr<NaiveDynamicStringDictionary> extra_str_dict;
 
 public:
   QueryProcessor(const PredicatesCacheManager &cache_manager);

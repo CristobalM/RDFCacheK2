@@ -5,10 +5,10 @@
 #include "StrBeforeEval.hpp"
 #include "StringLiteralLangResource.hpp"
 #include "StringLiteralResource.hpp"
-std::unique_ptr<TermResource>
+std::shared_ptr<TermResource>
 StrBeforeEval::eval_resource(const ExprEval::row_t &row) {
-  auto first_resource = children[0]->eval_resource(row);
-  auto second_resource = children[1]->eval_resource(row);
+  auto first_resource = children[0]->produce_resource(row);
+  auto second_resource = children[1]->produce_resource(row);
   if (children_with_error()) {
     this->with_error = true;
     return TermResource::null();
@@ -95,7 +95,7 @@ StrBeforeEval::eval_resource(const ExprEval::row_t &row) {
 
   // no match
   if (position == std::string::npos) {
-    return std::make_unique<StringLiteralResource>("",
+    return std::make_shared<StringLiteralResource>("",
                                                    ExprDataType::EDT_UNKNOWN);
   }
 
@@ -104,11 +104,11 @@ StrBeforeEval::eval_resource(const ExprEval::row_t &row) {
   if (result_is_datatype) {
     ExprDataType resulting_data_type =
         (first_data_type == EDT_STRING) ? EDT_STRING : EDT_UNKNOWN;
-    return std::make_unique<StringLiteralResource>(std::move(resulting_string),
+    return std::make_shared<StringLiteralResource>(std::move(resulting_string),
                                                    resulting_data_type);
   }
 
-  return std::make_unique<StringLiteralLangResource>(
+  return std::make_shared<StringLiteralLangResource>(
       std::move(resulting_string), std::move(first_language_tag));
 }
 

@@ -4,10 +4,10 @@
 
 #include "CoalesceEval.hpp"
 #include "ConcreteRDFResource.hpp"
-std::unique_ptr<TermResource>
+std::shared_ptr<TermResource>
 CoalesceEval::eval_resource(const ExprEval::row_t &row) {
   for (const auto &child : this->children) {
-    auto resource = child->eval_resource(row);
+    auto resource = child->produce_resource(row);
     if (!child->has_error())
       return resource;
   }
@@ -21,7 +21,7 @@ void CoalesceEval::init() {
   add_children();
 }
 bool CoalesceEval::eval_boolean(const ExprEval::row_t &row) {
-  auto resource = eval_resource(row);
+  auto resource = produce_resource(row);
   if (has_error())
     return false;
   if (!resource->is_boolean())

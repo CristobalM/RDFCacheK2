@@ -7,7 +7,7 @@
 #include "FloatResource.hpp"
 #include "IntegerResource.hpp"
 #include <cmath>
-std::unique_ptr<TermResource>
+std::shared_ptr<TermResource>
 NumFloorEval::eval_resource(const ExprEval::row_t &row) {
   auto resource = children[0]->eval_resource(row);
   if (children_with_error()) {
@@ -16,13 +16,13 @@ NumFloorEval::eval_resource(const ExprEval::row_t &row) {
   }
 
   if (resource->is_double()) {
-    return std::make_unique<DoubleResource>(std::floor(resource->get_double()));
+    return std::make_shared<DoubleResource>(std::floor(resource->get_double()));
   }
   if (resource->is_float()) {
-    return std::make_unique<FloatResource>(std::floor(resource->get_float()));
+    return std::make_shared<FloatResource>(std::floor(resource->get_float()));
   }
   if (resource->is_integer()) {
-    return std::make_unique<IntegerResource>(
+    return std::make_shared<IntegerResource>(
         std::floor(resource->get_integer()));
   }
 

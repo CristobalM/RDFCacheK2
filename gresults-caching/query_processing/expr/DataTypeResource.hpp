@@ -20,7 +20,7 @@ public:
   bool is_datatype() const override;
   ExprDataType get_datatype() const override;
 
-  static std::unique_ptr<TermResource> create(ExprDataType datatype);
+  static std::shared_ptr<TermResource> create(ExprDataType datatype);
   bool is_literal() const override;
 };
 

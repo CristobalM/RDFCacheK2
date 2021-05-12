@@ -77,7 +77,15 @@
 
 ExprEval::ExprEval(const EvalData &eval_data,
                    const proto_msg::ExprNode &expr_node)
-    : eval_data(eval_data), expr_node(expr_node), with_error(false) {}
+    : eval_data(eval_data), expr_node(expr_node), with_error(false),
+      with_constant_subtree(false),
+
+      was_resource_cached(false), was_datatype_cached(false),
+      was_boolean_cached(false), was_integer_cached(false),
+      was_float_cached(false), was_double_cached(false),
+      was_date_info_cached(false)
+
+{}
 void ExprEval::assert_fsize(int size) {
   if (expr_node.function_node().exprs_size() != size)
     throw std::runtime_error(
@@ -266,13 +274,14 @@ void ExprEval::add_children(int count) {
   for (int i = 0; i < count; i++) {
     add_child(expr_node.function_node().exprs(i));
   }
+  with_constant_subtree = has_constant_subtree();
 }
 void ExprEval::add_children() {
   add_children(expr_node.function_node().exprs_size());
 }
 void ExprEval::init() { validate(); }
 void ExprEval::validate() {}
-std::unique_ptr<TermResource> ExprEval::eval_resource(const ExprEval::row_t &) {
+std::shared_ptr<TermResource> ExprEval::eval_resource(const ExprEval::row_t &) {
   throw std::runtime_error("ExprEval::eval_resource not implemented");
 }
 bool ExprEval::eval_boolean(const ExprEval::row_t &) {
@@ -290,7 +299,7 @@ double ExprEval::eval_double(const ExprEval::row_t &) {
 DateInfo ExprEval::eval_date_time(const ExprEval::row_t &) {
   throw std::runtime_error("ExprEval::eval_date_time not implemented");
 }
-std::unique_ptr<TermResource> ExprEval::eval_datatype(const ExprEval::row_t &) {
+std::shared_ptr<TermResource> ExprEval::eval_datatype(const ExprEval::row_t &) {
   throw std::runtime_error("ExprEval::eval_datatype not implemented");
 }
 
@@ -301,7 +310,7 @@ bool ExprEval::children_with_error() const {
   }
   return false;
 }
-std::unique_ptr<TermResource> ExprEval::resource_with_error() {
+std::shared_ptr<TermResource> ExprEval::resource_with_error() {
   with_error = true;
   return TermResource::null();
 }
@@ -321,17 +330,89 @@ double ExprEval::double_with_error() {
   with_error = true;
   return 0;
 }
-std::unique_ptr<TermResource>
+std::shared_ptr<TermResource>
 ExprEval::generate_from_eval_boolean(const row_t &row) {
   bool result = eval_boolean(row);
   if (has_error())
     return TermResource::null();
-  return std::make_unique<BooleanResource>(result);
+  return std::make_shared<BooleanResource>(result);
 }
-std::unique_ptr<TermResource>
+std::shared_ptr<TermResource>
 ExprEval::generate_from_eval_integer(const ExprEval::row_t &row) {
   int result = eval_integer(row);
   if (has_error())
     return TermResource::null();
-  return std::make_unique<IntegerResource>(result);
+  return std::make_shared<IntegerResource>(result);
+}
+bool ExprEval::has_constant_subtree() const {
+  for (const auto &child : children) {
+    if (!child->with_constant_subtree)
+      return false;
+  }
+  return true;
+}
+std::shared_ptr<TermResource>
+ExprEval::produce_resource(const ExprEval::row_t &row) {
+  if (!with_constant_subtree)
+    return eval_resource(row);
+  if (!was_resource_cached) {
+    cached_resource = eval_resource(row);
+    was_resource_cached = true;
+  }
+  return cached_resource;
+}
+std::shared_ptr<TermResource>
+ExprEval::produce_datatype(const ExprEval::row_t &row) {
+  if (!with_constant_subtree)
+    return eval_resource(row);
+  if (!was_datatype_cached) {
+    cached_datatype = eval_datatype(row);
+    was_datatype_cached = true;
+  }
+  return cached_datatype;
+}
+bool ExprEval::produce_boolean(const ExprEval::row_t &row) {
+  if (!with_constant_subtree)
+    return eval_boolean(row);
+  if (!was_boolean_cached) {
+    cached_boolean = eval_boolean(row);
+    was_boolean_cached = true;
+  }
+  return cached_boolean;
+}
+int ExprEval::produce_integer(const ExprEval::row_t &row) {
+  if (!with_constant_subtree)
+    return eval_integer(row);
+  if (!was_integer_cached) {
+    cached_integer = eval_integer(row);
+    was_integer_cached = true;
+  }
+  return cached_integer;
+}
+float ExprEval::produce_float(const ExprEval::row_t &row) {
+  if (!with_constant_subtree)
+    return eval_float(row);
+  if (!was_float_cached) {
+    cached_float = eval_float(row);
+    was_float_cached = true;
+  }
+  return cached_float;
+}
+double ExprEval::produce_double(const ExprEval::row_t &row) {
+  if (!with_constant_subtree)
+    return eval_double(row);
+  if (!was_double_cached) {
+    cached_double = eval_double(row);
+    was_double_cached = true;
+  }
+  return cached_double;
+}
+DateInfo ExprEval::produce_date_time(const ExprEval::row_t &row) {
+  if (!with_constant_subtree)
+    return eval_date_time(row);
+  if (!was_date_info_cached) {
+    cached_date_info = eval_date_time(row);
+    was_date_info_cached = true;
+  }
+  return cached_date_info;
 }

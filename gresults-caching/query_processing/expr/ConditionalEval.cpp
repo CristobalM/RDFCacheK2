@@ -3,23 +3,23 @@
 //
 
 #include "ConditionalEval.hpp"
-std::unique_ptr<TermResource>
+std::shared_ptr<TermResource>
 ConditionalEval::eval_resource(const ExprEval::row_t &row) {
-  auto is_true = children[0]->eval_boolean(row);
+  auto is_true = children[0]->produce_boolean(row);
   if (children[0]->has_error()) {
     this->with_error = true;
     return TermResource::null();
   }
 
   if (is_true) {
-    auto result = children[1]->eval_resource(row);
+    auto result = children[1]->produce_resource(row);
     if (children[1]->has_error()) {
       this->with_error = true;
       return TermResource::null();
     }
     return result;
   } else {
-    auto result = children[2]->eval_resource(row);
+    auto result = children[2]->produce_resource(row);
     if (children[2]->has_error()) {
       this->with_error = true;
       return TermResource::null();

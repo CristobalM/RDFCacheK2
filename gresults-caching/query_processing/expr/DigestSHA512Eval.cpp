@@ -6,7 +6,7 @@
 #include "StringLiteralResource.hpp"
 #include <hashing.hpp>
 
-std::unique_ptr<TermResource>
+std::shared_ptr<TermResource>
 DigestSHA512Eval::eval_resource(const ExprEval::row_t &row) {
   auto child_resource = children[0]->eval_resource(row);
   std::string result;
@@ -22,7 +22,7 @@ DigestSHA512Eval::eval_resource(const ExprEval::row_t &row) {
   } else {
     this->with_error = true;
   }
-  return std::make_unique<StringLiteralResource>(std::move(result));
+  return std::make_shared<StringLiteralResource>(std::move(result));
 }
 
 void DigestSHA512Eval::validate() {

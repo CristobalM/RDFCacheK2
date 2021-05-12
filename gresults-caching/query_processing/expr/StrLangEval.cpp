@@ -4,10 +4,10 @@
 
 #include "StrLangEval.hpp"
 #include "StringLiteralLangResource.hpp"
-std::unique_ptr<TermResource>
+std::shared_ptr<TermResource>
 StrLangEval::eval_resource(const ExprEval::row_t &row) {
-  auto input_str_resource = children[0]->eval_resource(row);
-  auto lang_tag_resource = children[1]->eval_resource(row);
+  auto input_str_resource = children[0]->produce_resource(row);
+  auto lang_tag_resource = children[1]->produce_resource(row);
 
   if (children_with_error()) {
     this->with_error = true;
@@ -34,16 +34,16 @@ StrLangEval::eval_resource(const ExprEval::row_t &row) {
     auto lexical_form =
         ExprProcessorPersistentData::get().extract_literal_content_from_string(
             input_str_resource->get_resource().value);
-    return std::make_unique<StringLiteralLangResource>(std::move(lexical_form),
+    return std::make_shared<StringLiteralLangResource>(std::move(lexical_form),
                                                        std::move(lang_tag_str));
   }
   if (input_str_resource->is_string_literal()) {
-    return std::make_unique<StringLiteralLangResource>(
+    return std::make_shared<StringLiteralLangResource>(
         std::string(input_str_resource->get_literal_string()),
         std::move(lang_tag_str));
   }
   if (input_str_resource->is_string_literal_lang()) {
-    return std::make_unique<StringLiteralLangResource>(
+    return std::make_shared<StringLiteralLangResource>(
         std::string(input_str_resource->get_literal_lang_string()),
         std::move(lang_tag_str));
   }

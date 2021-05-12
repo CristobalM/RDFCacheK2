@@ -25,7 +25,7 @@ double UnaryPlusEval::eval_double(const ExprEval::row_t &row) {
   return value;
 }
 
-std::unique_ptr<TermResource>
+std::shared_ptr<TermResource>
 UnaryPlusEval::eval_resource(const ExprEval::row_t &row) {
   auto child_resource = children[0]->eval_resource(row);
   if (children_with_error())

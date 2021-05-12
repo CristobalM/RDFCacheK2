@@ -4,19 +4,19 @@
 
 #include "LogicalOrEval.hpp"
 #include "BooleanResource.hpp"
-std::unique_ptr<TermResource>
+std::shared_ptr<TermResource>
 LogicalOrEval::eval_resource(const ExprEval::row_t &row) {
   return generate_from_eval_boolean(row);
 }
 bool LogicalOrEval::eval_boolean(const ExprEval::row_t &row) {
-  auto first_resource = children[0]->eval_boolean(row);
+  auto first_resource = children[0]->produce_boolean(row);
   if (children[0]->has_error()) {
     this->with_error = true;
     return false;
   }
   if (first_resource)
     return true;
-  auto second_resource = children[1]->eval_boolean(row);
+  auto second_resource = children[1]->produce_boolean(row);
   if (children[1]->has_error()) {
     this->with_error = true;
     return false;

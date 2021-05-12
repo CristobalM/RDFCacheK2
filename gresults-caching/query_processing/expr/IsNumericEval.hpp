@@ -12,7 +12,7 @@ public:
   bool eval_boolean(const row_t &row) override;
   void validate() override;
   void init() override;
-  std::unique_ptr<TermResource> eval_resource(const row_t &row) override;
+  std::shared_ptr<TermResource> eval_resource(const row_t &row) override;
 };
 
 #endif // RDFCACHEK2_ISNUMERICEVAL_HPP

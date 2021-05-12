@@ -47,14 +47,14 @@ void TermEval::validate() {
   if (expr_node.expr_case() != proto_msg::ExprNode::kTermNode)
     throw std::runtime_error("Expected a term");
 }
-std::unique_ptr<TermResource>
+std::shared_ptr<TermResource>
 TermEval::eval_resource(const ExprEval::row_t &row) {
   auto resource = eval_term_node(row);
 
   if (resource.resource_type == RDFResourceType::RDF_TYPE_IRI) {
     return eval_iri_resource(std::move(resource));
   } else if (resource.resource_type == RDFResourceType::RDF_TYPE_BLANK) {
-    return std::make_unique<ConcreteRDFResource>(std::move(resource));
+    return std::make_shared<ConcreteRDFResource>(std::move(resource));
   }
 
   auto data_type =
@@ -70,11 +70,11 @@ TermEval::eval_resource(const ExprEval::row_t &row) {
   auto lang_tag =
       ExprProcessorPersistentData::get().extract_language_tag(resource.value);
   if (!lang_tag.empty()) {
-    return std::make_unique<StringLiteralLangResource>(std::move(content),
+    return std::make_shared<StringLiteralLangResource>(std::move(content),
                                                        std::move(lang_tag));
   }
 
-  return std::make_unique<StringLiteralResource>(std::move(content),
+  return std::make_shared<StringLiteralResource>(std::move(content),
                                                  EDT_UNKNOWN);
 }
 
@@ -137,7 +137,10 @@ double TermEval::eval_double(const ExprEval::row_t &row) {
     throw std::runtime_error("Unexpected term type");
   }
 }
-void TermEval::init() { ExprEval::init(); }
+void TermEval::init() {
+  ExprEval::init();
+  with_constant_subtree = has_constant_subtree();
+}
 bool TermEval::eval_boolean_from_resource(const RDFResource &resource) {
   if (resource.resource_type != RDFResourceType::RDF_TYPE_LITERAL)
     throw std::runtime_error("Unexpected term type");
@@ -227,38 +230,38 @@ DateInfo TermEval::eval_date_time(const ExprEval::row_t &row) {
   return parsed_date_info;
 }
 
-std::unique_ptr<TermResource>
+std::shared_ptr<TermResource>
 TermEval::eval_datatype(const ExprEval::row_t &row) {
   auto resource = eval_resource(row);
-  return std::make_unique<DataTypeResource>(resource->get_datatype());
+  return std::make_shared<DataTypeResource>(resource->get_datatype());
 }
 
-std::unique_ptr<TermResource>
+std::shared_ptr<TermResource>
 TermEval::make_data_type_resource(std::string &&input_string,
                                   ExprDataType data_type) {
   switch (data_type) {
   case EDT_UNKNOWN:
     return TermResource::null();
   case EDT_INTEGER:
-    return std::make_unique<IntegerResource>(std::stoi(input_string));
+    return std::make_shared<IntegerResource>(std::stoi(input_string));
   case EDT_DECIMAL:
   case EDT_FLOAT:
-    return std::make_unique<FloatResource>(std::stof(input_string));
+    return std::make_shared<FloatResource>(std::stof(input_string));
   case EDT_DOUBLE:
-    return std::make_unique<DoubleResource>(std::stod(input_string));
+    return std::make_shared<DoubleResource>(std::stod(input_string));
 
   case EDT_BOOLEAN:
     std::for_each(input_string.begin(), input_string.end(),
                   [](char &c) { c = std::tolower(c); });
-    return std::make_unique<BooleanResource>(input_string != "false");
+    return std::make_shared<BooleanResource>(input_string != "false");
   case EDT_DATETIME:
   case EDT_STRING:
-    return std::make_unique<StringLiteralResource>(std::move(input_string),
+    return std::make_shared<StringLiteralResource>(std::move(input_string),
                                                    data_type);
   }
   return TermResource::null();
 }
-std::unique_ptr<TermResource>
+std::shared_ptr<TermResource>
 TermEval::eval_iri_resource(RDFResource &&resource) {
 
   auto matches_short = StringHandlingUtil::starts_with(
@@ -270,10 +273,10 @@ TermEval::eval_iri_resource(RDFResource &&resource) {
     return create_datatype_resource(std::move(resource), matches_short);
   }
 
-  return std::make_unique<ConcreteRDFResource>(std::move(resource));
+  return std::make_shared<ConcreteRDFResource>(std::move(resource));
 }
 
-std::unique_ptr<TermResource>
+std::shared_ptr<TermResource>
 TermEval::create_datatype_resource(RDFResource &&resource, bool matches_short) {
   std::string type_s;
 
@@ -303,4 +306,7 @@ TermEval::create_datatype_resource(RDFResource &&resource, bool matches_short) {
   }
 
   return DataTypeResource::create(ExprDataType::EDT_UNKNOWN);
+}
+bool TermEval::has_constant_subtree() const {
+  return expr_node.term_node().term_type() != proto_msg::TermType::VARIABLE;
 }

@@ -4,13 +4,13 @@
 
 #include "SameTermEval.hpp"
 #include "BooleanResource.hpp"
-std::unique_ptr<TermResource>
+std::shared_ptr<TermResource>
 SameTermEval::eval_resource(const ExprEval::row_t &row) {
   return generate_from_eval_boolean(row);
 }
 bool SameTermEval::eval_boolean(const ExprEval::row_t &row) {
-  auto first_resource = children[0]->eval_resource(row);
-  auto second_resource = children[1]->eval_resource(row);
+  auto first_resource = children[0]->produce_resource(row);
+  auto second_resource = children[1]->produce_resource(row);
   if (children_with_error()) {
     this->with_error = true;
     return false;

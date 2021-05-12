@@ -212,3 +212,6 @@ PredicatesCacheManager::get_plain_mapping_debug() {
   }
   return result;
 }
+unsigned long PredicatesCacheManager::get_last_id() const {
+  return isd_manager->last_id() + extra_dicts.size();
+}

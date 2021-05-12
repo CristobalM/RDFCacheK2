@@ -6,7 +6,7 @@
 #include "StringLiteralResource.hpp"
 #include <curl/curl.h>
 
-std::unique_ptr<TermResource>
+std::shared_ptr<TermResource>
 StrEncodeForURIEval::eval_resource(const ExprEval::row_t &row) {
   auto input_resource = children[0]->eval_resource(row);
 
@@ -31,7 +31,7 @@ StrEncodeForURIEval::eval_resource(const ExprEval::row_t &row) {
   char *result = curl_easy_escape(nullptr, input_str.c_str(), input_str.size());
   std::string str_result(result);
   curl_free(result);
-  return std::make_unique<StringLiteralResource>(std::move(str_result),
+  return std::make_shared<StringLiteralResource>(std::move(str_result),
                                                  ExprDataType::EDT_UNKNOWN);
 }
 void StrEncodeForURIEval::validate() {

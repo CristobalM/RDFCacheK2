@@ -12,8 +12,8 @@ class TermEval : public ExprEval {
 public:
   using ExprEval::ExprEval;
   void validate() override;
-  std::unique_ptr<TermResource> eval_resource(const row_t &row) override;
-  std::unique_ptr<TermResource> eval_datatype(const row_t &row) override;
+  std::shared_ptr<TermResource> eval_resource(const row_t &row) override;
+  std::shared_ptr<TermResource> eval_datatype(const row_t &row) override;
   bool eval_boolean(const row_t &row) override;
   int eval_integer(const row_t &row) override;
   float eval_float(const row_t &row) override;
@@ -34,11 +34,12 @@ private:
   float eval_float_from_string(const std::string &basic_string);
   double eval_double_from_resource(const RDFResource &resource);
   double eval_double_from_string(const std::string &basic_string);
-  std::unique_ptr<TermResource>
+  std::shared_ptr<TermResource>
   make_data_type_resource(std::string &&input_string, ExprDataType data_type);
-  std::unique_ptr<TermResource> eval_iri_resource(RDFResource &&resource);
-  std::unique_ptr<TermResource> create_datatype_resource(RDFResource &&resource,
+  std::shared_ptr<TermResource> eval_iri_resource(RDFResource &&resource);
+  std::shared_ptr<TermResource> create_datatype_resource(RDFResource &&resource,
                                                          bool matches_short);
+  bool has_constant_subtree() const override;
 };
 
 #endif // RDFCACHEK2_TERMEVAL_HPP

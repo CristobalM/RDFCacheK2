@@ -14,8 +14,8 @@ void NotEqualsEval::init() {
   add_children();
 }
 bool NotEqualsEval::eval_boolean(const ExprEval::row_t &row) {
-  auto left_resource = children[0]->eval_resource(row);
-  auto right_resource = children[1]->eval_resource(row);
+  auto left_resource = children[0]->produce_resource(row);
+  auto right_resource = children[1]->produce_resource(row);
   if (children_with_error()) {
     this->with_error = true;
     return false;
@@ -23,7 +23,7 @@ bool NotEqualsEval::eval_boolean(const ExprEval::row_t &row) {
   return *left_resource != *right_resource;
 }
 
-std::unique_ptr<TermResource>
+std::shared_ptr<TermResource>
 NotEqualsEval::eval_resource(const ExprEval::row_t &row) {
   return generate_from_eval_boolean(row);
 }

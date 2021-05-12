@@ -4,13 +4,13 @@
 
 #include "LessThanEval.hpp"
 #include "BooleanResource.hpp"
-std::unique_ptr<TermResource>
+std::shared_ptr<TermResource>
 LessThanEval::eval_resource(const ExprEval::row_t &row) {
   return generate_from_eval_boolean(row);
 }
 bool LessThanEval::eval_boolean(const ExprEval::row_t &row) {
-  auto left_resource = children[0]->eval_resource(row);
-  auto right_resource = children[1]->eval_resource(row);
+  auto left_resource = children[0]->produce_resource(row);
+  auto right_resource = children[1]->produce_resource(row);
   if (children[0]->has_error() || children[1]->has_error() ||
       !left_resource->is_numeric() || !right_resource->is_numeric()) {
     this->with_error = true;

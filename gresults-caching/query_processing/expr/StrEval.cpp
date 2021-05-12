@@ -4,7 +4,7 @@
 
 #include "StrEval.hpp"
 #include "StringLiteralResource.hpp"
-std::unique_ptr<TermResource>
+std::shared_ptr<TermResource>
 StrEval::eval_resource(const ExprEval::row_t &row) {
   auto child_resource = children[0]->eval_resource(row);
   if (children_with_error()) {
@@ -19,11 +19,11 @@ StrEval::eval_resource(const ExprEval::row_t &row) {
   if (child_resource->is_concrete()) {
     const auto &concrete_resource = child_resource->get_resource();
     if (concrete_resource.resource_type != RDFResourceType::RDF_TYPE_IRI) {
-      return std::make_unique<StringLiteralResource>(
+      return std::make_shared<StringLiteralResource>(
           std::string(concrete_resource.value), ExprDataType::EDT_STRING);
     }
 
-    return std::make_unique<StringLiteralResource>(
+    return std::make_shared<StringLiteralResource>(
         ExprProcessorPersistentData::get().extract_inside_iri(
             concrete_resource.value),
         ExprDataType::EDT_STRING);

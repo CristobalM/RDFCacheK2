@@ -39,7 +39,7 @@ public:
   virtual double get_double() const;
   virtual bool get_boolean() const;
 
-  static std::unique_ptr<TermResource> null();
+  static std::shared_ptr<TermResource> null();
 
   virtual bool contains(TermResource &pattern_resource) const;
 };

@@ -14,7 +14,7 @@ public:
   double eval_double(const row_t &row) override;
   void init() override;
   void validate() override;
-  std::unique_ptr<TermResource> eval_resource(const row_t &row) override;
+  std::shared_ptr<TermResource> eval_resource(const row_t &row) override;
 };
 
 #endif // RDFCACHEK2_UNARYPLUSEVAL_HPP

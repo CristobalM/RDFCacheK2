@@ -5,14 +5,14 @@
 #include "StrStartsWithEval.hpp"
 #include "BooleanResource.hpp"
 #include "StringHandlingUtil.hpp"
-std::unique_ptr<TermResource>
+std::shared_ptr<TermResource>
 StrStartsWithEval::eval_resource(const ExprEval::row_t &row) {
   return generate_from_eval_boolean(row);
 }
 
 bool StrStartsWithEval::eval_boolean(const ExprEval::row_t &row) {
-  auto input_str_resource = children[0]->eval_resource(row);
-  auto pattern_resource = children[1]->eval_resource(row);
+  auto input_str_resource = children[0]->produce_resource(row);
+  auto pattern_resource = children[1]->produce_resource(row);
   if (children_with_error()) {
     return bool_with_error();
   }

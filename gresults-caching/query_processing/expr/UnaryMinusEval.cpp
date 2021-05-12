@@ -25,17 +25,17 @@ double UnaryMinusEval::eval_double(const ExprEval::row_t &row) {
   return -value;
 }
 
-std::unique_ptr<TermResource>
+std::shared_ptr<TermResource>
 UnaryMinusEval::eval_resource(const ExprEval::row_t &row) {
   auto child_resource = children[0]->eval_resource(row);
   if (children_with_error())
     return resource_with_error();
   if (child_resource->is_integer())
-    return std::make_unique<IntegerResource>(-child_resource->get_integer());
+    return std::make_shared<IntegerResource>(-child_resource->get_integer());
   if (child_resource->is_float())
-    return std::make_unique<FloatResource>(-child_resource->get_float());
+    return std::make_shared<FloatResource>(-child_resource->get_float());
   if (child_resource->is_double())
-    return std::make_unique<DoubleResource>(-child_resource->get_double());
+    return std::make_shared<DoubleResource>(-child_resource->get_double());
   return resource_with_error();
 }
 

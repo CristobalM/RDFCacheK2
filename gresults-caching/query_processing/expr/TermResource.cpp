@@ -15,8 +15,8 @@ const RDFResource &TermResource::get_resource() const {
   throw std::runtime_error("get_resource not implemented");
 }
 bool TermResource::is_null() const { return false; }
-std::unique_ptr<TermResource> TermResource::null() {
-  return std::unique_ptr<NullResource>();
+std::shared_ptr<TermResource> TermResource::null() {
+  return std::make_shared<NullResource>();
 }
 bool TermResource::is_day_time_duration() const { return false; }
 bool TermResource::is_string_literal() const { return false; }
