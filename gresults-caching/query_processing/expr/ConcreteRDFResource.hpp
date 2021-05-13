@@ -22,6 +22,8 @@ public:
   RDFResource get_resource_clone() const override;
   bool contains(TermResource &pattern_resource) const override;
   bool is_literal() const override;
+  const std::string &get_literal_string() const override;
+  std::string get_content_string_copy() const override;
 };
 
 #endif // RDFCACHEK2_CONCRETERDFRESOURCE_HPP

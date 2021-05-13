@@ -73,6 +73,7 @@ set(GRAPH_RESULT_CACHING_FILE
         gresults-caching/query_processing/BandMapLazy.cpp
         gresults-caching/query_processing/UnionProcessor.cpp
         gresults-caching/query_processing/OptionalProcessor.cpp
+        gresults-caching/query_processing/InnerJoinProcessor.cpp
         gresults-caching/query_processing/ExprProcessor.cpp
         gresults-caching/query_processing/ExprListProcessor.cpp
         gresults-caching/query_processing/ExprProcessorPersistentData.cpp
@@ -260,8 +261,8 @@ include_directories(${Protobuf_INCLUDE_DIRS})
 find_package(OpenSSL REQUIRED)
 include_directories(${OPENSSL_INCLUDE_DIRS})
 
-find_package(PCRE2 REQUIRED)
-include_directories(${PCRE2_INCLUDE_DIRS})
+#find_package(PCRE2 REQUIRED)
+#include_directories(${PCRE2_INCLUDE_DIRS})
 
 find_package(ICU REQUIRED COMPONENTS i18n )
 include_directories(${ICU_INCLUDE_DIRS})

@@ -7,8 +7,10 @@
 #ifndef RDFCACHEK2_EXPR_PROCESSOR_PERSISTENT_DATA_HPP
 #define RDFCACHEK2_EXPR_PROCESSOR_PERSISTENT_DATA_HPP
 
-#include <pcrecpp.h>
+#include <memory>
 #include <string>
+
+#include <pcrecpp.h>
 
 #include <unicode/calendar.h>
 #include <unicode/smpdtfmt.h>

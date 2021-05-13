@@ -3,6 +3,7 @@
 //
 
 #include "ConcreteRDFResource.hpp"
+#include "StringHandlingUtil.hpp"
 #include <query_processing/ExprProcessorPersistentData.hpp>
 bool ConcreteRDFResource::operator==(const TermResource &rhs) const {
   return rhs.is_concrete() && resource == rhs.get_resource();
@@ -64,4 +65,23 @@ bool ConcreteRDFResource::contains(TermResource &pattern_resource) const {
 }
 bool ConcreteRDFResource::is_literal() const {
   return resource.resource_type == RDFResourceType::RDF_TYPE_LITERAL;
+}
+const std::string &ConcreteRDFResource::get_literal_string() const {
+  return TermResource::get_literal_string();
+}
+std::string ConcreteRDFResource::get_content_string_copy() const {
+  StringLiteralData literal_data;
+  switch (resource.resource_type) {
+  case RDF_TYPE_IRI:
+    return resource.value;
+  case RDF_TYPE_BLANK:
+    return resource.value;
+  case RDF_TYPE_LITERAL:
+    literal_data =
+        StringHandlingUtil::extract_literal_data_from_rdf_resource(resource);
+    return std::move(literal_data.value);
+  case NULL_RESOURCE_TYPE:
+    return "";
+  }
+  return "";
 }

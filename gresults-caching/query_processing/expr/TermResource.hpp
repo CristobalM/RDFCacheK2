@@ -31,6 +31,7 @@ public:
   virtual const std::string &get_literal_lang_string() const;
   virtual const std::string &get_iri_string() const;
   virtual const std::string &get_lang_tag() const;
+  virtual std::string get_content_string_copy() const;
   virtual const RDFResource &get_resource() const;
   virtual RDFResource get_resource_clone() const;
   virtual ExprDataType get_datatype() const;

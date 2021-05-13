@@ -13,7 +13,7 @@ re-debug: clean-all all-debug
 
 build-libs:
 	./fetch_deps.sh
-	cd lib/ntparser/gen && make
+	cd lib/ntparser/gen && make -j
 
 
 clean-libs:
@@ -26,7 +26,7 @@ build:
 	mkdir -p build
 	cd build && \
 	cmake .. && \
-	make -j4
+	make -j
 
 build-libs-debug:
 	./fetch_deps.sh
@@ -37,7 +37,7 @@ build-debug:
 	mkdir -p build
 	cd build && \
 	cmake -DCMAKE_BUILD_TYPE=Debug .. && \
-	make -j4
+	make -j
 
 
 proto-build:

@@ -47,10 +47,7 @@ StrConcatEval::eval_resource(const ExprEval::row_t &row) {
       }
       wlang_tag = false;
     } else if (resource->is_concrete()) {
-      ss << ExprProcessorPersistentData::get()
-                .extract_literal_content_from_string(
-                    resource->get_resource().value);
-
+      ss << resource->get_content_string_copy();
       auto concrete_dtype =
           ExprProcessorPersistentData::get().extract_data_type_from_string(
               resource->get_resource().value);
