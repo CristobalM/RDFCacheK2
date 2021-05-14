@@ -20,7 +20,14 @@ message SparqlNode {
     FilterNode filter_node = 10;
     ExtendNode extend_node = 11;
     SequenceNode sequence_node = 12;
+    SliceNode slice_node = 13;
   }
+}
+
+message SliceNode{
+  SparqlNode node = 1;
+  uint64 start = 2;
+  uint64 length = 3;
 }
 
 message SequenceNode{

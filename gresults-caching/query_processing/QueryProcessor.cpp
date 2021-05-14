@@ -18,6 +18,8 @@
 #include "BGPProcessor.hpp"
 #include "ExprListProcessor.hpp"
 #include "ExprProcessorPersistentData.hpp"
+#include "InnerJoinProcessor.hpp"
+#include "MinusProcessor.hpp"
 #include "OptionalProcessor.hpp"
 #include "QueryProcessor.hpp"
 #include "Term.hpp"
@@ -149,6 +151,12 @@ QueryProcessor::process_node(const proto_msg::SparqlNode &node) {
     return process_filter_node(node.filter_node());
   case proto_msg::SparqlNode::NodeCase::kExtendNode:
     return process_extend_node(node.extend_node());
+  case proto_msg::SparqlNode::kMinusNode:
+    return process_minus_node(node.minus_node());
+  case proto_msg::SparqlNode::kSequenceNode:
+    return process_sequence_node(node.sequence_node());
+  case proto_msg::SparqlNode::kSliceNode:
+    return process_slice_node(node.slice_node());
   default:
     throw std::runtime_error("Unsupported nodetype on process_node: " +
                              std::to_string(node.node_case()));
@@ -283,4 +291,46 @@ QueryProcessor::process_extend_node(const proto_msg::ExtendNode &node) {
   }
 
   return resulting_table;
+}
+std::shared_ptr<ResultTable>
+QueryProcessor::process_minus_node(const proto_msg::MinusNode &node) {
+  auto left_result_table = process_node(node.left_node());
+  auto right_result_table = process_node(node.right_node());
+  left_to_right_sort(*left_result_table);
+  left_to_right_sort(*right_result_table);
+  // expects sorted tables
+  return MinusProcessor(left_result_table, right_result_table).execute();
+}
+std::shared_ptr<ResultTable>
+QueryProcessor::process_sequence_node(const proto_msg::SequenceNode &node) {
+  auto result_table = process_node(node.nodes(0));
+  for (int i = 1; i < node.nodes_size(); i++) {
+    auto current_table = process_node(node.nodes(i));
+    result_table = InnerJoinProcessor(result_table, current_table).execute();
+  }
+  return result_table;
+}
+
+std::shared_ptr<ResultTable>
+QueryProcessor::process_slice_node(const proto_msg::SliceNode &node) {
+  auto result_table = process_node(node.node());
+  const unsigned long start = node.start();
+  const unsigned long length = node.length();
+
+  unsigned long counted = 0;
+  unsigned long i = 0;
+  auto it = result_table->data.begin();
+  for (; it != result_table->data.end() && i < start; i++) {
+    auto next_it = std::next(it);
+    result_table->data.erase(it);
+    it = next_it;
+  }
+  for (; it != result_table->data.end() && counted < length; it++, counted++)
+    ;
+  for (; it != result_table->data.end();) {
+    auto next_it = std::next(it);
+    result_table->data.erase(it);
+    it = next_it;
+  }
+  return result_table;
 }
