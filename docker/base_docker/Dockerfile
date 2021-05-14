@@ -10,7 +10,8 @@ RUN apt-get update && \
     apt-get install -y \
     git libprotobuf-dev libprotoc-dev protobuf-compiler \
     make clang-11 clang-format bash linux-libc-dev libbsd-dev \
-    flex bison wget tar rsync libssl-dev libicu-dev libcurl4-openssl-dev libpcre3-dev
+    flex bison wget tar rsync libssl-dev libicu-dev libcurl4-openssl-dev libpcre3-dev \
+    googletest libgtest-dev
 
 RUN CMAKE_PRE=https://github.com/Kitware/CMake/releases/download/v3.18.2/ &&\
     CMAKE_NAME=cmake-3.18.2-Linux-x86_64 && \
