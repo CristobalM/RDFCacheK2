@@ -459,6 +459,9 @@ if (GTest_FOUND)
     add_executable(query_filters_test test/query_filters_test.cpp test/cache_test_util.cpp)
     target_link_libraries(query_filters_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES})
 
+    add_executable(query_proc_tests2 test/query_proc_tests2.cpp test/cache_test_util.cpp)
+    target_link_libraries(query_proc_tests2 ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES})
+
 
     add_test(NAME serialization_test COMMAND ./serialization_test)
     add_test(NAME k2tree_serialization_test COMMAND ./k2tree_serialization_test)
@@ -474,6 +477,7 @@ if (GTest_FOUND)
     add_test(NAME predicates_metadata_serialization_test COMMAND ./predicates_metadata_serialization_test)
     add_test(NAME join_util_test COMMAND ./join_util_test)
     add_test(NAME query_filters_test COMMAND ./query_filters_test)
+    add_test(NAME query_proc_tests2 COMMAND ./query_proc_tests2)
 
 endif ()
 

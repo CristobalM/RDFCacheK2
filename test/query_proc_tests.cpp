@@ -22,8 +22,6 @@
 
 #include <SDBuilder.hpp>
 
-#include <InMemoryCacheSettings.hpp>
-
 #include "cache_test_util.hpp"
 
 namespace fs = std::filesystem;
@@ -930,22 +928,6 @@ TEST(QueryProcTests, join_two_two_vars) {
 
   auto translated_table = translate_table(table, cache);
   auto header_str = reverse_map[table.headers[0]];
-
-  /*
-  for (auto header : table.headers) {
-    std::cout << reverse_map[header] << "\t\t";
-  }
-  std::cout << std::endl;
-
-  for (auto &row : translated_table) {
-    for (auto &res : row) {
-      std::cout << res.value << "\t\t";
-    }
-    std::cout << std::endl;
-  }
-
-  std::cout << "total size: " << translated_table.size() << std::endl;
-  */
 
   fs::remove(fname);
 }

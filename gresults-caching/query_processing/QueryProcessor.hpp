@@ -49,13 +49,10 @@ private:
   std::shared_ptr<ResultTable>
   process_extend_node(const proto_msg::ExtendNode &node);
 
-  // TODO: test
   std::shared_ptr<ResultTable>
   process_minus_node(const proto_msg::MinusNode &node);
-  // TODO: test
   std::shared_ptr<ResultTable>
   process_sequence_node(const proto_msg::SequenceNode &node);
-  // TODO: test
   std::shared_ptr<ResultTable>
   process_slice_node(const proto_msg::SliceNode &node);
 };
