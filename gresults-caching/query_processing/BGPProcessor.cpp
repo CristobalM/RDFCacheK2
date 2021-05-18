@@ -48,7 +48,9 @@ void BGPProcessor::fill_table_with_first_triple() {
 }
 
 void BGPProcessor::add_full_predicate_to_table(const Triple &triple) {
-  const auto &tree = cm.get_tree_by_predicate_index(triple.predicate.id_value);
+  const auto fetched =
+      cm.get_tree_by_predicate_index(triple.predicate.id_value);
+  const auto &tree = fetched.get();
 
   vim.assign_index_if_not_found(triple.subject.value);
   vim.assign_index_if_not_found(triple.object.value);
@@ -66,7 +68,9 @@ void BGPProcessor::add_full_predicate_to_table(const Triple &triple) {
 }
 
 void BGPProcessor::add_row_to_table(const Triple &triple) {
-  const auto &tree = cm.get_tree_by_predicate_index(triple.predicate.id_value);
+  const auto fetch_result =
+      cm.get_tree_by_predicate_index(triple.predicate.id_value);
+  const auto &tree = fetch_result.get();
 
   vim.assign_index_if_not_found(triple.subject.value);
   const unsigned long subject_var_index = vim.var_indexes[triple.subject.value];
@@ -81,7 +85,9 @@ void BGPProcessor::add_row_to_table(const Triple &triple) {
 }
 
 void BGPProcessor::add_column_to_table(const Triple &triple) {
-  const auto &tree = cm.get_tree_by_predicate_index(triple.predicate.id_value);
+  const auto fetch_result =
+      cm.get_tree_by_predicate_index(triple.predicate.id_value);
+  const auto &tree = fetch_result.get();
 
   vim.assign_index_if_not_found(triple.object.value);
   const unsigned long object_var_index = vim.var_indexes[triple.object.value];
@@ -145,7 +151,10 @@ int BGPProcessor::find_var_position_in_headers(unsigned long var_index) {
 }
 
 void BGPProcessor::cross_product_table_with_triple(const Triple &triple) {
-  const auto &tree = cm.get_tree_by_predicate_index(triple.predicate.id_value);
+  const auto fetch_result =
+      cm.get_tree_by_predicate_index(triple.predicate.id_value);
+  const auto &tree = fetch_result.get();
+
   const auto predicate_points = tree.scan_points_into_vector();
 
   current_table->headers.push_back(vim.var_indexes[triple.subject.value]);
@@ -170,7 +179,9 @@ void BGPProcessor::cross_product_table_with_triple(const Triple &triple) {
 
 void BGPProcessor::left_join_table_with_triple_subject(
     const Triple &triple, unsigned long subject_var_index) {
-  const auto &tree = cm.get_tree_by_predicate_index(triple.predicate.id_value);
+  const auto fetch_result =
+      cm.get_tree_by_predicate_index(triple.predicate.id_value);
+  const auto &tree = fetch_result.get();
 
   auto band_map = BandMap(tree, BandMap::BY_COL);
 
@@ -198,7 +209,9 @@ void BGPProcessor::left_join_table_with_triple_subject(
 
 void BGPProcessor::left_join_table_with_triple_object(
     const Triple &triple, unsigned long object_var_index) {
-  const auto &tree = cm.get_tree_by_predicate_index(triple.predicate.id_value);
+  const auto fetch_result =
+      cm.get_tree_by_predicate_index(triple.predicate.id_value);
+  const auto &tree = fetch_result.get();
 
   auto band_map = BandMap(tree, BandMap::BY_ROW);
 
@@ -225,7 +238,10 @@ void BGPProcessor::left_join_table_with_triple_object(
 void BGPProcessor::intersect_table_with_predicate(
     const Triple &triple, unsigned long subject_var_index,
     unsigned long object_var_index) {
-  const auto &tree = cm.get_tree_by_predicate_index(triple.predicate.id_value);
+  const auto fetch_result =
+      cm.get_tree_by_predicate_index(triple.predicate.id_value);
+  const auto &tree = fetch_result.get();
+
   auto &table_data = current_table->get_data();
 
   for (auto row_it = table_data.begin(); row_it != table_data.end();) {
@@ -274,7 +290,14 @@ void BGPProcessor::combine_row_to_table(const Triple &triple) {
 
 void BGPProcessor::cross_product_table_with_band(const Triple &triple,
                                                  BAND_TYPE band_type) {
-  const auto &tree = cm.get_tree_by_predicate_index(triple.predicate.id_value);
+  const auto fetch_result =
+      cm.get_tree_by_predicate_index(triple.predicate.id_value);
+  if (!fetch_result.exists())
+    throw std::runtime_error(
+        "Predicate not found: " + triple.predicate.value +
+        ", with id: " + std::to_string(triple.predicate.id_value));
+  const auto &tree = fetch_result.get();
+
   auto &table_data = current_table->get_data();
   auto &headers = current_table->headers;
 
@@ -303,7 +326,9 @@ void BGPProcessor::cross_product_table_with_band(const Triple &triple,
 void BGPProcessor::intersect_table_with_band(unsigned long pos_in_headers,
                                              const Triple &triple,
                                              BAND_TYPE band_type) {
-  const auto &tree = cm.get_tree_by_predicate_index(triple.predicate.id_value);
+  const auto fetch_result =
+      cm.get_tree_by_predicate_index(triple.predicate.id_value);
+  const auto &tree = fetch_result.get();
   auto &table_data = current_table->get_data();
   auto &headers = current_table->headers;
 

@@ -26,7 +26,7 @@ bool PredicatesIndexCacheMDFile::load_single_predicate(
   return PredicatesIndexCacheMD::load_single_predicate(predicate_index);
 }
 
-K2TreeMixed &
+PredicateFetchResult
 PredicatesIndexCacheMDFile::fetch_k2tree(uint64_t predicate_index) {
   return PredicatesIndexCacheMD::fetch_k2tree(predicate_index);
 }

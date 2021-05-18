@@ -49,6 +49,11 @@ public:
   RDFResource extract_resource(unsigned long index) const;
 
   PredicatesCacheManager &get_pcm();
+  bool query_is_valid(const proto_msg::SparqlTree &tree);
+  bool node_is_valid(const proto_msg::SparqlNode &node);
+  bool bgp_node_is_valid(const proto_msg::BGPNode &node);
+  bool union_node_is_valid(const proto_msg::UnionNode &node);
+  bool sequence_is_valid(const proto_msg::SequenceNode &node);
 };
 
 #endif // RDFCACHEK2_CACHE_HPP

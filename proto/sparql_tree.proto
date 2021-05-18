@@ -1,7 +1,7 @@
 syntax = "proto3";
 package proto_msg;
 
-option java_package = "com.github.cristobalm.proto";
+option java_package = "com.github.cristobalm.RDFEWK2C.proto";
 option java_outer_classname = "SparqlTreeMessage";
 
 message SparqlTree { SparqlNode root = 1; }
@@ -113,6 +113,7 @@ enum BasicType {
   BOOLEAN = 2;
   DATE = 3;
   TIME = 4;
+  NO_TYPE = 5;
 }
 
 enum FunctionOP {

@@ -32,7 +32,8 @@ int main(int argc, char **argv) {
 
   PredicatesIndexCacheMDFile pc(parsed.input_file);
 
-  auto &k2tree = pc.fetch_k2tree(parsed.predicate);
+  auto fetch_result = pc.fetch_k2tree(parsed.predicate);
+  auto &k2tree = fetch_result.get_mutable();
 
   int debug_validate = debug_validate_k2node_rec(k2tree.get_root_k2node(),
                                                  k2tree.get_k2qstate(), 0);

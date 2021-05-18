@@ -3,7 +3,7 @@ syntax = "proto3";
 package proto_msg;
 
 
-option java_package = "com.github.cristobalm.proto";
+option java_package = "com.github.cristobalm.RDFEWK2C.proto";
 option java_outer_classname = "MsgType";
 
 enum MessageType {
@@ -11,4 +11,5 @@ enum MessageType {
     CONNECTION_END = 1;
     RUN_QUERY = 2;
     RESULT_TABLE_RESPONSE = 3;
+    INVALID_QUERY_RESPONSE=4;
 }

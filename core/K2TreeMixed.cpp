@@ -69,7 +69,7 @@ bool K2TreeMixed::has(unsigned long col, unsigned long row) const {
   return (bool)result;
 }
 
-unsigned long K2TreeMixed::get_tree_depth() { return st->k2tree_depth; }
+unsigned long K2TreeMixed::get_tree_depth() const { return st->k2tree_depth; }
 
 std::vector<std::pair<unsigned long, unsigned long>>
 K2TreeMixed::get_all_points() {

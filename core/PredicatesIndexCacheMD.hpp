@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "K2TreeMixed.hpp"
+#include "PredicateFetchResult.hpp"
 #include "PredicatesCacheMetadata.hpp"
 
 class PredicatesIndexCacheMD {
@@ -32,7 +33,7 @@ public:
   PredicatesIndexCacheMD(PredicatesIndexCacheMD &&other) noexcept;
 
   bool load_single_predicate(uint64_t predicate_index);
-  K2TreeMixed &fetch_k2tree(uint64_t predicate_index);
+  PredicateFetchResult fetch_k2tree(uint64_t predicate_index);
 
   bool has_predicate(uint64_t predicate_index);
   bool has_predicate_active(uint64_t predicate_index);

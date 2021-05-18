@@ -41,9 +41,9 @@ int main(int argc, char **argv) {
   auto start = ofs.tellp();
   write_u64(ofs, total_triples);
   for (auto predicate_id : predicates_ids) {
-    auto &k2tree = pc.fetch_k2tree(predicate_id);
+    auto fetch_result = pc.fetch_k2tree(predicate_id);
     DataHolder data_holder(ofs, predicate_id, total_triples);
-    k2tree.scan_points(
+    fetch_result.get().scan_points(
         [](unsigned long col, unsigned long row, void *st) {
           auto &dh = *reinterpret_cast<DataHolder *>(st);
           TripleValue tvalue(col, dh.predicate_id, row);

@@ -28,8 +28,8 @@ int main(int argc, char **argv) {
 
   unsigned long total_points = 0;
   for (auto predicate_id : predicates_manager.get_predicates_ids()) {
-    auto &k2tree = predicates_manager.fetch_k2tree(predicate_id);
-    total_points += k2tree.size();
+    auto fetch_result = predicates_manager.fetch_k2tree(predicate_id);
+    total_points += fetch_result.get().size();
   }
 
   std::cout << "total points: " << total_points << std::endl;

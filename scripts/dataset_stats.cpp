@@ -55,7 +55,8 @@ int main(int argc, char **argv) {
 
   ofs << "#,predicate,points\n";
   for (auto predicate_id : predicates_ids) {
-    auto &k2tree = predicates_index.fetch_k2tree(predicate_id);
+    auto fetch_result = predicates_index.fetch_k2tree(predicate_id);
+    const auto &k2tree = fetch_result.get();
     total_points += k2tree.size();
     auto pred_resource = pcm.get_isd_manager()->get_resource(predicate_id);
     ofs << predicate_id << "," << pred_resource.value << "," << k2tree.size()

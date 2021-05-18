@@ -3,7 +3,7 @@ syntax = "proto3";
 package proto_msg;
 
 
-option java_package = "com.github.cristobalm.proto";
+option java_package = "com.github.cristobalm.RDFEWK2C.proto";
 option java_outer_classname = "K2TreeMsg";
 
 message K2Tree {

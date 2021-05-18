@@ -38,13 +38,14 @@ public:
   void add_triple(RDFTripleResource &&rdf_triple);
 
   bool has_triple(const RDFTripleResource &rdf_triple) const;
+  bool has_predicate(const std::string &predicate_name) const;
 
   void replace_index_cache(
       std::unique_ptr<PredicatesIndexCacheMDFile> &&predicates_index);
 
-  const K2TreeMixed &
+  PredicateFetchResult
   get_tree_by_predicate_name(const std::string &predicate_name) const;
-  const K2TreeMixed &get_tree_by_predicate_index(unsigned long index) const;
+  PredicateFetchResult get_tree_by_predicate_index(unsigned long index) const;
 
   NaiveDynamicStringDictionary &get_dyn_dicts();
 

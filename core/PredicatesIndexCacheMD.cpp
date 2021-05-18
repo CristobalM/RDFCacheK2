@@ -72,13 +72,13 @@ bool PredicatesIndexCacheMD::load_single_predicate(uint64_t predicate_index) {
   return true;
 }
 
-K2TreeMixed &PredicatesIndexCacheMD::fetch_k2tree(uint64_t predicate_index) {
+PredicateFetchResult
+PredicatesIndexCacheMD::fetch_k2tree(uint64_t predicate_index) {
   if (predicates.find(predicate_index) == predicates.end() &&
-      !load_single_predicate(predicate_index))
-    throw std::runtime_error("Predicate with index " +
-                             std::to_string(predicate_index) + " not found");
-
-  return *predicates[predicate_index];
+      !load_single_predicate(predicate_index)) {
+    return PredicateFetchResult(false, nullptr);
+  }
+  return PredicateFetchResult(true, predicates[predicate_index].get());
 }
 
 bool PredicatesIndexCacheMD::has_predicate(uint64_t predicate_index) {

@@ -18,6 +18,7 @@
 #include <hashing.hpp>
 #include <serialization_util.hpp>
 
+void send_invalid_response(int client_fd);
 ServerTask::ServerTask(int client_socket_fd, Cache &cache)
     : client_socket_fd(client_socket_fd), cache(cache) {}
 
@@ -153,11 +154,25 @@ void process_cache_query(ServerTask &server_task, Message &message) {
   auto &cache = server_task.get_cache();
   auto &tree =
       message.get_cache_request().cache_run_query_algebra().sparql_tree();
+  auto valid = cache.query_is_valid(tree);
+  int client_fd = server_task.get_client_socket_fd();
+
+  if (!valid) {
+    send_invalid_response(client_fd);
+    return;
+  }
   auto query_result = cache.run_query(tree);
   auto response =
       create_response_from_query_result(server_task, query_result, message);
-  int client_fd = server_task.get_client_socket_fd();
   send_response(client_fd, response);
+}
+void send_invalid_response(int client_fd) {
+
+  proto_msg::CacheResponse cache_response;
+  cache_response.set_response_type(
+      proto_msg::MessageType::INVALID_QUERY_RESPONSE);
+  cache_response.mutable_invalid_query_response();
+  send_response(client_fd, cache_response);
 }
 
 void process_connection_end(ServerTask &server_task, Message &) {

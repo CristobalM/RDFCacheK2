@@ -69,7 +69,7 @@ public:
   sip_join_k2trees(const std::vector<const K2TreeMixed *> &trees,
                    std::vector<struct sip_ipoint> &join_coordinates);
 
-  unsigned long get_tree_depth();
+  unsigned long get_tree_depth() const;
 
   std::vector<std::pair<unsigned long, unsigned long>> get_all_points();
   std::vector<unsigned long> get_row(unsigned long row) const;

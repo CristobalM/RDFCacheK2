@@ -133,17 +133,16 @@ void PredicatesCacheManager::replace_index_cache(
   this->predicates_index = std::move(predicates_index);
 }
 
-const K2TreeMixed &PredicatesCacheManager::get_tree_by_predicate_name(
+PredicateFetchResult PredicatesCacheManager::get_tree_by_predicate_name(
     const std::string &predicate_name) const {
   RDFResource resource(predicate_name, RDF_TYPE_IRI);
   auto index = get_resource_index(resource);
   if (index == NORESULT)
-    throw std::runtime_error("Predicate with name " + predicate_name +
-                             " was not found in predicates cache manager");
+    return PredicateFetchResult(false, nullptr);
   return predicates_index->fetch_k2tree(index);
 }
 
-const K2TreeMixed &
+PredicateFetchResult
 PredicatesCacheManager::get_tree_by_predicate_index(unsigned long index) const {
   return predicates_index->fetch_k2tree(index);
 }
@@ -189,8 +188,10 @@ bool PredicatesCacheManager::has_triple(
   auto predicate_index = get_resource_index(rdf_triple.predicate);
   auto object_index = get_resource_index(rdf_triple.object);
 
-  auto &k2tree = predicates_index->fetch_k2tree(predicate_index);
-  return k2tree.has(subject_index, object_index);
+  auto fetch_result = predicates_index->fetch_k2tree(predicate_index);
+  if (!fetch_result.exists())
+    return false;
+  return fetch_result.get().has(subject_index, object_index);
 }
 
 PredicatesIndexCacheMDFile &
@@ -214,4 +215,16 @@ PredicatesCacheManager::get_plain_mapping_debug() {
 }
 unsigned long PredicatesCacheManager::get_last_id() const {
   return isd_manager->last_id() + extra_dicts.size();
+}
+bool PredicatesCacheManager::has_predicate(
+    const std::string &predicate_name) const {
+  auto index = isd_manager->iris_index(predicate_name);
+  if (index == NORESULT) {
+    RDFResource resource(predicate_name, RDFResourceType::RDF_TYPE_IRI);
+    index = extra_dicts.locate_resource(resource);
+  }
+  if (index == NORESULT)
+    return false;
+
+  return predicates_index->has_predicate(index);
 }

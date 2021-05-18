@@ -10,10 +10,8 @@
 #include <EmptyISDManager.hpp>
 #include <K2TreeMixed.hpp>
 #include <PredicatesCacheManager.hpp>
-#include <PredicatesIndexFileBuilder.hpp>
 #include <RDFTriple.hpp>
 #include <external_sort.hpp>
-#include <serialization_util.hpp>
 
 TEST(predicates_cache_manager_test, test1) {
 
@@ -29,7 +27,8 @@ TEST(predicates_cache_manager_test, test1) {
 
   for (uint64_t i = 1; i <= sz; i++) {
     // ASSERT_TRUE(pcm.has_triple(i, i, i));
-    ASSERT_TRUE(pcm.get_predicates_index_cache().fetch_k2tree(i).has(i, i));
+    ASSERT_TRUE(
+        pcm.get_predicates_index_cache().fetch_k2tree(i).get().has(i, i));
   }
 
   auto subject = RDFResource("subject1", RDF_TYPE_IRI);
@@ -46,6 +45,7 @@ TEST(predicates_cache_manager_test, test1) {
   ASSERT_TRUE(pcm.has_triple(resource));
   ASSERT_TRUE(pcm.get_predicates_index_cache()
                   .fetch_k2tree(predicate_index)
+                  .get()
                   .has(subject_index, object_index));
 
   std::filesystem::remove(fname);

@@ -42,6 +42,7 @@ set(CORE_SOURCE_FILES
         core/K2TreeMixed.cpp
         core/CacheSettings.cpp
         core/InMemoryCacheSettings.cpp
+        core/PredicateFetchResult.cpp
         )
 
 set(PROC_SOURCE_FILES

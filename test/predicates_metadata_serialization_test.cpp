@@ -71,7 +71,8 @@ TEST(predicates_metadata_serialization, same_k2tree_as_non_serialized) {
     }
   }
 
-  auto &deserialized = pc.fetch_k2tree(predicate_id);
+  auto fetch_result = pc.fetch_k2tree(predicate_id);
+  const auto &deserialized = fetch_result.get();
 
   std::stringstream ss_des;
   auto written_sz_des = deserialized.write_to_ostream(ss_des);
@@ -123,7 +124,8 @@ TEST(predicates_metadata_serialization, can_create_save_and_retrieve) {
   }
 
   for (unsigned long i = sz; i > 0; i--) {
-    auto &k2tree = pc.fetch_k2tree(i);
+    auto fetch_result = pc.fetch_k2tree(i);
+    const auto &k2tree = fetch_result.get();
 
     ASSERT_TRUE(k2tree.has(i, i));
     ASSERT_TRUE(k2tree.has(i + 1, i + 1));
@@ -148,14 +150,16 @@ TEST(predicates_metadata_serialization, can_sync_with_external) {
   pc.replace_istream(std::move(new_data));
 
   for (unsigned long i = sz; i > 0; i--) {
-    auto &k2tree = pc.fetch_k2tree(i);
+    auto fetch_result = pc.fetch_k2tree(i);
+    const auto &k2tree = fetch_result.get();
     ASSERT_TRUE(k2tree.has(i, i));
     ASSERT_FALSE(k2tree.has(i, i + 1));
     ASSERT_TRUE(k2tree.has_valid_structure());
   }
 
   for (unsigned long i = 20'000; i < 30'000; i++) {
-    auto &k2tree = pc.fetch_k2tree(i);
+    auto fetch_result = pc.fetch_k2tree(i);
+    const auto &k2tree = fetch_result.get();
     ASSERT_TRUE(k2tree.has(i, i));
     ASSERT_FALSE(k2tree.has(i, i + 1));
     ASSERT_TRUE(k2tree.has_valid_structure());
