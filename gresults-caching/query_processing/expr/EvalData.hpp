@@ -13,6 +13,7 @@
 #include <request_msg.pb.h>
 
 #include "../VarIndexManager.hpp"
+#include "BoundVarsMap.hpp"
 #include "PredicatesCacheManager.hpp"
 #include "ResultTable.hpp"
 

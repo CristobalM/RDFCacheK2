@@ -38,7 +38,7 @@ public:
     build_cache_test_file(fname);
     pcm = std::make_shared<PredicatesCacheManager>(
         std::make_unique<EmptyISDManager>(), fname);
-    values1 = {-100, 42, 1, 2, 3, -1, 4, 400, 98, 99, 49, 50};
+    values1 = {-100, 42, 1, 2, 3, -1, 4, 400, 98, 99, 49, 50, 9};
     values_double1 = {-100.54, 42.33,    1.123,   2.65,     3.14,    -1.024,
                       4.99,    400.8974, 98.0023, 99.00005, 49.0123, 50.99991};
     for (auto value : values1) {
@@ -2761,6 +2761,161 @@ TEST_F(QueryFiltersFixture, test_extend_1) {
       expected_values.insert(value + 1000);
     }
   }
+  ASSERT_GT(query_values_set.size(), 0);
+  ASSERT_EQ(query_values_set, expected_values);
+}
+
+TEST_F(QueryFiltersFixture, test_exists_1) {
+  proto_msg::SparqlTree tree;
+  auto *distinct_node = tree.mutable_root()->mutable_distinct_node();
+  auto *project_node =
+      distinct_node->mutable_sub_node()->mutable_project_node();
+  // project_node->add_vars("?x");
+  project_node->add_vars("?x");
+  auto *filter_node = project_node->mutable_sub_op()->mutable_filter_node();
+  auto *extend_node = filter_node->mutable_node()->mutable_extend_node();
+  auto *bgp_node = extend_node->mutable_node()->mutable_bgp_node();
+  auto *first_triple = bgp_node->mutable_triple()->Add();
+  auto *first_subject = first_triple->mutable_subject();
+  auto *first_predicate = first_triple->mutable_predicate();
+  auto *first_object = first_triple->mutable_object();
+  first_subject->set_term_value("?y");
+  first_subject->set_term_type(proto_msg::TermType::VARIABLE);
+  first_predicate->set_term_value("<has_integer>");
+  first_predicate->set_term_type(proto_msg::TermType::IRI);
+  first_object->set_term_value("?x");
+  first_object->set_term_type(proto_msg::TermType::VARIABLE);
+
+  auto *exists_fnode =
+      filter_node->mutable_exprs()->Add()->mutable_function_node();
+  exists_fnode->set_function_op(proto_msg::FunctionOP::EXISTS);
+
+  auto *exists_pattern =
+      exists_fnode->mutable_exprs()->Add()->mutable_pattern_node();
+
+  auto *exists_filter = exists_pattern->mutable_filter_node();
+  auto *exists_bgp_node = exists_filter->mutable_node()->mutable_bgp_node();
+  auto *exists_triple = exists_bgp_node->mutable_triple()->Add();
+  auto *exists_subject = exists_triple->mutable_subject();
+  auto *exists_predicate = exists_triple->mutable_predicate();
+  auto *exists_object = exists_triple->mutable_object();
+
+  exists_subject->set_term_value("?w");
+  exists_subject->set_term_type(proto_msg::TermType::VARIABLE);
+  exists_predicate->set_term_value("<has_date>");
+  exists_predicate->set_term_type(proto_msg::TermType::IRI);
+  exists_object->set_term_value("?date");
+  exists_object->set_term_type(proto_msg::TermType::VARIABLE);
+
+  auto *equal_fnode =
+      exists_filter->mutable_exprs()->Add()->mutable_function_node();
+  equal_fnode->set_function_op(proto_msg::FunctionOP::EQUALS);
+
+  auto *lhs_day_fnode =
+      equal_fnode->mutable_exprs()->Add()->mutable_function_node();
+  lhs_day_fnode->set_function_op(proto_msg::FunctionOP::DATE_TIME_DAY);
+
+  auto *lhs_arg = lhs_day_fnode->mutable_exprs()->Add()->mutable_term_node();
+  lhs_arg->set_term_type(proto_msg::TermType::VARIABLE);
+  lhs_arg->set_term_value("?date");
+
+  auto *rhs_term = equal_fnode->mutable_exprs()->Add()->mutable_term_node();
+  rhs_term->set_term_type(proto_msg::TermType::VARIABLE);
+  rhs_term->set_term_value("?x");
+
+  auto result = QueryFiltersFixture::cache->run_query(tree);
+
+  auto query_values_set = get_values_from_result_table(
+      result.table(), *QueryFiltersFixture::pcm, result.get_extra_dict());
+
+  std::set<int> expected_values;
+  for (auto value : values1) {
+    for (const auto &date : dates) {
+      auto date_info = ExprProcessorPersistentData::get().parse_iso8601(date);
+      if (date_info.day == value)
+        expected_values.insert(value);
+    }
+  }
+  ASSERT_GT(query_values_set.size(), 0);
+  ASSERT_EQ(query_values_set, expected_values);
+}
+
+TEST_F(QueryFiltersFixture, test_not_exists_1) {
+  proto_msg::SparqlTree tree;
+  auto *distinct_node = tree.mutable_root()->mutable_distinct_node();
+  auto *project_node =
+      distinct_node->mutable_sub_node()->mutable_project_node();
+  // project_node->add_vars("?x");
+  project_node->add_vars("?x");
+  auto *filter_node = project_node->mutable_sub_op()->mutable_filter_node();
+  auto *extend_node = filter_node->mutable_node()->mutable_extend_node();
+  auto *bgp_node = extend_node->mutable_node()->mutable_bgp_node();
+  auto *first_triple = bgp_node->mutable_triple()->Add();
+  auto *first_subject = first_triple->mutable_subject();
+  auto *first_predicate = first_triple->mutable_predicate();
+  auto *first_object = first_triple->mutable_object();
+  first_subject->set_term_value("?y");
+  first_subject->set_term_type(proto_msg::TermType::VARIABLE);
+  first_predicate->set_term_value("<has_integer>");
+  first_predicate->set_term_type(proto_msg::TermType::IRI);
+  first_object->set_term_value("?x");
+  first_object->set_term_type(proto_msg::TermType::VARIABLE);
+
+  auto *exists_fnode =
+      filter_node->mutable_exprs()->Add()->mutable_function_node();
+  exists_fnode->set_function_op(proto_msg::FunctionOP::NOT_EXISTS);
+
+  auto *exists_pattern =
+      exists_fnode->mutable_exprs()->Add()->mutable_pattern_node();
+
+  auto *exists_filter = exists_pattern->mutable_filter_node();
+  auto *exists_bgp_node = exists_filter->mutable_node()->mutable_bgp_node();
+  auto *exists_triple = exists_bgp_node->mutable_triple()->Add();
+  auto *exists_subject = exists_triple->mutable_subject();
+  auto *exists_predicate = exists_triple->mutable_predicate();
+  auto *exists_object = exists_triple->mutable_object();
+
+  exists_subject->set_term_value("?w");
+  exists_subject->set_term_type(proto_msg::TermType::VARIABLE);
+  exists_predicate->set_term_value("<has_date>");
+  exists_predicate->set_term_type(proto_msg::TermType::IRI);
+  exists_object->set_term_value("?date");
+  exists_object->set_term_type(proto_msg::TermType::VARIABLE);
+
+  auto *equal_fnode =
+      exists_filter->mutable_exprs()->Add()->mutable_function_node();
+  equal_fnode->set_function_op(proto_msg::FunctionOP::EQUALS);
+
+  auto *lhs_day_fnode =
+      equal_fnode->mutable_exprs()->Add()->mutable_function_node();
+  lhs_day_fnode->set_function_op(proto_msg::FunctionOP::DATE_TIME_DAY);
+
+  auto *lhs_arg = lhs_day_fnode->mutable_exprs()->Add()->mutable_term_node();
+  lhs_arg->set_term_type(proto_msg::TermType::VARIABLE);
+  lhs_arg->set_term_value("?date");
+
+  auto *rhs_term = equal_fnode->mutable_exprs()->Add()->mutable_term_node();
+  rhs_term->set_term_type(proto_msg::TermType::VARIABLE);
+  rhs_term->set_term_value("?x");
+
+  auto result = QueryFiltersFixture::cache->run_query(tree);
+
+  auto query_values_set = get_values_from_result_table(
+      result.table(), *QueryFiltersFixture::pcm, result.get_extra_dict());
+
+  std::set<int> not_expected_values;
+  for (auto value : values1) {
+    for (const auto &date : dates) {
+      auto date_info = ExprProcessorPersistentData::get().parse_iso8601(date);
+      if (date_info.day == value)
+        not_expected_values.insert(value);
+    }
+  }
+  std::set<int> expected_values;
+  std::set_difference(values1.begin(), values1.end(),
+                      not_expected_values.begin(), not_expected_values.end(),
+                      std::inserter(expected_values, expected_values.begin()));
+
   ASSERT_GT(query_values_set.size(), 0);
   ASSERT_EQ(query_values_set, expected_values);
 }

@@ -19,6 +19,7 @@
 #include <serialization_util.hpp>
 
 void send_invalid_response(int client_fd);
+
 ServerTask::ServerTask(int client_socket_fd, Cache &cache)
     : client_socket_fd(client_socket_fd), cache(cache) {}
 
@@ -85,30 +86,53 @@ create_response_from_query_result(ServerTask &server_task,
   auto &tree =
       message.get_cache_request().cache_run_query_algebra().sparql_tree();
 
-  auto &project_node = tree.root().project_node();
-
-  auto &headers = query_result.table().headers;
-  std::unordered_map<unsigned long, unsigned long> reversed_uindexes;
-  for (size_t i = 0; i < headers.size(); i++) {
-    reversed_uindexes[headers[i]] = i;
-  }
-
-  std::vector<unsigned long> resulting_vars_order;
-
-  for (int i = 0; i < project_node.vars_size(); i++) {
-    const auto &var = project_node.vars(i);
-    auto var_index = vim.var_indexes[var];
-    resulting_vars_order.push_back(reversed_uindexes[var_index]);
-  }
-
   std::set<uint64_t> keys; // will store values in ascending order
-  for (const auto &row : table.get_data()) {
-    auto *response_row =
-        cache_response.mutable_query_result_response()->add_rows();
-    for (size_t i = 0; i < row.size(); i++) {
-      auto value = row[resulting_vars_order[i]];
-      keys.insert(value);
-      response_row->add_row(value);
+
+  if (tree.root().node_case() == proto_msg::SparqlNode::kProjectNode) {
+    auto &project_node = tree.root().project_node();
+    auto &headers = query_result.table().headers;
+    std::unordered_map<unsigned long, unsigned long> reversed_uindexes;
+    for (size_t i = 0; i < headers.size(); i++) {
+      reversed_uindexes[headers[i]] = i;
+    }
+
+    std::vector<unsigned long> resulting_vars_order;
+    // auto resulting_vars_order = QueryVarsOrderExtractor(query_result,
+    // tree.root()).extract();
+
+    for (int i = 0; i < project_node.vars_size(); i++) {
+      const auto &var = project_node.vars(i);
+      auto var_index = vim.var_indexes[var];
+      resulting_vars_order.push_back(reversed_uindexes[var_index]);
+    }
+
+    for (const auto &row : table.get_data()) {
+      auto *response_row =
+          cache_response.mutable_query_result_response()->add_rows();
+      for (size_t i = 0; i < row.size(); i++) {
+        auto value = row[resulting_vars_order[i]];
+        keys.insert(value);
+        response_row->add_row(value);
+      }
+    }
+    for (int i = 0; i < project_node.vars_size(); i++) {
+      const auto &var = project_node.vars(i);
+      cache_response.mutable_query_result_response()->add_header(var);
+    }
+  } else {
+    for (const auto &row : table.get_data()) {
+      auto *response_row =
+          cache_response.mutable_query_result_response()->add_rows();
+
+      for (auto value : row) {
+        keys.insert(value);
+        response_row->add_row(value);
+      }
+    }
+    auto reversed_indexes = vim.reverse();
+    for (auto header : table.headers) {
+      const auto &var = reversed_indexes[header];
+      cache_response.mutable_query_result_response()->add_header(var);
     }
   }
 
@@ -140,11 +164,6 @@ create_response_from_query_result(ServerTask &server_task,
       kv->set_type(proto_msg::TermType::LITERAL);
       break;
     }
-  }
-
-  for (int i = 0; i < project_node.vars_size(); i++) {
-    const auto &var = project_node.vars(i);
-    cache_response.mutable_query_result_response()->add_header(var);
   }
 
   return cache_response;

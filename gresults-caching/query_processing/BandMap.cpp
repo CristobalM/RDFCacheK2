@@ -26,3 +26,4 @@ const std::vector<unsigned long> &BandMap::operator[](unsigned long key) {
 
 const std::vector<unsigned long> BandMap::empty_vec =
     std::vector<unsigned long>();
+BandMap::BandMap() {}

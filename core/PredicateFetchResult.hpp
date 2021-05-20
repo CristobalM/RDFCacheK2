@@ -16,6 +16,7 @@ public:
   const K2TreeMixed &get() const;
   K2TreeMixed &get_mutable();
   bool exists() const;
+  K2TreeMixed *get_ptr();
 };
 
 #endif // RDFCACHEK2_PREDICATEFETCHRESULT_HPP

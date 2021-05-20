@@ -25,6 +25,7 @@ public:
   BandMap(const K2TreeMixed &k2tree, BType type);
 
   const std::vector<unsigned long> &operator[](unsigned long key);
+  BandMap();
 };
 
 #endif

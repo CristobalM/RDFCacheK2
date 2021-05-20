@@ -10,6 +10,7 @@
 
 #include <NaiveDynamicStringDictionary.hpp>
 #include <PredicatesCacheManager.hpp>
+#include <query_processing/expr/BoundVarsMap.hpp>
 #include <request_msg.pb.h>
 
 #include "CacheReplacement.hpp"
@@ -23,6 +24,11 @@ class QueryProcessor {
 
 public:
   QueryProcessor(const PredicatesCacheManager &cache_manager);
+  QueryProcessor(
+      const PredicatesCacheManager &cache_manager,
+      std::unique_ptr<VarIndexManager> &&vim,
+      std::unique_ptr<NaiveDynamicStringDictionary> &&extra_str_dict);
+
   QueryResult run_query(proto_msg::SparqlTree const &query_tree);
 
 private:

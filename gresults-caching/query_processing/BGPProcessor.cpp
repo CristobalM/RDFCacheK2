@@ -48,9 +48,11 @@ void BGPProcessor::fill_table_with_first_triple() {
 }
 
 void BGPProcessor::add_full_predicate_to_table(const Triple &triple) {
-  const auto fetched =
-      cm.get_tree_by_predicate_index(triple.predicate.id_value);
-  const auto &tree = fetched.get();
+  K2TreeMixed *tree = nullptr;
+  if (triple.predicate.id_value != 0) {
+    auto fetched = cm.get_tree_by_predicate_index(triple.predicate.id_value);
+    tree = fetched.get_ptr();
+  }
 
   vim.assign_index_if_not_found(triple.subject.value);
   vim.assign_index_if_not_found(triple.object.value);
@@ -60,45 +62,54 @@ void BGPProcessor::add_full_predicate_to_table(const Triple &triple) {
   current_table->headers.push_back(subject_var_index);
   current_table->headers.push_back(object_var_index);
 
-  tree.scan_points(
-      [](unsigned long col, unsigned long row, void *table_ptr) {
-        reinterpret_cast<ResultTable *>(table_ptr)->add_row({col, row});
-      },
-      current_table.get());
+  if (tree)
+    tree->scan_points(
+        [](unsigned long col, unsigned long row, void *table_ptr) {
+          reinterpret_cast<ResultTable *>(table_ptr)->add_row({col, row});
+        },
+        current_table.get());
 }
 
 void BGPProcessor::add_row_to_table(const Triple &triple) {
-  const auto fetch_result =
-      cm.get_tree_by_predicate_index(triple.predicate.id_value);
-  const auto &tree = fetch_result.get();
+  K2TreeMixed *tree = nullptr;
+  if (triple.predicate.id_value != 0) {
+    auto fetch_result =
+        cm.get_tree_by_predicate_index(triple.predicate.id_value);
+    tree = fetch_result.get_ptr();
+  }
 
   vim.assign_index_if_not_found(triple.subject.value);
   const unsigned long subject_var_index = vim.var_indexes[triple.subject.value];
   current_table->headers.push_back(subject_var_index);
 
-  tree.traverse_row(
-      triple.object.id_value,
-      [](unsigned long col, unsigned long, void *table_ptr) {
-        reinterpret_cast<ResultTable *>(table_ptr)->add_row({col});
-      },
-      current_table.get());
+  if (tree && triple.object.id_value != 0)
+    tree->traverse_row(
+        triple.object.id_value,
+        [](unsigned long col, unsigned long, void *table_ptr) {
+          reinterpret_cast<ResultTable *>(table_ptr)->add_row({col});
+        },
+        current_table.get());
 }
 
 void BGPProcessor::add_column_to_table(const Triple &triple) {
-  const auto fetch_result =
-      cm.get_tree_by_predicate_index(triple.predicate.id_value);
-  const auto &tree = fetch_result.get();
+  K2TreeMixed *tree = nullptr;
+  if (triple.predicate.id_value != 0) {
+    auto fetch_result =
+        cm.get_tree_by_predicate_index(triple.predicate.id_value);
+    tree = fetch_result.get_ptr();
+  }
 
   vim.assign_index_if_not_found(triple.object.value);
   const unsigned long object_var_index = vim.var_indexes[triple.object.value];
   current_table->headers.push_back(object_var_index);
 
-  tree.traverse_column(
-      triple.subject.id_value,
-      [](unsigned long, unsigned long row, void *table_ptr) {
-        reinterpret_cast<ResultTable *>(table_ptr)->add_row({row});
-      },
-      current_table.get());
+  if (tree && triple.subject.id_value != 0)
+    tree->traverse_column(
+        triple.subject.id_value,
+        [](unsigned long, unsigned long row, void *table_ptr) {
+          reinterpret_cast<ResultTable *>(table_ptr)->add_row({row});
+        },
+        current_table.get());
 }
 
 void BGPProcessor::combine_triple_with_table(const Triple &triple) {
@@ -151,11 +162,17 @@ int BGPProcessor::find_var_position_in_headers(unsigned long var_index) {
 }
 
 void BGPProcessor::cross_product_table_with_triple(const Triple &triple) {
-  const auto fetch_result =
-      cm.get_tree_by_predicate_index(triple.predicate.id_value);
-  const auto &tree = fetch_result.get();
 
-  const auto predicate_points = tree.scan_points_into_vector();
+  std::vector<std::pair<unsigned long, unsigned long>> predicate_points;
+  ;
+
+  if (triple.predicate.id_value != 0) {
+    const auto fetch_result =
+        cm.get_tree_by_predicate_index(triple.predicate.id_value);
+    const auto &tree = fetch_result.get();
+
+    predicate_points = tree.scan_points_into_vector();
+  }
 
   current_table->headers.push_back(vim.var_indexes[triple.subject.value]);
   current_table->headers.push_back(vim.var_indexes[triple.object.value]);
@@ -179,13 +196,16 @@ void BGPProcessor::cross_product_table_with_triple(const Triple &triple) {
 
 void BGPProcessor::left_join_table_with_triple_subject(
     const Triple &triple, unsigned long subject_var_index) {
-  const auto fetch_result =
-      cm.get_tree_by_predicate_index(triple.predicate.id_value);
-  const auto &tree = fetch_result.get();
 
-  auto band_map = BandMap(tree, BandMap::BY_COL);
+  BandMap band_map;
+  if (triple.predicate.id_value != 0) {
+    const auto fetch_result =
+        cm.get_tree_by_predicate_index(triple.predicate.id_value);
+    const auto &tree = fetch_result.get();
 
-  // auto row_band = tree.get_row(triple.object.id_value);
+    band_map = BandMap(tree, BandMap::BY_COL);
+  }
+
   auto &table_data = current_table->get_data();
   auto &headers = current_table->headers;
 
@@ -209,11 +229,15 @@ void BGPProcessor::left_join_table_with_triple_subject(
 
 void BGPProcessor::left_join_table_with_triple_object(
     const Triple &triple, unsigned long object_var_index) {
-  const auto fetch_result =
-      cm.get_tree_by_predicate_index(triple.predicate.id_value);
-  const auto &tree = fetch_result.get();
+  BandMap band_map;
+  if (triple.predicate.id_value != 0) {
 
-  auto band_map = BandMap(tree, BandMap::BY_ROW);
+    const auto fetch_result =
+        cm.get_tree_by_predicate_index(triple.predicate.id_value);
+    const auto &tree = fetch_result.get();
+
+    band_map = BandMap(tree, BandMap::BY_ROW);
+  }
 
   auto &table_data = current_table->get_data();
   auto &headers = current_table->headers;
@@ -238,9 +262,13 @@ void BGPProcessor::left_join_table_with_triple_object(
 void BGPProcessor::intersect_table_with_predicate(
     const Triple &triple, unsigned long subject_var_index,
     unsigned long object_var_index) {
-  const auto fetch_result =
-      cm.get_tree_by_predicate_index(triple.predicate.id_value);
-  const auto &tree = fetch_result.get();
+
+  K2TreeMixed *tree = nullptr;
+  if (triple.predicate.id_value != 0) {
+    auto fetch_result =
+        cm.get_tree_by_predicate_index(triple.predicate.id_value);
+    tree = fetch_result.get_ptr();
+  }
 
   auto &table_data = current_table->get_data();
 
@@ -251,7 +279,7 @@ void BGPProcessor::intersect_table_with_predicate(
     auto subject_value = row[subject_var_index];
     auto object_value = row[object_var_index];
 
-    if (!tree.has(subject_value, object_value)) {
+    if (!tree || !tree->has(subject_value, object_value)) {
       table_data.erase(row_it);
     }
     row_it = next_it;
@@ -290,23 +318,28 @@ void BGPProcessor::combine_row_to_table(const Triple &triple) {
 
 void BGPProcessor::cross_product_table_with_band(const Triple &triple,
                                                  BAND_TYPE band_type) {
-  const auto fetch_result =
-      cm.get_tree_by_predicate_index(triple.predicate.id_value);
-  if (!fetch_result.exists())
-    throw std::runtime_error(
-        "Predicate not found: " + triple.predicate.value +
-        ", with id: " + std::to_string(triple.predicate.id_value));
-  const auto &tree = fetch_result.get();
+  K2TreeMixed *tree = nullptr;
+  if (triple.predicate.id_value != 0) {
+    auto fetch_result =
+        cm.get_tree_by_predicate_index(triple.predicate.id_value);
+    if (!fetch_result.exists())
+      throw std::runtime_error(
+          "Predicate not found: " + triple.predicate.value +
+          ", with id: " + std::to_string(triple.predicate.id_value));
+    tree = fetch_result.get_ptr();
+  }
 
   auto &table_data = current_table->get_data();
   auto &headers = current_table->headers;
 
   std::vector<unsigned long> band;
   if (band_type == COL_BAND) {
-    band = tree.get_column(triple.subject.id_value);
+    if (tree)
+      band = tree->get_column(triple.subject.id_value);
     headers.push_back(vim.var_indexes[triple.object.value]);
   } else {
-    band = tree.get_row(triple.object.id_value);
+    if (tree)
+      band = tree->get_row(triple.object.id_value);
     headers.push_back(vim.var_indexes[triple.subject.value]);
   }
 
@@ -326,19 +359,22 @@ void BGPProcessor::cross_product_table_with_band(const Triple &triple,
 void BGPProcessor::intersect_table_with_band(unsigned long pos_in_headers,
                                              const Triple &triple,
                                              BAND_TYPE band_type) {
-  const auto fetch_result =
-      cm.get_tree_by_predicate_index(triple.predicate.id_value);
-  const auto &tree = fetch_result.get();
+  K2TreeMixed *tree = nullptr;
+  if (triple.predicate.id_value) {
+    auto fetch_result =
+        cm.get_tree_by_predicate_index(triple.predicate.id_value);
+    tree = fetch_result.get_ptr();
+  }
+
   auto &table_data = current_table->get_data();
-  auto &headers = current_table->headers;
 
   std::vector<unsigned long> band;
   if (band_type == COL_BAND) {
-    band = tree.get_column(triple.subject.id_value);
-    headers.push_back(vim.var_indexes[triple.object.value]);
+    if (tree && triple.subject.id_value != 0)
+      band = tree->get_column(triple.subject.id_value);
   } else {
-    band = tree.get_row(triple.object.id_value);
-    headers.push_back(vim.var_indexes[triple.subject.value]);
+    if (tree && triple.object.id_value != 0)
+      band = tree->get_row(triple.object.id_value);
   }
 
   std::unordered_set<unsigned long> band_set(band.begin(), band.end());

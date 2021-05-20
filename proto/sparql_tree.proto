@@ -53,6 +53,7 @@ message ExprNode {
   oneof expr {
     FunctionNode function_node = 1;
     RDFTerm term_node = 2;
+    SparqlNode pattern_node = 3;
   }
 }
 
@@ -188,4 +189,6 @@ enum FunctionOP {
   STR_SUBSTRING = 64;
   // extra added afterwards
   DATE_TIME_SECONDS = 65; // one var
+  EXISTS = 66;
+  NOT_EXISTS = 67;
 }

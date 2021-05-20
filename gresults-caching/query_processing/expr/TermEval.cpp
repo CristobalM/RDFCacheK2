@@ -33,6 +33,7 @@ TermEval::eval_variable_get_resource(const ExprEval::row_t &row) const {
   if (term.term_type() != proto_msg::TermType::VARIABLE)
     throw std::runtime_error("Expected a variable");
   const std::string &var_name = term.term_value();
+
   if (this->eval_data.var_pos_mapping.find(var_name) ==
       this->eval_data.var_pos_mapping.end())
     throw std::runtime_error("Variable " + var_name + " not in table");
@@ -310,6 +311,6 @@ TermEval::create_datatype_resource(RDFResource &&resource, bool matches_short) {
 
   return DataTypeResource::create(ExprDataType::EDT_UNKNOWN);
 }
-bool TermEval::has_constant_subtree() const {
+bool TermEval::has_constant_subtree() {
   return expr_node.term_node().term_type() != proto_msg::TermType::VARIABLE;
 }

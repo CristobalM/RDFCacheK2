@@ -27,7 +27,8 @@
 #include "VarIndexManager.hpp"
 
 QueryProcessor::QueryProcessor(const PredicatesCacheManager &cache_manager)
-    : cm(cache_manager), vim(std::make_unique<VarIndexManager>()) {}
+    : cm(cache_manager), vim(std::make_unique<VarIndexManager>()),
+      extra_str_dict(nullptr) {}
 
 std::shared_ptr<ResultTable>
 QueryProcessor::process_join_node(const proto_msg::SparqlNode &join_node) {
@@ -334,3 +335,9 @@ QueryProcessor::process_slice_node(const proto_msg::SliceNode &node) {
   }
   return result_table;
 }
+QueryProcessor::QueryProcessor(
+    const PredicatesCacheManager &cache_manager,
+    std::unique_ptr<VarIndexManager> &&vim,
+    std::unique_ptr<NaiveDynamicStringDictionary> &&extra_str_dict)
+    : cm(cache_manager), vim(std::move(vim)),
+      extra_str_dict(std::move(extra_str_dict)) {}

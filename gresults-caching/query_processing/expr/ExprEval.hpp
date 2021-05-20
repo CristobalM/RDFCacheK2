@@ -18,6 +18,7 @@
 #include "TermResource.hpp"
 
 class ExprEval {
+
 protected:
   std::vector<std::unique_ptr<ExprEval>> children;
 
@@ -72,6 +73,7 @@ public:
   static void assert_is_rdf_term(const proto_msg::ExprNode &expr_node);
   static void assert_is_variable(const proto_msg::ExprNode &expr_node);
   static void assert_is_function(const proto_msg::ExprNode &expr_node);
+  static void assert_is_pattern_node(const proto_msg::ExprNode &node);
 
   template <typename T>
   static std::unique_ptr<ExprEval>
@@ -101,7 +103,7 @@ protected:
   std::shared_ptr<TermResource> generate_from_eval_integer(const row_t &row);
 
 private:
-  virtual bool has_constant_subtree() const;
+  virtual bool has_constant_subtree();
 };
 
 #endif

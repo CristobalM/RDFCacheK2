@@ -4,6 +4,7 @@
 //
 
 #include "ExprEval.hpp"
+#include "ExistsEval.hpp"
 #include <query_processing/expr/LangMatchesEval.hpp>
 #include <query_processing/expr/LogicalNotEval.hpp>
 
@@ -47,6 +48,7 @@
 #include "LogicalOrEval.hpp"
 #include "MultiplyEval.hpp"
 #include "NotEqualsEval.hpp"
+#include "NotExistsEval.hpp"
 #include "NumAbsEval.hpp"
 #include "NumCeilingEval.hpp"
 #include "NumFloorEval.hpp"
@@ -95,18 +97,21 @@ void ExprEval::assert_fsize(int size) {
 }
 void ExprEval::assert_is_rdf_term(const proto_msg::ExprNode &expr_node) {
   if (expr_node.expr_case() != proto_msg::ExprNode::kTermNode)
-    throw std::runtime_error(
-        "Assertion failed, expected a rdf term, got a function");
+    throw std::runtime_error("Assertion failed, expected a rdf term");
 }
 void ExprEval::assert_is_function(const proto_msg::ExprNode &expr_node) {
   if (expr_node.expr_case() != proto_msg::ExprNode::kFunctionNode)
-    throw std::runtime_error(
-        "Assertion failed, expected a function, got a rdf term");
+    throw std::runtime_error("Assertion failed, expected a function");
 }
 void ExprEval::assert_is_variable(const proto_msg::ExprNode &expr_node) {
   assert_is_rdf_term(expr_node);
   if (expr_node.term_node().term_type() != proto_msg::TermType::VARIABLE)
     throw std::runtime_error("Assertion failed, expected a variable");
+}
+
+void ExprEval::assert_is_pattern_node(const proto_msg::ExprNode &expr_node) {
+  if (expr_node.expr_case() != proto_msg::ExprNode::kPatternNode)
+    throw std::runtime_error("Assertion failed, expected a pattern");
 }
 
 std::unique_ptr<ExprEval>
@@ -258,6 +263,10 @@ ExprEval::create_eval_node(const EvalData &eval_data,
     return create_eval_node_specific<StrReplaceEval>(eval_data, child_node);
   case proto_msg::STR_SUBSTRING:
     return create_eval_node_specific<StrSubstringEval>(eval_data, child_node);
+  case proto_msg::EXISTS:
+    return create_eval_node_specific<ExistsEval>(eval_data, child_node);
+  case proto_msg::NOT_EXISTS:
+    return create_eval_node_specific<NotExistsEval>(eval_data, child_node);
   default:
     throw std::runtime_error("Unknown function op");
   }
@@ -344,7 +353,7 @@ ExprEval::generate_from_eval_integer(const ExprEval::row_t &row) {
     return TermResource::null();
   return std::make_shared<IntegerResource>(result);
 }
-bool ExprEval::has_constant_subtree() const {
+bool ExprEval::has_constant_subtree() {
   for (const auto &child : children) {
     if (!child->with_constant_subtree)
       return false;

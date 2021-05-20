@@ -148,6 +148,11 @@ set(GRAPH_RESULT_CACHING_FILE
         gresults-caching/query_processing/expr/StrConcatEval.cpp
         gresults-caching/query_processing/expr/StrReplaceEval.cpp
         gresults-caching/query_processing/expr/StrSubstringEval.cpp
+        gresults-caching/query_processing/expr/ExistsEval.cpp
+        gresults-caching/query_processing/expr/NotExistsEval.cpp
+
+        gresults-caching/query_processing/expr/BoundVarsMap.cpp
+
         gresults-caching/query_processing/expr/TermResource.cpp
         gresults-caching/query_processing/expr/ConcreteRDFResource.cpp
         gresults-caching/query_processing/expr/DataTypeResource.cpp

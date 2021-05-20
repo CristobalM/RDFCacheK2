@@ -39,7 +39,7 @@ private:
   std::shared_ptr<TermResource> eval_iri_resource(RDFResource &&resource);
   std::shared_ptr<TermResource> create_datatype_resource(RDFResource &&resource,
                                                          bool matches_short);
-  bool has_constant_subtree() const override;
+  bool has_constant_subtree() override;
 };
 
 #endif // RDFCACHEK2_TERMEVAL_HPP
