@@ -21,6 +21,7 @@
 #include "InnerJoinProcessor.hpp"
 #include "MinusProcessor.hpp"
 #include "OptionalProcessor.hpp"
+#include "OrderNodeProcessor.hpp"
 #include "QueryProcessor.hpp"
 #include "Term.hpp"
 #include "UnionProcessor.hpp"
@@ -158,6 +159,8 @@ QueryProcessor::process_node(const proto_msg::SparqlNode &node) {
     return process_sequence_node(node.sequence_node());
   case proto_msg::SparqlNode::kSliceNode:
     return process_slice_node(node.slice_node());
+  case proto_msg::SparqlNode::kOrderNode:
+    return process_order_node(node.order_node());
   default:
     throw std::runtime_error("Unsupported nodetype on process_node: " +
                              std::to_string(node.node_case()));
@@ -341,3 +344,10 @@ QueryProcessor::QueryProcessor(
     std::unique_ptr<NaiveDynamicStringDictionary> &&extra_str_dict)
     : cm(cache_manager), vim(std::move(vim)),
       extra_str_dict(std::move(extra_str_dict)) {}
+
+std::shared_ptr<ResultTable>
+QueryProcessor::process_order_node(const proto_msg::OrderNode &node) {
+  auto result_table = process_node(node.node());
+
+  return OrderNodeProcessor(result_table, node, cm, *vim).execute();
+}

@@ -21,7 +21,24 @@ message SparqlNode {
     ExtendNode extend_node = 11;
     SequenceNode sequence_node = 12;
     SliceNode slice_node = 13;
+    OrderNode order_node = 14;
   }
+}
+
+enum SortDirection{
+  DEFAULT = 0;
+  ASCENDING = 1;
+  DESCENDING = 2;
+}
+
+message SortCondition{
+  string var = 1;
+  SortDirection direction = 2;
+}
+
+message OrderNode{
+  SparqlNode node = 1;
+  repeated SortCondition sort_conditions = 2;
 }
 
 message SliceNode{

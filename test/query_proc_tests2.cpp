@@ -384,3 +384,103 @@ TEST_F(QueryProcTests2Fixture, can_do_slice_op_test_1) {
                             query_results_values.end()));
   ASSERT_EQ(query_results_values.size(), 5);
 }
+
+TEST_F(QueryProcTests2Fixture, can_do_order_op_test_1) {
+  proto_msg::SparqlTree tree;
+  auto *order_node = tree.mutable_root()->mutable_order_node();
+  auto *sort_condition_1 = order_node->mutable_sort_conditions()->Add();
+  sort_condition_1->set_var("?x");
+  sort_condition_1->set_direction(proto_msg::SortDirection::ASCENDING);
+  auto *sort_condition_2 = order_node->mutable_sort_conditions()->Add();
+  sort_condition_2->set_var("?w");
+  sort_condition_2->set_direction(proto_msg::SortDirection::ASCENDING);
+
+  auto *distinct_node = order_node->mutable_node()->mutable_distinct_node();
+  auto *project_node =
+      distinct_node->mutable_sub_node()->mutable_project_node();
+  project_node->add_vars("?x");
+  project_node->add_vars("?w");
+  auto *sequence_node = project_node->mutable_sub_op()->mutable_sequence_node();
+  auto *bgp_node_left =
+      sequence_node->mutable_nodes()->Add()->mutable_bgp_node();
+  auto *left_first_triple = bgp_node_left->mutable_triple()->Add();
+  auto *left_first_subject = left_first_triple->mutable_subject();
+  auto *left_first_object = left_first_triple->mutable_object();
+  auto *left_first_predicate = left_first_triple->mutable_predicate();
+
+  left_first_subject->set_term_type(proto_msg::TermType::IRI);
+  left_first_subject->set_term_value("<some_integer_ref1>");
+  left_first_predicate->set_term_value("<has_integer>");
+  left_first_predicate->set_term_type(proto_msg::TermType::IRI);
+  left_first_object->set_term_value("?x");
+  left_first_object->set_term_type(proto_msg::TermType::VARIABLE);
+
+  auto *bgp_node = sequence_node->mutable_nodes()->Add()->mutable_bgp_node();
+  auto *first_triple = bgp_node->mutable_triple()->Add();
+  auto *second_triple = bgp_node->mutable_triple()->Add();
+  auto *first_subject = first_triple->mutable_subject();
+  auto *first_predicate = first_triple->mutable_predicate();
+  auto *first_object = first_triple->mutable_object();
+  auto *second_subject = second_triple->mutable_subject();
+  auto *second_predicate = second_triple->mutable_predicate();
+  auto *second_object = second_triple->mutable_object();
+
+  first_subject->set_term_value("<some_integer_ref2>");
+  first_subject->set_term_type(proto_msg::TermType::IRI);
+  first_predicate->set_term_value("<has_integer>");
+  first_predicate->set_term_type(proto_msg::TermType::IRI);
+  first_object->set_term_value("?x");
+  first_object->set_term_type(proto_msg::TermType::VARIABLE);
+
+  second_subject->set_term_value("?uu");
+  second_subject->set_term_type(proto_msg::TermType::VARIABLE);
+  second_predicate->set_term_value("<has_date>");
+  second_predicate->set_term_type(proto_msg::TermType::IRI);
+  second_object->set_term_value("?w");
+  second_object->set_term_type(proto_msg::TermType::VARIABLE);
+
+  auto result = QueryProcTests2Fixture::cache->run_query(tree);
+
+  std::set<std::pair<std::string, std::string>> all_combinations;
+  std::set<int> values1_2_intersection;
+  std::set_intersection(
+      values1.begin(), values1.end(), values2.begin(), values2.end(),
+      std::inserter(values1_2_intersection, values1_2_intersection.begin()));
+  // This is the assumption between values1 and values2 that must not be broken
+  // for this test. If this was broken, this test will have to change
+  ASSERT_EQ(values1_2_intersection, values2);
+
+  for (auto int_value : values2) {
+    for (const auto &date_str : dates) {
+      all_combinations.insert(
+          {"\"" + std::to_string(int_value) + "\"^^xsd:integer",
+           "\"" + date_str + "\"^^xsd:dateTime"});
+    }
+  }
+  std::vector<std::pair<std::string, std::string>> query_results_values;
+  for (const auto &row : result.table().data) {
+    auto first_resource = pcm->extract_resource(row[0]);
+    auto second_resource = pcm->extract_resource(row[1]);
+    query_results_values.push_back(
+        {std::move(first_resource.value), std::move(second_resource.value)});
+  }
+
+  std::vector<std::pair<std::string, std::string>> combinations_ordered;
+  combinations_ordered.reserve(all_combinations.size());
+  for (const auto &p : all_combinations) {
+    combinations_ordered.push_back(p);
+  }
+
+  std::sort(combinations_ordered.begin(), combinations_ordered.end(),
+            [](const std::pair<std::string, std::string> &lhs,
+               const std::pair<std::string, std::string> &rhs) {
+              auto first_cmp =
+                  std::strcmp(lhs.first.c_str(), rhs.first.c_str());
+              if (first_cmp != 0)
+                return first_cmp < 0;
+              return std::strcmp(lhs.second.c_str(), rhs.second.c_str()) < 0;
+            });
+
+  ASSERT_EQ(combinations_ordered.size(), query_results_values.size());
+  ASSERT_EQ(combinations_ordered, query_results_values);
+}

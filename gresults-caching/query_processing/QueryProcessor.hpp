@@ -61,6 +61,8 @@ private:
   process_sequence_node(const proto_msg::SequenceNode &node);
   std::shared_ptr<ResultTable>
   process_slice_node(const proto_msg::SliceNode &node);
+  std::shared_ptr<ResultTable>
+  process_order_node(const proto_msg::OrderNode &node);
 };
 
 #endif /* RDFCACHEK2_QUERY_PROCESSOR_HPP */
