@@ -15,7 +15,27 @@ message CacheResponse{
         ConnectionEndResponse connection_end_response = 2;
         QueryResultResponse query_result_response = 3;
         InvalidQueryResponse invalid_query_response = 4;
+        ResultTablePartResponse result_table_part_response = 5;
     }
+}
+
+message ResultTablePartResponse{
+    int32 id = 1;
+    oneof response_part{
+        KeysPart keys_part = 2;
+        RowsPart rows_part = 3;
+    }
+}
+
+message KeysPart{
+    bool last_part = 1;
+    repeated QueryResultKeyValuePair kvs = 2;
+    repeated string header = 3; // this should go only in the first part
+}
+
+message RowsPart{
+    bool last_part = 1;
+    repeated QueryResultRow rows = 2;
 }
 
 message InvalidQueryResponse{}

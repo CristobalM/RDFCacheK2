@@ -178,6 +178,7 @@ set(NETWORK_SOURCE_FILES
         network/CacheServerTaskProcessor.cpp
         network/ServerWorker.cpp
         network/Message.cpp
+        network/QueryResultStreamer.cpp
         )
 
 

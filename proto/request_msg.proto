@@ -13,13 +13,17 @@ message CacheRequest{
     oneof request {
         ConnectionEndRequest connection_end_request = 2;
         CacheRunQueryAlgebra cache_run_query_algebra = 3;
+        ReceiveRemainingResult receive_remaining_result = 4;
     }
+}
+
+message ReceiveRemainingResult{
+    int32 id = 1;
 }
 
 message ConnectionEndRequest{
     bool end = 1;
 }
-
 
 message CacheRunQueryAlgebra{
     SparqlTree sparql_tree = 1;
