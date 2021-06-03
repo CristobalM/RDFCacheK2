@@ -48,13 +48,13 @@ bool CacheServerTaskProcessor::tasks_available() {
   return !server_tasks.empty();
 }
 QueryResultStreamer &CacheServerTaskProcessor::get_streamer(int id) {
-  return streamer_map[id];
+  return *streamer_map[id];
 }
 QueryResultStreamer &
 CacheServerTaskProcessor::create_streamer(std::set<uint64_t> &&keys,
                                           QueryResult &&query_result) {
   int next_id = current_id++;
-  streamer_map[next_id] =
-      QueryResultStreamer(std::move(keys), std::move(query_result), next_id, &cache.get_pcm());
-  return streamer_map[next_id];
+  streamer_map[next_id] = std::make_unique<QueryResultStreamer>(
+      std::move(keys), std::move(query_result), next_id, &cache.get_pcm());
+  return *streamer_map[next_id];
 }

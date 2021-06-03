@@ -19,7 +19,6 @@
 #include <hashing.hpp>
 #include <serialization_util.hpp>
 
-
 ServerTask::ServerTask(int client_socket_fd, Cache &cache,
                        TaskProcessor &task_processor)
     : client_socket_fd(client_socket_fd), cache(cache),
@@ -162,7 +161,8 @@ void ServerTask::process_cache_query(Message &message) {
   }
   auto query_result = cache.run_query(tree);
 
-  auto response = create_response_from_query_result(std::move(query_result), message);
+  auto response =
+      create_response_from_query_result(std::move(query_result), message);
   send_response(response);
 }
 
@@ -196,7 +196,7 @@ ServerTask::create_response_from_query_result(QueryResult &&query_result,
   }
 
   size_t keys_size = 0;
-  for(const auto &key: keys){
+  for (const auto &key : keys) {
     RDFResource key_res;
     if (key > cache.get_pcm().get_last_id()) {
       key_res = query_result.get_extra_dict().extract_resource(
@@ -207,8 +207,9 @@ ServerTask::create_response_from_query_result(QueryResult &&query_result,
     keys_size += key_res.value.size() * sizeof(char);
   }
   keys_size += keys.size() * sizeof(uint64_t);
-  keys_size += query_result.table().get_data().size() * query_result.table().headers.size() * sizeof(uint64_t);
-  if(keys_size  > MAX_PROTO_MESSAGE_SIZE_ALLOWED){
+  keys_size += query_result.table().get_data().size() *
+               query_result.table().headers.size() * sizeof(uint64_t);
+  if (keys_size > MAX_PROTO_MESSAGE_SIZE_ALLOWED) {
     return create_parts_response(std::move(keys), std::move(query_result));
   }
 
@@ -311,7 +312,7 @@ void ServerTask::process_connection_end() {
 proto_msg::CacheResponse
 ServerTask::create_parts_response(std::set<uint64_t> &&keys,
                                   QueryResult &&result) {
-  auto streamer_data = task_processor.create_streamer(std::move(keys), std::move(result));
-  auto &streamer = streamer_data.first;
+  auto &streamer =
+      task_processor.create_streamer(std::move(keys), std::move(result));
   return streamer.get_next_response();
 }

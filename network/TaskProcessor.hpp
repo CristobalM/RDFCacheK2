@@ -5,6 +5,7 @@
 #ifndef RDFCACHEK2_TASKPROCESSOR_HPP
 #define RDFCACHEK2_TASKPROCESSOR_HPP
 
+#include "QueryResultStreamer.hpp"
 #include <cstdint>
 #include <query_processing/QueryResult.hpp>
 #include <set>

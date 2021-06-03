@@ -27,7 +27,7 @@ class CacheServerTaskProcessor : public TaskProcessor {
   uint8_t workers_count;
   std::vector<std::unique_ptr<worker_t>> workers;
 
-  std::unordered_map<int, QueryResultStreamer> streamer_map;
+  std::unordered_map<int, std::unique_ptr<QueryResultStreamer>> streamer_map;
 
   int current_id;
 

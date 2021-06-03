@@ -24,11 +24,11 @@ public:
   int get_client_socket_fd();
   Cache &get_cache();
 
-
   void process_cache_query(Message &message);
   void send_invalid_response();
   proto_msg::CacheResponse
-  create_response_from_query_result(QueryResult &&query_result, Message &message);
+  create_response_from_query_result(QueryResult &&query_result,
+                                    Message &message);
 
   void send_response(proto_msg::CacheResponse &cache_response);
   void process_connection_end();

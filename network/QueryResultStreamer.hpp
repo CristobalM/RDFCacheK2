@@ -19,6 +19,7 @@ class QueryResultStreamer {
   size_t keys_sent;
   size_t rows_sent;
   ResultTable::lvul_t::iterator rows_it;
+
 public:
   QueryResultStreamer(std::set<uint64_t> &&keys, QueryResult &&query_result,
                       int id, PredicatesCacheManager *cm);
@@ -28,7 +29,6 @@ public:
 
   QueryResultStreamer(QueryResultStreamer &&other) noexcept;
   QueryResultStreamer &operator=(QueryResultStreamer &&other) noexcept;
-
 
   proto_msg::CacheResponse get_next_response();
   bool keys_done();
