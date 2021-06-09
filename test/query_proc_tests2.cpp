@@ -8,13 +8,12 @@
 #include <memory>
 
 #include "cache_test_util.hpp"
-#include <curl/curl.h>
 
 #include <Cache.hpp>
 #include <EmptyISDManager.hpp>
 #include <PredicatesCacheManager.hpp>
 #include <hashing.hpp>
-#include <query_processing/expr/StringHandlingUtil.hpp>
+#include <query_processing/utility/StringHandlingUtil.hpp>
 
 namespace fs = std::filesystem;
 class QueryProcTests2Fixture : public ::testing::Test {
@@ -389,10 +388,14 @@ TEST_F(QueryProcTests2Fixture, can_do_order_op_test_1) {
   proto_msg::SparqlTree tree;
   auto *order_node = tree.mutable_root()->mutable_order_node();
   auto *sort_condition_1 = order_node->mutable_sort_conditions()->Add();
-  sort_condition_1->set_var("?x");
+  auto *term_x = sort_condition_1->mutable_expr()->mutable_term_node();
+  term_x->set_term_value("?x");
+  term_x->set_term_type(proto_msg::TermType::VARIABLE);
   sort_condition_1->set_direction(proto_msg::SortDirection::ASCENDING);
   auto *sort_condition_2 = order_node->mutable_sort_conditions()->Add();
-  sort_condition_2->set_var("?w");
+  auto *term_w = sort_condition_2->mutable_expr()->mutable_term_node();
+  term_w->set_term_value("?w");
+  term_w->set_term_type(proto_msg::TermType::VARIABLE);
   sort_condition_2->set_direction(proto_msg::SortDirection::ASCENDING);
 
   auto *distinct_node = order_node->mutable_node()->mutable_distinct_node();

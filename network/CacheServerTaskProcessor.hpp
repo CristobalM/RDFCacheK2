@@ -12,11 +12,13 @@
 #include <Cache.hpp>
 
 #include "Message.hpp"
+#include "QueryResultStreamer.hpp"
 #include "ServerTask.hpp"
 #include "ServerWorker.hpp"
 #include "TCPServerConnection.hpp"
+#include "TaskProcessor.hpp"
 
-class CacheServerTaskProcessor {
+class CacheServerTaskProcessor : public TaskProcessor {
   using worker_t = ServerWorker<CacheServerTaskProcessor>;
 
   std::queue<std::unique_ptr<ServerTask>> server_tasks;
@@ -24,6 +26,10 @@ class CacheServerTaskProcessor {
   Cache &cache;
   uint8_t workers_count;
   std::vector<std::unique_ptr<worker_t>> workers;
+
+  std::unordered_map<int, std::unique_ptr<QueryResultStreamer>> streamer_map;
+
+  int current_id;
 
 public:
   explicit CacheServerTaskProcessor(Cache &cache, uint8_t workers_count);
@@ -36,6 +42,10 @@ public:
   void start_workers(TCPServerConnection<CacheServerTaskProcessor> &connection);
 
   void notify_workers();
+  QueryResultStreamer &get_streamer(int id) override;
+  QueryResultStreamer &create_streamer(std::set<uint64_t> &&keys,
+                                       QueryResult &&query_result) override;
+  bool has_streamer(int id) override;
 };
 
 #endif // RDFCACHEK2_CACHESERVERTASKPROCESSOR_HPP

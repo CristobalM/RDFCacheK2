@@ -2,9 +2,14 @@
 // Created by cristobal on 4/27/21.
 //
 
+#include <sstream>
+
 #include "StringLiteralLangResource.hpp"
 #include <query_processing/ExprProcessorPersistentData.hpp>
-#include <sstream>
+
+#include "IRIResource.hpp"
+#include "StringLiteralResource.hpp"
+
 StringLiteralLangResource::StringLiteralLangResource(std::string &&value,
                                                      std::string &&lang_tag)
     : value(std::move(value)), lang_tag(std::move(lang_tag)) {}
@@ -67,4 +72,19 @@ RDFResource StringLiteralLangResource::get_resource_clone() const {
   std::stringstream ss;
   ss << "\"" << value << "\"@" << lang_tag;
   return RDFResource(ss.str(), RDFResourceType::RDF_TYPE_LITERAL);
+}
+int StringLiteralLangResource::reverse_diff_compare(
+    const IRIResource &iri_resource) const {
+  return std::strcmp(iri_resource.get_iri_string().c_str(), value.c_str());
+}
+int StringLiteralLangResource::reverse_diff_compare(
+    const StringLiteralLangResource &string_literal_lang_resource) const {
+  return std::strcmp(
+      string_literal_lang_resource.get_literal_lang_string().c_str(),
+      value.c_str());
+}
+int StringLiteralLangResource::reverse_diff_compare(
+    const StringLiteralResource &string_literal_resource) const {
+  return std::strcmp(string_literal_resource.get_literal_string().c_str(),
+                     value.c_str());
 }

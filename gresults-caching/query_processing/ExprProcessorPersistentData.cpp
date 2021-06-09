@@ -5,6 +5,9 @@
 //
 #include "ExprProcessorPersistentData.hpp"
 
+#include <ctime>
+#include <sstream>
+
 namespace {
 std::string dtype = "(integer|decimal|float|double|string|boolean|dateTime)";
 std::string datatype_regex = "\\^\\^(?:<http://www\\.w3\\.org/2001/XMLSchema#" +
@@ -174,3 +177,108 @@ ExprProcessorPersistentData &ExprProcessorPersistentData::get() {
 
 ExprProcessorPersistentData ExprProcessorPersistentData::instance =
     ExprProcessorPersistentData();
+DateInfo ExprProcessorPersistentData::get_now_dateinfo() {
+  std::time_t now = std::time(0);
+  std::tm *now_tm = std::gmtime(&now);
+  DateInfo result{};
+  result.matched = true;
+  result.offset_hour = 0;
+  result.offset_minute = 0;
+  result.offset_sign = 1;
+  result.day = now_tm->tm_mday;
+  result.hour = now_tm->tm_hour;
+  result.minute = now_tm->tm_min;
+  result.second = now_tm->tm_sec;
+  result.second_fraction = 0;
+  result.month = now_tm->tm_mon;
+  result.year = now_tm->tm_year;
+  return result;
+}
+DateInfo
+ExprProcessorPersistentData::zero_offset_date_info(DateInfo date_info) {
+  int sign = date_info.offset_sign >= 0 ? 1 : -1;
+
+  int minute_sum = date_info.offset_minute * sign + date_info.minute;
+  int carry_hour = minute_sum / 60;
+  date_info.minute = minute_sum % 60;
+
+  int hour_sum = date_info.offset_hour * sign + date_info.hour + carry_hour;
+  int carry_day = hour_sum / 24;
+  date_info.hour = hour_sum % 24;
+
+  int day_sum = date_info.day + carry_day;
+  int days_in_month = month_days(date_info.month, date_info.year);
+  int carry_month = day_sum / days_in_month;
+  date_info.day = day_sum % days_in_month;
+
+  int month_sum = date_info.month + carry_month;
+  int carry_year = month_sum / 12;
+  date_info.month = month_sum % 12;
+
+  date_info.year += carry_year;
+
+  date_info.offset_hour = 0;
+  date_info.offset_minute = 0;
+  date_info.offset_sign = 1;
+  return date_info;
+}
+
+std::array<int, 12> ExprProcessorPersistentData::days_months = {
+    31, // jan / 1
+    28, // feb / 2 non leap
+    31, // mar /  3
+    30, // apr / 4
+    31, // may / 5
+    30, // jun / 6
+    31, // jul / 7
+    31, // ago / 8
+    30, // sep / 9
+    31, // oct / 10
+    30, // nov / 11
+    31, // dec / 12
+};
+
+int ExprProcessorPersistentData::month_days(int month, int year) {
+  if (month == 2 && leap_year(year)) {
+    // february in leap year
+    return 29;
+  }
+  return days_months[month - 1];
+}
+int ExprProcessorPersistentData::year_days(int year) {
+  if (leap_year(year))
+    return 366;
+  return 365;
+}
+
+bool ExprProcessorPersistentData::leap_year(int year) {
+  return (year % 400 == 0 || (year % 4 == 0 && year % 100 != 0));
+}
+int ExprProcessorPersistentData::normalize_diff_cmp(int diff) {
+  if (diff > 0)
+    return 1;
+  else if (diff < 0)
+    return -1;
+  return 0;
+}
+std::string
+ExprProcessorPersistentData::date_info_to_iso8601_string(DateInfo date_info) {
+  std::stringstream ss;
+  ss << date_info.year << "-" << date_info.month << "-" << date_info.day << "T"
+     << date_info.hour << ":" << date_info.minute << ":" << date_info.second;
+
+  if (date_info.second_fraction > 0) {
+    ss << "." << date_info.second_fraction;
+  }
+  if (date_info.offset_minute != 0 || date_info.offset_hour != 0) {
+    if (date_info.offset_sign >= 0)
+      ss << "+";
+    else
+      ss << "-";
+
+    ss << date_info.offset_hour << ":" << date_info.offset_minute;
+  } else {
+    ss << "Z";
+  }
+  return ss.str();
+}

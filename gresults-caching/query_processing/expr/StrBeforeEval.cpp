@@ -3,8 +3,8 @@
 //
 
 #include "StrBeforeEval.hpp"
-#include "StringLiteralLangResource.hpp"
-#include "StringLiteralResource.hpp"
+#include "query_processing/resources/StringLiteralLangResource.hpp"
+#include "query_processing/resources/StringLiteralResource.hpp"
 std::shared_ptr<TermResource>
 StrBeforeEval::eval_resource(const ExprEval::row_t &row) {
   auto first_resource = children[0]->produce_resource(row);

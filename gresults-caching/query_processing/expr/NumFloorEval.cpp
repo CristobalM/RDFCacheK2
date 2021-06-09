@@ -3,9 +3,9 @@
 //
 
 #include "NumFloorEval.hpp"
-#include "DoubleResource.hpp"
-#include "FloatResource.hpp"
-#include "IntegerResource.hpp"
+#include "query_processing/resources/DoubleResource.hpp"
+#include "query_processing/resources/FloatResource.hpp"
+#include "query_processing/resources/IntegerResource.hpp"
 #include <cmath>
 std::shared_ptr<TermResource>
 NumFloorEval::eval_resource(const ExprEval::row_t &row) {

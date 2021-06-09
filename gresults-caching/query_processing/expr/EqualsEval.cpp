@@ -3,7 +3,7 @@
 //
 
 #include "EqualsEval.hpp"
-#include "BooleanResource.hpp"
+#include "query_processing/resources/BooleanResource.hpp"
 
 void EqualsEval::validate() {
   ExprEval::validate();

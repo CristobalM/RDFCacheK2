@@ -3,6 +3,7 @@
 //
 
 #include "DayTimeDurationResource.hpp"
+#include <query_processing/ExprProcessorPersistentData.hpp>
 bool DayTimeDurationResource::operator==(const TermResource &rhs) const {
   if (!rhs.is_day_time_duration())
     return false;
@@ -27,3 +28,25 @@ void DayTimeDurationResource::set_seconds(int new_seconds) {
   seconds = new_seconds;
 }
 bool DayTimeDurationResource::is_literal() const { return true; }
+int DayTimeDurationResource::reverse_diff_compare(
+    const DayTimeDurationResource &day_time_duration_resource) const {
+  if (day_time_duration_resource.sign > sign) {
+    return 1;
+  } else if (day_time_duration_resource.sign < sign) {
+    return -1;
+  }
+
+  int days_diff = day_time_duration_resource.days - days;
+  if (days_diff != 0)
+    ExprProcessorPersistentData::get().normalize_diff_cmp(days_diff);
+  int hours_diff = day_time_duration_resource.hours - hours;
+  if (hours_diff != 0)
+    ExprProcessorPersistentData::get().normalize_diff_cmp(hours_diff);
+  int minutes_diff = day_time_duration_resource.minutes - minutes;
+  if (minutes_diff != 0)
+    ExprProcessorPersistentData::get().normalize_diff_cmp(minutes_diff);
+  int seconds_diff = day_time_duration_resource.seconds - seconds;
+  if (seconds_diff != 0)
+    ExprProcessorPersistentData::get().normalize_diff_cmp(seconds_diff);
+  return 0;
+}

@@ -20,6 +20,8 @@ public:
   bool contains(TermResource &pattern_resource) const override;
   bool is_literal() const override;
   RDFResource get_resource_clone() const override;
+  std::shared_ptr<TermResource> cast_to(ExprDataType expr_data_type) override;
+  bool is_number();
 };
 
 #endif // RDFCACHEK2_STRINGLITERALRESOURCE_HPP

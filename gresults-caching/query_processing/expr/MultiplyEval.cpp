@@ -3,9 +3,9 @@
 //
 
 #include "MultiplyEval.hpp"
-#include "DoubleResource.hpp"
-#include "FloatResource.hpp"
-#include "IntegerResource.hpp"
+#include "query_processing/resources/DoubleResource.hpp"
+#include "query_processing/resources/FloatResource.hpp"
+#include "query_processing/resources/IntegerResource.hpp"
 
 int MultiplyEval::eval_integer(const ExprEval::row_t &row) {
   auto first = children[0]->produce_integer(row);

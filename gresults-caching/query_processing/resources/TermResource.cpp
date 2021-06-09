@@ -5,6 +5,18 @@
 #include "TermResource.hpp"
 #include "NullResource.hpp"
 
+#include "BooleanResource.hpp"
+#include "ConcreteRDFResource.hpp"
+#include "DataTypeResource.hpp"
+#include "DateTimeResource.hpp"
+#include "DayTimeDurationResource.hpp"
+#include "DoubleResource.hpp"
+#include "FloatResource.hpp"
+#include "IRIResource.hpp"
+#include "IntegerResource.hpp"
+#include "StringLiteralLangResource.hpp"
+#include "StringLiteralResource.hpp"
+
 ExprDataType TermResource::get_datatype() const {
   // throw std::runtime_error("get_datatype not implemented");
   return EDT_UNKNOWN;
@@ -63,4 +75,44 @@ bool TermResource::operator!=(const TermResource &rhs) const {
 }
 std::string TermResource::get_content_string_copy() const {
   throw std::runtime_error("get_content_string_copy not implemented");
+}
+bool TermResource::is_datetime() const { return false; }
+DateInfo TermResource::get_dateinfo() const {
+  throw std::runtime_error("get_dateinfo not implemented");
+}
+int TermResource::diff_compare(const TermResource &) const { return -1; }
+int TermResource::reverse_diff_compare(const BooleanResource &) const {
+  return -1;
+}
+int TermResource::reverse_diff_compare(const ConcreteRDFResource &) const {
+  return -1;
+}
+int TermResource::reverse_diff_compare(const DataTypeResource &) const {
+  return -1;
+}
+int TermResource::reverse_diff_compare(const DayTimeDurationResource &) const {
+  return -1;
+}
+int TermResource::reverse_diff_compare(const DoubleResource &) const {
+  return -1;
+}
+int TermResource::reverse_diff_compare(const IntegerResource &) const {
+  return -1;
+}
+int TermResource::reverse_diff_compare(const IRIResource &) const { return -1; }
+int TermResource::reverse_diff_compare(
+    const StringLiteralLangResource &) const {
+  return -1;
+}
+int TermResource::reverse_diff_compare(const StringLiteralResource &) const {
+  return -1;
+}
+int TermResource::reverse_diff_compare(const FloatResource &) const {
+  return -1;
+}
+int TermResource::reverse_diff_compare(const DateTimeResource &) const {
+  return -1;
+}
+std::shared_ptr<TermResource> TermResource::cast_to(ExprDataType) {
+  return null();
 }

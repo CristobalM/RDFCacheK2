@@ -63,6 +63,8 @@ private:
   process_slice_node(const proto_msg::SliceNode &node);
   std::shared_ptr<ResultTable>
   process_order_node(const proto_msg::OrderNode &node);
+  std::unordered_map<std::string, unsigned long>
+  create_var_pos_mapping(ResultTable &table);
 };
 
 #endif /* RDFCACHEK2_QUERY_PROCESSOR_HPP */

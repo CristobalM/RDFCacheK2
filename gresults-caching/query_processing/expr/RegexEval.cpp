@@ -3,8 +3,8 @@
 //
 
 #include "RegexEval.hpp"
-#include "BooleanResource.hpp"
-#include "StringHandlingUtil.hpp"
+#include "query_processing/resources/BooleanResource.hpp"
+#include "query_processing/utility/StringHandlingUtil.hpp"
 #include <pcrecpp.h>
 
 std::shared_ptr<TermResource>

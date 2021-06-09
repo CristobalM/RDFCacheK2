@@ -5,7 +5,7 @@
 #ifndef RDFCACHEK2_STRINGHANDLINGUTIL_HPP
 #define RDFCACHEK2_STRINGHANDLINGUTIL_HPP
 
-#include "TermResource.hpp"
+#include "query_processing/resources/TermResource.hpp"
 #include <query_processing/ExprDataType.hpp>
 #include <string>
 

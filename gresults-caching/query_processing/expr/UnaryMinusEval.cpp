@@ -3,9 +3,9 @@
 //
 
 #include "UnaryMinusEval.hpp"
-#include "DoubleResource.hpp"
-#include "FloatResource.hpp"
-#include "IntegerResource.hpp"
+#include "query_processing/resources/DoubleResource.hpp"
+#include "query_processing/resources/FloatResource.hpp"
+#include "query_processing/resources/IntegerResource.hpp"
 int UnaryMinusEval::eval_integer(const ExprEval::row_t &row) {
   int value = children[0]->eval_integer(row);
   if (children_with_error())

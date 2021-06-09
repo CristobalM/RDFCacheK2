@@ -5,8 +5,8 @@
 #ifndef RDFCACHEK2_DATATYPERESOURCE_HPP
 #define RDFCACHEK2_DATATYPERESOURCE_HPP
 
-#include "../ExprDataType.hpp"
 #include "TermResource.hpp"
+#include "query_processing/ExprDataType.hpp"
 class DataTypeResource : public TermResource {
   ExprDataType datatype;
 
@@ -22,6 +22,9 @@ public:
 
   static std::shared_ptr<TermResource> create(ExprDataType datatype);
   bool is_literal() const override;
+  int reverse_diff_compare(
+      const DataTypeResource &data_type_resource) const override;
+  std::shared_ptr<TermResource> cast_to(ExprDataType expr_data_type) override;
 };
 
 #endif // RDFCACHEK2_DATATYPERESOURCE_HPP

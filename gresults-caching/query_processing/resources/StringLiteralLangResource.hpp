@@ -19,6 +19,11 @@ public:
   const std::string &get_lang_tag() const override;
   bool is_literal() const override;
   RDFResource get_resource_clone() const override;
+  int reverse_diff_compare(const IRIResource &iri_resource) const override;
+  int reverse_diff_compare(const StringLiteralLangResource
+                               &string_literal_lang_resource) const override;
+  int reverse_diff_compare(
+      const StringLiteralResource &string_literal_resource) const override;
 };
 
 #endif // RDFCACHEK2_STRINGLITERALLANGRESOURCE_HPP

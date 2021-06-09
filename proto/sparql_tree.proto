@@ -4,7 +4,7 @@ package proto_msg;
 option java_package = "com.github.cristobalm.RDFEWK2C.proto";
 option java_outer_classname = "SparqlTreeMessage";
 
-message SparqlTree { SparqlNode root = 1; }
+message SparqlTree {SparqlNode root = 1;}
 
 message SparqlNode {
   oneof node {
@@ -32,7 +32,7 @@ enum SortDirection{
 }
 
 message SortCondition{
-  string var = 1;
+  ExprNode expr = 1;
   SortDirection direction = 2;
 }
 
@@ -95,11 +95,11 @@ message MinusNode {
   SparqlNode right_node = 2;
 }
 
-message BGPNode { repeated TripleNode triple = 1; }
+message BGPNode {repeated TripleNode triple = 1;}
 
-message UnionNode { repeated SparqlNode nodes_list = 1; }
+message UnionNode {repeated SparqlNode nodes_list = 1;}
 
-message DistinctNode { SparqlNode sub_node = 1; }
+message DistinctNode {SparqlNode sub_node = 1;}
 
 message OptionalNode {
   SparqlNode left_node = 1;
@@ -208,4 +208,8 @@ enum FunctionOP {
   DATE_TIME_SECONDS = 65; // one var
   EXISTS = 66;
   NOT_EXISTS = 67;
+  NOW = 68;
+  IN = 69;
+  NOT_IN = 70;
+  RAND = 71;
 }

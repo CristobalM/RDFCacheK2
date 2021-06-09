@@ -3,7 +3,7 @@
 //
 
 #include "DigestMD5Eval.hpp"
-#include "StringLiteralResource.hpp"
+#include "query_processing/resources/StringLiteralResource.hpp"
 
 #include <hashing.hpp>
 

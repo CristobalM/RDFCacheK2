@@ -256,14 +256,7 @@ QueryProcessor::process_extend_node(const proto_msg::ExtendNode &node) {
     extra_str_dict = std::make_unique<NaiveDynamicStringDictionary>();
   }
 
-  std::unordered_map<std::string, unsigned long> var_pos_mapping;
-  auto rev_map = vim->reverse();
-
-  for (unsigned long i = 0;
-       i < static_cast<unsigned long>(resulting_table->headers.size()); i++) {
-    auto header = resulting_table->headers[i];
-    var_pos_mapping[rev_map[header]] = i;
-  }
+  auto var_pos_mapping = create_var_pos_mapping(*resulting_table);
 
   EvalData eval_data(*resulting_table, *vim, cm, var_pos_mapping,
                      *extra_str_dict);
@@ -349,5 +342,21 @@ std::shared_ptr<ResultTable>
 QueryProcessor::process_order_node(const proto_msg::OrderNode &node) {
   auto result_table = process_node(node.node());
 
-  return OrderNodeProcessor(result_table, node, cm, *vim).execute();
+  auto var_pos_mapping = create_var_pos_mapping(*result_table);
+
+  EvalData eval_data(*result_table, *vim, cm, var_pos_mapping, *extra_str_dict);
+
+  return OrderNodeProcessor(result_table, node, eval_data).execute();
+}
+std::unordered_map<std::string, unsigned long>
+QueryProcessor::create_var_pos_mapping(ResultTable &table) {
+  std::unordered_map<std::string, unsigned long> var_pos_mapping;
+  auto rev_map = vim->reverse();
+
+  for (unsigned long i = 0;
+       i < static_cast<unsigned long>(table.headers.size()); i++) {
+    auto header = table.headers[i];
+    var_pos_mapping[rev_map[header]] = i;
+  }
+  return var_pos_mapping;
 }

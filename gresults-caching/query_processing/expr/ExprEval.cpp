@@ -5,12 +5,12 @@
 
 #include "ExprEval.hpp"
 #include "ExistsEval.hpp"
+#include "RandEval.hpp"
 #include <query_processing/expr/LangMatchesEval.hpp>
 #include <query_processing/expr/LogicalNotEval.hpp>
 
 #include "AddEval.hpp"
 #include "BNodeEval.hpp"
-#include "BooleanResource.hpp"
 #include "BoundEval.hpp"
 #include "CallEval.hpp"
 #include "CastEval.hpp"
@@ -36,7 +36,7 @@
 #include "FunctionEval.hpp"
 #include "GreaterThanEval.hpp"
 #include "GreaterThanOrEqualEval.hpp"
-#include "IntegerResource.hpp"
+#include "InEval.hpp"
 #include "IsBlankEval.hpp"
 #include "IsIRIEval.hpp"
 #include "IsLiteralEval.hpp"
@@ -49,6 +49,7 @@
 #include "MultiplyEval.hpp"
 #include "NotEqualsEval.hpp"
 #include "NotExistsEval.hpp"
+#include "NotInEval.hpp"
 #include "NumAbsEval.hpp"
 #include "NumCeilingEval.hpp"
 #include "NumFloorEval.hpp"
@@ -76,6 +77,9 @@
 #include "TermEval.hpp"
 #include "UnaryMinusEval.hpp"
 #include "UnaryPlusEval.hpp"
+#include "query_processing/resources/BooleanResource.hpp"
+#include "query_processing/resources/DoubleResource.hpp"
+#include "query_processing/resources/IntegerResource.hpp"
 
 ExprEval::ExprEval(const EvalData &eval_data,
                    const proto_msg::ExprNode &expr_node)
@@ -267,6 +271,12 @@ ExprEval::create_eval_node(const EvalData &eval_data,
     return create_eval_node_specific<ExistsEval>(eval_data, child_node);
   case proto_msg::NOT_EXISTS:
     return create_eval_node_specific<NotExistsEval>(eval_data, child_node);
+  case proto_msg::IN:
+    return create_eval_node_specific<InEval>(eval_data, child_node);
+  case proto_msg::NOT_IN:
+    return create_eval_node_specific<NotInEval>(eval_data, child_node);
+  case proto_msg::RAND:
+    return create_eval_node_specific<RandEval>(eval_data, child_node);
   default:
     throw std::runtime_error("Unknown function op");
   }
@@ -424,4 +434,19 @@ DateInfo ExprEval::produce_date_time(const ExprEval::row_t &row) {
     was_date_info_cached = true;
   }
   return cached_date_info;
+}
+std::shared_ptr<TermResource>
+ExprEval::generate_from_eval_double(const row_t &row) {
+  auto value = eval_double(row);
+  if (has_error()) {
+    return TermResource::null();
+  }
+  return std::make_shared<DoubleResource>(value);
+}
+void ExprEval::assert_fsize_gt(int size) {
+  if (expr_node.function_node().exprs_size() <= size)
+    throw std::runtime_error(
+        "Invalid size " +
+        std::to_string(expr_node.function_node().exprs_size()) +
+        ", expected >" + std::to_string(size));
 }

@@ -15,7 +15,7 @@
 
 #include "../ExprProcessorPersistentData.hpp"
 #include "EvalData.hpp"
-#include "TermResource.hpp"
+#include "query_processing/resources/TermResource.hpp"
 
 class ExprEval {
 
@@ -98,9 +98,12 @@ public:
   float float_with_error();
   double double_with_error();
 
+  void assert_fsize_gt(int children_quantity);
+
 protected:
   std::shared_ptr<TermResource> generate_from_eval_boolean(const row_t &row);
   std::shared_ptr<TermResource> generate_from_eval_integer(const row_t &row);
+  std::shared_ptr<TermResource> generate_from_eval_double(const row_t &row);
 
 private:
   virtual bool has_constant_subtree();

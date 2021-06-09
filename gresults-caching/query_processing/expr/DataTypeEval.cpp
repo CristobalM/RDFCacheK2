@@ -3,7 +3,7 @@
 //
 
 #include "DataTypeEval.hpp"
-#include "DataTypeResource.hpp"
+#include "query_processing/resources/DataTypeResource.hpp"
 std::shared_ptr<TermResource>
 DataTypeEval::eval_resource(const ExprEval::row_t &row) {
   auto result = children[0]->eval_datatype(row);

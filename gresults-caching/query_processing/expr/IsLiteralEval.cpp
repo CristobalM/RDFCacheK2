@@ -3,7 +3,7 @@
 //
 
 #include "IsLiteralEval.hpp"
-#include "BooleanResource.hpp"
+#include "query_processing/resources/BooleanResource.hpp"
 
 bool IsLiteralEval::eval_boolean(const ExprEval::row_t &row) {
   auto resource = children[0]->eval_resource(row);

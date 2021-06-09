@@ -3,8 +3,8 @@
 //
 
 #include "DateTimeTZEval.hpp"
-#include "DayTimeDurationResource.hpp"
-#include "StringLiteralResource.hpp"
+#include "query_processing/resources/DayTimeDurationResource.hpp"
+#include "query_processing/resources/StringLiteralResource.hpp"
 #include <iomanip>
 #include <sstream>
 #include <unicode/smpdtfmt.h>

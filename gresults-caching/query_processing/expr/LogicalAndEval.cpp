@@ -3,7 +3,7 @@
 //
 
 #include "LogicalAndEval.hpp"
-#include "BooleanResource.hpp"
+#include "query_processing/resources/BooleanResource.hpp"
 std::shared_ptr<TermResource>
 LogicalAndEval::eval_resource(const ExprEval::row_t &row) {
   return generate_from_eval_boolean(row);

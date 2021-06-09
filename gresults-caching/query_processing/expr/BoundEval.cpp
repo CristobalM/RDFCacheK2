@@ -3,7 +3,7 @@
 //
 
 #include "BoundEval.hpp"
-#include "BooleanResource.hpp"
+#include "query_processing/resources/BooleanResource.hpp"
 
 bool BoundEval::eval_boolean(const ExprEval::row_t &) { return result; }
 

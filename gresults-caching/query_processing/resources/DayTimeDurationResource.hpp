@@ -25,6 +25,8 @@ public:
   void set_seconds(int seconds);
   bool operator==(const TermResource &rhs) const override;
   bool is_literal() const override;
+  int reverse_diff_compare(
+      const DayTimeDurationResource &day_time_duration_resource) const override;
 };
 
 #endif // RDFCACHEK2_DAYTIMEDURATIONRESOURCE_HPP

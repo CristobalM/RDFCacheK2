@@ -14,7 +14,7 @@
 #include <EmptyISDManager.hpp>
 #include <PredicatesCacheManager.hpp>
 #include <hashing.hpp>
-#include <query_processing/expr/StringHandlingUtil.hpp>
+#include <query_processing/utility/StringHandlingUtil.hpp>
 
 namespace fs = std::filesystem;
 class QueryFiltersFixture : public ::testing::Test {

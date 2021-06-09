@@ -4,16 +4,16 @@
 
 #include <algorithm>
 
-#include "BooleanResource.hpp"
-#include "ConcreteRDFResource.hpp"
-#include "DataTypeResource.hpp"
-#include "DoubleResource.hpp"
-#include "FloatResource.hpp"
-#include "IntegerResource.hpp"
-#include "StringHandlingUtil.hpp"
-#include "StringLiteralLangResource.hpp"
-#include "StringLiteralResource.hpp"
 #include "TermEval.hpp"
+#include "query_processing/resources/BooleanResource.hpp"
+#include "query_processing/resources/ConcreteRDFResource.hpp"
+#include "query_processing/resources/DataTypeResource.hpp"
+#include "query_processing/resources/DoubleResource.hpp"
+#include "query_processing/resources/FloatResource.hpp"
+#include "query_processing/resources/IntegerResource.hpp"
+#include "query_processing/resources/StringLiteralLangResource.hpp"
+#include "query_processing/resources/StringLiteralResource.hpp"
+#include "query_processing/utility/StringHandlingUtil.hpp"
 RDFResource TermEval::eval_term_node(const ExprEval::row_t &row) const {
   switch (expr_node.term_node().term_type()) {
   case proto_msg::TermType::VARIABLE:

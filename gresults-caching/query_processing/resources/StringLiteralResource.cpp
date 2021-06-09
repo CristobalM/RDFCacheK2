@@ -3,8 +3,14 @@
 //
 
 #include "StringLiteralResource.hpp"
+#include "BooleanResource.hpp"
+#include "DateTimeResource.hpp"
+#include "DoubleResource.hpp"
+#include "FloatResource.hpp"
+#include "IntegerResource.hpp"
 #include <query_processing/ExprProcessorPersistentData.hpp>
 #include <sstream>
+
 bool StringLiteralResource::is_string_literal() const { return true; }
 const std::string &StringLiteralResource::get_literal_string() const {
   return value;
@@ -97,4 +103,46 @@ RDFResource StringLiteralResource::get_resource_clone() const {
   }
   ss << "\"" << value << "\"" << datatype_str;
   return RDFResource(ss.str(), RDFResourceType::RDF_TYPE_LITERAL);
+}
+std::shared_ptr<TermResource>
+StringLiteralResource::cast_to(ExprDataType expr_data_type) {
+  switch (expr_data_type) {
+
+  case EDT_INTEGER:
+    if (!is_number())
+      return TermResource::null();
+    return std::make_shared<IntegerResource>((int)std::stod(value));
+  case EDT_FLOAT:
+    if (!is_number())
+      return TermResource::null();
+    return std::make_shared<FloatResource>(std::stof(value));
+  case EDT_DECIMAL:
+  case EDT_DOUBLE:
+    return std::make_shared<DoubleResource>(std::stod(value));
+  case EDT_STRING:
+    return std::make_shared<StringLiteralResource>(std::string(value),
+                                                   expr_data_type);
+  case EDT_BOOLEAN: {
+    if (value.size() != 4) {
+      return std::make_shared<BooleanResource>(false);
+    }
+    auto value_copy = value;
+
+    std::for_each(value_copy.begin(), value_copy.end(),
+                  [](char &c) { c = std::tolower(c); });
+    if (value_copy == "true") {
+      return std::make_shared<BooleanResource>(true);
+    }
+    return std::make_shared<BooleanResource>(false);
+  }
+  case EDT_DATETIME:
+    return std::make_shared<DateTimeResource>(
+        ExprProcessorPersistentData::get().parse_iso8601(value));
+  case EDT_UNKNOWN:
+  default:
+    return TermResource::null();
+  }
+}
+bool StringLiteralResource::is_number() {
+  return ExprProcessorPersistentData::get().string_is_numeric(value);
 }

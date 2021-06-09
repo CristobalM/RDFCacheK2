@@ -1,6 +1,7 @@
 #ifndef RESULT_TABLE_HPP
 #define RESULT_TABLE_HPP
 
+#include <cstdint>
 #include <list>
 #include <unordered_map>
 #include <vector>
@@ -31,7 +32,7 @@ struct ResultTable {
 
   lvul_t &get_data();
 
-  size_t rows_size() const;
+  std::size_t rows_size() const;
 
   void left_join_with(unsigned long left_column_index,
                       unsigned long right_index, ResultTable &right,

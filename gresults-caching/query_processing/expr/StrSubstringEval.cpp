@@ -3,9 +3,9 @@
 //
 
 #include "StrSubstringEval.hpp"
-#include "StringHandlingUtil.hpp"
-#include "StringLiteralLangResource.hpp"
-#include "StringLiteralResource.hpp"
+#include "query_processing/resources/StringLiteralLangResource.hpp"
+#include "query_processing/resources/StringLiteralResource.hpp"
+#include "query_processing/utility/StringHandlingUtil.hpp"
 std::shared_ptr<TermResource>
 StrSubstringEval::eval_resource(const ExprEval::row_t &row) {
   auto source_resource = children[0]->produce_resource(row);

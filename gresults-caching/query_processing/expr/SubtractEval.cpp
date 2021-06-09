@@ -4,9 +4,9 @@
 
 #include "SubtractEval.hpp"
 
-#include "DoubleResource.hpp"
-#include "FloatResource.hpp"
-#include "IntegerResource.hpp"
+#include "query_processing/resources/DoubleResource.hpp"
+#include "query_processing/resources/FloatResource.hpp"
+#include "query_processing/resources/IntegerResource.hpp"
 
 int SubtractEval::eval_integer(const ExprEval::row_t &row) {
   auto left_value = children[0]->produce_integer(row);

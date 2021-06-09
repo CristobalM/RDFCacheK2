@@ -1,6 +1,6 @@
 
 #include "IsBlankEval.hpp"
-#include "BooleanResource.hpp"
+#include "query_processing/resources/BooleanResource.hpp"
 #include <RDFTriple.hpp>
 
 bool IsBlankEval::eval_boolean(const row_t &row) {

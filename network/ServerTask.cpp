@@ -10,6 +10,7 @@
 #include <unistd.h>
 
 #include "ServerTask.hpp"
+#include "network_msg_definitions.hpp"
 
 #include <graph_result.pb.h>
 #include <message_type.pb.h>
@@ -18,28 +19,10 @@
 #include <hashing.hpp>
 #include <serialization_util.hpp>
 
-void send_invalid_response(int client_fd);
-
-ServerTask::ServerTask(int client_socket_fd, Cache &cache)
-    : client_socket_fd(client_socket_fd), cache(cache) {}
-
-void send_response(int socket_client_fd,
-                   proto_msg::CacheResponse &cache_response) {
-  // std::cout << "Sending response: " << cache_response.DebugString() <<
-  // std::endl;
-  std::string serialized = cache_response.SerializeAsString();
-  auto serialized_hash = md5calc(serialized);
-  std::stringstream ss;
-  std::cout << "Sending message of size " << serialized.size() << " with hash '"
-            << md5_human_readable(serialized_hash) << "'" << std::endl;
-  write_u64(ss, serialized.size());
-  ss.write(serialized_hash.data(), sizeof(char) * serialized_hash.size());
-  ss.write(serialized.data(), sizeof(char) * serialized.size());
-  // ss << serialized_hash;
-  // ss << serialized;
-  auto result = ss.str();
-  send(socket_client_fd, result.data(), result.size() * sizeof(char), 0);
-}
+ServerTask::ServerTask(int client_socket_fd, Cache &cache,
+                       TaskProcessor &task_processor)
+    : client_socket_fd(client_socket_fd), cache(cache),
+      task_processor(task_processor) {}
 
 // static void print_table_debug(QueryResult &query_result, ServerTask
 // &server_task){
@@ -72,137 +55,6 @@ void send_response(int socket_client_fd,
 //   }
 //   std::cout << std::endl;
 // }
-
-static proto_msg::CacheResponse
-create_response_from_query_result(ServerTask &server_task,
-                                  QueryResult &query_result, Message &message) {
-  auto &vim = query_result.get_vim();
-  auto &table = query_result.table();
-
-  proto_msg::CacheResponse cache_response;
-  cache_response.set_response_type(
-      proto_msg::MessageType::RESULT_TABLE_RESPONSE);
-
-  auto &tree =
-      message.get_cache_request().cache_run_query_algebra().sparql_tree();
-
-  std::set<uint64_t> keys; // will store values in ascending order
-
-  if (tree.root().node_case() == proto_msg::SparqlNode::kProjectNode) {
-    auto &project_node = tree.root().project_node();
-    auto &headers = query_result.table().headers;
-    std::unordered_map<unsigned long, unsigned long> reversed_uindexes;
-    for (size_t i = 0; i < headers.size(); i++) {
-      reversed_uindexes[headers[i]] = i;
-    }
-
-    std::vector<unsigned long> resulting_vars_order;
-    // auto resulting_vars_order = QueryVarsOrderExtractor(query_result,
-    // tree.root()).extract();
-
-    for (int i = 0; i < project_node.vars_size(); i++) {
-      const auto &var = project_node.vars(i);
-      auto var_index = vim.var_indexes[var];
-      resulting_vars_order.push_back(reversed_uindexes[var_index]);
-    }
-
-    for (const auto &row : table.get_data()) {
-      auto *response_row =
-          cache_response.mutable_query_result_response()->add_rows();
-      for (size_t i = 0; i < row.size(); i++) {
-        auto value = row[resulting_vars_order[i]];
-        keys.insert(value);
-        response_row->add_row(value);
-      }
-    }
-    for (int i = 0; i < project_node.vars_size(); i++) {
-      const auto &var = project_node.vars(i);
-      cache_response.mutable_query_result_response()->add_header(var);
-    }
-  } else {
-    for (const auto &row : table.get_data()) {
-      auto *response_row =
-          cache_response.mutable_query_result_response()->add_rows();
-
-      for (auto value : row) {
-        keys.insert(value);
-        response_row->add_row(value);
-      }
-    }
-    auto reversed_indexes = vim.reverse();
-    for (auto header : table.headers) {
-      const auto &var = reversed_indexes[header];
-      cache_response.mutable_query_result_response()->add_header(var);
-    }
-  }
-
-  auto &cache = server_task.get_cache();
-
-  for (auto key : keys) {
-    RDFResource key_res;
-    if (key > cache.get_pcm().get_last_id()) {
-      key_res = query_result.get_extra_dict().extract_resource(
-          key - cache.get_pcm().get_last_id());
-    } else {
-      key_res = cache.extract_resource(key);
-    }
-
-    auto *kv = cache_response.mutable_query_result_response()->add_kvs();
-    kv->set_key(key);
-    kv->set_value(key_res.value);
-    switch (key_res.resource_type) {
-    case RDFResourceType::RDF_TYPE_BLANK:
-      kv->set_type(proto_msg::TermType::BLANK_NODE);
-      break;
-
-    case RDFResourceType::RDF_TYPE_IRI:
-      kv->set_type(proto_msg::TermType::IRI);
-      break;
-
-    case RDFResourceType::RDF_TYPE_LITERAL:
-    case NULL_RESOURCE_TYPE:
-      kv->set_type(proto_msg::TermType::LITERAL);
-      break;
-    }
-  }
-
-  return cache_response;
-}
-
-void process_cache_query(ServerTask &server_task, Message &message) {
-  auto &cache = server_task.get_cache();
-  auto &tree =
-      message.get_cache_request().cache_run_query_algebra().sparql_tree();
-  auto valid = cache.query_is_valid(tree);
-  int client_fd = server_task.get_client_socket_fd();
-
-  if (!valid) {
-    send_invalid_response(client_fd);
-    return;
-  }
-  auto query_result = cache.run_query(tree);
-  auto response =
-      create_response_from_query_result(server_task, query_result, message);
-  send_response(client_fd, response);
-}
-void send_invalid_response(int client_fd) {
-
-  proto_msg::CacheResponse cache_response;
-  cache_response.set_response_type(
-      proto_msg::MessageType::INVALID_QUERY_RESPONSE);
-  cache_response.mutable_invalid_query_response();
-  send_response(client_fd, cache_response);
-}
-
-void process_connection_end(ServerTask &server_task, Message &) {
-  int client_fd = server_task.get_client_socket_fd();
-
-  proto_msg::CacheResponse cache_response;
-  cache_response.set_response_type(proto_msg::MessageType::CONNECTION_END);
-  cache_response.mutable_connection_end_response()->set_end(true);
-
-  send_response(client_fd, cache_response);
-}
 
 bool read_nbytes_from_socket(int client_socket_fd, char *read_buffer,
                              size_t bytes_to_read) {
@@ -253,10 +105,12 @@ void ServerTask::process() {
     std::cout << "msg_size before: " << msg_size << std::endl;
 
     msg_size = ntohl(msg_size);
+    /*
     if (msg_size <= sizeof(msg_size)) {
       std::cout << "Message with size " << msg_size << std::endl;
       return;
     }
+     */
     std::cout << "msg_size before rsz: " << msg_size << std::endl;
 
     std::cout << "msg_size after: " << msg_size << std::endl;
@@ -281,13 +135,18 @@ void ServerTask::process() {
       break;
     case proto_msg::MessageType::RUN_QUERY:
       std::cout << "Request of type RUN_QUERY" << std::endl;
-      process_cache_query(*this, message);
+      process_cache_query(message);
       break;
     case proto_msg::MessageType::CONNECTION_END:
       std::cout << "Request of type CONNECTION_END" << std::endl;
-      process_connection_end(*this, message);
+      process_connection_end();
       return;
+    case proto_msg::MessageType::RECEIVE_REMAINING_RESULT:
+      std::cout << "Request of type RECEIVE_REMAINING_RESULT" << std::endl;
+      process_receive_remaining_result(message);
+      break;
     default:
+      std::cout << "received unknown message... ignoring " << std::endl;
       break;
     }
   }
@@ -296,3 +155,182 @@ void ServerTask::process() {
 int ServerTask::get_client_socket_fd() { return client_socket_fd; }
 
 Cache &ServerTask::get_cache() { return cache; }
+
+void ServerTask::process_cache_query(Message &message) {
+  // auto &cache = get_cache();
+  auto &tree =
+      message.get_cache_request().cache_run_query_algebra().sparql_tree();
+  auto valid = cache.query_is_valid(tree);
+
+  if (!valid) {
+    send_invalid_response();
+    return;
+  }
+  auto query_result = cache.run_query(tree);
+
+  auto response =
+      create_response_from_query_result(std::move(query_result), message);
+  send_response(response);
+}
+
+void ServerTask::send_invalid_response() {
+  std::cout << "invalid query... aborting" << std::endl;
+  proto_msg::CacheResponse cache_response;
+  cache_response.set_response_type(
+      proto_msg::MessageType::INVALID_QUERY_RESPONSE);
+  cache_response.mutable_invalid_query_response();
+  send_response(cache_response);
+}
+
+proto_msg::CacheResponse
+ServerTask::create_response_from_query_result(QueryResult &&query_result,
+                                              Message &message) {
+  auto &vim = query_result.get_vim();
+  auto &table = query_result.table();
+
+  proto_msg::CacheResponse cache_response;
+  cache_response.set_response_type(
+      proto_msg::MessageType::RESULT_TABLE_RESPONSE);
+
+  auto &tree =
+      message.get_cache_request().cache_run_query_algebra().sparql_tree();
+
+  std::set<uint64_t> keys; // will store values in ascending order
+
+  for (const auto &row : table.get_data()) {
+    for (auto value : row) {
+      keys.insert(value);
+    }
+  }
+
+  size_t keys_size = 0;
+  for (const auto &key : keys) {
+    RDFResource key_res;
+    if (key > cache.get_pcm().get_last_id()) {
+      key_res = query_result.get_extra_dict().extract_resource(
+          key - cache.get_pcm().get_last_id());
+    } else {
+      key_res = cache.extract_resource(key);
+    }
+    keys_size += key_res.value.size() * sizeof(char);
+  }
+  keys_size += keys.size() * sizeof(uint64_t);
+  keys_size += query_result.table().get_data().size() *
+               query_result.table().headers.size() * sizeof(uint64_t);
+
+  if (keys_size > MAX_PROTO_MESSAGE_SIZE_ALLOWED) {
+    return create_parts_response(std::move(keys), std::move(query_result));
+  }
+
+  if (tree.root().node_case() == proto_msg::SparqlNode::kProjectNode) {
+    auto &project_node = tree.root().project_node();
+    auto &headers = query_result.table().headers;
+    std::unordered_map<unsigned long, unsigned long> reversed_uindexes;
+    for (size_t i = 0; i < headers.size(); i++) {
+      reversed_uindexes[headers[i]] = i;
+    }
+
+    std::vector<unsigned long> resulting_vars_order;
+
+    for (int i = 0; i < project_node.vars_size(); i++) {
+      const auto &var = project_node.vars(i);
+      auto var_index = vim.var_indexes[var];
+      resulting_vars_order.push_back(reversed_uindexes[var_index]);
+    }
+
+    for (const auto &row : table.get_data()) {
+      auto *response_row =
+          cache_response.mutable_query_result_response()->add_rows();
+      for (size_t i = 0; i < row.size(); i++) {
+        auto value = row[resulting_vars_order[i]];
+        response_row->add_row(value);
+      }
+    }
+    for (int i = 0; i < project_node.vars_size(); i++) {
+      const auto &var = project_node.vars(i);
+      cache_response.mutable_query_result_response()->add_header(var);
+    }
+  } else {
+    for (const auto &row : table.get_data()) {
+      auto *response_row =
+          cache_response.mutable_query_result_response()->add_rows();
+
+      for (auto value : row) {
+        response_row->add_row(value);
+      }
+    }
+    auto reversed_indexes = vim.reverse();
+    for (auto header : table.headers) {
+      const auto &var = reversed_indexes[header];
+      cache_response.mutable_query_result_response()->add_header(var);
+    }
+  }
+
+  for (auto key : keys) {
+    RDFResource key_res;
+    if (key > cache.get_pcm().get_last_id()) {
+      key_res = query_result.get_extra_dict().extract_resource(
+          key - cache.get_pcm().get_last_id());
+    } else {
+      key_res = cache.extract_resource(key);
+    }
+
+    auto *kv = cache_response.mutable_query_result_response()->add_kvs();
+    kv->set_key(key);
+    kv->set_value(key_res.value);
+    switch (key_res.resource_type) {
+    case RDFResourceType::RDF_TYPE_BLANK:
+      kv->set_type(proto_msg::TermType::BLANK_NODE);
+      break;
+
+    case RDFResourceType::RDF_TYPE_IRI:
+      kv->set_type(proto_msg::TermType::IRI);
+      break;
+
+    case RDFResourceType::RDF_TYPE_LITERAL:
+    case NULL_RESOURCE_TYPE:
+      kv->set_type(proto_msg::TermType::LITERAL);
+      break;
+    }
+  }
+
+  return cache_response;
+}
+void ServerTask::send_response(proto_msg::CacheResponse &cache_response) {
+
+  std::string serialized = cache_response.SerializeAsString();
+  auto serialized_hash = md5calc(serialized);
+  std::stringstream ss;
+  std::cout << "Sending message of size " << serialized.size() << " with hash '"
+            << md5_human_readable(serialized_hash) << "'" << std::endl;
+  write_u64(ss, serialized.size());
+  ss.write(serialized_hash.data(), sizeof(char) * serialized_hash.size());
+  ss.write(serialized.data(), sizeof(char) * serialized.size());
+
+  auto result = ss.str();
+  send(client_socket_fd, result.data(), result.size() * sizeof(char), 0);
+}
+void ServerTask::process_connection_end() {
+  proto_msg::CacheResponse cache_response;
+  cache_response.set_response_type(proto_msg::MessageType::CONNECTION_END);
+  cache_response.mutable_connection_end_response()->set_end(true);
+  send_response(cache_response);
+}
+proto_msg::CacheResponse
+ServerTask::create_parts_response(std::set<uint64_t> &&keys,
+                                  QueryResult &&result) {
+  auto &streamer =
+      task_processor.create_streamer(std::move(keys), std::move(result));
+  return streamer.get_next_response();
+}
+void ServerTask::process_receive_remaining_result(Message &message) {
+  int id = message.get_cache_request().receive_remaining_result().id();
+  if (!task_processor.has_streamer(id)) {
+    std::cout << "not found streamer with id " << id << std::endl;
+    send_invalid_response();
+    return;
+  }
+  auto &streamer = task_processor.get_streamer(id);
+  auto next_response = streamer.get_next_response();
+  send_response(next_response);
+}

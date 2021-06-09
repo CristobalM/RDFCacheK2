@@ -16,6 +16,10 @@ public:
   bool is_boolean() const override;
   bool get_boolean() const override;
   RDFResource get_resource_clone() const override;
+  int diff_compare(const TermResource &rhs) const override;
+  int reverse_diff_compare(
+      const BooleanResource &boolean_resource) const override;
+  std::shared_ptr<TermResource> cast_to(ExprDataType expr_data_type) override;
 };
 
 #endif // RDFCACHEK2_BOOLEANRESOURCE_HPP

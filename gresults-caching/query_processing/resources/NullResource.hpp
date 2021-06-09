@@ -5,7 +5,7 @@
 #ifndef RDFCACHEK2_NULLRESOURCE_HPP
 #define RDFCACHEK2_NULLRESOURCE_HPP
 
-#include "TermResource.hpp"
+#include "query_processing/resources/TermResource.hpp"
 class NullResource : public TermResource {
 public:
   bool operator==(const TermResource &rhs) const override;

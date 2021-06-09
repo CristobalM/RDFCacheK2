@@ -5,8 +5,22 @@
 #ifndef RDFCACHEK2_TERMRESOURCE_HPP
 #define RDFCACHEK2_TERMRESOURCE_HPP
 
-#include "../ExprDataType.hpp"
+#include "query_processing/ExprDataType.hpp"
 #include <RDFTriple.hpp>
+#include <query_processing/DateInfo.hpp>
+
+class BooleanResource;
+class ConcreteRDFResource;
+class DataTypeResource;
+class DateTimeResource;
+class DayTimeDurationResource;
+class DoubleResource;
+class FloatResource;
+class IntegerResource;
+class IRIResource;
+class NullResource;
+class StringLiteralLangResource;
+class StringLiteralResource;
 
 class TermResource {
 public:
@@ -26,6 +40,8 @@ public:
   virtual bool is_boolean() const;
   virtual bool is_iri() const;
   virtual bool is_literal() const;
+  virtual bool is_datetime() const;
+  virtual int diff_compare(const TermResource &rhs) const;
 
   virtual const std::string &get_literal_string() const;
   virtual const std::string &get_literal_lang_string() const;
@@ -39,10 +55,24 @@ public:
   virtual float get_float() const;
   virtual double get_double() const;
   virtual bool get_boolean() const;
+  virtual DateInfo get_dateinfo() const;
 
   static std::shared_ptr<TermResource> null();
 
   virtual bool contains(TermResource &pattern_resource) const;
+  virtual int reverse_diff_compare(const BooleanResource &) const;
+  virtual int reverse_diff_compare(const ConcreteRDFResource &) const;
+  virtual int reverse_diff_compare(const DataTypeResource &) const;
+  virtual int reverse_diff_compare(const DateTimeResource &) const;
+  virtual int reverse_diff_compare(const DayTimeDurationResource &) const;
+  virtual int reverse_diff_compare(const DoubleResource &) const;
+  virtual int reverse_diff_compare(const IntegerResource &) const;
+  virtual int reverse_diff_compare(const FloatResource &) const;
+  virtual int reverse_diff_compare(const IRIResource &) const;
+  virtual int reverse_diff_compare(const StringLiteralLangResource &) const;
+  virtual int reverse_diff_compare(const StringLiteralResource &) const;
+
+  virtual std::shared_ptr<TermResource> cast_to(ExprDataType expr_data_type);
 };
 
 #endif // RDFCACHEK2_TERMRESOURCE_HPP

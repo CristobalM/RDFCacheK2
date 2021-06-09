@@ -9,20 +9,23 @@
 #include <PredicatesCacheManager.hpp>
 #include <ResultTable.hpp>
 #include <memory>
+#include <query_processing/expr/ExprEval.hpp>
 #include <sparql_tree.pb.h>
 class OrderNodeProcessor {
   std::shared_ptr<ResultTable> current_table;
   const proto_msg::OrderNode &node;
-  const PredicatesCacheManager &cm;
-  VarIndexManager &vim;
+
+  std::vector<std::unique_ptr<ExprEval>> evaluators;
+  const EvalData &eval_data;
 
 public:
   OrderNodeProcessor(std::shared_ptr<ResultTable> input_table,
                      const proto_msg::OrderNode &node,
-                     const PredicatesCacheManager &cm, VarIndexManager &vim);
+                     const EvalData &eval_data);
   std::shared_ptr<ResultTable> execute();
-  std::vector<int> get_permutation();
-  static std::string extract_cmp_str_from_resource(const RDFResource &resource);
+
+private:
+  void create_evaluators();
 };
 
 #endif // RDFCACHEK2_ORDERNODEPROCESSOR_HPP

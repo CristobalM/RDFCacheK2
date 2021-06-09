@@ -3,7 +3,7 @@
 //
 
 #include "NotEqualsEval.hpp"
-#include "BooleanResource.hpp"
+#include "query_processing/resources/BooleanResource.hpp"
 
 void NotEqualsEval::validate() {
   ExprEval::validate();

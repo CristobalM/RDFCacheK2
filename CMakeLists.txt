@@ -151,22 +151,28 @@ set(GRAPH_RESULT_CACHING_FILE
         gresults-caching/query_processing/expr/StrSubstringEval.cpp
         gresults-caching/query_processing/expr/ExistsEval.cpp
         gresults-caching/query_processing/expr/NotExistsEval.cpp
+        gresults-caching/query_processing/expr/NowEval.cpp
+        gresults-caching/query_processing/expr/InEval.cpp
+        gresults-caching/query_processing/expr/NotInEval.cpp
+        gresults-caching/query_processing/expr/RandEval.cpp
 
         gresults-caching/query_processing/expr/BoundVarsMap.cpp
 
-        gresults-caching/query_processing/expr/TermResource.cpp
-        gresults-caching/query_processing/expr/ConcreteRDFResource.cpp
-        gresults-caching/query_processing/expr/DataTypeResource.cpp
-        gresults-caching/query_processing/expr/NullResource.cpp
-        gresults-caching/query_processing/expr/DayTimeDurationResource.cpp
-        gresults-caching/query_processing/expr/StringLiteralResource.cpp
-        gresults-caching/query_processing/expr/StringLiteralLangResource.cpp
-        gresults-caching/query_processing/expr/IntegerResource.cpp
-        gresults-caching/query_processing/expr/FloatResource.cpp
-        gresults-caching/query_processing/expr/DoubleResource.cpp
-        gresults-caching/query_processing/expr/BooleanResource.cpp
-        gresults-caching/query_processing/expr/IRIResource.cpp
-        gresults-caching/query_processing/expr/StringHandlingUtil.cpp
+        gresults-caching/query_processing/resources/TermResource.cpp
+        gresults-caching/query_processing/resources/ConcreteRDFResource.cpp
+        gresults-caching/query_processing/resources/DataTypeResource.cpp
+        gresults-caching/query_processing/resources/NullResource.cpp
+        gresults-caching/query_processing/resources/DayTimeDurationResource.cpp
+        gresults-caching/query_processing/resources/StringLiteralResource.cpp
+        gresults-caching/query_processing/resources/StringLiteralLangResource.cpp
+        gresults-caching/query_processing/resources/IntegerResource.cpp
+        gresults-caching/query_processing/resources/FloatResource.cpp
+        gresults-caching/query_processing/resources/DoubleResource.cpp
+        gresults-caching/query_processing/resources/BooleanResource.cpp
+        gresults-caching/query_processing/resources/IRIResource.cpp
+        gresults-caching/query_processing/resources/DateTimeResource.cpp
+
+        gresults-caching/query_processing/utility/StringHandlingUtil.cpp
         gresults-caching/query_processing/DateInfo.hpp
         )
 
@@ -178,6 +184,7 @@ set(NETWORK_SOURCE_FILES
         network/CacheServerTaskProcessor.cpp
         network/ServerWorker.cpp
         network/Message.cpp
+        network/QueryResultStreamer.cpp
         )
 
 
