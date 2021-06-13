@@ -22,8 +22,114 @@ message SparqlNode {
     SequenceNode sequence_node = 12;
     SliceNode slice_node = 13;
     OrderNode order_node = 14;
+    TripleWithPath triple_with_path = 15;
+    TableNode table_node = 16;
+    GroupByNode group_by_node = 17;
   }
 }
+
+message GroupByNode{
+  SparqlNode sub_node = 1;
+  repeated string grouping_vars = 2;
+  repeated Aggregator aggregators = 3;
+}
+
+enum AggregatorElement{
+  COUNT = 0;
+  SUM = 1;
+  AVG = 2;
+  MIN = 3;
+  MAX = 4;
+  GROUP_CONCAT = 5;
+  SAMPLE = 6;
+}
+
+message Aggregator{
+  string var = 1;
+  AggregatorElement aggregator_element = 2;
+  bool distinct = 3;
+}
+
+message TableNode {
+  repeated string vars = 1;
+  repeated TableRow rows = 2;
+}
+message TableRow{
+  repeated RDFTerm values = 1;
+}
+
+
+message TripleWithPath{
+  RDFTerm subject = 1;
+  RDFTerm object = 2;
+  PathNode predicate_path_node = 3;
+}
+
+message PathNode{
+  oneof node{
+    LinkPath link_path = 1;
+    InversePath inverse_path = 2;
+    SequencePath sequence_path = 3;
+    AlternativePath alternative_path = 4;
+    ZeroOrMorePath zero_or_more_path = 5;
+    OneOrMorePath one_or_more_path = 6;
+    ZeroOrOnePath zero_or_one_path = 7;
+    NegatedPropertySet negated_property_set = 8;
+    FixedLengthPath fixed_length_path = 9;
+    MultiLengthPath multi_length_path = 10;
+    DistinctPath distinct_path = 11;
+  }
+}
+
+message DistinctPath{
+  PathNode element = 1;
+}
+
+message FixedLengthPath{
+  PathNode element = 1;
+  int32 length = 2;
+}
+
+message MultiLengthPath{
+  PathNode element = 1;
+  int32 min = 2;
+  int32 max = 3;
+}
+
+message NegatedPropertySet{
+  repeated PathNode elements = 1;
+}
+
+message ZeroOrOnePath{
+  PathNode element = 1;
+}
+
+message ZeroOrMorePath{
+  PathNode element = 1;
+}
+
+message OneOrMorePath{
+  PathNode element = 1;
+}
+
+message AlternativePath{
+  PathNode first_element = 1;
+  PathNode second_element = 2;
+}
+
+message SequencePath{
+  PathNode first_element = 1;
+  PathNode second_element = 2;
+}
+
+message LinkPath{
+  RDFTerm iri = 1;
+}
+
+message InversePath{
+  PathNode element = 1;
+}
+
 
 enum SortDirection{
   DEFAULT = 0;
