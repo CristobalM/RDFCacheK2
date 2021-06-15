@@ -6,8 +6,6 @@
 
 #include <chrono>
 #include <query_processing/expr/ExprEval.hpp>
-#include <set>
-#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
@@ -17,11 +15,11 @@
 
 #include "BGPProcessor.hpp"
 #include "ExprListProcessor.hpp"
-#include "ExprProcessorPersistentData.hpp"
 #include "InnerJoinProcessor.hpp"
 #include "MinusProcessor.hpp"
 #include "OptionalProcessor.hpp"
 #include "OrderNodeProcessor.hpp"
+#include "PathProcessor.hpp"
 #include "QueryProcessor.hpp"
 #include "Term.hpp"
 #include "UnionProcessor.hpp"
@@ -161,6 +159,14 @@ QueryProcessor::process_node(const proto_msg::SparqlNode &node) {
     return process_slice_node(node.slice_node());
   case proto_msg::SparqlNode::kOrderNode:
     return process_order_node(node.order_node());
+  case proto_msg::SparqlNode::kTripleWithPath:
+    return process_path_node(node.triple_with_path());
+  case proto_msg::SparqlNode::kTableNode:
+    return process_table_node(node.table_node());
+  case proto_msg::SparqlNode::kGroupByNode:
+    return process_group_by_node(node.group_by_node());
+  case proto_msg::SparqlNode::kReducedNode:
+    return process_reduced_node(node.reduced_node());
   default:
     throw std::runtime_error("Unsupported nodetype on process_node: " +
                              std::to_string(node.node_case()));
@@ -359,4 +365,20 @@ QueryProcessor::create_var_pos_mapping(ResultTable &table) {
     var_pos_mapping[rev_map[header]] = i;
   }
   return var_pos_mapping;
+}
+std::shared_ptr<ResultTable>
+QueryProcessor::process_path_node(const proto_msg::TripleWithPath &path) {
+  return PathProcessor(cm, *vim, *extra_str_dict, path).execute();
+}
+std::shared_ptr<ResultTable>
+QueryProcessor::process_table_node(const proto_msg::TableNode &node) {
+  return std::shared_ptr<ResultTable>();
+}
+std::shared_ptr<ResultTable>
+QueryProcessor::process_group_by_node(const proto_msg::GroupByNode &node) {
+  return std::shared_ptr<ResultTable>();
+}
+std::shared_ptr<ResultTable>
+QueryProcessor::process_reduced_node(const proto_msg::ReducedNode &node) {
+  return std::shared_ptr<ResultTable>();
 }

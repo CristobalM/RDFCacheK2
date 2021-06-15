@@ -25,7 +25,12 @@ message SparqlNode {
     TripleWithPath triple_with_path = 15;
     TableNode table_node = 16;
     GroupByNode group_by_node = 17;
+    ReducedNode reduced_node = 18;
   }
+}
+
+message ReducedNode{
+  SparqlNode sub_op = 1;
 }
 
 message GroupByNode{
@@ -36,12 +41,13 @@ message GroupByNode{
 
 enum AggregatorElement{
   COUNT = 0;
-  SUM = 1;
-  AVG = 2;
-  MIN = 3;
-  MAX = 4;
-  GROUP_CONCAT = 5;
-  SAMPLE = 6;
+  COUNT_VAR = 1;
+  SUM = 2;
+  AVG = 3;
+  MIN = 4;
+  MAX = 5;
+  GROUP_CONCAT = 6;
+  SAMPLE = 7;
 }
 
 message Aggregator{
@@ -222,6 +228,7 @@ message RDFTerm {
   TermType term_type = 1;
   BasicType basic_type = 2;
   string term_value = 3;
+  bool is_null = 4;
 }
 
 enum TermType {

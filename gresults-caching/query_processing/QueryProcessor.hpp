@@ -65,6 +65,14 @@ private:
   process_order_node(const proto_msg::OrderNode &node);
   std::unordered_map<std::string, unsigned long>
   create_var_pos_mapping(ResultTable &table);
+  std::shared_ptr<ResultTable>
+  process_path_node(const proto_msg::TripleWithPath &path);
+  std::shared_ptr<ResultTable>
+  process_table_node(const proto_msg::TableNode &node);
+  std::shared_ptr<ResultTable>
+  process_group_by_node(const proto_msg::GroupByNode &node);
+  std::shared_ptr<ResultTable>
+  process_reduced_node(const proto_msg::ReducedNode &node);
 };
 
 #endif /* RDFCACHEK2_QUERY_PROCESSOR_HPP */
