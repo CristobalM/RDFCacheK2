@@ -173,8 +173,7 @@ set(GRAPH_RESULT_CACHING_FILE
         gresults-caching/query_processing/resources/DateTimeResource.cpp
 
         gresults-caching/query_processing/utility/StringHandlingUtil.cpp
-        gresults-caching/query_processing/DateInfo.hpp
-        gresults-caching/query_processing/PathProcessor.cpp gresults-caching/query_processing/PathProcessor.hpp)
+        gresults-caching/query_processing/DateInfo.hpp)
 
 
 set(NETWORK_SOURCE_FILES
