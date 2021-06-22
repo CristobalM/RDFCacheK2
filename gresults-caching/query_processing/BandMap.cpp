@@ -18,12 +18,11 @@ BandMap::BandMap(const K2TreeMixed &k2tree, BType type) {
   }
 }
 
-const std::vector<unsigned long> &BandMap::operator[](unsigned long key) {
+const std::vector<unsigned long> BandMap::empty_vec =
+    std::vector<unsigned long>();
+BandMap::BandMap() {}
+const std::vector<unsigned long> &BandMap::get_band(unsigned long key) {
   if (map.find(key) == map.end())
     return empty_vec;
   return map[key];
 }
-
-const std::vector<unsigned long> BandMap::empty_vec =
-    std::vector<unsigned long>();
-BandMap::BandMap() {}

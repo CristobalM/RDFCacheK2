@@ -1,11 +1,18 @@
 
 mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
 current_dir := $(notdir $(patsubst %/,%,$(dir $(mkfile_path))))
+
+bt := ${CACHE_CORES_BUILD}
 BUNDLE_DIR = _bundled_code
 
-all: format proto-build build-libs build
+ifndef bt
+	bt:=$(shell nproc)
+endif
 
-all-debug: format proto-build build-libs-debug build-debug
+
+all: proto-build build-libs build
+
+all-debug: proto-build build-libs-debug build-debug
 
 re: clean-all all
 
@@ -13,7 +20,7 @@ re-debug: clean-all all-debug
 
 build-libs:
 	./fetch_deps.sh
-	cd lib/ntparser/gen && make -j
+	cd lib/ntparser/gen && make -j${bt}
 
 
 clean-libs:
@@ -26,7 +33,7 @@ build:
 	mkdir -p build
 	cd build && \
 	cmake .. && \
-	make -j
+	make -j${bt}
 
 build-libs-debug:
 	./fetch_deps.sh
@@ -37,7 +44,7 @@ build-debug:
 	mkdir -p build
 	cd build && \
 	cmake -DCMAKE_BUILD_TYPE=Debug .. && \
-	make -j
+	make -j${bt}
 
 
 proto-build:
@@ -62,6 +69,7 @@ clean:
 	rm -rf
 
 clean-all: clean clean-libs proto-clean clean-bundle
+	echo "bt=${bt}"
 
 
 clean-bundle:

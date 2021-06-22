@@ -2,6 +2,7 @@
 // Created by cristobal on 4/27/21.
 //
 
+#include <cstring>
 #include <sstream>
 
 #include "StringLiteralLangResource.hpp"

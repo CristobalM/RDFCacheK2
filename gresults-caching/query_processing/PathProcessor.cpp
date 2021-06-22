@@ -3,16 +3,12 @@
 //
 
 #include "PathProcessor.hpp"
-PathProcessor::PathProcessor(
-    const PredicatesCacheManager &cm, VarIndexManager &vim,
-    NaiveDynamicStringDictionary &extra_str_dict,
-    const proto_msg::TripleWithPath &triple_with_path)
-:
-      cm(cm),
-      vim(vim),
-      extra_str_dict(extra_str_dict),
-      triple_with_path(triple_with_path)
-{}
+PathProcessor::PathProcessor(const PredicatesCacheManager &cm,
+                             VarIndexManager &vim,
+                             NaiveDynamicStringDictionary &extra_str_dict,
+                             const proto_msg::TripleWithPath &triple_with_path)
+    : cm(cm), vim(vim), extra_str_dict(extra_str_dict),
+      triple_with_path(triple_with_path) {}
 std::shared_ptr<ResultTable> PathProcessor::execute() {
   result_table = std::make_shared<ResultTable>();
   return process_path_node(triple_with_path.predicate_path_node());
@@ -31,7 +27,7 @@ PathProcessor::process_path_node(const proto_msg::PathNode &node) {
   case proto_msg::PathNode::kZeroOrMorePath:
     return process_zero_or_more_path(node.zero_or_more_path());
   case proto_msg::PathNode::kOneOrMorePath:
-    return process_one_or_more_path (node.one_or_more_path());
+    return process_one_or_more_path(node.one_or_more_path());
   case proto_msg::PathNode::kZeroOrOnePath:
     return process_zero_or_one_path(node.zero_or_more_path());
   case proto_msg::PathNode::kNegatedPropertySet:
@@ -43,7 +39,8 @@ PathProcessor::process_path_node(const proto_msg::PathNode &node) {
   case proto_msg::PathNode::kDistinctPath:
     return process_distinct_path(node.distinct_path());
   default:
-    throw std::runtime_error("Invalid path type " + std::to_string(node.node_case()));
+    throw std::runtime_error("Invalid path type " +
+                             std::to_string(node.node_case()));
   }
 }
 std::shared_ptr<ResultTable>

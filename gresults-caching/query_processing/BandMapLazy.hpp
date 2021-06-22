@@ -10,13 +10,10 @@
 #include <unordered_map>
 #include <vector>
 
+#include "IBandMap.hpp"
 #include <K2TreeMixed.hpp>
 
-class BandMapLazy {
-
-public:
-  enum BType { BY_COL = 0, BY_ROW = 1 };
-
+class BandMapLazy : public IBandMap {
 private:
   using map_t = std::unordered_map<unsigned long, std::vector<unsigned long>>;
 
@@ -31,7 +28,7 @@ private:
 public:
   BandMapLazy(const K2TreeMixed &k2tree, BType type);
 
-  const std::vector<unsigned long> &operator[](unsigned long key);
+  const std::vector<unsigned long> &get_band(unsigned long key) override;
 };
 
 #endif

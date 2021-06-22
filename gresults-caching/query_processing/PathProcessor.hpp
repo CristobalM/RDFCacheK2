@@ -14,6 +14,7 @@ class PathProcessor {
   const proto_msg::TripleWithPath &triple_with_path;
 
   std::shared_ptr<ResultTable> result_table;
+
 public:
   PathProcessor(const PredicatesCacheManager &cm, VarIndexManager &vim,
                 NaiveDynamicStringDictionary &extra_str_dict,

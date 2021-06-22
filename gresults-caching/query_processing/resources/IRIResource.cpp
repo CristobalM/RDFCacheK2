@@ -2,6 +2,8 @@
 // Created by cristobal on 5/4/21.
 //
 
+#include <cstring>
+
 #include "IRIResource.hpp"
 #include "StringLiteralLangResource.hpp"
 #include "StringLiteralResource.hpp"

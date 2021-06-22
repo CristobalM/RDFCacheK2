@@ -58,13 +58,10 @@ ServerTask::ServerTask(int client_socket_fd, Cache &cache,
 
 bool read_nbytes_from_socket(int client_socket_fd, char *read_buffer,
                              size_t bytes_to_read) {
-  std::cout << "read_nbytes_from_socket: bytes_to_read:  " << bytes_to_read
-            << std::endl;
   std::size_t offset = 0;
   for (;;) {
     ssize_t bytes_read = recv(client_socket_fd, read_buffer + offset,
                               bytes_to_read - offset, MSG_WAITALL);
-    std::cout << "bytes read: " << bytes_read << std::endl;
     if (bytes_read < 0) {
       if (errno != EINTR) {
         std::cerr << "IO Error while reading from socket" << std::endl;
@@ -72,14 +69,13 @@ bool read_nbytes_from_socket(int client_socket_fd, char *read_buffer,
       }
     } else if (bytes_read == 0) {
       if (offset == 0) {
-        std::cout << "wtf" << std::endl;
+        std::cerr << "Unexpected end of stream with offset 0" << std::endl;
         return false;
       } else {
         std::cerr << "Unexpected end of stream" << std::endl;
         return false;
       }
     } else if (offset + bytes_read == bytes_to_read) {
-      std::cout << "finish reading " << bytes_to_read << "bytes" << std::endl;
       return true;
     } else {
       offset += bytes_read;
@@ -96,28 +92,16 @@ void ServerTask::process() {
                                             reinterpret_cast<char *>(&msg_size),
                                             sizeof(msg_size));
 
+    std::cout << "Incoming request..." << std::endl;
+
     if (!was_read) {
       std::cerr << "Error while reading msg_size data from connection"
                 << std::endl;
       return;
     }
 
-    std::cout << "msg_size before: " << msg_size << std::endl;
-
     msg_size = ntohl(msg_size);
-    /*
-    if (msg_size <= sizeof(msg_size)) {
-      std::cout << "Message with size " << msg_size << std::endl;
-      return;
-    }
-     */
-    std::cout << "msg_size before rsz: " << msg_size << std::endl;
-
-    std::cout << "msg_size after: " << msg_size << std::endl;
-
-    std::cout << "Allocating message" << std::endl;
     Message message(msg_size);
-    std::cout << "Message allocated" << std::endl;
 
     was_read = read_nbytes_from_socket(client_socket_fd, message.get_buffer(),
                                        message.get_size());

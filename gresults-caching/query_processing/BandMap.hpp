@@ -9,9 +9,10 @@
 #include <unordered_map>
 #include <vector>
 
+#include "IBandMap.hpp"
 #include <K2TreeMixed.hpp>
 
-class BandMap {
+class BandMap : public IBandMap {
 
   using map_t = std::unordered_map<unsigned long, std::vector<unsigned long>>;
 
@@ -20,12 +21,10 @@ class BandMap {
   static const std::vector<unsigned long> empty_vec;
 
 public:
-  enum BType { BY_COL = 0, BY_ROW = 1 };
-
   BandMap(const K2TreeMixed &k2tree, BType type);
 
-  const std::vector<unsigned long> &operator[](unsigned long key);
   BandMap();
+  const std::vector<unsigned long> &get_band(unsigned long key) override;
 };
 
 #endif

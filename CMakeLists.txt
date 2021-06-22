@@ -80,6 +80,9 @@ set(GRAPH_RESULT_CACHING_FILE
         gresults-caching/query_processing/ExprProcessorPersistentData.cpp
         gresults-caching/query_processing/MinusProcessor.cpp
         gresults-caching/query_processing/OrderNodeProcessor.cpp
+        gresults-caching/query_processing/IBandMap.hpp
+        gresults-caching/query_processing/BandMapFactory.cpp
+        gresults-caching/query_processing/BandMapFactory.hpp
 
         gresults-caching/query_processing/expr/IsBlankEval.cpp
         gresults-caching/query_processing/expr/ExprEval.cpp
