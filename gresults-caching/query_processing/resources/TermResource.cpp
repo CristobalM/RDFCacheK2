@@ -116,3 +116,4 @@ int TermResource::reverse_diff_compare(const DateTimeResource &) const {
 std::shared_ptr<TermResource> TermResource::cast_to(ExprDataType) {
   return null();
 }
+bool TermResource::can_cast_to_literal_string() const { return false; }

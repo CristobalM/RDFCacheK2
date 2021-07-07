@@ -6,12 +6,16 @@
 
 #include <K2TreeMixed.hpp>
 #include <PredicatesIndexFileBuilder.hpp>
+#include <iostream>
 
 namespace fs = std::filesystem;
 
 struct parsed_options {
   std::string input_file;
   std::string output_file;
+  uint32_t max_node_count;
+  uint32_t cut_depth;
+  uint32_t tree_depth;
 };
 
 parsed_options parse_cmline(int argc, char **argv);
@@ -23,10 +27,14 @@ int main(int argc, char **argv) {
     throw std::runtime_error("Not found file " + parsed.input_file);
   }
 
-  K2TreeConfig config;
-  config.max_node_count = 256;
-  config.cut_depth = 10;
-  config.treedepth = 32;
+  K2TreeConfig config{};
+  config.max_node_count = parsed.max_node_count;
+  config.cut_depth = parsed.cut_depth;
+  config.treedepth = parsed.tree_depth;
+
+  std::cout << "max_node_count: " << config.max_node_count << "\n"
+            << "cut_depth: " << config.cut_depth << "\n"
+            << "treedepth: " << config.treedepth << std::endl;
 
   auto tmp_fname = parsed.output_file + ".tmp";
   std::ifstream ifs(parsed.input_file, std::ios::in | std::ios::binary);
@@ -42,16 +50,22 @@ int main(int argc, char **argv) {
 }
 
 parsed_options parse_cmline(int argc, char **argv) {
-  const char short_options[] = "i:o:";
+  const char short_options[] = "i:o:N:C:T:";
   struct option long_options[] = {
       {"input-file", required_argument, nullptr, 'i'},
       {"output-file", required_argument, nullptr, 'o'},
+      {"max-node-count", required_argument, nullptr, 'N'},
+      {"cut-depth", required_argument, nullptr, 'C'},
+      {"tree-depth", required_argument, nullptr, 'T'},
   };
 
   int opt, opt_index;
 
   bool has_input = false;
   bool has_output = false;
+  bool has_max_node_count = false;
+  bool has_cut_depth = false;
+  bool has_tree_depth = false;
   parsed_options out{};
 
   while ((
@@ -66,7 +80,19 @@ parsed_options parse_cmline(int argc, char **argv) {
       break;
     case 'o':
       out.output_file = optarg;
-      has_output = optarg;
+      has_output = true;
+      break;
+    case 'N':
+      out.max_node_count = std::stoi(std::string(optarg));
+      has_max_node_count = true;
+      break;
+    case 'C':
+      out.cut_depth = std::stoi(std::string(optarg));
+      has_cut_depth = true;
+      break;
+    case 'T':
+      out.tree_depth = std::stoi(std::string(optarg));
+      has_tree_depth = true;
       break;
     default:
       break;
@@ -77,6 +103,12 @@ parsed_options parse_cmline(int argc, char **argv) {
     throw std::runtime_error("input-file (i) argument is required");
   if (!has_output)
     throw std::runtime_error("output-file (o) argument is required");
+  if (!has_max_node_count)
+    throw std::runtime_error("max-node-count (N) argument is required");
+  if (!has_cut_depth)
+    throw std::runtime_error("cut-depth (C) argument is required");
+  if (!has_tree_depth)
+    throw std::runtime_error("tree-depth (T) argument is required");
 
   return out;
 }

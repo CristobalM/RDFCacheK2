@@ -77,6 +77,8 @@ StrConcatEval::eval_resource(const ExprEval::row_t &row) {
         if (!concrete_ltag.empty())
           wdata_type = false;
       }
+    } else if (resource->can_cast_to_literal_string()) {
+      ss << resource->get_content_string_copy();
     } else {
       this->with_error = true;
       return TermResource::null();

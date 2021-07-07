@@ -48,6 +48,12 @@ StrLangEval::eval_resource(const ExprEval::row_t &row) {
         std::move(lang_tag_str));
   }
 
+  if (input_str_resource->can_cast_to_literal_string()) {
+    return std::make_shared<StringLiteralLangResource>(
+        std::string(input_str_resource->get_content_string_copy()),
+        std::move(lang_tag_str));
+  }
+
   this->with_error = true;
   return TermResource::null();
 }

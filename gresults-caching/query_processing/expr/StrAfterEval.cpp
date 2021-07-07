@@ -50,6 +50,9 @@ StrAfterEval::eval_resource(const ExprEval::row_t &row) {
   } else if (first_resource->is_string_literal()) {
     first_string = first_resource->get_literal_string();
     first_data_type = first_resource->get_datatype();
+  } else if (first_resource->can_cast_to_literal_string()) {
+    first_string = first_resource->get_content_string_copy();
+    first_data_type = first_resource->get_datatype();
   } else {
     this->with_error = true;
     return TermResource::null();
@@ -73,6 +76,9 @@ StrAfterEval::eval_resource(const ExprEval::row_t &row) {
   } else if (second_resource->is_string_literal()) {
     second_string = second_resource->get_literal_string();
     second_data_type = second_resource->get_datatype();
+  } else if (second_resource->can_cast_to_literal_string()) {
+    second_string = second_resource->get_content_string_copy();
+    second_data_type = second_resource->get_datatype();
   } else {
     this->with_error = true;
     return TermResource::null();
@@ -86,7 +92,9 @@ StrAfterEval::eval_resource(const ExprEval::row_t &row) {
   } else if (!first_language_tag.empty() &&
              (second_language_tag.empty() ||
               first_language_tag == second_language_tag)) {
-  } else {
+  }
+
+  else {
     this->with_error = true;
     return TermResource::null();
   }

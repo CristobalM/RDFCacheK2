@@ -8,6 +8,7 @@
 #include "DoubleResource.hpp"
 #include "FloatResource.hpp"
 #include "IntegerResource.hpp"
+#include "StringLiteralLangResource.hpp"
 #include <query_processing/ExprProcessorPersistentData.hpp>
 #include <sstream>
 
@@ -145,4 +146,19 @@ StringLiteralResource::cast_to(ExprDataType expr_data_type) {
 }
 bool StringLiteralResource::is_number() {
   return ExprProcessorPersistentData::get().string_is_numeric(value);
+}
+int StringLiteralResource::diff_compare(const TermResource &rhs) const {
+  return rhs.reverse_diff_compare(*this);
+}
+int StringLiteralResource::reverse_diff_compare(
+    const StringLiteralLangResource &resource) const {
+  return strcmp(resource.get_literal_lang_string().c_str(), value.c_str());
+}
+int StringLiteralResource::reverse_diff_compare(
+    const StringLiteralResource &resource) const {
+  return strcmp(resource.get_literal_string().c_str(), value.c_str());
+}
+bool StringLiteralResource::can_cast_to_literal_string() const { return true; }
+std::string StringLiteralResource::get_content_string_copy() const {
+  return value;
 }

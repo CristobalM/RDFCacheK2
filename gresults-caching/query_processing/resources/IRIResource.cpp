@@ -25,3 +25,6 @@ int IRIResource::reverse_diff_compare(
   return std::strcmp(string_literal_resource.get_literal_string().c_str(),
                      value.c_str());
 }
+int IRIResource::diff_compare(const TermResource &rhs) const {
+  return rhs.reverse_diff_compare(*this);
+}

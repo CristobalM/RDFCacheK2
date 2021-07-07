@@ -8,6 +8,7 @@
 #include "query_processing/resources/BooleanResource.hpp"
 #include "query_processing/resources/ConcreteRDFResource.hpp"
 #include "query_processing/resources/DataTypeResource.hpp"
+#include "query_processing/resources/DateTimeResource.hpp"
 #include "query_processing/resources/DoubleResource.hpp"
 #include "query_processing/resources/FloatResource.hpp"
 #include "query_processing/resources/IntegerResource.hpp"
@@ -259,6 +260,8 @@ TermEval::make_data_type_resource(std::string &&input_string,
                   [](char &c) { c = std::tolower(c); });
     return std::make_shared<BooleanResource>(input_string != "false");
   case EDT_DATETIME:
+    return std::make_shared<DateTimeResource>(
+        ExprProcessorPersistentData::get().parse_iso8601(input_string));
   case EDT_STRING:
     return std::make_shared<StringLiteralResource>(std::move(input_string),
                                                    data_type);

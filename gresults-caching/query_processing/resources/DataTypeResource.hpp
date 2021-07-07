@@ -25,6 +25,7 @@ public:
   int reverse_diff_compare(
       const DataTypeResource &data_type_resource) const override;
   std::shared_ptr<TermResource> cast_to(ExprDataType expr_data_type) override;
+  int diff_compare(const TermResource &rhs) const override;
 };
 
 #endif // RDFCACHEK2_DATATYPERESOURCE_HPP

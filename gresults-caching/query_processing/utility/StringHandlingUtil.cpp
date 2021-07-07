@@ -17,6 +17,9 @@ StringLiteralData StringHandlingUtil::extract_literal_data_from_term_resource(
   } else if (term_resource.is_string_literal()) {
     result.value = term_resource.get_literal_string();
     result.type = term_resource.get_datatype();
+  } else if (term_resource.can_cast_to_literal_string()) {
+    result.value = term_resource.get_content_string_copy();
+    result.type = term_resource.get_datatype();
   } else {
     result.error = true;
   }

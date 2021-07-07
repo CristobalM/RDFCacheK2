@@ -27,6 +27,9 @@ public:
   bool is_literal() const override;
   int reverse_diff_compare(
       const DayTimeDurationResource &day_time_duration_resource) const override;
+  int diff_compare(const TermResource &rhs) const override;
+  bool can_cast_to_literal_string() const override;
+  std::string get_content_string_copy() const override;
 };
 
 #endif // RDFCACHEK2_DAYTIMEDURATIONRESOURCE_HPP

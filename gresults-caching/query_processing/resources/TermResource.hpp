@@ -43,6 +43,8 @@ public:
   virtual bool is_datetime() const;
   virtual int diff_compare(const TermResource &rhs) const;
 
+  virtual bool can_cast_to_literal_string() const;
+
   virtual const std::string &get_literal_string() const;
   virtual const std::string &get_literal_lang_string() const;
   virtual const std::string &get_iri_string() const;

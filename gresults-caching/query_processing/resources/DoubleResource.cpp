@@ -82,3 +82,10 @@ DoubleResource::cast_to(ExprDataType expr_data_type) {
     return TermResource::null();
   }
 }
+int DoubleResource::diff_compare(const TermResource &rhs) const {
+  return rhs.reverse_diff_compare(*this);
+}
+bool DoubleResource::can_cast_to_literal_string() const { return true; }
+std::string DoubleResource::get_content_string_copy() const {
+  return std::to_string(value);
+}

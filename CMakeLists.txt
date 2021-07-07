@@ -83,6 +83,8 @@ set(GRAPH_RESULT_CACHING_FILE
         gresults-caching/query_processing/IBandMap.hpp
         gresults-caching/query_processing/BandMapFactory.cpp
         gresults-caching/query_processing/BandMapFactory.hpp
+        gresults-caching/query_processing/DateInfo.hpp
+        gresults-caching/query_processing/DateInfo.cpp
 
         gresults-caching/query_processing/expr/IsBlankEval.cpp
         gresults-caching/query_processing/expr/ExprEval.cpp

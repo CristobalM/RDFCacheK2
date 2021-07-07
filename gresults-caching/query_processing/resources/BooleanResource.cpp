@@ -62,3 +62,7 @@ BooleanResource::cast_to(ExprDataType expr_data_type) {
     return TermResource::null();
   }
 }
+bool BooleanResource::can_cast_to_literal_string() const { return true; }
+std::string BooleanResource::get_content_string_copy() const {
+  return value ? "true" : "false";
+}

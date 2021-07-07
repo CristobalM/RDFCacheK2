@@ -24,6 +24,10 @@ public:
                                &string_literal_lang_resource) const override;
   int reverse_diff_compare(
       const StringLiteralResource &string_literal_resource) const override;
+  int diff_compare(const TermResource &rhs) const override;
+  bool can_cast_to_literal_string() const override;
+  const std::string &get_literal_string() const override;
+  std::string get_content_string_copy() const override;
 };
 
 #endif // RDFCACHEK2_STRINGLITERALLANGRESOURCE_HPP

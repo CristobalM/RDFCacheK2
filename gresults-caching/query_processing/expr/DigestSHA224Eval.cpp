@@ -19,6 +19,9 @@ DigestSHA224Eval::eval_resource(const ExprEval::row_t &row) {
   } else if (child_resource->is_string_literal()) {
     result =
         sha224_human_readable_lowercase(child_resource->get_literal_string());
+  } else if (child_resource->can_cast_to_literal_string()) {
+    result = sha224_human_readable_lowercase(
+        child_resource->get_content_string_copy());
   } else {
     this->with_error = true;
   }

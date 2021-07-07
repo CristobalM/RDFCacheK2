@@ -89,3 +89,15 @@ int StringLiteralLangResource::reverse_diff_compare(
   return std::strcmp(string_literal_resource.get_literal_string().c_str(),
                      value.c_str());
 }
+int StringLiteralLangResource::diff_compare(const TermResource &rhs) const {
+  return rhs.reverse_diff_compare(*this);
+}
+bool StringLiteralLangResource::can_cast_to_literal_string() const {
+  return true;
+}
+const std::string &StringLiteralLangResource::get_literal_string() const {
+  return value;
+}
+std::string StringLiteralLangResource::get_content_string_copy() const {
+  return value;
+}

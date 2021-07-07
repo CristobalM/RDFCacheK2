@@ -477,11 +477,28 @@ TEST_F(QueryProcTests2Fixture, can_do_order_op_test_1) {
   std::sort(combinations_ordered.begin(), combinations_ordered.end(),
             [](const std::pair<std::string, std::string> &lhs,
                const std::pair<std::string, std::string> &rhs) {
-              auto first_cmp =
-                  std::strcmp(lhs.first.c_str(), rhs.first.c_str());
+              auto lhs_first_literal =
+                  ExprProcessorPersistentData::get()
+                      .extract_literal_content_from_string(lhs.first);
+              auto rhs_first_literal =
+                  ExprProcessorPersistentData::get()
+                      .extract_literal_content_from_string(rhs.first);
+              auto lhs_int = std::stoi(lhs_first_literal);
+              auto rhs_int = std::stoi(rhs_first_literal);
+              auto first_cmp = lhs_int - rhs_int;
               if (first_cmp != 0)
                 return first_cmp < 0;
-              return std::strcmp(lhs.second.c_str(), rhs.second.c_str()) < 0;
+              auto lhs_literal =
+                  ExprProcessorPersistentData::get()
+                      .extract_literal_content_from_string(lhs.second);
+              auto rhs_literal =
+                  ExprProcessorPersistentData::get()
+                      .extract_literal_content_from_string(rhs.second);
+              auto dinfo_lhs =
+                  ExprProcessorPersistentData::get().parse_iso8601(lhs_literal);
+              auto dinfo_rhs =
+                  ExprProcessorPersistentData::get().parse_iso8601(rhs_literal);
+              return dinfo_lhs.cmp_to(dinfo_rhs) < 0;
             });
 
   ASSERT_EQ(combinations_ordered.size(), query_results_values.size());

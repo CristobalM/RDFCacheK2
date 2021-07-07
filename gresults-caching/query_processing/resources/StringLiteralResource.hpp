@@ -22,6 +22,13 @@ public:
   RDFResource get_resource_clone() const override;
   std::shared_ptr<TermResource> cast_to(ExprDataType expr_data_type) override;
   bool is_number();
+  int diff_compare(const TermResource &rhs) const override;
+  int reverse_diff_compare(
+      const StringLiteralLangResource &resource) const override;
+  int reverse_diff_compare(
+      const StringLiteralResource &resource) const override;
+  bool can_cast_to_literal_string() const override;
+  std::string get_content_string_copy() const override;
 };
 
 #endif // RDFCACHEK2_STRINGLITERALRESOURCE_HPP

@@ -21,6 +21,9 @@ public:
   int reverse_diff_compare(
       const DateTimeResource &date_time_resource) const override;
   std::shared_ptr<TermResource> cast_to(ExprDataType expr_data_type) override;
+  int diff_compare(const TermResource &rhs) const override;
+  bool can_cast_to_literal_string() const override;
+  std::string get_content_string_copy() const override;
 };
 
 #endif // RDFCACHEK2_DATETIMERESOURCE_HPP

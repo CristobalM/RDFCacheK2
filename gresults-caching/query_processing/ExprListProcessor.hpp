@@ -19,13 +19,13 @@
 
 class ExprListProcessor {
   ResultTable &table;
-  const VarIndexManager &vim;
+  VarIndexManager &vim;
   const std::vector<const proto_msg::ExprNode *> &expr_list;
   const PredicatesCacheManager &cm;
   const NaiveDynamicStringDictionary &extra_str_dict;
 
 public:
-  ExprListProcessor(ResultTable &table, const VarIndexManager &vim,
+  ExprListProcessor(ResultTable &table, VarIndexManager &vim,
                     const std::vector<const proto_msg::ExprNode *> &expr_list,
                     const PredicatesCacheManager &cm,
                     const NaiveDynamicStringDictionary &extra_str_dict);

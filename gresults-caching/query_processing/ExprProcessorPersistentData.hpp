@@ -24,7 +24,6 @@ class ExprProcessorPersistentData {
   const pcrecpp::RE re_decimal_number;
   const pcrecpp::RE re_iri;
   std::unique_ptr<icu::Calendar> mutable_calendar;
-  static std::array<int, 12> days_months;
 
   static ExprProcessorPersistentData instance;
   ExprProcessorPersistentData();
@@ -50,7 +49,6 @@ public:
 
   DateInfo get_now_dateinfo();
 
-  static DateInfo zero_offset_date_info(DateInfo date_info);
   static int normalize_diff_cmp(int diff);
 
   static std::string date_info_to_iso8601_string(DateInfo date_info);
@@ -60,9 +58,6 @@ private:
 
   static icu::TimeZone *get_utc_timezone();
   static std::unique_ptr<icu::Calendar> create_icu_calendar();
-  static int month_days(int month, int year);
-  static int year_days(int year);
-  static bool leap_year(int year);
 };
 
 #endif

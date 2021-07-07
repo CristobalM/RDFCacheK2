@@ -50,6 +50,8 @@ DataTypeResource::cast_to(ExprDataType expr_data_type) {
   case EDT_UNKNOWN:
   default:
     return TermResource::null();
-    break;
   }
+}
+int DataTypeResource::diff_compare(const TermResource &rhs) const {
+  return rhs.reverse_diff_compare(*this);
 }

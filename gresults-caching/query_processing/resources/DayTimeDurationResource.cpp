@@ -4,6 +4,7 @@
 
 #include "DayTimeDurationResource.hpp"
 #include <query_processing/ExprProcessorPersistentData.hpp>
+#include <sstream>
 bool DayTimeDurationResource::operator==(const TermResource &rhs) const {
   if (!rhs.is_day_time_duration())
     return false;
@@ -49,4 +50,32 @@ int DayTimeDurationResource::reverse_diff_compare(
   if (seconds_diff != 0)
     ExprProcessorPersistentData::get().normalize_diff_cmp(seconds_diff);
   return 0;
+}
+int DayTimeDurationResource::diff_compare(const TermResource &rhs) const {
+  return rhs.reverse_diff_compare(*this);
+}
+bool DayTimeDurationResource::can_cast_to_literal_string() const {
+  return true;
+}
+std::string DayTimeDurationResource::get_content_string_copy() const {
+  std::stringstream ss;
+  if (sign < 0) {
+    ss << "-";
+  }
+  if (days > 0) {
+    ss << days << "D";
+  }
+  if (hours > 0 || minutes > 0 || seconds > 0) {
+    ss << "T";
+  }
+  if (hours > 0) {
+    ss << hours << "H";
+  }
+  if (minutes > 0) {
+    ss << minutes << "M";
+  }
+  if (seconds > 0) {
+    ss << seconds << "S";
+  }
+  return ss.str();
 }

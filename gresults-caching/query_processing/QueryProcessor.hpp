@@ -23,7 +23,7 @@ class QueryProcessor {
   std::unique_ptr<NaiveDynamicStringDictionary> extra_str_dict;
 
 public:
-  QueryProcessor(const PredicatesCacheManager &cache_manager);
+  explicit QueryProcessor(const PredicatesCacheManager &cache_manager);
   QueryProcessor(
       const PredicatesCacheManager &cache_manager,
       std::unique_ptr<VarIndexManager> &&vim,

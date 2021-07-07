@@ -4,8 +4,8 @@
 #include <unordered_set>
 
 #include "BandMap.hpp"
-#include "BandMapFactory.hpp"
-#include "BandMapLazy.hpp"
+//#include "BandMapFactory.hpp"
+//#include "BandMapLazy.hpp"
 
 BGPProcessor::BGPProcessor(const proto_msg::BGPNode &bgp_node,
                            const PredicatesCacheManager &cm,
@@ -196,18 +196,26 @@ void BGPProcessor::cross_product_table_with_triple(const Triple &triple) {
   }
 }
 
+struct NextItTDataAndRowHolder {
+  ResultTable::lvul_t::iterator &next_it;
+  ResultTable::lvul_t &table_data;
+  ResultTable::vul_t &row;
+  NextItTDataAndRowHolder(ResultTable::lvul_t::iterator &next_it,
+                          ResultTable::lvul_t &table_data,
+                          ResultTable::vul_t &row)
+      : next_it(next_it), table_data(table_data), row(row) {}
+};
+
 void BGPProcessor::left_join_table_with_triple_subject(
     const Triple &triple, unsigned long subject_var_index) {
 
-  std::unique_ptr<IBandMap> band_map;
+  K2TreeMixed *tree = nullptr;
   if (triple.predicate.id_value != 0) {
-    const auto fetch_result =
+    auto fetch_result =
         cm.get_tree_by_predicate_index(triple.predicate.id_value);
-    const auto &tree = fetch_result.get();
-
-    band_map = BandMapFactory::create_band_map(tree, BandMap::BY_COL);
+    tree = &fetch_result.get_mutable();
   }
-  if (!band_map) {
+  if (!tree) {
     current_table->get_data().clear();
     return;
   }
@@ -221,30 +229,70 @@ void BGPProcessor::left_join_table_with_triple_subject(
     auto &row = *row_it;
     auto table_value = row[subject_var_index];
     auto next_it = std::next(row_it);
-
-    for (unsigned long object_coord : band_map->get_band(table_value)) {
-      auto row_copy = row;
-      row_copy.push_back(object_coord);
-      table_data.insert(next_it, std::move(row_copy));
-    }
+    NextItTDataAndRowHolder passed_data(next_it, table_data, row);
+    tree->traverse_column(
+        table_value,
+        [](unsigned long, unsigned long object_coord, void *passed_data_ptr) {
+          auto &passed_data =
+              *reinterpret_cast<NextItTDataAndRowHolder *>(passed_data_ptr);
+          auto row_copy = passed_data.row;
+          row_copy.push_back(object_coord);
+          passed_data.table_data.insert(passed_data.next_it,
+                                        std::move(row_copy));
+        },
+        &passed_data);
 
     table_data.erase(row_it);
     row_it = next_it;
   }
 }
+//
+// void BGPProcessor::left_join_table_with_triple_subject(
+//    const Triple &triple, unsigned long subject_var_index) {
+//
+//  std::unique_ptr<IBandMap> band_map;
+//  if (triple.predicate.id_value != 0) {
+//    const auto fetch_result =
+//        cm.get_tree_by_predicate_index(triple.predicate.id_value);
+//    const auto &tree = fetch_result.get();
+//
+//    band_map = BandMapFactory::create_band_map(tree, BandMap::BY_COL);
+//  }
+//  if (!band_map) {
+//    current_table->get_data().clear();
+//    return;
+//  }
+//
+//  auto &table_data = current_table->get_data();
+//  auto &headers = current_table->headers;
+//
+//  headers.push_back(vim.var_indexes[triple.object.value]);
+//
+//  for (auto row_it = table_data.begin(); row_it != table_data.end();) {
+//    auto &row = *row_it;
+//    auto table_value = row[subject_var_index];
+//    auto next_it = std::next(row_it);
+//
+//    for (unsigned long object_coord : band_map->get_band(table_value)) {
+//      auto row_copy = row;
+//      row_copy.push_back(object_coord);
+//      table_data.insert(next_it, std::move(row_copy));
+//    }
+//
+//    table_data.erase(row_it);
+//    row_it = next_it;
+//  }
+//}
 
 void BGPProcessor::left_join_table_with_triple_object(
     const Triple &triple, unsigned long object_var_index) {
-  std::unique_ptr<IBandMap> band_map;
+  K2TreeMixed *tree = nullptr;
   if (triple.predicate.id_value != 0) {
-
-    const auto fetch_result =
+    auto fetch_result =
         cm.get_tree_by_predicate_index(triple.predicate.id_value);
-    const auto &tree = fetch_result.get();
-
-    band_map = BandMapFactory::create_band_map(tree, BandMap::BY_ROW);
+    tree = &fetch_result.get_mutable();
   }
-  if (!band_map) {
+  if (!tree) {
     current_table->get_data().clear();
     return;
   }
@@ -258,16 +306,60 @@ void BGPProcessor::left_join_table_with_triple_object(
     auto &row = *row_it;
     auto table_value = row[object_var_index];
     auto next_it = std::next(row_it);
+    NextItTDataAndRowHolder passed_data(next_it, table_data, row);
 
-    for (unsigned long subject_coord : band_map->get_band(table_value)) {
-      auto row_copy = row;
-      row_copy.push_back(subject_coord);
-      table_data.insert(next_it, std::move(row_copy));
-    }
+    tree->traverse_row(
+        table_value,
+        [](unsigned long subject_coord, unsigned long, void *passed_data_ptr) {
+          auto &passed_data =
+              *reinterpret_cast<NextItTDataAndRowHolder *>(passed_data_ptr);
+          auto row_copy = passed_data.row;
+          row_copy.push_back(subject_coord);
+          passed_data.table_data.insert(passed_data.next_it,
+                                        std::move(row_copy));
+        },
+        &passed_data);
+
     table_data.erase(row_it);
     row_it = next_it;
   }
 }
+//
+// void BGPProcessor::left_join_table_with_triple_object(
+//    const Triple &triple, unsigned long object_var_index) {
+//  std::unique_ptr<IBandMap> band_map;
+//  if (triple.predicate.id_value != 0) {
+//
+//    const auto fetch_result =
+//        cm.get_tree_by_predicate_index(triple.predicate.id_value);
+//    const auto &tree = fetch_result.get();
+//
+//    band_map = BandMapFactory::create_band_map(tree, BandMap::BY_ROW);
+//  }
+//  if (!band_map) {
+//    current_table->get_data().clear();
+//    return;
+//  }
+//
+//  auto &table_data = current_table->get_data();
+//  auto &headers = current_table->headers;
+//
+//  headers.push_back(vim.var_indexes[triple.subject.value]);
+//
+//  for (auto row_it = table_data.begin(); row_it != table_data.end();) {
+//    auto &row = *row_it;
+//    auto table_value = row[object_var_index];
+//    auto next_it = std::next(row_it);
+//
+//    for (unsigned long subject_coord : band_map->get_band(table_value)) {
+//      auto row_copy = row;
+//      row_copy.push_back(subject_coord);
+//      table_data.insert(next_it, std::move(row_copy));
+//    }
+//    table_data.erase(row_it);
+//    row_it = next_it;
+//  }
+//}
 
 void BGPProcessor::intersect_table_with_predicate(
     const Triple &triple, unsigned long subject_var_index,

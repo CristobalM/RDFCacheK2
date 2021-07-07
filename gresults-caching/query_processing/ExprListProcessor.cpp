@@ -3,7 +3,7 @@
 #include "expr/EvalData.hpp"
 
 ExprListProcessor::ExprListProcessor(
-    ResultTable &table, const VarIndexManager &vim,
+    ResultTable &table, VarIndexManager &vim,
     const std::vector<const proto_msg::ExprNode *> &expr_list,
     const PredicatesCacheManager &cm,
     const NaiveDynamicStringDictionary &extra_str_dict)

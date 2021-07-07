@@ -24,6 +24,8 @@ StrEncodeForURIEval::eval_resource(const ExprEval::row_t &row) {
     input_str =
         ExprProcessorPersistentData::get().extract_literal_content_from_string(
             input_resource->get_resource().value);
+  } else if (input_resource->can_cast_to_literal_string()) {
+    input_str = input_resource->get_content_string_copy();
   } else {
     return resource_with_error();
   }
