@@ -58,6 +58,9 @@ private:
   void cross_product_table_with_band(const Triple &triple, BAND_TYPE band_type);
   void intersect_table_with_band(unsigned long pos_in_headers,
                                  const Triple &triple, BAND_TYPE band_type);
+
+    void add_row_to_table_if_found(const Triple &triple);
+  void combine_with_no_var_triple(const Triple &triple);
 };
 
 #endif

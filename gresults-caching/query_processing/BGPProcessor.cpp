@@ -45,7 +45,7 @@ void BGPProcessor::fill_table_with_first_triple() {
   } else if (triple.object.type == TermType::VAR) {
     add_column_to_table(triple);
   } else {
-    throw std::runtime_error("invalid triple");
+    add_row_to_table_if_found(triple);
   }
 }
 
@@ -123,7 +123,8 @@ void BGPProcessor::combine_triple_with_table(const Triple &triple) {
   } else if (triple.object.type == TermType::VAR) {
     combine_column_to_table(triple);
   } else {
-    throw std::runtime_error("invalid triple");
+    combine_with_no_var_triple(triple);
+    // throw std::runtime_error("invalid triple");
   }
 }
 
@@ -498,5 +499,38 @@ void BGPProcessor::intersect_table_with_band(unsigned long pos_in_headers,
     }
 
     row_it = next_it;
+  }
+}
+
+void BGPProcessor::add_row_to_table_if_found(const Triple &triple) {
+
+  if (!triple.predicate.id_value || !triple.subject.id_value ||
+      !triple.object.id_value) {
+    return;
+  }
+  auto fetch_result = cm.get_tree_by_predicate_index(triple.predicate.id_value);
+  const auto &tree = fetch_result.get();
+
+  if (tree.has(triple.subject.id_value, triple.object.id_value)) {
+    // this is a trick to have non empty results on pattern evaluation when
+    // filtering by exists and not exists, shouldn't affect other cases
+    current_table->get_data().push_back(
+        ResultTable::vul_t(current_table->headers.size(), 0));
+  }
+}
+void BGPProcessor::combine_with_no_var_triple(const Triple &triple) {
+  // this should be like an AND clause, and if the concrete triple
+  // doesn't exist, then it means the full clause is false
+
+  if (!triple.predicate.id_value || !triple.subject.id_value ||
+      !triple.object.id_value) {
+    return;
+  }
+
+  auto fetch_result = cm.get_tree_by_predicate_index(triple.predicate.id_value);
+  const auto &tree = fetch_result.get();
+
+  if (!tree.has(triple.subject.id_value, triple.object.id_value)){
+    current_table->data.clear();
   }
 }
