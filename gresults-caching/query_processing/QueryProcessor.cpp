@@ -13,7 +13,8 @@
 #include <utility>
 #include <utils/Utils.h>
 
-#include "BGPProcessor.hpp"
+//#include "BGPProcessor.hpp"
+#include "BGPProcessor2.hpp"
 #include "ExprListProcessor.hpp"
 #include "InnerJoinProcessor.hpp"
 #include "MinusProcessor.hpp"
@@ -35,7 +36,7 @@ QueryProcessor::process_join_node(const proto_msg::SparqlNode &join_node) {
 
   switch (join_node.node_case()) {
   case proto_msg::SparqlNode::NodeCase::kBgpNode:
-    result_table = BGPProcessor(join_node.bgp_node(), cm, *vim).execute();
+    result_table = BGPProcessor2(join_node.bgp_node(), cm, *vim).execute();
     break;
   case proto_msg::SparqlNode::NodeCase::kLeftJoinNode:
     result_table = process_left_join_node(join_node.left_join_node());
@@ -137,7 +138,7 @@ QueryProcessor::process_node(const proto_msg::SparqlNode &node) {
   case proto_msg::SparqlNode::NodeCase::kProjectNode:
     return process_project_node(node.project_node());
   case proto_msg::SparqlNode::NodeCase::kBgpNode:
-    return BGPProcessor(node.bgp_node(), cm, *vim).execute();
+    return BGPProcessor2(node.bgp_node(), cm, *vim).execute();
   case proto_msg::SparqlNode::NodeCase::kLeftJoinNode:
     return process_left_join_node(node.left_join_node());
   case proto_msg::SparqlNode::NodeCase::kUnionNode:
@@ -255,8 +256,7 @@ QueryProcessor::process_extend_node(const proto_msg::ExtendNode &node) {
 
   auto var_pos_mapping = create_var_pos_mapping(*resulting_table);
 
-  EvalData eval_data(*resulting_table, *vim, cm, var_pos_mapping,
-                     *extra_str_dict);
+  EvalData eval_data(*vim, cm, std::move(var_pos_mapping), *extra_str_dict);
   for (int i = 0; i < node.assignments_size(); i++) {
     const auto &assignment_node = node.assignments(i);
     const auto &var_value = assignment_node.var().term_value();
@@ -341,19 +341,20 @@ QueryProcessor::process_order_node(const proto_msg::OrderNode &node) {
 
   auto var_pos_mapping = create_var_pos_mapping(*result_table);
 
-  EvalData eval_data(*result_table, *vim, cm, var_pos_mapping, *extra_str_dict);
+  EvalData eval_data(*vim, cm, std::move(var_pos_mapping), *extra_str_dict);
 
   return OrderNodeProcessor(result_table, node, eval_data).execute();
 }
-std::unordered_map<std::string, unsigned long>
+std::shared_ptr<std::unordered_map<std::string, unsigned long>>
 QueryProcessor::create_var_pos_mapping(ResultTable &table) {
-  std::unordered_map<std::string, unsigned long> var_pos_mapping;
+  auto var_pos_mapping =
+      std::make_shared<std::unordered_map<std::string, unsigned long>>();
   auto rev_map = vim->reverse();
 
   for (unsigned long i = 0;
        i < static_cast<unsigned long>(table.headers.size()); i++) {
     auto header = table.headers[i];
-    var_pos_mapping[rev_map[header]] = i;
+    (*var_pos_mapping)[rev_map[header]] = i;
   }
   return var_pos_mapping;
 }

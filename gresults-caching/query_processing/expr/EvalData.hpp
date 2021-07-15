@@ -18,17 +18,16 @@
 #include "ResultTable.hpp"
 
 struct EvalData {
-  const ResultTable &table;
-  const VarIndexManager &vim;
+  VarIndexManager &vim;
   const PredicatesCacheManager &cm;
-  const std::unordered_map<std::string, unsigned long> &var_pos_mapping;
-  const NaiveDynamicStringDictionary &extra_dict;
-  EvalData(
-      const ResultTable &table, const VarIndexManager &vim,
-      const PredicatesCacheManager &cm,
-      const std::unordered_map<std::string, unsigned long> &var_pos_mapping,
-      const NaiveDynamicStringDictionary &extra_dict)
-      : table(table), vim(vim), cm(cm), var_pos_mapping(var_pos_mapping),
+  std::shared_ptr<std::unordered_map<std::string, unsigned long>>
+      var_pos_mapping;
+  NaiveDynamicStringDictionary &extra_dict;
+  EvalData(VarIndexManager &vim, const PredicatesCacheManager &cm,
+           std::shared_ptr<std::unordered_map<std::string, unsigned long>>
+               var_pos_mapping,
+           NaiveDynamicStringDictionary &extra_dict)
+      : vim(vim), cm(cm), var_pos_mapping(std::move(var_pos_mapping)),
         extra_dict(extra_dict) {}
 };
 

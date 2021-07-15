@@ -99,6 +99,165 @@ public:
 
   bool has_valid_structure() const;
 
+  enum BandType { COLUMN_BAND_TYPE = 0, ROW_BAND_TYPE = 1 };
+
+  struct K2TreeScanner {
+    using ul_pair_t = std::pair<unsigned long, unsigned long>;
+
+    virtual bool has_next() = 0;
+    virtual std::pair<unsigned long, unsigned long> next() = 0;
+    virtual void reset_scan() = 0;
+
+    virtual bool is_band() = 0;
+    virtual BandType get_band_type() = 0;
+    virtual unsigned long get_band_value() = 0;
+
+    virtual K2TreeMixed &get_tree() = 0;
+
+    virtual ~K2TreeScanner() = default;
+  };
+
+  struct FullScanner : public K2TreeScanner {
+
+    explicit FullScanner(K2TreeMixed &k2tree);
+
+    bool has_next() override;
+    std::pair<unsigned long, unsigned long> next() override;
+    ~FullScanner() override;
+    void reset_scan() override;
+    bool is_band() override;
+    BandType get_band_type() override;
+    K2TreeMixed &get_tree() override;
+    unsigned long get_band_value() override;
+
+  private:
+    k2node_lazy_handler_naive_scan_t lazy_handler;
+    K2TreeMixed &k2tree;
+  };
+
+  struct BandScanner : public K2TreeScanner {
+    BandScanner(K2TreeMixed &k2tree, unsigned long band,
+                K2TreeMixed::BandType band_type);
+    bool has_next() override;
+    std::pair<unsigned long, unsigned long> next() override;
+    ~BandScanner() override;
+    void reset_scan() override;
+    bool is_band() override;
+    BandType get_band_type() override;
+    K2TreeMixed &get_tree() override;
+    unsigned long get_band_value() override;
+
+  private:
+    unsigned long band;
+    K2TreeMixed::BandType band_type;
+    k2node_lazy_handler_report_band_t lazy_handler;
+    K2TreeMixed &k2tree;
+  };
+
+  struct EmptyScanner : public K2TreeScanner {
+    explicit EmptyScanner(K2TreeMixed &k2tree);
+    bool has_next() override;
+    std::pair<unsigned long, unsigned long> next() override;
+    void reset_scan() override;
+    bool is_band() override;
+    BandType get_band_type() override;
+    unsigned long get_band_value() override;
+    K2TreeMixed &get_tree() override;
+
+  private:
+    K2TreeMixed &k2tree;
+  };
+
+  std::unique_ptr<K2TreeScanner> create_full_scanner();
+  std::unique_ptr<K2TreeScanner>
+  create_band_scanner(unsigned long band, K2TreeMixed::BandType band_type);
+
+  struct FullScanIterator {
+    using ul_pair_t = std::pair<unsigned long, unsigned long>;
+    using iterator_category = std::input_iterator_tag;
+    using difference_type = std::ptrdiff_t;
+    using value_type = ul_pair_t;
+    using pointer = ul_pair_t *;
+    using reference = ul_pair_t &;
+
+    explicit FullScanIterator(K2TreeMixed &k2tree);
+    explicit FullScanIterator(pointer ptr);
+
+    FullScanIterator(const FullScanIterator &original);
+
+    ~FullScanIterator();
+
+    reference operator*();
+    pointer operator->();
+    FullScanIterator &operator++();
+    FullScanIterator operator++(int);
+    friend bool operator==(const FullScanIterator &lhs,
+                           const FullScanIterator &rhs);
+    friend bool operator!=(const FullScanIterator &lhs,
+                           const FullScanIterator &rhs);
+
+  private:
+    k2node_lazy_handler_naive_scan_t lazy_handler;
+    ul_pair_t current;
+    bool finished;
+    bool init_called;
+
+    k2node_lazy_handler_naive_scan_t
+    deep_copy_handler(const k2node_lazy_handler_naive_scan_t &handler);
+    lazy_handler_naive_scan_t
+    deep_copy_sub_handler(const lazy_handler_naive_scan_t &handler);
+    k2node_lazy_naive_state_stack
+    deep_copy_states_stack(const k2node_lazy_naive_state_stack &original_stack);
+    lazy_naive_state_stack
+    deep_copy_sub_states_stack(const lazy_naive_state_stack &original_stack);
+  };
+
+  FullScanIterator begin_full_scan();
+  FullScanIterator end_full_scan();
+
+  struct BandScanIterator {
+    using iterator_category = std::input_iterator_tag;
+    using difference_type = std::ptrdiff_t;
+    using value_type = unsigned long;
+    using pointer = unsigned long *;
+    using reference = unsigned long &;
+
+    explicit BandScanIterator(K2TreeMixed &k2tree, unsigned long band,
+                              BandType band_type);
+    explicit BandScanIterator(pointer ptr);
+    BandScanIterator(const BandScanIterator &original);
+    ~BandScanIterator();
+
+    reference operator*();
+    pointer operator->();
+    BandScanIterator &operator++();
+    BandScanIterator operator++(int);
+    friend bool operator==(const BandScanIterator &lhs,
+                           const BandScanIterator &rhs);
+    friend bool operator!=(const BandScanIterator &lhs,
+                           const BandScanIterator &rhs);
+
+  private:
+    k2node_lazy_handler_report_band_t lazy_handler;
+    bool finished;
+    bool init_called;
+    unsigned long current;
+    k2node_lazy_handler_report_band_t deep_copy_band_lazy_handler(
+        const k2node_lazy_handler_report_band_t &original_handler);
+    lazy_handler_report_band_t deep_copy_sub_band_lazy_handler(
+        const lazy_handler_report_band_t &sub_handler);
+    k2node_lazy_report_band_state_t_stack deep_copy_band_lazy_stack(
+        const k2node_lazy_report_band_state_t_stack &original_stack);
+    lazy_report_band_state_t_stack deep_copy_band_sub_stack(
+        const lazy_report_band_state_t_stack &original_stack);
+  };
+
+  BandScanIterator begin_band_scan(unsigned long band_value,
+                                   BandType band_type);
+  K2TreeMixed::BandScanIterator end_band_scan();
+
+  std::unique_ptr<K2TreeScanner> create_empty_scanner();
+
 private:
   void clean_up();
 };

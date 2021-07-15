@@ -207,10 +207,10 @@ void ExistsEval::bind_row_vars_next_eval_data(
   for (const auto &var_pair : eval_data.vim.var_indexes) {
     const auto &var_name = var_pair.first;
     RDFResource resource;
-    if (this->eval_data.var_pos_mapping.find(var_name) ==
-        this->eval_data.var_pos_mapping.end())
+    if (this->eval_data.var_pos_mapping->find(var_name) ==
+        this->eval_data.var_pos_mapping->end())
       continue;
-    auto pos = this->eval_data.var_pos_mapping.at(var_name);
+    auto pos = this->eval_data.var_pos_mapping->at(var_name);
     auto value_id = row[pos];
     auto last_cache_id = this->eval_data.cm.get_last_id();
     if (value_id > last_cache_id)

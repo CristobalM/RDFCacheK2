@@ -16,7 +16,7 @@ set(CMAKE_CXX_FLAGS "-Wall -Wextra -std=c++17 -pedantic -Werror")
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fstandalone-debug")
-endif()
+endif ()
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 
@@ -62,6 +62,7 @@ set(GRAPH_RESULT_CACHING_FILE
         gresults-caching/LRU/LRUQueue.cpp
         gresults-caching/LRUCacheReplacement.cpp
         gresults-caching/query_processing/QueryProcessor.cpp
+        gresults-caching/query_processing/QueryProcessor2.cpp
         gresults-caching/query_processing/KeyPairStr.cpp
         gresults-caching/query_processing/QueryResult.cpp
         gresults-caching/query_processing/Triple.cpp
@@ -85,6 +86,65 @@ set(GRAPH_RESULT_CACHING_FILE
         gresults-caching/query_processing/BandMapFactory.hpp
         gresults-caching/query_processing/DateInfo.hpp
         gresults-caching/query_processing/DateInfo.cpp
+
+
+        gresults-caching/query_processing/OptionalProcessor2.cpp
+        gresults-caching/query_processing/ResultTableIterator.hpp
+        gresults-caching/query_processing/ResultTableIterator.cpp
+
+
+        gresults-caching/query_processing/BGPProcessor2.cpp
+        gresults-caching/query_processing/BGPProcessor2.hpp
+        gresults-caching/query_processing/ResultTableIteratorBGP.cpp
+        gresults-caching/query_processing/ResultTableIteratorBGP.hpp
+        gresults-caching/query_processing/ResultTableIteratorLeftOuterJoin.cpp
+        gresults-caching/query_processing/ResultTableIteratorLeftOuterJoin.hpp
+        gresults-caching/query_processing/QueryProcHashing.hpp
+        gresults-caching/query_processing/QueryProcHashing.cpp
+        gresults-caching/query_processing/LWRHMapJoinLazyBaseProcessor.cpp
+        gresults-caching/query_processing/LWRHMapJoinLazyBaseProcessor.hpp
+        gresults-caching/query_processing/ResultTableIteratorLRWHMapBase.hpp
+        gresults-caching/query_processing/ResultTableIteratorLRWHMapBase.cpp
+        gresults-caching/query_processing/ResultTableFilterIterator.cpp
+        gresults-caching/query_processing/ResultTableFilterIterator.hpp
+        gresults-caching/query_processing/ResultTableIteratorProject.cpp
+        gresults-caching/query_processing/ResultTableIteratorProject.hpp
+        gresults-caching/query_processing/QueryResultIterator.hpp
+        gresults-caching/query_processing/QueryResultIterator.cpp
+        gresults-caching/query_processing/ResultTableIteratorUnion.cpp
+        gresults-caching/query_processing/ResultTableIteratorUnion.hpp
+        gresults-caching/query_processing/ResultTableIteratorFromMaterialized.hpp
+        gresults-caching/query_processing/ResultTableIteratorFromMaterialized.cpp
+        gresults-caching/query_processing/VarLazyBinding.cpp
+        gresults-caching/query_processing/VarLazyBinding.hpp
+        gresults-caching/query_processing/ResultTableIteratorExtend.cpp
+        gresults-caching/query_processing/ResultTableIteratorExtend.hpp
+        gresults-caching/query_processing/ResultTableIteratorMinus.hpp
+        gresults-caching/query_processing/ResultTableIteratorMinus.cpp
+        gresults-caching/query_processing/InnerJoinProcessor2.hpp
+        gresults-caching/query_processing/InnerJoinProcessor2.cpp
+        gresults-caching/query_processing/ResultTableIteratorInnerJoin.cpp
+        gresults-caching/query_processing/ResultTableIteratorInnerJoin.hpp
+        gresults-caching/query_processing/ResultTableIteratorSlice.hpp
+        gresults-caching/query_processing/ResultTableIteratorSlice.cpp
+
+        gresults-caching/query_processing/BGPOp.hpp
+        gresults-caching/query_processing/BGPOpsFactory.cpp
+        gresults-caching/query_processing/BGPOpsFactory.hpp
+        gresults-caching/query_processing/TwoVarIntersectionBGPOp.cpp
+        gresults-caching/query_processing/TwoVarIntersectionBGPOp.hpp
+        gresults-caching/query_processing/TwoVarJoinOneBGPOp.hpp
+        gresults-caching/query_processing/TwoVarJoinOneBGPOp.cpp
+        gresults-caching/query_processing/TwoVarCProductBGPOp.cpp
+        gresults-caching/query_processing/TwoVarCProductBGPOp.hpp
+        gresults-caching/query_processing/OneVarIntersectBGPOp.cpp
+        gresults-caching/query_processing/OneVarIntersectBGPOp.hpp
+        gresults-caching/query_processing/OneVarJoinBGPOp.cpp
+        gresults-caching/query_processing/OneVarJoinBGPOp.hpp
+        gresults-caching/query_processing/TripleExistenceBGPOP.cpp
+        gresults-caching/query_processing/TripleExistenceBGPOP.hpp
+        gresults-caching/query_processing/OneVarCPBGPOp.hpp
+        gresults-caching/query_processing/OneVarCPBGPOp.cpp
 
         gresults-caching/query_processing/expr/IsBlankEval.cpp
         gresults-caching/query_processing/expr/ExprEval.cpp
@@ -283,13 +343,12 @@ include_directories(${OPENSSL_INCLUDE_DIRS})
 #find_package(PCRE2 REQUIRED)
 #include_directories(${PCRE2_INCLUDE_DIRS})
 
-find_package(ICU REQUIRED COMPONENTS i18n )
+find_package(ICU REQUIRED COMPONENTS i18n)
 include_directories(${ICU_INCLUDE_DIRS})
 
 
 find_package(CURL REQUIRED)
 include_directories(${CURL_INCLUDE_DIR})
-
 
 
 #add_executable(start_cache_server_example example/start_cache_server_example.cpp)

@@ -257,6 +257,7 @@ TEST(QueryProcTests, test_bgp_node_1) {
 
   auto result = cache.run_query(tree);
 
+  print_table_debug2(result, cache);
   auto &vim = result.get_vim();
   auto reverse_map = vim.reverse();
   auto &table = result.table();

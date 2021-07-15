@@ -35,10 +35,10 @@ TermEval::eval_variable_get_resource(const ExprEval::row_t &row) const {
     throw std::runtime_error("Expected a variable");
   const std::string &var_name = term.term_value();
 
-  if (this->eval_data.var_pos_mapping.find(var_name) ==
-      this->eval_data.var_pos_mapping.end())
+  if (this->eval_data.var_pos_mapping->find(var_name) ==
+      this->eval_data.var_pos_mapping->end())
     throw std::runtime_error("Variable " + var_name + " not in table");
-  auto pos = this->eval_data.var_pos_mapping.at(var_name);
+  auto pos = this->eval_data.var_pos_mapping->at(var_name);
   auto value_id = row[pos];
   auto last_cache_id = this->eval_data.cm.get_last_id();
   if (value_id > last_cache_id)

@@ -9,10 +9,10 @@ ResultTable &QueryResult::table() { return *result_table; }
 
 VarIndexManager &QueryResult::get_vim() { return *vim; }
 QueryResult::QueryResult(
-    std::shared_ptr<ResultTable> &result_table,
+    std::shared_ptr<ResultTable> result_table,
     std::unique_ptr<VarIndexManager> &&vim,
     std::unique_ptr<NaiveDynamicStringDictionary> &&extra_str_dict)
-    : result_table(result_table), vim(std::move(vim)),
+    : result_table(std::move(result_table)), vim(std::move(vim)),
       extra_str_dict(std::move(extra_str_dict)) {}
 bool QueryResult::has_extra_dict() const {
   return extra_str_dict.operator bool();

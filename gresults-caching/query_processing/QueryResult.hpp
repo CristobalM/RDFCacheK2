@@ -16,7 +16,7 @@ public:
   QueryResult();
   QueryResult(std::shared_ptr<ResultTable> &result_table,
               std::unique_ptr<VarIndexManager> &&vim);
-  QueryResult(std::shared_ptr<ResultTable> &result_table,
+  QueryResult(std::shared_ptr<ResultTable> result_table,
               std::unique_ptr<VarIndexManager> &&vim,
               std::unique_ptr<NaiveDynamicStringDictionary> &&extra_str_dict);
 

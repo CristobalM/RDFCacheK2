@@ -11,8 +11,8 @@ void BoundEval::init() {
   ExprEval::init();
   const auto &child_node = expr_node.function_node().exprs(0);
   const auto &var = child_node.term_node().term_value();
-  result = this->eval_data.var_pos_mapping.find(var) !=
-           this->eval_data.var_pos_mapping.end();
+  result = this->eval_data.var_pos_mapping->find(var) !=
+           this->eval_data.var_pos_mapping->end();
 }
 
 void BoundEval::validate() {

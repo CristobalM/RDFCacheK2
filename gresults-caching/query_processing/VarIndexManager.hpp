@@ -8,7 +8,7 @@ struct VarIndexManager {
   unsigned long current_index;
 
   VarIndexManager();
-  void assign_index_if_not_found(const std::string &var_name);
+  unsigned long assign_index_if_not_found(const std::string &var_name);
   std::unordered_map<unsigned long, std::string> reverse() const;
 };
 

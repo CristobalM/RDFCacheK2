@@ -3,6 +3,7 @@
 //
 
 #include <chrono>
+#include <query_processing/QueryProcessor2.hpp>
 #include <sstream>
 
 #include "Cache.hpp"
@@ -16,7 +17,9 @@ Cache::Cache(std::shared_ptr<PredicatesCacheManager> &cache_manager,
           cache_replacement_strategy, memory_budget_bytes, cache_manager)) {}
 
 QueryResult Cache::run_query(proto_msg::SparqlTree const &query_tree) {
-  return QueryProcessor(*cache_manager).run_query(query_tree);
+  return QueryProcessor2(*cache_manager)
+      .run_query(query_tree)
+      .as_query_result_original();
 }
 
 RDFResource Cache::extract_resource(unsigned long index) const {

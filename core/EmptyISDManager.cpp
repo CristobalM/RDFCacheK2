@@ -12,16 +12,16 @@ bool EmptyISDManager::has_literals_index(const std::string &) { return false; }
 bool EmptyISDManager::has_iris_index(const std::string &) { return false; }
 
 std::string EmptyISDManager::get_blank(uint64_t) {
-  throw std::runtime_error("Not implemented");
+  throw std::runtime_error("get_blank Not implemented");
 }
 std::string EmptyISDManager::get_literal(uint64_t) {
-  throw std::runtime_error("Not implemented");
+  throw std::runtime_error("get_literal Not implemented");
 }
 std::string EmptyISDManager::get_iri(uint64_t) {
-  throw std::runtime_error("Not implemented");
+  throw std::runtime_error("get_iri Not implemented");
 }
 RDFResource EmptyISDManager::get_resource(uint64_t) {
-  throw std::runtime_error("Not implemented");
+  throw std::runtime_error("get_resource Not implemented");
 }
 
 unsigned long EmptyISDManager::last_iri_id() { return 0; }

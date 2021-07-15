@@ -22,15 +22,16 @@ class ExprListProcessor {
   VarIndexManager &vim;
   const std::vector<const proto_msg::ExprNode *> &expr_list;
   const PredicatesCacheManager &cm;
-  const NaiveDynamicStringDictionary &extra_str_dict;
+  NaiveDynamicStringDictionary &extra_str_dict;
 
 public:
   ExprListProcessor(ResultTable &table, VarIndexManager &vim,
                     const std::vector<const proto_msg::ExprNode *> &expr_list,
                     const PredicatesCacheManager &cm,
-                    const NaiveDynamicStringDictionary &extra_str_dict);
+                    NaiveDynamicStringDictionary &extra_str_dict);
   void execute();
-  std::unordered_map<std::string, unsigned long> get_var_pos_mapping();
+  std::shared_ptr<std::unordered_map<std::string, unsigned long>>
+  get_var_pos_mapping();
 };
 
 #endif

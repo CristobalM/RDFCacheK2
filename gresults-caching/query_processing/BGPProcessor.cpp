@@ -530,7 +530,7 @@ void BGPProcessor::combine_with_no_var_triple(const Triple &triple) {
   auto fetch_result = cm.get_tree_by_predicate_index(triple.predicate.id_value);
   const auto &tree = fetch_result.get();
 
-  if (!tree.has(triple.subject.id_value, triple.object.id_value)){
+  if (!tree.has(triple.subject.id_value, triple.object.id_value)) {
     current_table->data.clear();
   }
 }
