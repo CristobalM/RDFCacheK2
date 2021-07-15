@@ -155,8 +155,8 @@ message OrderNode{
 
 message SliceNode{
   SparqlNode node = 1;
-  uint64 start = 2;
-  uint64 length = 3;
+  int64 start = 2;
+  int64 length = 3;
 }
 
 message SequenceNode{

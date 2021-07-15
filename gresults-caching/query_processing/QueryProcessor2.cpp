@@ -281,8 +281,11 @@ QueryProcessor2::process_sequence_node(const proto_msg::SequenceNode &node) {
 std::shared_ptr<ResultTableIterator>
 QueryProcessor2::process_slice_node(const proto_msg::SliceNode &node) {
   auto result_it = process_node(node.node());
-  const unsigned long start = node.start();
-  const unsigned long length = node.length();
+  const long start = node.start();
+  const long length = node.length();
+
+  if (start < 0 && length < 0)
+    return result_it;
 
   return std::make_shared<ResultTableIteratorSlice>(std::move(result_it), start,
                                                     length);
