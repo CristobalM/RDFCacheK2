@@ -4,6 +4,7 @@
 
 #include "BGPProcessor2.hpp"
 #include "BGPOpsFactory.hpp"
+#include "ResultTableIteratorEmpty.hpp"
 BGPProcessor2::BGPProcessor2(const proto_msg::BGPNode &bgp_node,
                              const PredicatesCacheManager &cm,
                              VarIndexManager &vim)
@@ -28,8 +29,11 @@ std::shared_ptr<ResultTable> BGPProcessor2::execute() {
   }
   return result;
 }
-std::shared_ptr<ResultTableIteratorBGP> BGPProcessor2::execute_it() {
+std::shared_ptr<ResultTableIterator> BGPProcessor2::execute_it() {
   find_headers();
+  if (!do_all_predicates_have_trees()) {
+    return std::make_shared<ResultTableIteratorEmpty>(std::move(header_vec));
+  }
   auto scanners = build_scanners();
   auto ops = build_bgp_ops(std::move(scanners));
   return std::make_shared<ResultTableIteratorBGP>(std::move(ops), header_vec);
@@ -97,4 +101,14 @@ void BGPProcessor2::build_rev_map() {
   for (size_t i = 0; i < header_vec.size(); i++) {
     header_reverse_map[header_vec[i]] = i;
   }
+}
+bool BGPProcessor2::do_all_predicates_have_trees() {
+  for (auto &triple : triples) {
+    if (triple.predicate.id_value == 0)
+      return false;
+    auto fetched = cm.get_tree_by_predicate_index(triple.predicate.id_value);
+    if (!fetched.exists())
+      return false;
+  }
+  return true;
 }

@@ -127,6 +127,8 @@ set(GRAPH_RESULT_CACHING_FILE
         gresults-caching/query_processing/ResultTableIteratorInnerJoin.hpp
         gresults-caching/query_processing/ResultTableIteratorSlice.hpp
         gresults-caching/query_processing/ResultTableIteratorSlice.cpp
+        gresults-caching/query_processing/ResultTableIteratorEmpty.cpp
+        gresults-caching/query_processing/ResultTableIteratorEmpty.hpp
 
         gresults-caching/query_processing/BGPOp.hpp
         gresults-caching/query_processing/BGPOpsFactory.cpp

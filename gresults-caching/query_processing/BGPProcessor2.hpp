@@ -37,7 +37,7 @@ public:
                 const PredicatesCacheManager &cm, VarIndexManager &vim);
 
   std::shared_ptr<ResultTable> execute();
-  std::shared_ptr<ResultTableIteratorBGP> execute_it();
+  std::shared_ptr<ResultTableIterator> execute_it();
 
 private:
   void set_triples_from_proto();
@@ -48,6 +48,7 @@ private:
   std::vector<std::unique_ptr<BGPOp>> build_bgp_ops(
       std::vector<std::unique_ptr<K2TreeMixed::K2TreeScanner>> &&scanners);
   void build_rev_map();
+  bool do_all_predicates_have_trees();
 };
 
 #endif // RDFCACHEK2_BGPPROCESSOR2_HPP

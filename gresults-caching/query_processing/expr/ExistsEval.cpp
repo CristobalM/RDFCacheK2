@@ -5,6 +5,7 @@
 #include "ExistsEval.hpp"
 #include "ExprEval.hpp"
 #include <query_processing/QueryProcessor.hpp>
+#include <query_processing/QueryProcessor2.hpp>
 void ExistsEval::init() {
   ExprEval::init();
   was_calculated_constant = false;
@@ -16,7 +17,7 @@ ExistsEval::eval_resource(const ExprEval::row_t &row) {
 }
 bool ExistsEval::eval_boolean(const ExprEval::row_t &row) {
   has_constant_subtree();
-  std::unique_ptr<QueryResult> query_result;
+  std::unique_ptr<QueryResultIterator> query_result;
 
   proto_msg::SparqlTree sparql_tree;
   auto pattern_copy = expr_node.function_node().exprs(0).pattern_node();
@@ -31,14 +32,15 @@ bool ExistsEval::eval_boolean(const ExprEval::row_t &row) {
     bind_row_vars_next_eval_data(*extra_dict, *bound_vars_map, row);
     bind_vars_to_sparql_tree(*bound_vars_map, sparql_tree);
 
-    query_result = std::make_unique<QueryResult>(
-        QueryProcessor(eval_data.cm, std::move(next_vim), std::move(extra_dict))
+    query_result = std::make_unique<QueryResultIterator>(
+        QueryProcessor2(eval_data.cm, std::move(next_vim),
+                        std::move(extra_dict))
             .run_query(sparql_tree));
   } else {
-    query_result = std::make_unique<QueryResult>(
-        QueryProcessor(eval_data.cm).run_query(sparql_tree));
+    query_result = std::make_unique<QueryResultIterator>(
+        QueryProcessor2(eval_data.cm).run_query(sparql_tree));
   }
-  return !query_result->table().data.empty();
+  return query_result->get_it().has_next();
 }
 void ExistsEval::validate() {
   ExprEval::validate();

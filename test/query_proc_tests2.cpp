@@ -33,6 +33,23 @@ public:
   static std::vector<std::string> some_literal_strings1;
   static std::vector<DateInfo> date_infos_expected;
 
+  static std::string p21;
+  static std::string p27;
+  static std::string q658e;
+  static std::string q1036;
+  static std::string s_about;
+  static std::string s_inlang;
+  static std::string fr_ltag;
+
+  static size_t iterations_count_1;
+
+  static std::string some_iri_gen(size_t id) {
+    return "<some_iri_" + std::to_string(id) + ">";
+  };
+  static std::string some_other_iri_gen(size_t id) {
+    return "<some_other_iri_" + std::to_string(id) + ">";
+  };
+
   static void SetUpTestCase() {
     fname = "predicates.bin";
     build_cache_test_file(fname);
@@ -112,6 +129,50 @@ public:
           RDFResource("\"" + str + "\"", RDFResourceType::RDF_TYPE_LITERAL)));
     }
 
+    for (size_t i = 0; i < iterations_count_1; i++) {
+      auto iri_value_var1 = some_iri_gen(i);
+      auto iri_value_var2 = some_other_iri_gen(i);
+      pcm->add_triple(RDFTripleResource(
+          RDFResource(iri_value_var1, RDFResourceType::RDF_TYPE_IRI),
+          RDFResource(p21, RDFResourceType::RDF_TYPE_IRI),
+          RDFResource(q658e, RDFResourceType::RDF_TYPE_IRI)));
+      pcm->add_triple(RDFTripleResource(
+          RDFResource(iri_value_var1, RDFResourceType::RDF_TYPE_IRI),
+          RDFResource(p27, RDFResourceType::RDF_TYPE_IRI),
+          RDFResource(q1036, RDFResourceType::RDF_TYPE_IRI)));
+      pcm->add_triple(RDFTripleResource(
+          RDFResource(iri_value_var2, RDFResourceType::RDF_TYPE_IRI),
+          RDFResource(s_about, RDFResourceType::RDF_TYPE_IRI),
+          RDFResource(iri_value_var1, RDFResourceType::RDF_TYPE_IRI)));
+    }
+
+    /*
+ auto some_other2_iri_gen = [](size_t id){
+   return "<some_other2_iri_" + std::to_string(id) + ">";
+ };
+
+
+    for(size_t i = 0; i < iterations_count_1/2; i++){
+      auto iri_value_var1 = some_iri_gen(i);
+      auto iri_value_var2 = some_other_iri_gen(i);
+      auto iri_value_var3 = some_other2_iri_gen(i);
+      pcm->add_triple(
+          RDFTripleResource(
+              RDFResource(iri_value_var3, RDFResourceType::RDF_TYPE_IRI),
+              RDFResource(s_about, RDFResourceType::RDF_TYPE_IRI),
+              RDFResource(iri_value_var1, RDFResourceType::RDF_TYPE_IRI)
+              )
+          );
+      pcm->add_triple(
+          RDFTripleResource(
+              RDFResource(iri_value_var3, RDFResourceType::RDF_TYPE_IRI),
+              RDFResource(s_inlang, RDFResourceType::RDF_TYPE_IRI),
+              RDFResource(fr_ltag, RDFResourceType::RDF_TYPE_LITERAL)
+              )
+          );
+    }
+*/
+
     cache =
         std::make_unique<Cache>(pcm, CacheReplacement::STRATEGY::LRU, 100'000);
   }
@@ -120,6 +181,89 @@ public:
     fs::remove(fname);
     pcm = nullptr;
     cache = nullptr;
+  }
+
+  static proto_msg::SparqlTree generate_problematic_query_1() {
+    proto_msg::SparqlTree tree;
+
+    auto *slice_node = tree.mutable_root()->mutable_slice_node();
+    slice_node->set_start(std::numeric_limits<long>::min());
+    slice_node->set_length(1000);
+    auto *project_node = slice_node->mutable_node()->mutable_project_node();
+    project_node->add_vars("?var1");
+    auto *filter_node = project_node->mutable_sub_op()->mutable_filter_node();
+    // auto *sequence_node =
+    // project_node->mutable_sub_op()->mutable_sequence_node();
+
+    auto *bgp_filter_node = filter_node->mutable_node()->mutable_bgp_node();
+
+    auto *first_triple = bgp_filter_node->mutable_triple()->Add();
+    auto *first_triple_subject = first_triple->mutable_subject();
+    auto *first_triple_predicate = first_triple->mutable_predicate();
+    auto *first_triple_object = first_triple->mutable_object();
+    first_triple_subject->set_term_type(proto_msg::TermType::VARIABLE);
+    first_triple_subject->set_term_value("?var1");
+    first_triple_predicate->set_term_type(proto_msg::TermType::IRI);
+    first_triple_predicate->set_term_value(p21);
+    first_triple_object->set_term_type(proto_msg::TermType::IRI);
+    first_triple_object->set_term_value(q658e);
+
+    auto *second_triple = bgp_filter_node->mutable_triple()->Add();
+    auto *second_triple_subject = second_triple->mutable_subject();
+    auto *second_triple_predicate = second_triple->mutable_predicate();
+    auto *second_triple_object = second_triple->mutable_object();
+    second_triple_subject->set_term_type(proto_msg::TermType::VARIABLE);
+    second_triple_subject->set_term_value("?var1");
+    second_triple_predicate->set_term_type(proto_msg::TermType::IRI);
+    second_triple_predicate->set_term_value(p27);
+    second_triple_object->set_term_type(proto_msg::TermType::IRI);
+    second_triple_object->set_term_value(q1036);
+
+    auto *third_triple = bgp_filter_node->mutable_triple()->Add();
+    auto *third_triple_subject = third_triple->mutable_subject();
+    auto *third_triple_predicate = third_triple->mutable_predicate();
+    auto *third_triple_object = third_triple->mutable_object();
+    third_triple_subject->set_term_type(proto_msg::TermType::VARIABLE);
+    third_triple_subject->set_term_value("?var2");
+    third_triple_predicate->set_term_type(proto_msg::TermType::IRI);
+    third_triple_predicate->set_term_value(s_about);
+    third_triple_object->set_term_type(proto_msg::TermType::VARIABLE);
+    third_triple_object->set_term_value("?var1");
+
+    auto *fnode = filter_node->mutable_exprs()->Add()->mutable_function_node();
+    fnode->set_function_op(proto_msg::FunctionOP::NOT_EXISTS);
+    auto *pattern_bgp = fnode->mutable_exprs()
+                            ->Add()
+                            ->mutable_pattern_node()
+                            ->mutable_bgp_node();
+
+    auto *first_triple_pattern = pattern_bgp->mutable_triple()->Add();
+    auto *first_triple_pattern_subject =
+        first_triple_pattern->mutable_subject();
+    auto *first_triple_pattern_predicate =
+        first_triple_pattern->mutable_predicate();
+    auto *first_triple_pattern_object = first_triple_pattern->mutable_object();
+    first_triple_pattern_subject->set_term_type(proto_msg::TermType::VARIABLE);
+    first_triple_pattern_subject->set_term_value("?var3");
+    first_triple_pattern_predicate->set_term_type(proto_msg::TermType::IRI);
+    first_triple_pattern_predicate->set_term_value(s_about);
+    first_triple_pattern_object->set_term_type(proto_msg::TermType::VARIABLE);
+    first_triple_pattern_object->set_term_value("?var1");
+
+    auto *second_triple_pattern = pattern_bgp->mutable_triple()->Add();
+    auto *second_triple_pattern_subject =
+        second_triple_pattern->mutable_subject();
+    auto *second_triple_pattern_predicate =
+        second_triple_pattern->mutable_predicate();
+    auto *second_triple_pattern_object =
+        second_triple_pattern->mutable_object();
+    second_triple_pattern_subject->set_term_type(proto_msg::TermType::VARIABLE);
+    second_triple_pattern_subject->set_term_value("?var3");
+    second_triple_pattern_predicate->set_term_type(proto_msg::TermType::IRI);
+    second_triple_pattern_predicate->set_term_value(s_inlang);
+    second_triple_pattern_object->set_term_type(proto_msg::TermType::LITERAL);
+    second_triple_pattern_object->set_term_value(fr_ltag);
+    return tree;
   }
 };
 
@@ -132,6 +276,20 @@ std::set<double> QueryProcTests2Fixture::values_double1;
 std::vector<std::string> QueryProcTests2Fixture::dates;
 std::vector<std::string> QueryProcTests2Fixture::some_literal_strings1;
 std::vector<DateInfo> QueryProcTests2Fixture::date_infos_expected;
+
+std::string QueryProcTests2Fixture::p21 =
+    "<http://www.wikidata.org/prop/direct/P21>";
+std::string QueryProcTests2Fixture::p27 =
+    "<http://www.wikidata.org/prop/direct/P27>";
+std::string QueryProcTests2Fixture::q658e =
+    "<http://www.wikidata.org/entity/Q6581072>";
+std::string QueryProcTests2Fixture::q1036 =
+    "<http://www.wikidata.org/entity/Q1036>";
+std::string QueryProcTests2Fixture::s_about = "<http://schema.org/about>";
+std::string QueryProcTests2Fixture::s_inlang = "<http://schema.org/inLanguage>";
+std::string QueryProcTests2Fixture::fr_ltag = "\"fr\"";
+
+size_t QueryProcTests2Fixture::iterations_count_1 = 1500;
 
 /*
 static std::set<std::string>
@@ -503,4 +661,78 @@ TEST_F(QueryProcTests2Fixture, can_do_order_op_test_1) {
 
   ASSERT_EQ(combinations_ordered.size(), query_results_values.size());
   ASSERT_EQ(combinations_ordered, query_results_values);
+}
+
+TEST_F(QueryProcTests2Fixture, problematic_query_1_without_exist_values) {
+
+  auto tree = generate_problematic_query_1();
+
+  auto result = QueryProcTests2Fixture::cache->run_query(tree);
+  ASSERT_EQ(result.table().data.size(), 1000);
+  ASSERT_EQ(result.table().headers.size(), 1);
+  std::set<unsigned long> values;
+  for (auto &row : result.table().data) {
+    values.insert(row[0]);
+  }
+
+  std::set<std::string> expected_str_values;
+  for (size_t i = 0; i < iterations_count_1; i++) {
+    expected_str_values.insert(some_iri_gen(i));
+  }
+
+  for (auto value : values) {
+    auto resource = pcm->extract_resource(value);
+    ASSERT_NE(expected_str_values.find(resource.value),
+              expected_str_values.end());
+  }
+}
+
+TEST_F(QueryProcTests2Fixture, problematic_query_1_with_exist_values) {
+
+  auto tree = generate_problematic_query_1();
+
+  auto some_other2_iri_gen = [](size_t id) {
+    return "<some_other2_iri_" + std::to_string(id) + ">";
+  };
+
+  for (size_t i = 0; i < iterations_count_1 / 2; i++) {
+    auto iri_value_var1 = some_iri_gen(i);
+    auto iri_value_var2 = some_other_iri_gen(i);
+    auto iri_value_var3 = some_other2_iri_gen(i);
+    pcm->add_triple(RDFTripleResource(
+        RDFResource(iri_value_var3, RDFResourceType::RDF_TYPE_IRI),
+        RDFResource(s_about, RDFResourceType::RDF_TYPE_IRI),
+        RDFResource(iri_value_var1, RDFResourceType::RDF_TYPE_IRI)));
+    pcm->add_triple(RDFTripleResource(
+        RDFResource(iri_value_var3, RDFResourceType::RDF_TYPE_IRI),
+        RDFResource(s_inlang, RDFResourceType::RDF_TYPE_IRI),
+        RDFResource(fr_ltag, RDFResourceType::RDF_TYPE_LITERAL)));
+  }
+
+  auto result = QueryProcTests2Fixture::cache->run_query(tree);
+  ASSERT_EQ(result.table().data.size(), iterations_count_1 / 2);
+
+  ASSERT_EQ(result.table().headers.size(), 1);
+  std::set<unsigned long> values;
+  for (auto &row : result.table().data) {
+    values.insert(row[0]);
+  }
+
+  std::set<std::string> expected_str_values;
+  std::set<std::string> not_expected_str_values;
+  size_t i = 0;
+  for (; i < iterations_count_1 / 2; i++) {
+    not_expected_str_values.insert(some_iri_gen(i));
+  }
+  for (; i < iterations_count_1; i++) {
+    expected_str_values.insert(some_iri_gen(i));
+  }
+
+  for (auto value : values) {
+    auto resource = pcm->extract_resource(value);
+    ASSERT_NE(expected_str_values.find(resource.value),
+              expected_str_values.end());
+    ASSERT_EQ(not_expected_str_values.find(resource.value),
+              not_expected_str_values.end());
+  }
 }
