@@ -6,6 +6,8 @@
 #include "ExprEval.hpp"
 #include "ExistsEval.hpp"
 #include "RandEval.hpp"
+#include "query_processing/resources/StringLiteralResource.hpp"
+#include <pcrecpp.h>
 #include <query_processing/expr/LangMatchesEval.hpp>
 #include <query_processing/expr/LogicalNotEval.hpp>
 
@@ -50,6 +52,7 @@
 #include "NotEqualsEval.hpp"
 #include "NotExistsEval.hpp"
 #include "NotInEval.hpp"
+#include "NowEval.hpp"
 #include "NumAbsEval.hpp"
 #include "NumCeilingEval.hpp"
 #include "NumFloorEval.hpp"
@@ -92,7 +95,7 @@ ExprEval::ExprEval(const EvalData &eval_data,
       was_date_info_cached(false)
 
 {}
-void ExprEval::assert_fsize(int size) {
+void ExprEval::assert_fun_size(int size) {
   if (expr_node.function_node().exprs_size() != size)
     throw std::runtime_error(
         "Invalid size " +
@@ -277,6 +280,8 @@ ExprEval::create_eval_node(const EvalData &eval_data,
     return create_eval_node_specific<NotInEval>(eval_data, child_node);
   case proto_msg::RAND:
     return create_eval_node_specific<RandEval>(eval_data, child_node);
+  case proto_msg::NOW:
+    return create_eval_node_specific<NowEval>(eval_data, child_node);
   default:
     throw std::runtime_error("Unknown function op");
   }
@@ -443,10 +448,19 @@ ExprEval::generate_from_eval_double(const row_t &row) {
   }
   return std::make_shared<DoubleResource>(value);
 }
-void ExprEval::assert_fsize_gt(int size) {
+void ExprEval::assert_fun_size_gt(int size) {
   if (expr_node.function_node().exprs_size() <= size)
     throw std::runtime_error(
         "Invalid size " +
         std::to_string(expr_node.function_node().exprs_size()) +
         ", expected >" + std::to_string(size));
+}
+void ExprEval::assert_fun_size_between_inclusive(int first, int second) {
+  auto expr_size = expr_node.function_node().exprs_size();
+  if (expr_size < first || expr_size > second)
+    throw std::runtime_error(
+        "Invalid size " +
+        std::to_string(expr_node.function_node().exprs_size()) +
+        ", expected between " + std::to_string(first) + " and " +
+        std::to_string(second));
 }

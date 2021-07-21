@@ -11,7 +11,7 @@
 
 void DateTimeTZEval::validate() {
   ExprEval::validate();
-  assert_fsize(1);
+  assert_fun_size(1);
 }
 
 void DateTimeTZEval::init() {

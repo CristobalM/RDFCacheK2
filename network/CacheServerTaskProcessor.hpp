@@ -43,9 +43,11 @@ public:
 
   void notify_workers();
   QueryResultStreamer &get_streamer(int id) override;
-  QueryResultStreamer &create_streamer(std::set<uint64_t> &&keys,
-                                       QueryResult &&query_result) override;
+  QueryResultStreamer &
+  create_streamer(std::set<uint64_t> &&keys,
+                  std::shared_ptr<QueryResult> query_result) override;
   bool has_streamer(int id) override;
+  void clean_streamer(int id) override;
 };
 
 #endif // RDFCACHEK2_CACHESERVERTASKPROCESSOR_HPP

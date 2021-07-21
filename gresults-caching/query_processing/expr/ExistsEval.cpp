@@ -5,7 +5,6 @@
 #include "ExistsEval.hpp"
 #include "ExprEval.hpp"
 #include <query_processing/QueryProcessor.hpp>
-#include <query_processing/QueryProcessor2.hpp>
 void ExistsEval::init() {
   ExprEval::init();
   was_calculated_constant = false;
@@ -17,12 +16,13 @@ ExistsEval::eval_resource(const ExprEval::row_t &row) {
 }
 bool ExistsEval::eval_boolean(const ExprEval::row_t &row) {
   has_constant_subtree();
-  std::unique_ptr<QueryResultIterator> query_result;
+  // std::unique_ptr<QueryResultIterator> query_result = nullptr;
 
   proto_msg::SparqlTree sparql_tree;
-  auto pattern_copy = expr_node.function_node().exprs(0).pattern_node();
-  *sparql_tree.mutable_root() = pattern_copy;
-
+  // auto pattern_copy = expr_node.function_node().exprs(0).pattern_node();
+  // *sparql_tree.mutable_root() = pattern_copy;
+  sparql_tree.mutable_root()->CopyFrom(
+      expr_node.function_node().exprs(0).pattern_node());
   if (!is_constant) {
     auto next_vim = std::make_unique<VarIndexManager>(eval_data.vim);
     auto extra_dict =
@@ -31,20 +31,31 @@ bool ExistsEval::eval_boolean(const ExprEval::row_t &row) {
 
     bind_row_vars_next_eval_data(*extra_dict, *bound_vars_map, row);
     bind_vars_to_sparql_tree(*bound_vars_map, sparql_tree);
-
-    query_result = std::make_unique<QueryResultIterator>(
-        QueryProcessor2(eval_data.cm, std::move(next_vim),
-                        std::move(extra_dict))
-            .run_query(sparql_tree));
+    /*
+        query_result = std::make_unique<QueryResultIterator>(
+            QueryProcessor(eval_data.cm, std::move(next_vim),
+                            std::move(extra_dict), eval_data.time_control)
+                .run_query(sparql_tree));
+        */
+    auto qproc = QueryProcessor(eval_data.cm, std::move(next_vim),
+                                std::move(extra_dict), eval_data.time_control);
+    auto rit = qproc.run_query(sparql_tree);
+    return rit.get_it().has_next();
   } else {
+    /*
     query_result = std::make_unique<QueryResultIterator>(
-        QueryProcessor2(eval_data.cm).run_query(sparql_tree));
+        QueryProcessor(eval_data.cm, eval_data.time_control)
+            .run_query(sparql_tree));
+            */
+    auto rit = QueryProcessor(eval_data.cm, eval_data.time_control)
+                   .run_query(sparql_tree);
+    return rit.get_it().has_next();
   }
-  return query_result->get_it().has_next();
+  // return query_result->get_it().has_next();
 }
 void ExistsEval::validate() {
   ExprEval::validate();
-  assert_fsize(1);
+  assert_fun_size(1);
   assert_is_pattern_node(expr_node.function_node().exprs(0));
 }
 bool ExistsEval::has_constant_subtree() {
@@ -214,12 +225,12 @@ void ExistsEval::bind_row_vars_next_eval_data(
       continue;
     auto pos = this->eval_data.var_pos_mapping->at(var_name);
     auto value_id = row[pos];
-    auto last_cache_id = this->eval_data.cm.get_last_id();
+    auto last_cache_id = this->eval_data.cm->get_last_id();
     if (value_id > last_cache_id)
       resource =
           this->eval_data.extra_dict.extract_resource(value_id - last_cache_id);
     else
-      resource = this->eval_data.cm.extract_resource(value_id);
+      resource = this->eval_data.cm->extract_resource(value_id);
 
     dictionary.add_resource(resource);
     bound_vars_map.bind(var_name, std::move(resource));

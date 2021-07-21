@@ -6,6 +6,7 @@
 #define RDFCACHEK2_RESULTTABLEITERATORPROJECT_HPP
 
 #include "ResultTableIterator.hpp"
+#include <TimeControl.hpp>
 #include <set>
 class ResultTableIteratorProject : public ResultTableIterator {
   std::shared_ptr<ResultTableIterator> input_it;
@@ -15,7 +16,8 @@ class ResultTableIteratorProject : public ResultTableIterator {
 
 public:
   ResultTableIteratorProject(std::shared_ptr<ResultTableIterator> input_it,
-                             std::set<unsigned long> &vars_to_keep);
+                             std::set<unsigned long> &vars_to_keep,
+                             TimeControl &time_control);
   bool has_next() override;
   std::vector<unsigned long> next() override;
   std::vector<unsigned long> &get_headers() override;

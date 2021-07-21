@@ -25,7 +25,7 @@ bool LogicalAndEval::eval_boolean(const ExprEval::row_t &row) {
 }
 void LogicalAndEval::validate() {
   ExprEval::validate();
-  assert_fsize(2);
+  assert_fun_size(2);
 }
 void LogicalAndEval::init() {
   ExprEval::init();

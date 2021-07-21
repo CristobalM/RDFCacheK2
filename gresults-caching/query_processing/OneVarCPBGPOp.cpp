@@ -7,12 +7,16 @@
 template <BGPOp::VARS WV>
 OneVarCPBGPOp<WV>::OneVarCPBGPOp(
     std::unique_ptr<K2TreeMixed::K2TreeScanner> &&scanner,
-    unsigned long var_pos)
-    : scanner(std::move(scanner)), var_pos(var_pos) {}
+    unsigned long var_pos, TimeControl &time_control)
+    : scanner(std::move(scanner)), var_pos(var_pos),
+      time_control(time_control) {}
 template <BGPOp::VARS WV>
 BGPOp::RunResult
 OneVarCPBGPOp<WV>::run(std::vector<unsigned long> &row_to_fill) {
   BGPOp::RunResult result;
+  if (!time_control.tick())
+    return result;
+
   if (!scanner->has_next()) {
     result.scan_done = true;
     result.valid_value = false;
@@ -20,7 +24,6 @@ OneVarCPBGPOp<WV>::run(std::vector<unsigned long> &row_to_fill) {
   };
 
   auto next_pair = scanner->next();
-
   unsigned long value;
   if constexpr (WV == BGPOp::SUBJECT_VAR) {
     value = next_pair.first;

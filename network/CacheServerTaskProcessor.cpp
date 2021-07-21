@@ -51,9 +51,8 @@ QueryResultStreamer &CacheServerTaskProcessor::get_streamer(int id) {
   return *streamer_map[id];
 }
 
-QueryResultStreamer &
-CacheServerTaskProcessor::create_streamer(std::set<uint64_t> &&keys,
-                                          QueryResult &&query_result) {
+QueryResultStreamer &CacheServerTaskProcessor::create_streamer(
+    std::set<uint64_t> &&keys, std::shared_ptr<QueryResult> query_result) {
   int next_id = current_id++;
   std::cout << "creating streamer with id " << next_id << std::endl;
   streamer_map[next_id] = std::make_unique<QueryResultStreamer>(
@@ -62,4 +61,7 @@ CacheServerTaskProcessor::create_streamer(std::set<uint64_t> &&keys,
 }
 bool CacheServerTaskProcessor::has_streamer(int id) {
   return streamer_map.find(id) != streamer_map.end();
+}
+void CacheServerTaskProcessor::clean_streamer(int id) {
+  streamer_map.erase(id);
 }

@@ -4,12 +4,12 @@
 
 #include "QueryResultStreamer.hpp"
 #include "network_msg_definitions.hpp"
-QueryResultStreamer::QueryResultStreamer(std::set<uint64_t> &&keys,
-                                         QueryResult &&query_result, int id,
-                                         PredicatesCacheManager *cm)
+QueryResultStreamer::QueryResultStreamer(
+    std::set<uint64_t> &&keys, std::shared_ptr<QueryResult> query_result,
+    int id, PredicatesCacheManager *cm)
     : keys(keys.begin(), keys.end()), query_result(std::move(query_result)),
       id(id), cm(cm), keys_sent(0), rows_sent(0),
-      rows_it(this->query_result.table().get_data().begin()),
+      rows_it(this->query_result->table().get_data().begin()),
       first_key_part_sent(false) {}
 proto_msg::CacheResponse QueryResultStreamer::get_next_response() {
   proto_msg::CacheResponse response;
@@ -68,7 +68,7 @@ void QueryResultStreamer::populate_with_remaining_keys(
     auto key = keys[i];
 
     if (key > last_id) {
-      key_res = query_result.get_extra_dict().extract_resource(key - last_id);
+      key_res = query_result->get_extra_dict().extract_resource(key - last_id);
     } else {
       key_res = cm->extract_resource(key);
     }
@@ -87,8 +87,8 @@ void QueryResultStreamer::populate_with_remaining_keys(
   keys_part->set_last_part(last_part);
 }
 void QueryResultStreamer::populate_headers(proto_msg::KeysPart &part) {
-  auto reversed_indexes = query_result.get_vim().reverse();
-  for (auto header : query_result.table().headers) {
+  auto reversed_indexes = query_result->get_vim().reverse();
+  for (auto header : query_result->table().headers) {
     const auto &var = reversed_indexes[header];
     part.add_header(var);
   }
@@ -99,9 +99,9 @@ void QueryResultStreamer::populate_with_remaining_rows(
   auto *rows_part = response.mutable_rows_part();
 
   std::cout << "starting from row: " << rows_sent << " out of "
-            << query_result.table().get_data().size() << std::endl;
+            << query_result->table().get_data().size() << std::endl;
 
-  for (; rows_it != query_result.table().get_data().end(); rows_it++) {
+  for (; rows_it != query_result->table().get_data().end(); rows_it++) {
     auto *row_proto = rows_part->mutable_rows()->Add();
     const auto &row = *rows_it;
     for (auto value : row) {
@@ -112,7 +112,10 @@ void QueryResultStreamer::populate_with_remaining_rows(
       break;
     }
   }
-  auto last_part = rows_sent == query_result.table().get_data().size();
+  auto last_part = rows_sent == query_result->table().get_data().size();
   std::cout << "last_part: " << last_part << std::endl;
   rows_part->set_last_part(last_part);
+}
+bool QueryResultStreamer::all_sent() {
+  return rows_it == this->query_result->table().get_data().end();
 }

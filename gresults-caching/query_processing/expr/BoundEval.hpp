@@ -7,7 +7,7 @@
 
 #include "ExprEval.hpp"
 class BoundEval : public ExprEval {
-  bool result;
+  bool variable_not_mapped;
 
 public:
   using ExprEval::ExprEval;

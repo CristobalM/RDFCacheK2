@@ -26,6 +26,9 @@
 
 namespace fs = std::filesystem;
 
+using namespace std::chrono_literals;
+TimeControl time_control(1e12, 100min);
+
 TEST(QueryProcTests, test_optional_1) {
   proto_msg::SparqlTree tree;
   auto *project_node = tree.mutable_root()->mutable_project_node();
@@ -101,7 +104,7 @@ TEST(QueryProcTests, test_optional_1) {
 
   Cache cache(pcm, CacheReplacement::STRATEGY::LRU, 100'000);
 
-  auto result = cache.run_query(tree);
+  auto result = cache.run_query(tree, time_control);
 
   /*
   ASSERT_EQ(header_str, "?x");
@@ -199,7 +202,7 @@ TEST(QueryProcTests, test_union_1) {
     std::cout << pair.first << "," << pair.second << "\n";
   }
 */
-  auto result = cache.run_query(tree);
+  auto result = cache.run_query(tree, time_control)->as_query_result_original();
 
   /*
   ASSERT_EQ(header_str, "?x");
@@ -211,7 +214,7 @@ TEST(QueryProcTests, test_union_1) {
 
   std::cout << "union\n";
 
-  print_table_debug2(result, cache);
+  print_table_debug2(*result, cache);
 
   fs::remove(fname);
 }
@@ -255,12 +258,12 @@ TEST(QueryProcTests, test_bgp_node_1) {
 
   Cache cache(pcm, CacheReplacement::STRATEGY::LRU, 100'000);
 
-  auto result = cache.run_query(tree);
+  auto result = cache.run_query(tree, time_control)->as_query_result_original();
 
-  print_table_debug2(result, cache);
-  auto &vim = result.get_vim();
+  print_table_debug2(*result, cache);
+  auto &vim = result->get_vim();
   auto reverse_map = vim.reverse();
-  auto &table = result.table();
+  auto &table = result->table();
 
   auto translated_table = translate_table(table, cache);
   auto header_str = reverse_map[table.headers[0]];
@@ -345,11 +348,11 @@ TEST(QueryProcTests, test_bgp_node_2) {
 
   Cache cache(pcm, CacheReplacement::STRATEGY::LRU, 100'000);
 
-  auto result = cache.run_query(tree);
+  auto result = cache.run_query(tree, time_control)->as_query_result_original();
 
-  auto &vim = result.get_vim();
+  auto &vim = result->get_vim();
   auto reverse_map = vim.reverse();
-  auto &table = result.table();
+  auto &table = result->table();
 
   ASSERT_EQ(reverse_map[table.headers[0]], "?x");
   ASSERT_EQ(reverse_map[table.headers[1]], "?y");
@@ -459,11 +462,11 @@ TEST(QueryProcTests, test_bgp_node_3) {
 
   Cache cache(pcm, CacheReplacement::STRATEGY::LRU, 100'000);
 
-  auto result = cache.run_query(tree);
+  auto result = cache.run_query(tree, time_control)->as_query_result_original();
 
-  auto &vim = result.get_vim();
+  auto &vim = result->get_vim();
   auto reverse_map = vim.reverse();
-  auto &table = result.table();
+  auto &table = result->table();
 
   auto translated_table = translate_table(table, cache);
 
@@ -698,10 +701,11 @@ TEST(QueryProcTests, test_bgp_node_4_compact_dicts) {
   first_object->set_basic_type(proto_msg::BasicType::STRING);
   first_object->set_term_value("?y");
 
-  auto query_result = cache.run_query(tree);
+  auto query_result =
+      cache.run_query(tree, time_control)->as_query_result_original();
 
-  auto reverse_var_map = query_result.get_vim().reverse();
-  auto &headers = query_result.table().headers;
+  auto reverse_var_map = query_result->get_vim().reverse();
+  auto &headers = query_result->table().headers;
   auto h0 = reverse_var_map[headers[0]];
   auto h1 = reverse_var_map[headers[1]];
 
@@ -709,7 +713,7 @@ TEST(QueryProcTests, test_bgp_node_4_compact_dicts) {
   ASSERT_EQ(h1, "?y");
 
   auto transformed_data =
-      transform_table_to_string(query_result.table(), cache);
+      transform_table_to_string(query_result->table(), cache);
 
   for (size_t row_i = 0; row_i < transformed_data.size(); row_i++) {
     ASSERT_EQ(transformed_data[row_i].size(), 2);
@@ -745,10 +749,11 @@ TEST(QueryProcTests, test_bgp_node_4_compact_dicts) {
   second_object->set_basic_type(proto_msg::BasicType::STRING);
   second_object->set_term_value("?y");
 
-  auto query_result_2 = cache.run_query(tree);
+  auto query_result_2 =
+      cache.run_query(tree, time_control)->as_query_result_original();
 
-  auto reverse_var_map_2 = query_result_2.get_vim().reverse();
-  auto &headers_2 = query_result_2.table().headers;
+  auto reverse_var_map_2 = query_result_2->get_vim().reverse();
+  auto &headers_2 = query_result_2->table().headers;
   auto h0_2 = reverse_var_map_2[headers_2[0]];
   auto h1_2 = reverse_var_map_2[headers_2[1]];
 
@@ -756,7 +761,7 @@ TEST(QueryProcTests, test_bgp_node_4_compact_dicts) {
   ASSERT_EQ(h1_2, "?y");
 
   auto transformed_data_2 =
-      transform_table_to_string(query_result_2.table(), cache);
+      transform_table_to_string(query_result_2->table(), cache);
 
   ASSERT_EQ(transformed_data_2.size(), transformed_data.size());
 
@@ -793,10 +798,11 @@ TEST(QueryProcTests, test_bgp_node_4_compact_dicts) {
   third_object->set_basic_type(proto_msg::BasicType::STRING);
   third_object->set_term_value("?y");
 
-  auto query_result_3 = cache.run_query(tree);
+  auto query_result_3 =
+      cache.run_query(tree, time_control)->as_query_result_original();
 
   auto transformed_data_3 =
-      transform_table_to_string(query_result_3.table(), cache);
+      transform_table_to_string(query_result_3->table(), cache);
 
   ASSERT_EQ(transformed_data_3.size(), iris_data.size() / 2);
 
@@ -921,11 +927,11 @@ TEST(QueryProcTests, join_two_two_vars) {
 
   Cache cache(pcm, CacheReplacement::STRATEGY::LRU, 100'000);
 
-  auto result = cache.run_query(tree);
+  auto result = cache.run_query(tree, time_control)->as_query_result_original();
 
-  auto &vim = result.get_vim();
+  auto &vim = result->get_vim();
   auto reverse_map = vim.reverse();
-  auto &table = result.table();
+  auto &table = result->table();
 
   auto translated_table = translate_table(table, cache);
   auto header_str = reverse_map[table.headers[0]];

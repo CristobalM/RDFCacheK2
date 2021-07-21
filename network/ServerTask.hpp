@@ -27,15 +27,17 @@ public:
   void process_cache_query(Message &message);
   void send_invalid_response();
   proto_msg::CacheResponse
-  create_response_from_query_result(QueryResult &&query_result,
+  create_response_from_query_result(std::shared_ptr<QueryResult> query_result,
                                     Message &message);
 
   void send_response(proto_msg::CacheResponse &cache_response);
   void process_connection_end();
 
-  proto_msg::CacheResponse create_parts_response(std::set<uint64_t> &&set,
-                                                 QueryResult &&result);
+  proto_msg::CacheResponse
+  create_parts_response(std::set<uint64_t> &&keys,
+                        std::shared_ptr<QueryResult> result);
   void process_receive_remaining_result(Message &message);
+  void send_timeout();
 };
 
 #endif // RDFCACHEK2_SERVERTASK_HPP

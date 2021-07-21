@@ -1,6 +1,5 @@
 #include <gtest/gtest.h>
 
-#include <cmath>
 #include <sstream>
 
 #include <external_sort.hpp>

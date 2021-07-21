@@ -19,7 +19,7 @@ FunIRIEval::eval_resource(const ExprEval::row_t &row) {
 
 void FunIRIEval::validate() {
   ExprEval::validate();
-  assert_fsize_gt(0);
+  assert_fun_size_gt(0);
   add_children();
 }
 std::shared_ptr<TermResource>

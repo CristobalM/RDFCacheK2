@@ -10,6 +10,7 @@
 #include "ResultTableIterator.hpp"
 #include "ResultTableIteratorLeftOuterJoin.hpp"
 #include "VarIndexManager.hpp"
+#include <TimeControl.hpp>
 #include <algorithm>
 #include <memory>
 #include <set>
@@ -22,6 +23,8 @@ protected:
   using jkey_t = std::vector<unsigned long>;
   using jmap_t = std::unordered_map<jkey_t, vvul_t, fnv_hash_64>;
 
+  TimeControl &time_control;
+
   std::shared_ptr<ResultTableIterator> left_it;
   std::shared_ptr<ResultTableIterator> right_it;
 
@@ -31,10 +34,14 @@ protected:
   std::vector<unsigned long> join_vars_real_positions;
   jmap_t right_hmap;
   std::vector<unsigned long> left_headers_to_result;
-  std::vector<unsigned long> right_values_to_result;
+  std::vector<unsigned long> right_headers_positions_in_final;
 
-  LWRHMapJoinLazyBaseProcessor(std::shared_ptr<ResultTableIterator> left_it,
+  LWRHMapJoinLazyBaseProcessor(TimeControl &time_control,
+                               std::shared_ptr<ResultTableIterator> left_it,
                                std::shared_ptr<ResultTableIterator> right_it);
+
+public:
+protected:
   std::vector<unsigned long> build_header();
   std::unordered_map<unsigned long, unsigned long> build_header_positions();
   std::vector<unsigned long> build_join_vars_real_positions();

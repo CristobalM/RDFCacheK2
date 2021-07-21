@@ -28,7 +28,7 @@ int StrLengthEval::eval_integer(const ExprEval::row_t &row) {
 
 void StrLengthEval::validate() {
   ExprEval::validate();
-  assert_fsize(1);
+  assert_fun_size(1);
 }
 void StrLengthEval::init() {
   ExprEval::init();

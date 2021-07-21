@@ -22,39 +22,59 @@ RDFResource TermEval::eval_term_node(const ExprEval::row_t &row) const {
   case proto_msg::TermType::LITERAL:
   case proto_msg::TermType::BLANK_NODE:
   case proto_msg::TermType::IRI:
-    return RDFResource(expr_node.term_node());
-  default:
-    throw std::runtime_error("Unexpected term type");
+    return RDFResource(
+        sanitize_term_node_to_rdf_resource(expr_node.term_node()));
+  default: {
+    eval_data.time_control.report_error(
+        "eval_term_node: Unexpected term type: " +
+        std::to_string(expr_node.term_node().term_type()));
+    return RDFResource::null_resource();
+  }
   }
 }
 
 RDFResource
 TermEval::eval_variable_get_resource(const ExprEval::row_t &row) const {
   const auto &term = this->expr_node.term_node();
-  if (term.term_type() != proto_msg::TermType::VARIABLE)
-    throw std::runtime_error("Expected a variable");
+  if (term.term_type() != proto_msg::TermType::VARIABLE) {
+    this->eval_data.time_control.report_error(
+        "eval_variable_get_resource: expected a variable term_type, value = " +
+        term.term_value());
+    return RDFResource::null_resource();
+  }
   const std::string &var_name = term.term_value();
 
   if (this->eval_data.var_pos_mapping->find(var_name) ==
-      this->eval_data.var_pos_mapping->end())
-    throw std::runtime_error("Variable " + var_name + " not in table");
+      this->eval_data.var_pos_mapping->end()) {
+    this->eval_data.time_control.report_error(
+        "eval_variable_get_resource: Variable " + var_name + " not in table");
+    return RDFResource::null_resource();
+  }
   auto pos = this->eval_data.var_pos_mapping->at(var_name);
   auto value_id = row[pos];
-  auto last_cache_id = this->eval_data.cm.get_last_id();
+  if (value_id == 0)
+    return RDFResource::null_resource();
+  auto last_cache_id = this->eval_data.cm->get_last_id();
   if (value_id > last_cache_id)
     return this->eval_data.extra_dict.extract_resource(value_id -
                                                        last_cache_id);
-  return this->eval_data.cm.extract_resource(value_id);
+  return this->eval_data.cm->extract_resource(value_id);
 }
 
 void TermEval::validate() {
   ExprEval::validate();
-  if (expr_node.expr_case() != proto_msg::ExprNode::kTermNode)
-    throw std::runtime_error("Expected a term");
+  if (expr_node.expr_case() != proto_msg::ExprNode::kTermNode) {
+    eval_data.time_control.report_error(
+        "TermEval::validate(): expected a term node");
+  }
 }
 std::shared_ptr<TermResource>
 TermEval::eval_resource(const ExprEval::row_t &row) {
   auto resource = eval_term_node(row);
+
+  if (resource.is_null()) {
+    return TermResource::null();
+  }
 
   if (resource.resource_type == RDFResourceType::RDF_TYPE_IRI) {
     return eval_iri_resource(std::move(resource));
@@ -62,18 +82,14 @@ TermEval::eval_resource(const ExprEval::row_t &row) {
     return std::make_shared<ConcreteRDFResource>(std::move(resource));
   }
 
-  auto data_type =
-      ExprProcessorPersistentData::get().extract_data_type_from_string(
-          resource.value);
+  auto data_type = ParsingUtils::extract_data_type_from_string(resource.value);
   auto content =
-      ExprProcessorPersistentData::get().extract_literal_content_from_string(
-          resource.value);
+      ParsingUtils::extract_literal_content_from_string(resource.value);
   if (data_type != EDT_UNKNOWN) {
     return make_data_type_resource(std::move(content), data_type);
   }
 
-  auto lang_tag =
-      ExprProcessorPersistentData::get().extract_language_tag(resource.value);
+  auto lang_tag = ParsingUtils::extract_language_tag(resource.value);
   if (!lang_tag.empty()) {
     return std::make_shared<StringLiteralLangResource>(std::move(content),
                                                        std::move(lang_tag));
@@ -90,12 +106,14 @@ bool TermEval::eval_boolean(const ExprEval::row_t &row) {
     return eval_boolean_from_resource(eval_variable_get_resource(row));
   case proto_msg::TermType::LITERAL:
     return eval_boolean_from_string(
-        ExprProcessorPersistentData::get().extract_literal_content_from_string(
-            term.term_value()));
+        ParsingUtils::extract_literal_content_from_string(term.term_value()));
   case proto_msg::TermType::BLANK_NODE:
   case proto_msg::TermType::IRI:
-  default:
-    throw std::runtime_error("Unexpected term type");
+  default: {
+    eval_data.time_control.report_error("eval_boolean: Unexpected term type: " +
+                                        std::to_string(term.term_type()));
+    return 0;
+  }
   }
 }
 
@@ -108,8 +126,11 @@ int TermEval::eval_integer(const ExprEval::row_t &row) {
     return eval_integer_from_string(term.term_value());
   case proto_msg::TermType::BLANK_NODE:
   case proto_msg::TermType::IRI:
-  default:
-    throw std::runtime_error("Unexpected term type");
+  default: {
+    eval_data.time_control.report_error("eval_integer: Unexpected term type: " +
+                                        std::to_string(term.term_type()));
+    return 0;
+  }
   }
 }
 float TermEval::eval_float(const ExprEval::row_t &row) {
@@ -119,12 +140,14 @@ float TermEval::eval_float(const ExprEval::row_t &row) {
     return eval_float_from_resource(eval_variable_get_resource(row));
   case proto_msg::TermType::LITERAL:
     return eval_float_from_string(
-        ExprProcessorPersistentData::get().extract_literal_content_from_string(
-            term.term_value()));
+        ParsingUtils::extract_literal_content_from_string(term.term_value()));
   case proto_msg::TermType::BLANK_NODE:
   case proto_msg::TermType::IRI:
-  default:
-    throw std::runtime_error("Unexpected term type");
+  default: {
+    eval_data.time_control.report_error("eval_float: Unexpected term type: " +
+                                        std::to_string(term.term_type()));
+    return 0;
+  }
   }
 }
 double TermEval::eval_double(const ExprEval::row_t &row) {
@@ -134,12 +157,14 @@ double TermEval::eval_double(const ExprEval::row_t &row) {
     return eval_double_from_resource(eval_variable_get_resource(row));
   case proto_msg::TermType::LITERAL:
     return eval_double_from_string(
-        ExprProcessorPersistentData::get().extract_literal_content_from_string(
-            term.term_value()));
+        ParsingUtils::extract_literal_content_from_string(term.term_value()));
   case proto_msg::TermType::BLANK_NODE:
   case proto_msg::TermType::IRI:
-  default:
-    throw std::runtime_error("Unexpected term type");
+  default: {
+    eval_data.time_control.report_error("eval_double: Unexpected term type: " +
+                                        std::to_string(term.term_type()));
+    return 0;
+  }
   }
 }
 void TermEval::init() {
@@ -147,14 +172,16 @@ void TermEval::init() {
   with_constant_subtree = has_constant_subtree();
 }
 bool TermEval::eval_boolean_from_resource(const RDFResource &resource) {
-  if (resource.resource_type != RDFResourceType::RDF_TYPE_LITERAL)
-    throw std::runtime_error("Unexpected term type");
+  if (resource.resource_type != RDFResourceType::RDF_TYPE_LITERAL) {
+    eval_data.time_control.report_error(
+        "eval_boolean_from_resource expected literal resource type");
+    return false;
+  }
   return eval_boolean_from_string(resource.value);
 }
 bool TermEval::eval_boolean_from_string(const std::string &input_string) {
   auto parsed_string =
-      ExprProcessorPersistentData::get().extract_literal_content_from_string(
-          input_string);
+      ParsingUtils::extract_literal_content_from_string(input_string);
   std::for_each(parsed_string.begin(), parsed_string.end(),
                 [](char &c) { c = std::tolower(c); });
   if (parsed_string == "false")
@@ -163,48 +190,54 @@ bool TermEval::eval_boolean_from_string(const std::string &input_string) {
 }
 
 int TermEval::eval_integer_from_resource(const RDFResource &resource) {
-  if (resource.resource_type != RDFResourceType::RDF_TYPE_LITERAL)
-    throw std::runtime_error("Unexpected term type");
+  if (resource.resource_type != RDFResourceType::RDF_TYPE_LITERAL) {
+    eval_data.time_control.report_error(
+        "eval_integer_from_resource expected literal resource type");
+    return 0;
+  }
   return eval_integer_from_string(resource.value);
 }
 
 int TermEval::eval_integer_from_string(const std::string &input_string) {
   auto parsed_string =
-      ExprProcessorPersistentData::get().extract_literal_content_from_string(
-          input_string);
-  if (!ExprProcessorPersistentData::get().string_is_numeric(parsed_string)) {
+      ParsingUtils::extract_literal_content_from_string(input_string);
+  if (!ParsingUtils::string_is_numeric(parsed_string)) {
     this->with_error = true;
     return 0;
   }
   return std::stoi(parsed_string);
 }
 float TermEval::eval_float_from_resource(const RDFResource &resource) {
-  if (resource.resource_type != RDFResourceType::RDF_TYPE_LITERAL)
-    throw std::runtime_error("Unexpected term type");
+  if (resource.resource_type != RDFResourceType::RDF_TYPE_LITERAL) {
+    eval_data.time_control.report_error(
+        "eval_float_from_resource expected literal resource type");
+    return 0;
+  }
   return eval_float_from_string(resource.value);
 }
 
 float TermEval::eval_float_from_string(const std::string &input_string) {
   auto parsed_string =
-      ExprProcessorPersistentData::get().extract_literal_content_from_string(
-          input_string);
-  if (!ExprProcessorPersistentData::get().string_is_numeric(parsed_string)) {
+      ParsingUtils::extract_literal_content_from_string(input_string);
+  if (!ParsingUtils::string_is_numeric(parsed_string)) {
     this->with_error = true;
     return 0;
   }
   return std::stof(parsed_string);
 }
 double TermEval::eval_double_from_resource(const RDFResource &resource) {
-  if (resource.resource_type != RDFResourceType::RDF_TYPE_LITERAL)
-    throw std::runtime_error("Unexpected term type");
+  if (resource.resource_type != RDFResourceType::RDF_TYPE_LITERAL) {
+    eval_data.time_control.report_error(
+        "eval_double_from_resource expected literal resource type");
+    return 0;
+  }
   return eval_double_from_string(resource.value);
 }
 
 double TermEval::eval_double_from_string(const std::string &input_string) {
   auto parsed_string =
-      ExprProcessorPersistentData::get().extract_literal_content_from_string(
-          input_string);
-  if (!ExprProcessorPersistentData::get().string_is_numeric(parsed_string)) {
+      ParsingUtils::extract_literal_content_from_string(input_string);
+  if (!ParsingUtils::string_is_numeric(parsed_string)) {
     this->with_error = true;
     return 0;
   }
@@ -218,7 +251,9 @@ DateInfo TermEval::eval_date_time(const ExprEval::row_t &row) {
   static icu::SimpleDateFormat parser(pattern, parser_err);
 
   auto resource = eval_term_node(row);
-  if (resource.resource_type != RDFResourceType::RDF_TYPE_LITERAL) {
+
+  if (resource.resource_type != RDFResourceType::RDF_TYPE_LITERAL ||
+      resource.is_null()) {
     with_error = true;
     return DateInfo{};
   }
@@ -227,7 +262,7 @@ DateInfo TermEval::eval_date_time(const ExprEval::row_t &row) {
       StringHandlingUtil::extract_literal_data_from_rdf_resource(resource);
 
   const auto parsed_date_info =
-      ExprProcessorPersistentData::get().parse_iso8601(literal_content.value);
+      ParsingUtils::parse_iso8601(literal_content.value);
   if (!parsed_date_info.matched) {
     with_error = true;
     return DateInfo{};
@@ -261,7 +296,7 @@ TermEval::make_data_type_resource(std::string &&input_string,
     return std::make_shared<BooleanResource>(input_string != "false");
   case EDT_DATETIME:
     return std::make_shared<DateTimeResource>(
-        ExprProcessorPersistentData::get().parse_iso8601(input_string));
+        ParsingUtils::parse_iso8601(input_string));
   case EDT_STRING:
     return std::make_shared<StringLiteralResource>(std::move(input_string),
                                                    data_type);
@@ -316,4 +351,145 @@ TermEval::create_datatype_resource(RDFResource &&resource, bool matches_short) {
 }
 bool TermEval::has_constant_subtree() {
   return expr_node.term_node().term_type() != proto_msg::TermType::VARIABLE;
+}
+RDFResource TermEval::sanitize_term_node_to_rdf_resource(
+    const proto_msg::RDFTerm &term) const {
+  auto sanitized_str = sanitize_term(term);
+  return RDFResource(std::move(sanitized_str),
+                     RDFResource::select_type_from_proto(term.term_type()));
+}
+
+std::string TermEval::sanitize_term(const proto_msg::RDFTerm &term) const {
+  if (term.basic_type() == proto_msg::BasicType::STRING) {
+    return term.term_value();
+  }
+  switch (term.basic_type()) {
+  case proto_msg::NUMBER:
+    return sanitize_number_term(term);
+  case proto_msg::BOOLEAN:
+    return sanitize_boolean_term(term);
+  case proto_msg::DATE:
+  case proto_msg::TIME:
+    return sanitize_date_term(term);
+  default:
+    return term.term_value();
+  }
+}
+
+std::string
+TermEval::sanitize_number_term(const proto_msg::RDFTerm &term) const {
+  const auto &str = term.term_value();
+  static constexpr auto default_result = "\"0\"^^xsd:integer";
+
+  if (str.empty())
+    return default_result;
+  if (str[0] == '"') {
+    auto literal_data =
+        StringHandlingUtil::extract_literal_data_from_string(str);
+    return sanitize_literal_data_number(std::move(literal_data),
+                                        default_result);
+  }
+
+  if (!ParsingUtils::string_is_numeric(str))
+    return default_result;
+
+  return "\"" + str + "\"^^xsd:" + infer_number_type_str(str);
+}
+std::string
+TermEval::sanitize_boolean_term(const proto_msg::RDFTerm &term) const {
+  const auto &str = term.term_value();
+  static constexpr auto default_result = "\"false\"^^xsd:boolean";
+
+  if (str.empty())
+    return default_result;
+
+  if (str[0] == '"') {
+    auto literal_data =
+        StringHandlingUtil::extract_literal_data_from_string(str);
+    return sanitize_literal_data_boolean(std::move(literal_data),
+                                         default_result);
+  }
+
+  auto lower_cased = to_lowercase(str);
+  if (lower_cased != "false" && lower_cased != "true")
+    return default_result;
+  return "\"" + lower_cased + "\"^^xsd:boolean";
+}
+std::string TermEval::sanitize_date_term(const proto_msg::RDFTerm &term) const {
+  static constexpr auto default_result =
+      "\"1970-01-01T00:00:00.000Z\"^^xsd:dateTime";
+
+  const auto &str = term.term_value();
+  if (str[0] == '"') {
+    auto literal_data =
+        StringHandlingUtil::extract_literal_data_from_string(term.term_value());
+    return sanitize_literal_data_date(std::move(literal_data), default_result);
+  }
+
+  auto date_info = ParsingUtils::parse_iso8601(str);
+
+  if (!date_info.matched) {
+    return default_result;
+  }
+
+  return "\"" + str + "\"^^xsd:dateTime";
+}
+std::string
+TermEval::infer_number_type_str(const std::string &input_string_number) const {
+  auto pos = input_string_number.find('.');
+  if (pos == std::string::npos)
+    return "integer";
+  return "double";
+}
+std::string TermEval::to_lowercase(std::string input) {
+  std::for_each(input.begin(), input.end(),
+                [](char &c) { c = std::tolower(c); });
+  return input;
+}
+std::string
+TermEval::sanitize_literal_data_boolean(StringLiteralData literal_data,
+                                        const char *default_result) const {
+  if (literal_data.value.empty())
+    return default_result;
+  if (literal_data.value[0] == '"') {
+    if (literal_data.value.size() == 1 ||
+        literal_data.value[literal_data.value.size() - 1] != '"')
+      return default_result;
+
+    auto substr = literal_data.value.substr(1, literal_data.value.size() - 1);
+
+    auto lower_cased = to_lowercase(substr);
+    if (lower_cased != "false" || lower_cased != "true")
+      return default_result;
+
+    return "\"" + lower_cased + "\"^^xsd:boolean";
+  }
+  auto lower_cased = to_lowercase(literal_data.value);
+  if (lower_cased != "false" || lower_cased != "true")
+    return default_result;
+  return "\"" + lower_cased + "\"^^xsd:boolean";
+}
+std::string
+TermEval::sanitize_literal_data_number(StringLiteralData literal_data,
+                                       const char *default_result) const {
+  if (literal_data.value.empty())
+    return default_result;
+
+  if (!ParsingUtils::string_is_numeric(literal_data.value))
+    return default_result;
+
+  if (literal_data.has_type()) {
+    return "\"" + literal_data.value + "\"^^xsd:" + literal_data.type_to_str();
+  }
+  return "\"" + literal_data.value +
+         "\"^^xsd:" + infer_number_type_str(literal_data.value);
+}
+std::string
+TermEval::sanitize_literal_data_date(StringLiteralData literal_data,
+                                     const char *default_result) const {
+  auto date_info = ParsingUtils::parse_iso8601(literal_data.value);
+  if (!date_info.matched) {
+    return default_result;
+  }
+  return "\"" + literal_data.value + "\"^^xsd:dateTime";
 }

@@ -8,6 +8,7 @@
 #include "QueryProcHashing.hpp"
 #include "ResultTableIterator.hpp"
 #include "ResultTableIteratorLRWHMapBase.hpp"
+#include <TimeControl.hpp>
 #include <set>
 class ResultTableIteratorLeftOuterJoin : public ResultTableIteratorLRWHMapBase {
 
@@ -20,7 +21,8 @@ public:
                          std::vector<std::vector<unsigned long>>, fnv_hash_64>
           &&right_hmap,
       std::vector<unsigned long> &&left_headers_to_result,
-      std::vector<unsigned long> &&right_values_to_result);
+      std::vector<unsigned long> &&right_values_to_result,
+      TimeControl &time_control);
   std::vector<unsigned long> next() override;
 
 private:

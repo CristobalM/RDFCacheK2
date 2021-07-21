@@ -28,7 +28,7 @@ StrSubstringEval::eval_resource(const ExprEval::row_t &row) {
 }
 void StrSubstringEval::validate() {
   ExprEval::validate();
-  assert_fsize(3);
+  assert_fun_size(3);
 }
 void StrSubstringEval::init() {
   ExprEval::init();

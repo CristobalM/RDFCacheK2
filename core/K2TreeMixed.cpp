@@ -633,14 +633,17 @@ K2TreeMixed::begin_band_scan(unsigned long band_value, BandType band_type) {
 K2TreeMixed::BandScanIterator K2TreeMixed::end_band_scan() {
   return K2TreeMixed::BandScanIterator(nullptr);
 }
-std::unique_ptr<K2TreeMixed::K2TreeScanner> K2TreeMixed::create_full_scanner() {
-  return std::unique_ptr<K2TreeScanner>(std::make_unique<FullScanner>(*this));
+std::unique_ptr<K2TreeMixed::K2TreeScanner>
+K2TreeMixed::create_full_scanner(TimeControl &time_control) {
+  return std::unique_ptr<K2TreeScanner>(
+      std::make_unique<FullScanner>(*this, time_control));
 }
 std::unique_ptr<K2TreeMixed::K2TreeScanner>
 K2TreeMixed::create_band_scanner(unsigned long band,
-                                 K2TreeMixed::BandType band_type) {
+                                 K2TreeMixed::BandType band_type,
+                                 TimeControl &time_control) {
   return std::unique_ptr<K2TreeScanner>(
-      std::make_unique<BandScanner>(*this, band, band_type));
+      std::make_unique<BandScanner>(*this, band, band_type, time_control));
 }
 std::unique_ptr<K2TreeMixed::K2TreeScanner>
 K2TreeMixed::create_empty_scanner() {
@@ -651,10 +654,13 @@ bool K2TreeMixed::FullScanner::has_next() { return lazy_handler.has_next; }
 std::pair<unsigned long, unsigned long> K2TreeMixed::FullScanner::next() {
   pair2dl_t result;
   k2node_naive_scan_points_lazy_next(&lazy_handler, &result);
+  time_control.tick_only_count();
   return {result.col, result.row};
 }
 
-K2TreeMixed::FullScanner::FullScanner(K2TreeMixed &k2tree) : k2tree(k2tree) {
+K2TreeMixed::FullScanner::FullScanner(K2TreeMixed &k2tree,
+                                      TimeControl &time_control)
+    : k2tree(k2tree), time_control(time_control) {
   k2node_naive_scan_points_lazy_init(k2tree.get_root_k2node(),
                                      k2tree.get_k2qstate(), &lazy_handler);
 }
@@ -680,6 +686,7 @@ std::pair<unsigned long, unsigned long> K2TreeMixed::BandScanner::next() {
   if (band_type == COLUMN_BAND_TYPE) {
     return {band, result};
   }
+  time_control.tick_only_count();
   return {result, band};
 }
 K2TreeMixed::BandScanner::~BandScanner() {
@@ -687,8 +694,10 @@ K2TreeMixed::BandScanner::~BandScanner() {
 }
 
 K2TreeMixed::BandScanner::BandScanner(K2TreeMixed &k2tree, unsigned long band,
-                                      K2TreeMixed::BandType band_type)
-    : band(band), band_type(band_type), k2tree(k2tree) {
+                                      K2TreeMixed::BandType band_type,
+                                      TimeControl &time_control)
+    : band(band), band_type(band_type), k2tree(k2tree),
+      time_control(time_control) {
   if (band_type == COLUMN_BAND_TYPE) {
     k2node_report_column_lazy_init(&lazy_handler, k2tree.get_root_k2node(),
                                    k2tree.get_k2qstate(), band);

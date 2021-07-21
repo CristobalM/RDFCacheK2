@@ -8,3 +8,5 @@ proto/generated/
 proto/java-generated/
 ignore_stuff/
 .vscode/
+gccbuild/
+optbuild/

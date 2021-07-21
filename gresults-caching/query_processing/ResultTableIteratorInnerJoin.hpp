@@ -6,6 +6,7 @@
 #define RDFCACHEK2_RESULTTABLEITERATORINNERJOIN_HPP
 
 #include "ResultTableIteratorLRWHMapBase.hpp"
+#include <TimeControl.hpp>
 class ResultTableIteratorInnerJoin : public ResultTableIteratorLRWHMapBase {
 public:
   ResultTableIteratorInnerJoin(
@@ -16,7 +17,8 @@ public:
                          std::vector<std::vector<unsigned long>>, fnv_hash_64>
           &&right_hmap,
       std::vector<unsigned long> &&left_headers_to_result,
-      std::vector<unsigned long> &&right_values_to_result);
+      std::vector<unsigned long> &&right_values_to_result,
+      TimeControl &time_control);
 
   std::vector<unsigned long> next() override;
   std::vector<unsigned long> next_concrete();

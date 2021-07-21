@@ -48,12 +48,10 @@ StrConcatEval::eval_resource(const ExprEval::row_t &row) {
       wlang_tag = false;
     } else if (resource->is_concrete()) {
       ss << resource->get_content_string_copy();
-      auto concrete_dtype =
-          ExprProcessorPersistentData::get().extract_data_type_from_string(
-              resource->get_resource().value);
+      auto concrete_dtype = ParsingUtils::extract_data_type_from_string(
+          resource->get_resource().value);
       auto concrete_ltag =
-          ExprProcessorPersistentData::get().extract_language_tag(
-              resource->get_resource().value);
+          ParsingUtils::extract_language_tag(resource->get_resource().value);
       if (first) {
         if (concrete_dtype != ExprDataType::EDT_UNKNOWN) {
           data_type = concrete_dtype;

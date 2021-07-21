@@ -14,9 +14,8 @@ StrDataTypeEval::eval_resource(const ExprEval::row_t &row) {
   }
 
   if (input_str_resource->is_concrete()) {
-    auto lexical_form =
-        ExprProcessorPersistentData::get().extract_literal_content_from_string(
-            input_str_resource->get_resource().value);
+    auto lexical_form = ParsingUtils::extract_literal_content_from_string(
+        input_str_resource->get_resource().value);
     return std::make_shared<StringLiteralResource>(
         std::move(lexical_form), data_type_resource->get_datatype());
   }
@@ -36,7 +35,7 @@ StrDataTypeEval::eval_resource(const ExprEval::row_t &row) {
 }
 void StrDataTypeEval::validate() {
   ExprEval::validate();
-  assert_fsize(2);
+  assert_fun_size(2);
 }
 void StrDataTypeEval::init() {
   ExprEval::init();

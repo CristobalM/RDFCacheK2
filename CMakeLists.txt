@@ -56,45 +56,37 @@ set(GRAPH_RESULT_CACHING_FILE
         gresults-caching/GraphResult.cpp
         gresults-caching/Cache.cpp
         gresults-caching/CacheReplacementFactory.cpp
-        gresults-caching/LRUCacheReplacement.cpp
-        gresults-caching/cache_result/ExistingCacheResult.cpp
-        gresults-caching/cache_result/NonExistingCacheResult.cpp
         gresults-caching/LRU/LRUQueue.cpp
         gresults-caching/LRUCacheReplacement.cpp
+        gresults-caching/LRUCacheReplacement.hpp
+        gresults-caching/TimeControl.cpp
+        gresults-caching/TimeControl.hpp
+        gresults-caching/QueryError.cpp
+        gresults-caching/QueryError.hpp
+
         gresults-caching/query_processing/QueryProcessor.cpp
-        gresults-caching/query_processing/QueryProcessor2.cpp
-        gresults-caching/query_processing/KeyPairStr.cpp
         gresults-caching/query_processing/QueryResult.cpp
         gresults-caching/query_processing/Triple.cpp
-        gresults-caching/query_processing/hash_pair.cpp
-        gresults-caching/query_processing/GroupedTriples.cpp
-        gresults-caching/query_processing/ChainedInput.cpp
-        gresults-caching/query_processing/BGPProcessor.cpp
         gresults-caching/query_processing/VarIndexManager.cpp
-        gresults-caching/query_processing/BandMap.cpp
-        gresults-caching/query_processing/BandMapLazy.cpp
         gresults-caching/query_processing/UnionProcessor.cpp
-        gresults-caching/query_processing/OptionalProcessor.cpp
-        gresults-caching/query_processing/InnerJoinProcessor.cpp
         gresults-caching/query_processing/ExprProcessor.cpp
-        gresults-caching/query_processing/ExprListProcessor.cpp
-        gresults-caching/query_processing/ExprProcessorPersistentData.cpp
-        gresults-caching/query_processing/MinusProcessor.cpp
-        gresults-caching/query_processing/OrderNodeProcessor.cpp
-        gresults-caching/query_processing/IBandMap.hpp
-        gresults-caching/query_processing/BandMapFactory.cpp
-        gresults-caching/query_processing/BandMapFactory.hpp
+        gresults-caching/query_processing/ParsingUtils.cpp
         gresults-caching/query_processing/DateInfo.hpp
         gresults-caching/query_processing/DateInfo.cpp
 
 
-        gresults-caching/query_processing/OptionalProcessor2.cpp
+        gresults-caching/query_processing/OptionalProcessor.cpp
         gresults-caching/query_processing/ResultTableIterator.hpp
         gresults-caching/query_processing/ResultTableIterator.cpp
 
+        gresults-caching/query_processing/ResultTableVector.cpp
+        gresults-caching/query_processing/ResultTableVector.hpp
+        gresults-caching/query_processing/ResultTableIteratorFromMaterializedVector.cpp
+        gresults-caching/query_processing/ResultTableIteratorFromMaterializedVector.hpp
 
-        gresults-caching/query_processing/BGPProcessor2.cpp
-        gresults-caching/query_processing/BGPProcessor2.hpp
+
+        gresults-caching/query_processing/BGPProcessor.cpp
+        gresults-caching/query_processing/BGPProcessor.hpp
         gresults-caching/query_processing/ResultTableIteratorBGP.cpp
         gresults-caching/query_processing/ResultTableIteratorBGP.hpp
         gresults-caching/query_processing/ResultTableIteratorLeftOuterJoin.cpp
@@ -121,8 +113,8 @@ set(GRAPH_RESULT_CACHING_FILE
         gresults-caching/query_processing/ResultTableIteratorExtend.hpp
         gresults-caching/query_processing/ResultTableIteratorMinus.hpp
         gresults-caching/query_processing/ResultTableIteratorMinus.cpp
-        gresults-caching/query_processing/InnerJoinProcessor2.hpp
-        gresults-caching/query_processing/InnerJoinProcessor2.cpp
+        gresults-caching/query_processing/InnerJoinProcessor.hpp
+        gresults-caching/query_processing/InnerJoinProcessor.cpp
         gresults-caching/query_processing/ResultTableIteratorInnerJoin.cpp
         gresults-caching/query_processing/ResultTableIteratorInnerJoin.hpp
         gresults-caching/query_processing/ResultTableIteratorSlice.hpp
@@ -240,7 +232,11 @@ set(GRAPH_RESULT_CACHING_FILE
         gresults-caching/query_processing/resources/DateTimeResource.cpp
 
         gresults-caching/query_processing/utility/StringHandlingUtil.cpp
-        gresults-caching/query_processing/DateInfo.hpp)
+        gresults-caching/query_processing/DateInfo.hpp
+        gresults-caching/query_processing/OrderNodeProcessorVec.cpp
+        gresults-caching/query_processing/OrderNodeProcessorVec.hpp
+
+        )
 
 
 set(NETWORK_SOURCE_FILES

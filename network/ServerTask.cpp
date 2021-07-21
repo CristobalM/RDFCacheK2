@@ -2,22 +2,29 @@
 // Created by Cristobal Miranda, 2020
 //
 
+#include <chrono>
 #include <iostream>
 #include <netinet/in.h>
 #include <set>
 #include <sstream>
 #include <sys/socket.h>
+#include <thread>
 #include <unistd.h>
 
 #include "ServerTask.hpp"
+#include "TimeControl.hpp"
 #include "network_msg_definitions.hpp"
 
 #include <graph_result.pb.h>
 #include <message_type.pb.h>
 #include <response_msg.pb.h>
 
+#include <condition_variable>
 #include <hashing.hpp>
+#include <query_processing/QueryResultIterator.hpp>
 #include <serialization_util.hpp>
+
+using namespace std::chrono_literals;
 
 ServerTask::ServerTask(int client_socket_fd, Cache &cache,
                        TaskProcessor &task_processor)
@@ -112,7 +119,8 @@ void ServerTask::process() {
 
     message.deserialize();
 
-    std::cout << "Incoming message" << message.get_buffer() << std::endl;
+    std::cout << "Incoming message of size: " << message.get_size()
+              << std::endl;
 
     switch (message.request_type()) {
     case proto_msg::MessageType::UNKNOWN:
@@ -141,7 +149,6 @@ int ServerTask::get_client_socket_fd() { return client_socket_fd; }
 Cache &ServerTask::get_cache() { return cache; }
 
 void ServerTask::process_cache_query(Message &message) {
-  // auto &cache = get_cache();
   auto &tree =
       message.get_cache_request().cache_run_query_algebra().sparql_tree();
   auto valid = cache.query_is_valid(tree);
@@ -150,11 +157,24 @@ void ServerTask::process_cache_query(Message &message) {
     send_invalid_response();
     return;
   }
-  auto query_result = cache.run_query(tree);
 
-  auto response =
-      create_response_from_query_result(std::move(query_result), message);
-  send_response(response);
+  TimeControl time_control(100'000, 5s);
+  time_control.start_timer();
+  auto query_result =
+      cache.run_query(tree, time_control)->as_query_result_original();
+
+  if (time_control.has_error()) {
+    send_invalid_response();
+    std::cerr << time_control.get_query_error().get_str() << std::endl;
+  } else if (time_control.finished()) {
+    auto response =
+        create_response_from_query_result(std::move(query_result), message);
+    send_response(response);
+  } else {
+    // check if this dont cause memory errors
+    std::cout << "timed out..." << std::endl;
+    send_timeout();
+  }
 }
 
 void ServerTask::send_invalid_response() {
@@ -166,11 +186,10 @@ void ServerTask::send_invalid_response() {
   send_response(cache_response);
 }
 
-proto_msg::CacheResponse
-ServerTask::create_response_from_query_result(QueryResult &&query_result,
-                                              Message &message) {
-  auto &vim = query_result.get_vim();
-  auto &table = query_result.table();
+proto_msg::CacheResponse ServerTask::create_response_from_query_result(
+    std::shared_ptr<QueryResult> query_result, Message &message) {
+  auto &vim = query_result->get_vim();
+  auto &table = query_result->table();
 
   proto_msg::CacheResponse cache_response;
   cache_response.set_response_type(
@@ -191,7 +210,7 @@ ServerTask::create_response_from_query_result(QueryResult &&query_result,
   for (const auto &key : keys) {
     RDFResource key_res;
     if (key > cache.get_pcm().get_last_id()) {
-      key_res = query_result.get_extra_dict().extract_resource(
+      key_res = query_result->get_extra_dict().extract_resource(
           key - cache.get_pcm().get_last_id());
     } else {
       key_res = cache.extract_resource(key);
@@ -199,8 +218,8 @@ ServerTask::create_response_from_query_result(QueryResult &&query_result,
     keys_size += key_res.value.size() * sizeof(char);
   }
   keys_size += keys.size() * sizeof(uint64_t);
-  keys_size += query_result.table().get_data().size() *
-               query_result.table().headers.size() * sizeof(uint64_t);
+  keys_size += query_result->table().get_data().size() *
+               query_result->table().headers.size() * sizeof(uint64_t);
 
   if (keys_size > MAX_PROTO_MESSAGE_SIZE_ALLOWED) {
     return create_parts_response(std::move(keys), std::move(query_result));
@@ -208,7 +227,7 @@ ServerTask::create_response_from_query_result(QueryResult &&query_result,
 
   if (tree.root().node_case() == proto_msg::SparqlNode::kProjectNode) {
     auto &project_node = tree.root().project_node();
-    auto &headers = query_result.table().headers;
+    auto &headers = query_result->table().headers;
     std::unordered_map<unsigned long, unsigned long> reversed_uindexes;
     for (size_t i = 0; i < headers.size(); i++) {
       reversed_uindexes[headers[i]] = i;
@@ -253,7 +272,7 @@ ServerTask::create_response_from_query_result(QueryResult &&query_result,
   for (auto key : keys) {
     RDFResource key_res;
     if (key > cache.get_pcm().get_last_id()) {
-      key_res = query_result.get_extra_dict().extract_resource(
+      key_res = query_result->get_extra_dict().extract_resource(
           key - cache.get_pcm().get_last_id());
     } else {
       key_res = cache.extract_resource(key);
@@ -302,7 +321,7 @@ void ServerTask::process_connection_end() {
 }
 proto_msg::CacheResponse
 ServerTask::create_parts_response(std::set<uint64_t> &&keys,
-                                  QueryResult &&result) {
+                                  std::shared_ptr<QueryResult> result) {
   auto &streamer =
       task_processor.create_streamer(std::move(keys), std::move(result));
   return streamer.get_next_response();
@@ -317,4 +336,14 @@ void ServerTask::process_receive_remaining_result(Message &message) {
   auto &streamer = task_processor.get_streamer(id);
   auto next_response = streamer.get_next_response();
   send_response(next_response);
+  if (streamer.all_sent()) {
+    task_processor.clean_streamer(id);
+  }
+}
+void ServerTask::send_timeout() {
+  std::cout << "query timed out... aborting" << std::endl;
+  proto_msg::CacheResponse cache_response;
+  cache_response.set_response_type(proto_msg::MessageType::TIMED_OUT_RESPONSE);
+  cache_response.mutable_error_response();
+  send_response(cache_response);
 }

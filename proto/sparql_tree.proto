@@ -239,8 +239,8 @@ enum TermType {
 }
 
 enum BasicType {
-  NUMBER = 0;
-  STRING = 1;
+  STRING = 0;
+  NUMBER = 1;
   BOOLEAN = 2;
   DATE = 3;
   TIME = 4;

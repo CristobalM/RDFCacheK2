@@ -3,17 +3,16 @@
 //
 
 #include "LWRHMapJoinLazyBaseProcessor.hpp"
+#include <TimeControl.hpp>
 
 LWRHMapJoinLazyBaseProcessor::LWRHMapJoinLazyBaseProcessor(
-    std::shared_ptr<ResultTableIterator> left_it,
+    TimeControl &time_control, std::shared_ptr<ResultTableIterator> left_it,
     std::shared_ptr<ResultTableIterator> right_it)
-    : left_it(std::move(left_it)), right_it(std::move(right_it)),
-      join_vars(find_join_vars()), header_values(build_header()),
-      header_positions(build_header_positions()),
+    : time_control(time_control), left_it(std::move(left_it)),
+      right_it(std::move(right_it)), join_vars(find_join_vars()),
+      header_values(build_header()), header_positions(build_header_positions()),
       join_vars_real_positions(build_join_vars_real_positions()),
-      right_hmap(build_right_hmap())
-
-{
+      right_hmap(build_right_hmap()) {
   build_to_result_vec_maps();
 }
 
@@ -52,13 +51,16 @@ LWRHMapJoinLazyBaseProcessor::build_right_hmap() {
       find_join_nojoin_vars_in_vec(right_it->get_headers());
 
   std::vector<unsigned long> key_holder(join_vars.size(), 0);
-  std::vector<unsigned long> value_holder(join_vars.size(), 0);
+  std::vector<unsigned long> value_holder(
+      right_table_non_join_var_positions.size(), 0);
 
   while (right_it->has_next()) {
     auto row = right_it->next();
     select_values(key_holder, value_holder, row, right_table_join_var_positions,
                   right_table_non_join_var_positions);
     result[key_holder].push_back(value_holder);
+    if (!time_control.tick())
+      return result;
   }
 
   return result;
@@ -113,25 +115,30 @@ void LWRHMapJoinLazyBaseProcessor::build_to_result_vec_maps() {
   auto &left_header = left_it->get_headers();
   left_headers_to_result = std::vector<unsigned long>(left_header.size(), 0);
 
-  for (size_t l = 0, h = 0; l < left_header.size() && h < header_values.size();
-       l++) {
-    if (left_header[l] == header_values[h]) {
-      left_headers_to_result[l] = h;
-      h++;
+  std::set<unsigned long> left_headers_set(left_header.begin(),
+                                           left_header.end());
+
+  for (size_t h = 0; h < header_values.size(); h++) {
+    for (size_t l = 0; l < left_header.size(); l++) {
+      if (left_header[l] == header_values[h]) {
+        left_headers_to_result[l] = h;
+      }
     }
   }
   auto &right_header = right_it->get_headers();
-  std::vector<unsigned long> values_header;
+  std::vector<unsigned long> non_join_right_header_values;
   for (unsigned long rh : right_header) {
     if (join_vars.find(rh) == join_vars.end()) {
-      values_header.push_back(rh);
+      non_join_right_header_values.push_back(rh);
     }
   }
-  right_values_to_result = std::vector<unsigned long>(values_header.size(), 0);
-  for (size_t r = 0; r < values_header.size(); r++) {
+  right_headers_positions_in_final =
+      std::vector<unsigned long>(non_join_right_header_values.size(), 0);
+
+  for (size_t r = 0; r < non_join_right_header_values.size(); r++) {
     for (size_t h = 0; h < header_values.size(); h++) {
-      if (values_header[r] == header_values[h]) {
-        right_values_to_result[r] = h;
+      if (non_join_right_header_values[r] == header_values[h]) {
+        right_headers_positions_in_final[r] = h;
       }
     }
   }

@@ -8,14 +8,17 @@
 #include "BGPOp.hpp"
 #include "Triple.hpp"
 #include <K2TreeMixed.hpp>
+#include <TimeControl.hpp>
 #include <memory>
 class TripleExistenceBGPOP : public BGPOp {
   std::unique_ptr<K2TreeMixed::K2TreeScanner> scanner;
-  Triple &triple;
+  std::shared_ptr<Triple> triple;
+  TimeControl &time_control;
 
 public:
-  explicit TripleExistenceBGPOP(
-      std::unique_ptr<K2TreeMixed::K2TreeScanner> &&scanner, Triple &triple);
+  TripleExistenceBGPOP(std::unique_ptr<K2TreeMixed::K2TreeScanner> &&scanner,
+                       std::shared_ptr<Triple> triple,
+                       TimeControl &time_control);
   RunResult run(std::vector<unsigned long> &row_to_fill) override;
   void reset_op() override;
   K2TreeMixed::K2TreeScanner &get_scanner() override;

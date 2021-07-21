@@ -9,14 +9,15 @@
 #include <string>
 
 #include <PredicatesCacheManager.hpp>
-#include <query_processing/ExprProcessorPersistentData.hpp>
+#include <TimeControl.hpp>
+#include <query_processing/ParsingUtils.hpp>
+#include <query_processing/QueryResultIterator.hpp>
 #include <request_msg.pb.h>
 
 #include "CacheReplacement.hpp"
 
 #include "ICacheSettings.hpp"
 
-#include "query_processing/QueryProcessor.hpp"
 #include "query_processing/QueryResult.hpp"
 
 struct CacheStats {
@@ -45,7 +46,8 @@ public:
 
   CacheStats cache_stats();
 
-  QueryResult run_query(proto_msg::SparqlTree const &query_tree);
+  std::shared_ptr<QueryResultIterator>
+  run_query(const proto_msg::SparqlTree &query_tree, TimeControl &time_control);
   RDFResource extract_resource(unsigned long index) const;
 
   PredicatesCacheManager &get_pcm();

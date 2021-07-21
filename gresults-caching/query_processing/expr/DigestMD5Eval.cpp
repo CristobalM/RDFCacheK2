@@ -3,6 +3,7 @@
 //
 
 #include "DigestMD5Eval.hpp"
+#include "ExprEval.hpp"
 #include "query_processing/resources/StringLiteralResource.hpp"
 
 #include <hashing.hpp>
@@ -13,9 +14,8 @@ DigestMD5Eval::eval_resource(const ExprEval::row_t &row) {
   std::string result;
   if (child_resource->is_concrete()) {
     const auto &concrete_child_resouce = child_resource->get_resource();
-    auto literal_content =
-        ExprProcessorPersistentData::get().extract_literal_content_from_string(
-            concrete_child_resouce.value);
+    auto literal_content = ParsingUtils::extract_literal_content_from_string(
+        concrete_child_resouce.value);
     result = md5_human_readable_lowercase(literal_content);
   } else if (child_resource->is_string_literal()) {
     result = md5_human_readable_lowercase(child_resource->get_literal_string());
@@ -30,7 +30,7 @@ DigestMD5Eval::eval_resource(const ExprEval::row_t &row) {
 
 void DigestMD5Eval::validate() {
   ExprEval::validate();
-  assert_fsize(1);
+  assert_fun_size(1);
 }
 void DigestMD5Eval::init() {
   ExprEval::init();

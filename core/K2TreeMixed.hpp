@@ -9,6 +9,7 @@
 #include "ResultTable.hpp"
 #include "k2tree_stats.hpp"
 
+#include <TimeControl.hpp>
 #include <serialization_util.hpp>
 
 extern "C" {
@@ -119,7 +120,7 @@ public:
 
   struct FullScanner : public K2TreeScanner {
 
-    explicit FullScanner(K2TreeMixed &k2tree);
+    FullScanner(K2TreeMixed &k2tree, TimeControl &time_control);
 
     bool has_next() override;
     std::pair<unsigned long, unsigned long> next() override;
@@ -133,11 +134,12 @@ public:
   private:
     k2node_lazy_handler_naive_scan_t lazy_handler;
     K2TreeMixed &k2tree;
+    TimeControl &time_control;
   };
 
   struct BandScanner : public K2TreeScanner {
     BandScanner(K2TreeMixed &k2tree, unsigned long band,
-                K2TreeMixed::BandType band_type);
+                K2TreeMixed::BandType band_type, TimeControl &time_control);
     bool has_next() override;
     std::pair<unsigned long, unsigned long> next() override;
     ~BandScanner() override;
@@ -152,6 +154,7 @@ public:
     K2TreeMixed::BandType band_type;
     k2node_lazy_handler_report_band_t lazy_handler;
     K2TreeMixed &k2tree;
+    TimeControl &time_control;
   };
 
   struct EmptyScanner : public K2TreeScanner {
@@ -168,9 +171,11 @@ public:
     K2TreeMixed &k2tree;
   };
 
-  std::unique_ptr<K2TreeScanner> create_full_scanner();
-  std::unique_ptr<K2TreeScanner>
-  create_band_scanner(unsigned long band, K2TreeMixed::BandType band_type);
+  std::unique_ptr<K2TreeMixed::K2TreeScanner>
+  create_full_scanner(TimeControl &time_control);
+  std::unique_ptr<K2TreeMixed::K2TreeScanner>
+  create_band_scanner(unsigned long band, K2TreeMixed::BandType band_type,
+                      TimeControl &time_control);
 
   struct FullScanIterator {
     using ul_pair_t = std::pair<unsigned long, unsigned long>;

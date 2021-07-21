@@ -3,7 +3,7 @@
 //
 // Created by Cristobal Miranda, 2020
 //
-#include "ExprProcessorPersistentData.hpp"
+#include "ParsingUtils.hpp"
 
 #include <ctime>
 #include <sstream>
@@ -31,15 +31,14 @@ const std::string string_literal =
 
 const std::string decimal_number = "(^[-+]?[0-9]\\d*(?:\\.\\d+)?$)";
 
+const pcrecpp::RE re_datatype(datatype_regex);
+const pcrecpp::RE re_literal(string_literal);
+const pcrecpp::RE re_decimal_number(decimal_number);
+const pcrecpp::RE re_iri(iri_valid);
 } // namespace
 
-ExprProcessorPersistentData::ExprProcessorPersistentData()
-    : re_datatype(datatype_regex), re_literal(string_literal),
-      re_decimal_number(decimal_number), re_iri(iri_valid),
-      mutable_calendar(create_icu_calendar()) {}
-
-ExprDataType ExprProcessorPersistentData::extract_data_type_from_string(
-    const std::string &input_string) const {
+ExprDataType
+ParsingUtils::extract_data_type_from_string(const std::string &input_string) {
   pcrecpp::StringPiece re_input(input_string);
   std::string a;
   std::string b;
@@ -52,8 +51,8 @@ ExprDataType ExprProcessorPersistentData::extract_data_type_from_string(
     return select_data_type(b);
 }
 
-ExprDataType ExprProcessorPersistentData::select_data_type(
-    const std::string &data_type_string) const {
+ExprDataType
+ParsingUtils::select_data_type(const std::string &data_type_string) {
   if (data_type_string == "integer")
     return ExprDataType::EDT_INTEGER;
   if (data_type_string == "decimal")
@@ -70,8 +69,8 @@ ExprDataType ExprProcessorPersistentData::select_data_type(
     return ExprDataType::EDT_DATETIME;
   return ExprDataType::EDT_UNKNOWN;
 }
-std::string ExprProcessorPersistentData::extract_literal_content_from_string(
-    const std::string &input_string) const {
+std::string ParsingUtils::extract_literal_content_from_string(
+    const std::string &input_string) {
   pcrecpp::StringPiece re_input(input_string);
   std::string full_word;
   std::string content;
@@ -83,33 +82,13 @@ std::string ExprProcessorPersistentData::extract_literal_content_from_string(
   return content;
 }
 
-bool ExprProcessorPersistentData::string_is_numeric(
-    const std::string &input_string) const {
+bool ParsingUtils::string_is_numeric(const std::string &input_string) {
   pcrecpp::StringPiece re_input(input_string);
   std::string full_word;
   return re_decimal_number.FullMatch(re_input, &full_word);
 }
 
-icu::TimeZone *ExprProcessorPersistentData::get_utc_timezone() {
-  auto *tz = icu::TimeZone::createDefault();
-  tz->setRawOffset(0);
-  return tz;
-}
-
-std::unique_ptr<icu::Calendar>
-ExprProcessorPersistentData::create_icu_calendar() {
-  UErrorCode err = U_ZERO_ERROR;
-  return std::unique_ptr<icu::Calendar>(
-      icu::Calendar::createInstance(get_utc_timezone(), err));
-}
-
-int ExprProcessorPersistentData::extract_date_portion(
-    UDate epoch_value, UCalendarDateFields date_fields) {
-  UErrorCode err = U_ZERO_ERROR;
-  mutable_calendar->setTime(epoch_value, err);
-  return mutable_calendar->get(date_fields, err);
-}
-DateInfo ExprProcessorPersistentData::parse_iso8601(const std::string &input) {
+DateInfo ParsingUtils::parse_iso8601(const std::string &input) {
   static const std::string regex_str(
       "^((\\d{4})-([01]\\d)-([0-3]\\d)T([0-2]\\d):([0-5]\\d):([0-5]\\d)(?:\\.("
       "\\d+))?(?:([+-])([0-2]\\d):?([0-5]\\d)|(Z)))$");
@@ -146,8 +125,8 @@ DateInfo ExprProcessorPersistentData::parse_iso8601(const std::string &input) {
   return result;
 }
 
-std::string ExprProcessorPersistentData::extract_language_tag(
-    const std::string &input_string) const {
+std::string
+ParsingUtils::extract_language_tag(const std::string &input_string) {
   pcrecpp::StringPiece re_input(input_string);
   std::string full_word;
   std::string content;
@@ -160,8 +139,7 @@ std::string ExprProcessorPersistentData::extract_language_tag(
   return metadata.substr(1, metadata.size() - 1);
 }
 
-std::string ExprProcessorPersistentData::extract_inside_iri(
-    const std::string &input_string) const {
+std::string ParsingUtils::extract_inside_iri(const std::string &input_string) {
 
   pcrecpp::StringPiece piece(input_string);
   std::string inner_string;
@@ -171,13 +149,7 @@ std::string ExprProcessorPersistentData::extract_inside_iri(
   return inner_string;
 }
 
-ExprProcessorPersistentData &ExprProcessorPersistentData::get() {
-  return instance;
-}
-
-ExprProcessorPersistentData ExprProcessorPersistentData::instance =
-    ExprProcessorPersistentData();
-DateInfo ExprProcessorPersistentData::get_now_dateinfo() {
+DateInfo ParsingUtils::get_now_dateinfo() {
   std::time_t now = std::time(0);
   std::tm *now_tm = std::gmtime(&now);
   DateInfo result{};
@@ -195,7 +167,7 @@ DateInfo ExprProcessorPersistentData::get_now_dateinfo() {
   return result;
 }
 
-int ExprProcessorPersistentData::normalize_diff_cmp(int diff) {
+int ParsingUtils::normalize_diff_cmp(int diff) {
   if (diff > 0)
     return 1;
   else if (diff < 0)
@@ -220,8 +192,7 @@ static std::string pad_int(int input, int padding) {
   return std::string(zeros_to_add, '0') + std::to_string(input);
 }
 
-std::string
-ExprProcessorPersistentData::date_info_to_iso8601_string(DateInfo date_info) {
+std::string ParsingUtils::date_info_to_iso8601_string(DateInfo date_info) {
   std::stringstream ss;
   ss << date_info.year << "-" << pad_int(date_info.month, 2) << "-"
      << pad_int(date_info.day, 2) << "T" << pad_int(date_info.hour, 2) << ":"

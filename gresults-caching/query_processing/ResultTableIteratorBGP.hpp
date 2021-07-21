@@ -8,6 +8,7 @@
 #include "BGPOp.hpp"
 #include "ResultTableIterator.hpp"
 #include <K2TreeMixed.hpp>
+#include <TimeControl.hpp>
 #include <memory>
 #include <set>
 #include <vector>
@@ -26,7 +27,8 @@ class ResultTableIteratorBGP : public ResultTableIterator {
 
 public:
   ResultTableIteratorBGP(std::vector<std::unique_ptr<BGPOp>> &&bgp_ops,
-                         std::vector<unsigned long> &headers);
+                         std::vector<unsigned long> &headers,
+                         TimeControl &time_control);
 
   bool has_next() override;
   std::vector<unsigned long> next() override;

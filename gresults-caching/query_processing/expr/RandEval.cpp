@@ -22,5 +22,5 @@ double RandEval::eval_double(const ExprEval::row_t &) {
 
 void RandEval::validate() {
   ExprEval::validate();
-  assert_fsize(0);
+  assert_fun_size(0);
 }

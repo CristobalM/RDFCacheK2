@@ -30,7 +30,7 @@ ConditionalEval::eval_resource(const ExprEval::row_t &row) {
 
 void ConditionalEval::validate() {
   ExprEval::validate();
-  assert_fsize(3);
+  assert_fun_size(3);
   assert_is_function(expr_node);
 }
 void ConditionalEval::init() {

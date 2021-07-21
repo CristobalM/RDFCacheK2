@@ -6,6 +6,7 @@
 #define RDFCACHEK2_RESULTTABLEITERATORUNION_HPP
 
 #include "ResultTableIterator.hpp"
+#include <TimeControl.hpp>
 #include <memory>
 #include <vector>
 class ResultTableIteratorUnion : public ResultTableIterator {
@@ -17,7 +18,8 @@ class ResultTableIteratorUnion : public ResultTableIterator {
 
 public:
   explicit ResultTableIteratorUnion(
-      std::vector<std::shared_ptr<ResultTableIterator>> &&iterators);
+      std::vector<std::shared_ptr<ResultTableIterator>> &&iterators,
+      TimeControl &time_control);
   bool has_next() override;
   std::vector<unsigned long> next() override;
   std::vector<unsigned long> &get_headers() override;

@@ -6,16 +6,16 @@
 #define RDFCACHEK2_RESULTTABLEITERATORSLICE_HPP
 
 #include "ResultTableIterator.hpp"
+#include <TimeControl.hpp>
 class ResultTableIteratorSlice : public ResultTableIterator {
   std::shared_ptr<ResultTableIterator> input_it;
   long start;
   long length;
-
   long current_position;
 
 public:
   ResultTableIteratorSlice(std::shared_ptr<ResultTableIterator> input_it,
-                           long start, long length);
+                           long start, long length, TimeControl &time_control);
   bool has_next() override;
   std::vector<unsigned long> next() override;
   std::vector<unsigned long> &get_headers() override;

@@ -4,7 +4,7 @@
 
 #include "ConcreteRDFResource.hpp"
 #include "query_processing/utility/StringHandlingUtil.hpp"
-#include <query_processing/ExprProcessorPersistentData.hpp>
+#include <query_processing/ParsingUtils.hpp>
 bool ConcreteRDFResource::operator==(const TermResource &rhs) const {
   return rhs.is_concrete() && resource == rhs.get_resource();
 }
@@ -27,14 +27,10 @@ std::shared_ptr<TermResource> ConcreteRDFResource::null_resource_ptr() {
 RDFResource ConcreteRDFResource::get_resource_clone() const { return resource; }
 
 bool ConcreteRDFResource::contains(TermResource &pattern_resource) const {
-  auto data_type =
-      ExprProcessorPersistentData::get().extract_data_type_from_string(
-          resource.value);
-  auto lang_tag =
-      ExprProcessorPersistentData::get().extract_language_tag(resource.value);
+  auto data_type = ParsingUtils::extract_data_type_from_string(resource.value);
+  auto lang_tag = ParsingUtils::extract_language_tag(resource.value);
   auto value =
-      ExprProcessorPersistentData::get().extract_literal_content_from_string(
-          resource.value);
+      ParsingUtils::extract_literal_content_from_string(resource.value);
 
   if (pattern_resource.is_string_literal()) {
     if (!lang_tag.empty() || data_type != pattern_resource.get_datatype())
@@ -52,11 +48,9 @@ bool ConcreteRDFResource::contains(TermResource &pattern_resource) const {
   if (pattern_resource.is_concrete()) {
     const auto &pattern_full_string = pattern_resource.get_resource().value;
     auto pattern_data_type =
-        ExprProcessorPersistentData::get().extract_data_type_from_string(
-            pattern_full_string);
+        ParsingUtils::extract_data_type_from_string(pattern_full_string);
     auto pattern_lang_tag =
-        ExprProcessorPersistentData::get().extract_language_tag(
-            pattern_full_string);
+        ParsingUtils::extract_language_tag(pattern_full_string);
     if (pattern_data_type != data_type || pattern_lang_tag != lang_tag)
       return false;
     return value.find(pattern_full_string) != std::string::npos;

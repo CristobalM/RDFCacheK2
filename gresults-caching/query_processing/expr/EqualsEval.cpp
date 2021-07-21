@@ -7,7 +7,7 @@
 
 void EqualsEval::validate() {
   ExprEval::validate();
-  assert_fsize(2);
+  assert_fun_size(2);
 }
 void EqualsEval::init() {
   ExprEval::init();

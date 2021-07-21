@@ -32,18 +32,14 @@ StrAfterEval::eval_resource(const ExprEval::row_t &row) {
   if (first_resource->is_concrete()) {
     const std::string &resource_string = first_resource->get_resource().value;
 
-    first_language_tag =
-        ExprProcessorPersistentData::get().extract_language_tag(
-            resource_string);
+    first_language_tag = ParsingUtils::extract_language_tag(resource_string);
 
     if (first_language_tag.empty())
       first_data_type =
-          ExprProcessorPersistentData::get().extract_data_type_from_string(
-              resource_string);
+          ParsingUtils::extract_data_type_from_string(resource_string);
 
     first_string =
-        ExprProcessorPersistentData::get().extract_literal_content_from_string(
-            resource_string);
+        ParsingUtils::extract_literal_content_from_string(resource_string);
   } else if (first_resource->is_string_literal_lang()) {
     first_string = first_resource->get_literal_lang_string();
     first_language_tag = first_resource->get_lang_tag();
@@ -61,15 +57,11 @@ StrAfterEval::eval_resource(const ExprEval::row_t &row) {
   if (second_resource->is_concrete()) {
     const std::string &resource_string = first_resource->get_resource().value;
 
-    second_language_tag =
-        ExprProcessorPersistentData::get().extract_language_tag(
-            resource_string);
+    second_language_tag = ParsingUtils::extract_language_tag(resource_string);
     second_data_type =
-        ExprProcessorPersistentData::get().extract_data_type_from_string(
-            resource_string);
+        ParsingUtils::extract_data_type_from_string(resource_string);
     second_string =
-        ExprProcessorPersistentData::get().extract_literal_content_from_string(
-            resource_string);
+        ParsingUtils::extract_literal_content_from_string(resource_string);
   } else if (second_resource->is_string_literal_lang()) {
     second_string = second_resource->get_literal_lang_string();
     second_language_tag = second_resource->get_lang_tag();
@@ -122,7 +114,7 @@ StrAfterEval::eval_resource(const ExprEval::row_t &row) {
 
 void StrAfterEval::validate() {
   ExprEval::validate();
-  assert_fsize(2);
+  assert_fun_size(2);
 }
 void StrAfterEval::init() {
   ExprEval::init();

@@ -3,7 +3,7 @@
 //
 
 #include "StringHandlingUtil.hpp"
-#include <query_processing/ExprProcessorPersistentData.hpp>
+#include <query_processing/ParsingUtils.hpp>
 StringLiteralData StringHandlingUtil::extract_literal_data_from_term_resource(
     const TermResource &term_resource) {
   StringLiteralData result{};
@@ -76,12 +76,8 @@ StringLiteralData StringHandlingUtil::extract_literal_data_from_string(
     const std::string &input_string) {
   StringLiteralData result;
   result.value =
-      ExprProcessorPersistentData::get().extract_literal_content_from_string(
-          input_string);
-  result.lang_tag =
-      ExprProcessorPersistentData::get().extract_language_tag(input_string);
-  result.type =
-      ExprProcessorPersistentData::get().extract_data_type_from_string(
-          input_string);
+      ParsingUtils::extract_literal_content_from_string(input_string);
+  result.lang_tag = ParsingUtils::extract_language_tag(input_string);
+  result.type = ParsingUtils::extract_data_type_from_string(input_string);
   return result;
 }

@@ -6,7 +6,7 @@
 #include <sstream>
 
 #include "StringLiteralLangResource.hpp"
-#include <query_processing/ExprProcessorPersistentData.hpp>
+#include <query_processing/ParsingUtils.hpp>
 
 #include "IRIResource.hpp"
 #include "StringLiteralResource.hpp"
@@ -31,13 +31,11 @@ bool StringLiteralLangResource::operator==(const TermResource &rhs) const {
     const auto &rhs_resource = rhs.get_resource();
     if (rhs_resource.resource_type != RDFResourceType::RDF_TYPE_LITERAL)
       return false;
-    auto rhs_lang_tag = ExprProcessorPersistentData::get().extract_language_tag(
-        rhs_resource.value);
+    auto rhs_lang_tag = ParsingUtils::extract_language_tag(rhs_resource.value);
     if (lang_tag != rhs_lang_tag)
       return false;
     auto rhs_value =
-        ExprProcessorPersistentData::get().extract_literal_content_from_string(
-            rhs_resource.value);
+        ParsingUtils::extract_literal_content_from_string(rhs_resource.value);
     return value == rhs_value;
   }
 
@@ -60,8 +58,7 @@ bool StringLiteralLangResource::contains(TermResource &pattern_resource) const {
   if (pattern_resource.is_concrete()) {
     const auto &pattern_full_string = pattern_resource.get_resource().value;
     auto pattern_lang_tag =
-        ExprProcessorPersistentData::get().extract_language_tag(
-            pattern_full_string);
+        ParsingUtils::extract_language_tag(pattern_full_string);
     if (pattern_lang_tag != lang_tag)
       return false;
     return value.find(pattern_full_string) != std::string::npos;

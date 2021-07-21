@@ -7,6 +7,9 @@ template <BGPOp::VARS WV>
 BGPOp::RunResult
 OneVarJoinBGPOp<WV>::run(std::vector<unsigned long> &row_to_fill) {
   BGPOp::RunResult result;
+  if (!time_control.tick())
+    return result;
+
   if (!scanner->has_next()) {
     result.scan_done = true;
     result.valid_value = false;
@@ -16,6 +19,8 @@ OneVarJoinBGPOp<WV>::run(std::vector<unsigned long> &row_to_fill) {
   auto intersect_value = row_to_fill[var_pos];
   while (scanner->has_next()) {
     auto next_pair = scanner->next();
+    if (!time_control.tick())
+      break;
     unsigned long cmp_value;
     if constexpr (WV == BGPOp::SUBJECT_VAR) {
       cmp_value = next_pair.first;
@@ -41,8 +46,9 @@ template <BGPOp::VARS WV> void OneVarJoinBGPOp<WV>::reset_op() {
 template <BGPOp::VARS WV>
 OneVarJoinBGPOp<WV>::OneVarJoinBGPOp(
     std::unique_ptr<K2TreeMixed::K2TreeScanner> &&scanner,
-    unsigned long var_pos)
-    : scanner(std::move(scanner)), var_pos(var_pos) {}
+    unsigned long var_pos, TimeControl &time_control)
+    : scanner(std::move(scanner)), var_pos(var_pos),
+      time_control(time_control) {}
 template <BGPOp::VARS WV>
 K2TreeMixed::K2TreeScanner &OneVarJoinBGPOp<WV>::get_scanner() {
   return *scanner;

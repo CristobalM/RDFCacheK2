@@ -4,6 +4,7 @@
 
 #include "ResultTableIteratorLRWHMapBase.hpp"
 #include "ResultTableIteratorLeftOuterJoin.hpp"
+#include <TimeControl.hpp>
 bool ResultTableIteratorLRWHMapBase::has_next() { return next_available; }
 std::vector<unsigned long> &ResultTableIteratorLRWHMapBase::get_headers() {
   return headers;
@@ -46,13 +47,16 @@ ResultTableIteratorLRWHMapBase::ResultTableIteratorLRWHMapBase(
                        std::vector<std::vector<unsigned long>>, fnv_hash_64>
         &&right_hmap,
     std::vector<unsigned long> &&left_headers_to_result,
-    std::vector<unsigned long> &&right_values_to_result)
-    : key_holder(join_vars_positions.size(), 0),
+    std::vector<unsigned long> &&right_values_to_result,
+    TimeControl &time_control)
+    : ResultTableIterator(time_control),
+      key_holder(join_vars_positions.size(), 0),
       result_holder(headers.size(), 0), headers(std::move(headers)),
       join_vars_positions(std::move(join_vars_positions)),
       left_it(std::move(left_it)), right_hmap(std::move(right_hmap)),
       left_headers_to_result(std::move(left_headers_to_result)),
-      right_values_to_result(std::move(right_values_to_result)) {}
+      right_values_to_result(std::move(right_values_to_result)),
+      next_available(false) {}
 void ResultTableIteratorLRWHMapBase::extract_next() {
   auto &current_right_values = current_matched_values.front();
   put_values_in_result(current_left_row, current_right_values);

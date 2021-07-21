@@ -24,8 +24,7 @@ StrEval::eval_resource(const ExprEval::row_t &row) {
     }
 
     return std::make_shared<StringLiteralResource>(
-        ExprProcessorPersistentData::get().extract_inside_iri(
-            concrete_resource.value),
+        ParsingUtils::extract_inside_iri(concrete_resource.value),
         ExprDataType::EDT_STRING);
   }
 
@@ -34,7 +33,7 @@ StrEval::eval_resource(const ExprEval::row_t &row) {
 }
 void StrEval::validate() {
   ExprEval::validate();
-  assert_fsize(1);
+  assert_fun_size(1);
 }
 void StrEval::init() {
   ExprEval::init();

@@ -4,13 +4,18 @@
 
 #include "TripleExistenceBGPOP.hpp"
 TripleExistenceBGPOP::TripleExistenceBGPOP(
-    std::unique_ptr<K2TreeMixed::K2TreeScanner> &&scanner, Triple &triple)
-    : scanner(std::move(scanner)), triple(triple) {}
+    std::unique_ptr<K2TreeMixed::K2TreeScanner> &&scanner,
+    std::shared_ptr<Triple> triple, TimeControl &time_control)
+    : scanner(std::move(scanner)), triple(std::move(triple)),
+      time_control(time_control) {}
 BGPOp::RunResult TripleExistenceBGPOP::run(std::vector<unsigned long> &) {
   BGPOp::RunResult result;
+  if (!time_control.tick())
+    return result;
+
   auto &k2tree = scanner->get_tree();
   result.valid_value =
-      k2tree.has(triple.subject.id_value, triple.object.id_value);
+      k2tree.has(triple->subject.id_value, triple->object.id_value);
   result.scan_done = true;
   return result;
 }

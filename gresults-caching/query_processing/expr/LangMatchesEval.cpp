@@ -52,7 +52,7 @@ bool LangMatchesEval::eval_boolean(const ExprEval::row_t &row) {
 }
 void LangMatchesEval::validate() {
   ExprEval::validate();
-  assert_fsize(2);
+  assert_fun_size(2);
 }
 void LangMatchesEval::init() {
   ExprEval::init();

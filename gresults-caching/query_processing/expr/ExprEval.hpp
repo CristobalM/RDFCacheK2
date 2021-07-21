@@ -3,8 +3,8 @@
 // Created by Cristobal Miranda, 2021
 //
 
-#ifndef RDFCACHEK2_EXPR_EVAL_HPP
-#define RDFCACHEK2_EXPR_EVAL_HPP
+#ifndef RDF_CACHE_K2_EXPR_EVAL_HPP
+#define RDF_CACHE_K2_EXPR_EVAL_HPP
 
 #include <RDFTriple.hpp>
 
@@ -13,7 +13,7 @@
 
 #include <unicode/smpdtfmt.h>
 
-#include "../ExprProcessorPersistentData.hpp"
+#include "../ParsingUtils.hpp"
 #include "EvalData.hpp"
 #include "query_processing/resources/TermResource.hpp"
 
@@ -69,7 +69,6 @@ public:
 
   virtual void validate();
 
-  void assert_fsize(int size);
   static void assert_is_rdf_term(const proto_msg::ExprNode &expr_node);
   static void assert_is_variable(const proto_msg::ExprNode &expr_node);
   static void assert_is_function(const proto_msg::ExprNode &expr_node);
@@ -98,12 +97,13 @@ public:
   float float_with_error();
   double double_with_error();
 
-  void assert_fsize_gt(int children_quantity);
-
 protected:
   std::shared_ptr<TermResource> generate_from_eval_boolean(const row_t &row);
   std::shared_ptr<TermResource> generate_from_eval_integer(const row_t &row);
   std::shared_ptr<TermResource> generate_from_eval_double(const row_t &row);
+  void assert_fun_size(int size);
+  void assert_fun_size_gt(int size);
+  void assert_fun_size_between_inclusive(int first, int second);
 
 private:
   virtual bool has_constant_subtree();

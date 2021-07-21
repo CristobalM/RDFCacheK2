@@ -5,18 +5,22 @@
 
 #include "VarIndexManager.hpp"
 #include <NaiveDynamicStringDictionary.hpp>
+#include <PredicatesCacheManager.hpp>
 #include <ResultTable.hpp>
 
 class QueryResult {
   std::shared_ptr<ResultTable> result_table;
+  std::shared_ptr<PredicatesCacheManager> cm;
   std::unique_ptr<VarIndexManager> vim;
   std::unique_ptr<NaiveDynamicStringDictionary> extra_str_dict;
 
 public:
   QueryResult();
   QueryResult(std::shared_ptr<ResultTable> &result_table,
+              std::shared_ptr<PredicatesCacheManager> cm,
               std::unique_ptr<VarIndexManager> &&vim);
   QueryResult(std::shared_ptr<ResultTable> result_table,
+              std::shared_ptr<PredicatesCacheManager> cm,
               std::unique_ptr<VarIndexManager> &&vim,
               std::unique_ptr<NaiveDynamicStringDictionary> &&extra_str_dict);
 
@@ -25,6 +29,7 @@ public:
   NaiveDynamicStringDictionary &get_extra_dict();
 
   bool has_extra_dict() const;
+  RDFResource extract_resource(unsigned long id);
 };
 
 #endif

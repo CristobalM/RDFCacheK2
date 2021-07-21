@@ -12,7 +12,7 @@
 #include <set>
 class QueryResultStreamer {
   std::vector<uint64_t> keys;
-  QueryResult query_result;
+  std::shared_ptr<QueryResult> query_result;
   int id;
   PredicatesCacheManager *cm;
 
@@ -23,8 +23,9 @@ class QueryResultStreamer {
   bool first_key_part_sent;
 
 public:
-  QueryResultStreamer(std::set<uint64_t> &&keys, QueryResult &&query_result,
-                      int id, PredicatesCacheManager *cm);
+  QueryResultStreamer(std::set<uint64_t> &&keys,
+                      std::shared_ptr<QueryResult> query_result, int id,
+                      PredicatesCacheManager *cm);
 
   QueryResultStreamer(const QueryResultStreamer &other) = delete;
   QueryResultStreamer &operator=(const QueryResultStreamer &other) = delete;
@@ -39,6 +40,7 @@ public:
   void populate_headers(proto_msg::KeysPart &part);
   void
   populate_with_remaining_rows(proto_msg::ResultTablePartResponse &response);
+  bool all_sent();
 };
 
 #endif // RDFCACHEK2_QUERYRESULTSTREAMER_HPP

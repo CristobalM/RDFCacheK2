@@ -42,7 +42,7 @@ bool StrEndsWithEval::eval_boolean(const ExprEval::row_t &row) {
 }
 void StrEndsWithEval::validate() {
   ExprEval::validate();
-  assert_fsize(2);
+  assert_fun_size(2);
 }
 void StrEndsWithEval::init() {
   ExprEval::init();

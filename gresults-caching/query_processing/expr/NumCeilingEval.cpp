@@ -56,7 +56,7 @@ double NumCeilingEval::eval_double(const ExprEval::row_t &row) {
 }
 void NumCeilingEval::validate() {
   ExprEval::validate();
-  assert_fsize(1);
+  assert_fun_size(1);
 }
 void NumCeilingEval::init() {
   ExprEval::init();

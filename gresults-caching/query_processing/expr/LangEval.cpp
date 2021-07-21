@@ -12,15 +12,15 @@ LangEval::eval_resource(const ExprEval::row_t &row) {
     return TermResource::null();
   }
   const auto &concrete_resource = child_resource->get_resource();
-  auto language_tag = ExprProcessorPersistentData::get().extract_language_tag(
-      concrete_resource.value);
+  auto language_tag =
+      ParsingUtils::extract_language_tag(concrete_resource.value);
   return std::make_shared<StringLiteralResource>(std::move(language_tag),
                                                  ExprDataType::EDT_STRING);
 }
 
 void LangEval::validate() {
   ExprEval::validate();
-  assert_fsize(1);
+  assert_fun_size(1);
 }
 void LangEval::init() {
   ExprEval::init();

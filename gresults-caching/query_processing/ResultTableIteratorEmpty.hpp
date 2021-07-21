@@ -15,7 +15,8 @@ public:
   std::vector<unsigned long> &get_headers() override;
   void reset_iterator() override;
 
-  explicit ResultTableIteratorEmpty(std::vector<unsigned long> headers);
+  ResultTableIteratorEmpty(std::vector<unsigned long> headers,
+                           TimeControl &time_control);
 };
 
 #endif // RDFCACHEK2_RESULTTABLEITERATOREMPTY_HPP

@@ -19,7 +19,7 @@ bool LogicalNotEval::eval_boolean(const ExprEval::row_t &row) {
 }
 void LogicalNotEval::validate() {
   ExprEval::validate();
-  assert_fsize(1);
+  assert_fun_size(1);
 }
 void LogicalNotEval::init() {
   ExprEval::init();

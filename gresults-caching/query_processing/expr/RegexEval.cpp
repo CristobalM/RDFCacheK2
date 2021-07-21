@@ -3,6 +3,7 @@
 //
 
 #include "RegexEval.hpp"
+#include "ExprEval.hpp"
 #include "query_processing/resources/BooleanResource.hpp"
 #include "query_processing/utility/StringHandlingUtil.hpp"
 #include <pcrecpp.h>
@@ -18,33 +19,46 @@ RegexEval::eval_resource(const ExprEval::row_t &row) {
 bool RegexEval::eval_boolean(const ExprEval::row_t &row) {
   auto resource = children[0]->produce_resource(row);
   auto pattern_resource = children[1]->produce_resource(row);
-  auto flags_resource = children[2]->produce_resource(row);
+  std::shared_ptr<TermResource> flags_resource = nullptr;
+  if (children.size() > 2)
+    flags_resource = children[2]->produce_resource(row);
 
   if (children_with_error()) {
     this->with_error = true;
     return false;
   }
 
+  std::unique_ptr<StringLiteralData> flag_literal_data = nullptr;
+
   auto pattern_literal_data =
       StringHandlingUtil::extract_literal_data_from_term_resource(
           *pattern_resource);
   auto resource_literal_data =
       StringHandlingUtil::extract_literal_data_from_term_resource(*resource);
-  auto flag_literal_data =
-      StringHandlingUtil::extract_literal_data_from_term_resource(
-          *flags_resource);
+
+  if (children.size() > 2) {
+    flag_literal_data = std::make_unique<StringLiteralData>(
+        StringHandlingUtil::extract_literal_data_from_term_resource(
+            *flags_resource));
+  }
 
   if (pattern_literal_data.error || resource_literal_data.error ||
-      flag_literal_data.error)
+      (flag_literal_data && flag_literal_data->error))
     return bool_with_error();
 
-  return match_pattern(resource_literal_data.value, pattern_literal_data.value,
-                       flag_literal_data.value);
+  if (flag_literal_data == nullptr) {
+    return match_pattern(resource_literal_data.value,
+                         pattern_literal_data.value);
+  } else {
+    return match_pattern(resource_literal_data.value,
+                         pattern_literal_data.value, flag_literal_data->value);
+  }
 }
 
 void RegexEval::validate() {
   ExprEval::validate();
-  assert_fsize(3);
+  // assert_fun_size(3);
+  assert_fun_size_between_inclusive(2, 3);
 }
 void RegexEval::init() {
   ExprEval::init();

@@ -21,9 +21,8 @@ StrEncodeForURIEval::eval_resource(const ExprEval::row_t &row) {
   } else if (input_resource->is_string_literal_lang()) {
     input_str = input_resource->get_literal_lang_string();
   } else if (input_resource->is_concrete()) {
-    input_str =
-        ExprProcessorPersistentData::get().extract_literal_content_from_string(
-            input_resource->get_resource().value);
+    input_str = ParsingUtils::extract_literal_content_from_string(
+        input_resource->get_resource().value);
   } else if (input_resource->can_cast_to_literal_string()) {
     input_str = input_resource->get_content_string_copy();
   } else {
@@ -38,7 +37,7 @@ StrEncodeForURIEval::eval_resource(const ExprEval::row_t &row) {
 }
 void StrEncodeForURIEval::validate() {
   ExprEval::validate();
-  assert_fsize(1);
+  assert_fun_size(1);
 }
 void StrEncodeForURIEval::init() {
   ExprEval::init();

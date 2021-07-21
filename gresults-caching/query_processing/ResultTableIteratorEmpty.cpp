@@ -14,5 +14,5 @@ std::vector<unsigned long> &ResultTableIteratorEmpty::get_headers() {
 }
 void ResultTableIteratorEmpty::reset_iterator() {}
 ResultTableIteratorEmpty::ResultTableIteratorEmpty(
-    std::vector<unsigned long> headers)
-    : headers(std::move(headers)) {}
+    std::vector<unsigned long> headers, TimeControl &time_control)
+    : ResultTableIterator(time_control), headers(std::move(headers)) {}

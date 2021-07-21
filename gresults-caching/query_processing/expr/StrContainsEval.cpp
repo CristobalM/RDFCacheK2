@@ -20,7 +20,7 @@ bool StrContainsEval::eval_boolean(const ExprEval::row_t &row) {
 }
 void StrContainsEval::validate() {
   ExprEval::validate();
-  assert_fsize(2);
+  assert_fun_size(2);
 }
 void StrContainsEval::init() {
   ExprEval::init();

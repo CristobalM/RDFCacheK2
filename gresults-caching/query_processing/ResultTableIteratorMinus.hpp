@@ -7,6 +7,7 @@
 
 #include "QueryProcHashing.hpp"
 #include "ResultTableIterator.hpp"
+#include <TimeControl.hpp>
 #include <memory>
 #include <set>
 #include <unordered_set>
@@ -31,11 +32,12 @@ public:
   std::vector<unsigned long> &get_headers() override;
   void reset_iterator() override;
   ResultTableIteratorMinus(std::shared_ptr<ResultTableIterator> left_it,
-                           ResultTableIterator &right_it);
+                           ResultTableIterator &right_it,
+                           TimeControl &time_control);
 
 private:
   static ResultTableIteratorMinus::set_t
-  build_right_index(ResultTableIterator &right_it);
+  build_right_index(ResultTableIterator &right_it, TimeControl &time_control);
   std::vector<unsigned long> next_concrete();
   void select_key_values(std::vector<unsigned long> &left_row);
   std::vector<unsigned long>

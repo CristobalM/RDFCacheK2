@@ -1,9 +1,13 @@
 #include <gtest/gtest.h>
 
 #include <K2TreeMixed.hpp>
+#include <chrono>
 #include <set>
 #include <sstream>
 #include <utility>
+
+using namespace std::chrono_literals;
+TimeControl time_control(1e12, 100min);
 
 TEST(k2tree_mixed_tests, single_band_sip_1) {
   const uint32_t tree_depth = 10;
@@ -243,7 +247,7 @@ TEST(k2tree_mixed_test, can_scan_full_lazy_with_virtual_scanner) {
   }
 
   unsigned long i = 1;
-  auto scanner = tree.create_full_scanner();
+  auto scanner = tree.create_full_scanner(time_control);
 
   while (scanner->has_next()) {
     auto curr = scanner->next();
@@ -261,7 +265,8 @@ TEST(k2tree_mixed_test, can_scan_band_lazy_with_virtual_scanner) {
   }
 
   unsigned long i = 1;
-  auto scanner = tree.create_band_scanner(1, K2TreeMixed::ROW_BAND_TYPE);
+  auto scanner =
+      tree.create_band_scanner(1, K2TreeMixed::ROW_BAND_TYPE, time_control);
 
   while (scanner->has_next()) {
     auto curr = scanner->next();

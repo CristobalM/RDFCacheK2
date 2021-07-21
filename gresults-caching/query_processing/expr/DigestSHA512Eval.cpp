@@ -12,9 +12,8 @@ DigestSHA512Eval::eval_resource(const ExprEval::row_t &row) {
   std::string result;
   if (child_resource->is_concrete()) {
     const auto &concrete_child_resouce = child_resource->get_resource();
-    auto literal_content =
-        ExprProcessorPersistentData::get().extract_literal_content_from_string(
-            concrete_child_resouce.value);
+    auto literal_content = ParsingUtils::extract_literal_content_from_string(
+        concrete_child_resouce.value);
     result = sha512_human_readable_lowercase(literal_content);
   } else if (child_resource->is_string_literal()) {
     result =
@@ -30,7 +29,7 @@ DigestSHA512Eval::eval_resource(const ExprEval::row_t &row) {
 
 void DigestSHA512Eval::validate() {
   ExprEval::validate();
-  assert_fsize(1);
+  assert_fun_size(1);
 }
 void DigestSHA512Eval::init() {
   ExprEval::init();

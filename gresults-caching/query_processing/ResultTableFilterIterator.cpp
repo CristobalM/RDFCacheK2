@@ -4,6 +4,7 @@
 
 #include "ResultTableFilterIterator.hpp"
 #include "ExprProcessor.hpp"
+#include <TimeControl.hpp>
 bool ResultTableFilterIterator::has_next() { return next_available; }
 std::vector<unsigned long> ResultTableFilterIterator::next() {
   return next_concrete();
@@ -15,10 +16,12 @@ void ResultTableFilterIterator::reset_iterator() {}
 ResultTableFilterIterator::ResultTableFilterIterator(
     std::shared_ptr<ResultTableIterator> input_it, VarIndexManager &vim,
     std::vector<const proto_msg::ExprNode *> &expr_nodes,
-    const PredicatesCacheManager &cm,
-    NaiveDynamicStringDictionary &extra_str_dict)
-    : input_it(std::move(input_it)), var_pos_mapping(get_var_pos_mapping(vim)),
-      eval_data(vim, cm, var_pos_mapping, extra_str_dict) {
+    std::shared_ptr<PredicatesCacheManager> cm,
+    NaiveDynamicStringDictionary &extra_str_dict, TimeControl &time_control)
+    : ResultTableIterator(time_control), input_it(std::move(input_it)),
+      next_available(false), var_pos_mapping(get_var_pos_mapping(vim)),
+      eval_data(vim, std::move(cm), var_pos_mapping, extra_str_dict,
+                time_control) {
   for (const auto *node : expr_nodes) {
     bool_expressions.push_back(
         ExprProcessor(eval_data, *node).create_evaluator());
@@ -27,11 +30,15 @@ ResultTableFilterIterator::ResultTableFilterIterator(
   next_concrete();
 }
 std::vector<unsigned long> ResultTableFilterIterator::next_concrete() {
+  if (!time_control.tick())
+    return next_row;
   auto result = next_row;
   next_available = false;
 
   while (input_it->has_next()) {
     auto current = input_it->next();
+    if (!time_control.tick())
+      return result;
     bool accepted = false;
     for (const auto &bool_expr : bool_expressions) {
       accepted = bool_expr->eval_boolean(current);

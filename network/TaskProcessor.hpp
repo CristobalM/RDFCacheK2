@@ -14,10 +14,12 @@
 class TaskProcessor {
 public:
   virtual QueryResultStreamer &get_streamer(int id) = 0;
-  virtual QueryResultStreamer &create_streamer(std::set<uint64_t> &&keys,
-                                               QueryResult &&query_result) = 0;
+  virtual QueryResultStreamer &
+  create_streamer(std::set<uint64_t> &&keys,
+                  std::shared_ptr<QueryResult> query_result) = 0;
   virtual ~TaskProcessor() = default;
   virtual bool has_streamer(int id) = 0;
+  virtual void clean_streamer(int id) = 0;
 };
 
 #endif // RDFCACHEK2_TASKPROCESSOR_HPP

@@ -5,6 +5,7 @@
 #ifndef RDFCACHEK2_TERMEVAL_HPP
 #define RDFCACHEK2_TERMEVAL_HPP
 
+#include <query_processing/utility/StringHandlingUtil.hpp>
 #include <unicode/smpdtfmt.h>
 
 #include "ExprEval.hpp"
@@ -40,6 +41,24 @@ private:
   std::shared_ptr<TermResource> create_datatype_resource(RDFResource &&resource,
                                                          bool matches_short);
   bool has_constant_subtree() override;
+  RDFResource
+  sanitize_term_node_to_rdf_resource(const proto_msg::RDFTerm &term) const;
+
+  std::string sanitize_term(const proto_msg::RDFTerm &term) const;
+
+  std::string sanitize_number_term(const proto_msg::RDFTerm &term) const;
+  std::string sanitize_date_term(const proto_msg::RDFTerm &term) const;
+  std::string
+  infer_number_type_str(const std::string &input_string_number) const;
+  static std::string to_lowercase(std::string input);
+
+  std::string sanitize_boolean_term(const proto_msg::RDFTerm &term) const;
+  std::string sanitize_literal_data_boolean(StringLiteralData literal_data,
+                                            const char *default_result) const;
+  std::string sanitize_literal_data_number(StringLiteralData literal_data,
+                                           const char *default_result) const;
+  std::string sanitize_literal_data_date(StringLiteralData literal_data,
+                                         const char *default_result) const;
 };
 
 #endif // RDFCACHEK2_TERMEVAL_HPP

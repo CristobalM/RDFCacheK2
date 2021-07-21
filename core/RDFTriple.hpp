@@ -65,8 +65,8 @@ struct RDFResource {
     return RDFResource("", NULL_RESOURCE_TYPE);
   }
 
-private:
-  RDFResourceType select_type_from_proto(proto_msg::TermType proto_type) {
+  static RDFResourceType
+  select_type_from_proto(proto_msg::TermType proto_type) {
     switch (proto_type) {
     case proto_msg::TermType::BLANK_NODE:
       return RDFResourceType::RDF_TYPE_BLANK;
@@ -79,6 +79,7 @@ private:
                                std::to_string(proto_type));
     }
   }
+  bool is_null() const { return resource_type == NULL_RESOURCE_TYPE; }
 };
 
 struct RDFResourceReference {

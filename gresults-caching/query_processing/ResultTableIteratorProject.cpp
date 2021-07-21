@@ -3,9 +3,11 @@
 //
 
 #include "ResultTableIteratorProject.hpp"
+#include <TimeControl.hpp>
 bool ResultTableIteratorProject::has_next() { return input_it->has_next(); }
 std::vector<unsigned long> ResultTableIteratorProject::next() {
   auto original_row = input_it->next();
+  time_control.tick();
   for (size_t i = 0; i < tmp_holder.size(); i++) {
     tmp_holder[i] = original_row[vars_to_keep_position[i]];
   }
@@ -19,8 +21,8 @@ void ResultTableIteratorProject::reset_iterator() {
 }
 ResultTableIteratorProject::ResultTableIteratorProject(
     std::shared_ptr<ResultTableIterator> input_it,
-    std::set<unsigned long> &vars_to_keep)
-    : input_it(std::move(input_it)),
+    std::set<unsigned long> &vars_to_keep, TimeControl &time_control)
+    : ResultTableIterator(time_control), input_it(std::move(input_it)),
       vars_to_keep_position(find_vars_to_keep_position(vars_to_keep)),
       headers(build_headers()), tmp_holder(headers.size(), 0) {}
 std::vector<unsigned long>

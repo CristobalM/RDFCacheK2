@@ -10,6 +10,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include <TimeControl.hpp>
 #include <request_msg.pb.h>
 
 #include "../VarIndexManager.hpp"
@@ -19,16 +20,18 @@
 
 struct EvalData {
   VarIndexManager &vim;
-  const PredicatesCacheManager &cm;
+  std::shared_ptr<PredicatesCacheManager> cm;
   std::shared_ptr<std::unordered_map<std::string, unsigned long>>
       var_pos_mapping;
   NaiveDynamicStringDictionary &extra_dict;
-  EvalData(VarIndexManager &vim, const PredicatesCacheManager &cm,
+  TimeControl &time_control;
+  EvalData(VarIndexManager &vim, std::shared_ptr<PredicatesCacheManager> cm,
            std::shared_ptr<std::unordered_map<std::string, unsigned long>>
                var_pos_mapping,
-           NaiveDynamicStringDictionary &extra_dict)
-      : vim(vim), cm(cm), var_pos_mapping(std::move(var_pos_mapping)),
-        extra_dict(extra_dict) {}
+           NaiveDynamicStringDictionary &extra_dict, TimeControl &time_control)
+      : vim(vim), cm(std::move(cm)),
+        var_pos_mapping(std::move(var_pos_mapping)), extra_dict(extra_dict),
+        time_control(time_control) {}
 };
 
 #endif

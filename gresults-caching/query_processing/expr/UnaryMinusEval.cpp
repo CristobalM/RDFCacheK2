@@ -41,7 +41,7 @@ UnaryMinusEval::eval_resource(const ExprEval::row_t &row) {
 
 void UnaryMinusEval::init() {
   ExprEval::init();
-  assert_fsize(1);
+  assert_fun_size(1);
 }
 void UnaryMinusEval::validate() {
   ExprEval::validate();

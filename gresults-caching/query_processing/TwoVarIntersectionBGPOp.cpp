@@ -5,12 +5,15 @@
 #include "TwoVarIntersectionBGPOp.hpp"
 TwoVarIntersectionBGPOp::TwoVarIntersectionBGPOp(
     std::unique_ptr<K2TreeMixed::K2TreeScanner> &&scanner,
-    unsigned long subject_pos, unsigned long object_pos)
+    unsigned long subject_pos, unsigned long object_pos,
+    TimeControl &time_control)
     : scanner(std::move(scanner)), subject_pos(subject_pos),
-      object_pos(object_pos) {}
+      object_pos(object_pos), time_control(time_control) {}
 BGPOp::RunResult
 TwoVarIntersectionBGPOp::run(std::vector<unsigned long> &row_to_fill) {
   BGPOp::RunResult result;
+  if (!time_control.tick())
+    return result;
   auto intersect_value_subject = row_to_fill[subject_pos];
   auto intersect_value_object = row_to_fill[object_pos];
   auto &k2tree = scanner->get_tree();

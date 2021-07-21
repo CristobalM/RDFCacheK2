@@ -27,7 +27,7 @@ bool BooleanResource::get_boolean() const { return value; }
 BooleanResource::BooleanResource(bool value) : value(value) {}
 RDFResource BooleanResource::get_resource_clone() const {
   std::stringstream ss;
-  ss << "\"" << (value ? "true" : "false") << "\"^^xsd::boolean";
+  ss << "\"" << (value ? "true" : "false") << "\"^^xsd:boolean";
   return RDFResource(ss.str(), RDFResourceType::RDF_TYPE_LITERAL);
 }
 

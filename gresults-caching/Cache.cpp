@@ -2,9 +2,9 @@
 // Created by Cristobal Miranda, 2020
 //
 
+#include <TimeControl.hpp>
 #include <chrono>
-#include <query_processing/QueryProcessor2.hpp>
-#include <sstream>
+#include <query_processing/QueryProcessor.hpp>
 
 #include "Cache.hpp"
 #include "CacheReplacementFactory.hpp"
@@ -16,10 +16,11 @@ Cache::Cache(std::shared_ptr<PredicatesCacheManager> &cache_manager,
       cache_replacement(CacheReplacementFactory::select_strategy(
           cache_replacement_strategy, memory_budget_bytes, cache_manager)) {}
 
-QueryResult Cache::run_query(proto_msg::SparqlTree const &query_tree) {
-  return QueryProcessor2(*cache_manager)
-      .run_query(query_tree)
-      .as_query_result_original();
+std::shared_ptr<QueryResultIterator>
+Cache::run_query(const proto_msg::SparqlTree &query_tree,
+                 TimeControl &time_control) {
+  return std::make_shared<QueryResultIterator>(
+      QueryProcessor(cache_manager, time_control).run_query(query_tree));
 }
 
 RDFResource Cache::extract_resource(unsigned long index) const {
@@ -57,6 +58,10 @@ bool Cache::node_is_valid(const proto_msg::SparqlNode &node) {
     return sequence_is_valid(node.sequence_node());
   case proto_msg::SparqlNode::kSliceNode:
     return node_is_valid(node.slice_node().node());
+  case proto_msg::SparqlNode::kOrderNode:
+    return node_is_valid(node.order_node().node());
+  case proto_msg::SparqlNode::kTableNode:
+    return true;
   default:
     return false;
   }
@@ -67,8 +72,8 @@ bool Cache::bgp_node_is_valid(const proto_msg::BGPNode &node) {
     const auto &triple = node.triple(i);
     if (triple.predicate().term_type() != proto_msg::TermType::IRI)
       return false;
-    if (!cache_manager->has_predicate(triple.predicate().term_value()))
-      return false;
+    //    if (!cache_manager->has_predicate(triple.predicate().term_value()))
+    //      return false;
   }
   return true;
 }

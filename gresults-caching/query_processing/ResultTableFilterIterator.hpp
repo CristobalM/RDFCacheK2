@@ -8,24 +8,25 @@
 #include "ResultTableIterator.hpp"
 #include "VarIndexManager.hpp"
 #include <PredicatesCacheManager.hpp>
+#include <TimeControl.hpp>
 #include <memory>
 #include <query_processing/expr/ExprEval.hpp>
 #include <vector>
 class ResultTableFilterIterator : public ResultTableIterator {
   std::shared_ptr<ResultTableIterator> input_it;
-  std::vector<unsigned long> next_row;
   bool next_available;
   std::shared_ptr<std::unordered_map<std::string, unsigned long>>
       var_pos_mapping;
   std::vector<std::unique_ptr<ExprEval>> bool_expressions;
   EvalData eval_data;
+  std::vector<unsigned long> next_row;
 
 public:
   ResultTableFilterIterator(
       std::shared_ptr<ResultTableIterator> input_it, VarIndexManager &vim,
       std::vector<const proto_msg::ExprNode *> &expr_nodes,
-      const PredicatesCacheManager &cm,
-      NaiveDynamicStringDictionary &extra_str_dict);
+      std::shared_ptr<PredicatesCacheManager> cm,
+      NaiveDynamicStringDictionary &extra_str_dict, TimeControl &time_control);
   bool has_next() override;
   std::vector<unsigned long> next() override;
   std::vector<unsigned long> &get_headers() override;

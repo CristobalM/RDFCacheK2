@@ -5,12 +5,16 @@
 #include "TwoVarCProductBGPOp.hpp"
 TwoVarCProductBGPOp::TwoVarCProductBGPOp(
     std::unique_ptr<K2TreeMixed::K2TreeScanner> &&scanner,
-    unsigned long subject_pos, unsigned long object_pos)
+    unsigned long subject_pos, unsigned long object_pos,
+    TimeControl &time_control)
     : scanner(std::move(scanner)), subject_pos(subject_pos),
-      object_pos(object_pos) {}
+      object_pos(object_pos), time_control(time_control) {}
 BGPOp::RunResult
 TwoVarCProductBGPOp::run(std::vector<unsigned long> &row_to_fill) {
   BGPOp::RunResult result;
+  if (!time_control.tick())
+    return result;
+
   if (!scanner->has_next()) {
     result.scan_done = true;
     result.valid_value = false;

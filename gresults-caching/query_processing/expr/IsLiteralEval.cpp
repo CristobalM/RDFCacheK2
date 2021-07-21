@@ -20,7 +20,7 @@ void IsLiteralEval::init() {
 }
 void IsLiteralEval::validate() {
   ExprEval::validate();
-  assert_fsize(1);
+  assert_fun_size(1);
 }
 std::shared_ptr<TermResource>
 IsLiteralEval::eval_resource(const ExprEval::row_t &row) {

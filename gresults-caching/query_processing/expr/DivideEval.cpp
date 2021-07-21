@@ -42,7 +42,7 @@ void DivideEval::init() {
 }
 void DivideEval::validate() {
   ExprEval::validate();
-  assert_fsize(2);
+  assert_fun_size(2);
 }
 std::shared_ptr<TermResource>
 DivideEval::eval_resource(const ExprEval::row_t &row) {

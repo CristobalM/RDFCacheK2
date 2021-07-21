@@ -3,11 +3,14 @@
 //
 
 #include "ResultTableIteratorUnion.hpp"
+#include <TimeControl.hpp>
 #include <set>
 ResultTableIteratorUnion::ResultTableIteratorUnion(
-    std::vector<std::shared_ptr<ResultTableIterator>> &&iterators)
-    : iterators(std::move(iterators)), headers(build_headers()),
-      headers_mapping(build_headers_mapping()), current_it_pos(0) {}
+    std::vector<std::shared_ptr<ResultTableIterator>> &&iterators,
+    TimeControl &time_control)
+    : ResultTableIterator(time_control), iterators(std::move(iterators)),
+      headers(build_headers()), headers_mapping(build_headers_mapping()),
+      current_it_pos(0) {}
 bool ResultTableIteratorUnion::has_next() {
   if (current_it_pos >= iterators.size())
     return false;
@@ -27,6 +30,7 @@ void ResultTableIteratorUnion::reset_iterator() {
 std::vector<unsigned long> ResultTableIteratorUnion::next_concrete() {
   auto &it = iterators[current_it_pos];
   auto next_row_pre = it->next();
+  time_control.tick();
   auto next_row = get_mapped_row(next_row_pre, current_it_pos);
   if (!it->has_next()) {
     current_it_pos++;

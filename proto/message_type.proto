@@ -7,11 +7,12 @@ option java_package = "com.github.cristobalm.RDFEWK2C.proto";
 option java_outer_classname = "MsgType";
 
 enum MessageType {
-    UNKNOWN = 0;
-    CONNECTION_END = 1;
-    RUN_QUERY = 2;
-    RESULT_TABLE_RESPONSE = 3;
-    INVALID_QUERY_RESPONSE=4;
-    RESULT_TABLE_PART_RESPONSE=5;
-    RECEIVE_REMAINING_RESULT=6;
+  UNKNOWN = 0;
+  CONNECTION_END = 1;
+  RUN_QUERY = 2;
+  RESULT_TABLE_RESPONSE = 3;
+  INVALID_QUERY_RESPONSE = 4;
+  RESULT_TABLE_PART_RESPONSE = 5;
+  RECEIVE_REMAINING_RESULT = 6;
+  TIMED_OUT_RESPONSE = 7;
 }

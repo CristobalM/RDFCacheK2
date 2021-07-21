@@ -17,6 +17,10 @@
 #include <query_processing/utility/StringHandlingUtil.hpp>
 
 namespace fs = std::filesystem;
+
+using namespace std::chrono_literals;
+TimeControl time_control(1e12, 100min);
+
 class QueryFiltersFixture : public ::testing::Test {
 protected:
   virtual void SetUp() override {}
@@ -70,8 +74,7 @@ public:
         "SOME_UPPERCASE_STRING", "some_lowercase_string",
     };
     for (const auto &date : dates) {
-      date_infos_expected.push_back(
-          ExprProcessorPersistentData::get().parse_iso8601(date));
+      date_infos_expected.push_back(ParsingUtils::parse_iso8601(date));
     }
 
     for (const auto &date : dates) {
@@ -229,9 +232,10 @@ TEST_F(QueryFiltersFixture, test_add_filter_1) {
   second_expr_lt_term->set_term_value("\"100\"^^xsd:integer");
   second_expr_lt_term->set_term_type(proto_msg::TermType::LITERAL);
 
-  auto result = cache->run_query(tree);
+  auto result =
+      cache->run_query(tree, time_control)->as_query_result_original();
 
-  auto query_values_set = get_values_from_result_table(result.table(), *pcm);
+  auto query_values_set = get_values_from_result_table(result->table(), *pcm);
 
   ASSERT_GE(values1.size(), query_values_set.size());
   ASSERT_TRUE(std::includes(values1.begin(), values1.end(),
@@ -289,9 +293,10 @@ TEST_F(QueryFiltersFixture, test_subtract_filter_1) {
   second_expr_lt_term->set_term_value("\"0\"^^xsd:integer");
   second_expr_lt_term->set_term_type(proto_msg::TermType::LITERAL);
 
-  auto result = cache->run_query(tree);
+  auto result =
+      cache->run_query(tree, time_control)->as_query_result_original();
 
-  auto query_values_set = get_values_from_result_table(result.table(), *pcm);
+  auto query_values_set = get_values_from_result_table(result->table(), *pcm);
 
   ASSERT_GE(values1.size(), query_values_set.size());
   ASSERT_TRUE(std::includes(values1.begin(), values1.end(),
@@ -348,9 +353,10 @@ TEST_F(QueryFiltersFixture, test_multiply_filter_1) {
   second_expr_lt_term->set_term_value("\"0\"^^xsd:integer");
   second_expr_lt_term->set_term_type(proto_msg::TermType::LITERAL);
 
-  auto result = cache->run_query(tree);
+  auto result =
+      cache->run_query(tree, time_control)->as_query_result_original();
 
-  auto query_values_set = get_values_from_result_table(result.table(), *pcm);
+  auto query_values_set = get_values_from_result_table(result->table(), *pcm);
 
   ASSERT_GE(values1.size(), query_values_set.size());
   ASSERT_EQ(values1, query_values_set);
@@ -394,9 +400,10 @@ TEST_F(QueryFiltersFixture, test_divide_filter_1) {
   second_expr_lt_term->set_term_value("\"0\"^^xsd:integer");
   second_expr_lt_term->set_term_type(proto_msg::TermType::LITERAL);
 
-  auto result = cache->run_query(tree);
+  auto result =
+      cache->run_query(tree, time_control)->as_query_result_original();
 
-  auto query_values_set = get_values_from_result_table(result.table(), *pcm);
+  auto query_values_set = get_values_from_result_table(result->table(), *pcm);
 
   ASSERT_TRUE(query_values_set.empty());
 }
@@ -439,9 +446,10 @@ TEST_F(QueryFiltersFixture, test_divide_filter_2) {
   second_expr_lt_term->set_term_value("\"0\"^^xsd:integer");
   second_expr_lt_term->set_term_type(proto_msg::TermType::LITERAL);
 
-  auto result = cache->run_query(tree);
+  auto result =
+      cache->run_query(tree, time_control)->as_query_result_original();
 
-  auto query_values_set = get_values_from_result_table(result.table(), *pcm);
+  auto query_values_set = get_values_from_result_table(result->table(), *pcm);
 
   std::set<int> greater_than_zero;
   for (auto value : values1)
@@ -478,10 +486,11 @@ TEST_F(QueryFiltersFixture, test_is_iri_1) {
   term_expr_node->set_term_value("?x");
   term_expr_node->set_term_type(proto_msg::TermType::VARIABLE);
 
-  auto result = cache->run_query(tree);
+  auto result =
+      cache->run_query(tree, time_control)->as_query_result_original();
 
   auto query_values_set =
-      get_string_values_from_result_table(result.table(), *pcm);
+      get_string_values_from_result_table(result->table(), *pcm);
 
   ASSERT_TRUE(query_values_set.find("<some_integer_ref1>") !=
               query_values_set.end());
@@ -514,10 +523,11 @@ TEST_F(QueryFiltersFixture, test_is_blank_1) {
   term_expr_node->set_term_value("?x");
   term_expr_node->set_term_type(proto_msg::TermType::VARIABLE);
 
-  auto result = cache->run_query(tree);
+  auto result =
+      cache->run_query(tree, time_control)->as_query_result_original();
 
   auto query_values_set =
-      get_string_values_from_result_table(result.table(), *pcm);
+      get_string_values_from_result_table(result->table(), *pcm);
 
   ASSERT_TRUE(query_values_set.find("_:someBlankStuff") !=
               query_values_set.end());
@@ -550,10 +560,11 @@ TEST_F(QueryFiltersFixture, test_is_literal_1) {
   term_expr_node->set_term_value("?x");
   term_expr_node->set_term_type(proto_msg::TermType::VARIABLE);
 
-  auto result = cache->run_query(tree);
+  auto result =
+      cache->run_query(tree, time_control)->as_query_result_original();
 
   auto query_values_set =
-      get_string_values_from_result_table(result.table(), *pcm);
+      get_string_values_from_result_table(result->table(), *pcm);
   ASSERT_TRUE(query_values_set.find("\"someLiteralStuff\"") !=
               query_values_set.end());
 }
@@ -585,9 +596,10 @@ TEST_F(QueryFiltersFixture, test_is_numeric_1) {
   term_expr_node->set_term_value("?x");
   term_expr_node->set_term_type(proto_msg::TermType::VARIABLE);
 
-  auto result = cache->run_query(tree);
+  auto result =
+      cache->run_query(tree, time_control)->as_query_result_original();
 
-  auto query_values_set = get_values_from_result_table(result.table(), *pcm);
+  auto query_values_set = get_values_from_result_table(result->table(), *pcm);
 
   ASSERT_EQ(query_values_set, values1);
 }
@@ -634,10 +646,11 @@ TEST_F(QueryFiltersFixture, test_coalesce_1) {
   term_expr_node->set_term_value("?x");
   term_expr_node->set_term_type(proto_msg::TermType::VARIABLE);
 
-  auto result = cache->run_query(tree);
+  auto result =
+      cache->run_query(tree, time_control)->as_query_result_original();
 
   auto query_values_set =
-      get_string_values_from_result_table(result.table(), *pcm);
+      get_string_values_from_result_table(result->table(), *pcm);
 
   ASSERT_TRUE(query_values_set.find("<some_integer_ref1>") !=
               query_values_set.end());
@@ -679,10 +692,11 @@ TEST_F(QueryFiltersFixture, test_datatype_1) {
   rhs_term->set_term_type(proto_msg::TermType::IRI);
   rhs_term->set_term_value("xsd:integer");
 
-  auto result = cache->run_query(tree);
+  auto result =
+      cache->run_query(tree, time_control)->as_query_result_original();
 
   auto query_values_set =
-      get_string_values_from_result_table(result.table(), *pcm);
+      get_string_values_from_result_table(result->table(), *pcm);
 
   // ASSERT_TRUE(query_values_set.find("<some_integer_ref1>") !=
   // query_values_set.end());
@@ -745,10 +759,11 @@ static void run_datetime_part_test(proto_msg::FunctionOP function_op, int value,
   rhs_term->set_term_type(proto_msg::TermType::LITERAL);
   rhs_term->set_term_value("\"" + std::to_string(value) + "\"^^xsd:integer");
 
-  auto result = QueryFiltersFixture::cache->run_query(tree);
+  auto result = QueryFiltersFixture::cache->run_query(tree, time_control)
+                    ->as_query_result_original();
 
   auto query_values_set = get_string_values_from_result_table(
-      result.table(), *QueryFiltersFixture::pcm);
+      result->table(), *QueryFiltersFixture::pcm);
 
   std::set<int> matching_indices_in_result;
 
@@ -774,7 +789,7 @@ static void run_datetime_part_test(proto_msg::FunctionOP function_op, int value,
 
   ASSERT_EQ(expected_dates_indices_result, matching_indices_in_result);
 
-  out_result = std::move(result);
+  out_result = std::move(*result);
 }
 
 TEST_F(QueryFiltersFixture, test_datetime_day_1) {
@@ -870,10 +885,11 @@ static void run_datetime_tz_query(const std::string &offset_str,
   rhs_term->set_term_type(proto_msg::TermType::LITERAL);
   rhs_term->set_term_value("\"" + offset_str + "\"");
 
-  auto result = QueryFiltersFixture::cache->run_query(tree);
+  auto result = QueryFiltersFixture::cache->run_query(tree, time_control)
+                    ->as_query_result_original();
 
   auto query_values_set = get_string_values_from_result_table(
-      result.table(), *QueryFiltersFixture::pcm);
+      result->table(), *QueryFiltersFixture::pcm);
 
   std::set<int> expected_set;
   std::set<int> matched_set;
@@ -947,10 +963,11 @@ static void run_query_digest_hash_test(proto_msg::FunctionOP function_op,
   rhs_term->set_term_type(proto_msg::TermType::LITERAL);
   rhs_term->set_term_value("\"" + expected_hash + "\"");
 
-  auto result = QueryFiltersFixture::cache->run_query(tree);
+  auto result = QueryFiltersFixture::cache->run_query(tree, time_control)
+                    ->as_query_result_original();
 
   auto query_values_set = get_string_values_from_result_table(
-      result.table(), *QueryFiltersFixture::pcm);
+      result->table(), *QueryFiltersFixture::pcm);
 
   ASSERT_GT(query_values_set.size(), 0);
 
@@ -1073,9 +1090,10 @@ TEST_F(QueryFiltersFixture, test_gt_eval_1) {
   second_expr_lt_term->set_term_value("\"50\"^^xsd:integer");
   second_expr_lt_term->set_term_type(proto_msg::TermType::LITERAL);
 
-  auto result = cache->run_query(tree);
+  auto result =
+      cache->run_query(tree, time_control)->as_query_result_original();
 
-  auto query_values_set = get_values_from_result_table(result.table(), *pcm);
+  auto query_values_set = get_values_from_result_table(result->table(), *pcm);
 
   std::set<int> expected_values;
   for (auto value : QueryFiltersFixture::values1) {
@@ -1127,9 +1145,10 @@ TEST_F(QueryFiltersFixture, test_gte_eval_1) {
   second_expr_lt_term->set_term_value("\"50\"^^xsd:integer");
   second_expr_lt_term->set_term_type(proto_msg::TermType::LITERAL);
 
-  auto result = cache->run_query(tree);
+  auto result =
+      cache->run_query(tree, time_control)->as_query_result_original();
 
-  auto query_values_set = get_values_from_result_table(result.table(), *pcm);
+  auto query_values_set = get_values_from_result_table(result->table(), *pcm);
 
   std::set<int> expected_values;
   for (auto value : QueryFiltersFixture::values1) {
@@ -1180,9 +1199,10 @@ TEST_F(QueryFiltersFixture, test_lt_eval_1) {
   second_expr_lt_term->set_term_value("\"50\"^^xsd:integer");
   second_expr_lt_term->set_term_type(proto_msg::TermType::LITERAL);
 
-  auto result = cache->run_query(tree);
+  auto result =
+      cache->run_query(tree, time_control)->as_query_result_original();
 
-  auto query_values_set = get_values_from_result_table(result.table(), *pcm);
+  auto query_values_set = get_values_from_result_table(result->table(), *pcm);
 
   std::set<int> expected_values;
   for (auto value : QueryFiltersFixture::values1) {
@@ -1234,9 +1254,10 @@ TEST_F(QueryFiltersFixture, test_lte_eval_1) {
   second_expr_lt_term->set_term_value("\"50\"^^xsd:integer");
   second_expr_lt_term->set_term_type(proto_msg::TermType::LITERAL);
 
-  auto result = cache->run_query(tree);
+  auto result =
+      cache->run_query(tree, time_control)->as_query_result_original();
 
-  auto query_values_set = get_values_from_result_table(result.table(), *pcm);
+  auto query_values_set = get_values_from_result_table(result->table(), *pcm);
 
   std::set<int> expected_values;
   for (auto value : QueryFiltersFixture::values1) {
@@ -1315,10 +1336,11 @@ TEST_F(QueryFiltersFixture, test_logical_and_eval_1) {
       proto_msg::TermType::LITERAL);
   div_rhs_expr->mutable_term_node()->set_term_value("\"2\"^^xsd:integer");
 
-  auto result = QueryFiltersFixture::cache->run_query(tree);
+  auto result = QueryFiltersFixture::cache->run_query(tree, time_control)
+                    ->as_query_result_original();
 
   auto query_values_set =
-      get_values_from_result_table(result.table(), *QueryFiltersFixture::pcm);
+      get_values_from_result_table(result->table(), *QueryFiltersFixture::pcm);
 
   std::set<int> expected_values;
 
@@ -1399,10 +1421,11 @@ TEST_F(QueryFiltersFixture, test_logical_or_eval_1) {
       proto_msg::TermType::LITERAL);
   div_rhs_expr->mutable_term_node()->set_term_value("\"2\"^^xsd:integer");
 
-  auto result = QueryFiltersFixture::cache->run_query(tree);
+  auto result = QueryFiltersFixture::cache->run_query(tree, time_control)
+                    ->as_query_result_original();
 
   auto query_values_set =
-      get_values_from_result_table(result.table(), *QueryFiltersFixture::pcm);
+      get_values_from_result_table(result->table(), *QueryFiltersFixture::pcm);
 
   std::set<int> expected_values;
 
@@ -1471,10 +1494,11 @@ TEST_F(QueryFiltersFixture, test_logical_not_eval_1) {
       proto_msg::TermType::LITERAL);
   div_rhs_expr->mutable_term_node()->set_term_value("\"2\"^^xsd:integer");
 
-  auto result = QueryFiltersFixture::cache->run_query(tree);
+  auto result = QueryFiltersFixture::cache->run_query(tree, time_control)
+                    ->as_query_result_original();
 
   auto query_values_set =
-      get_values_from_result_table(result.table(), *QueryFiltersFixture::pcm);
+      get_values_from_result_table(result->table(), *QueryFiltersFixture::pcm);
 
   std::set<int> expected_values;
 
@@ -1539,10 +1563,11 @@ TEST_F(QueryFiltersFixture, test_not_equals_eval_1) {
       proto_msg::TermType::LITERAL);
   div_rhs_expr->mutable_term_node()->set_term_value("\"2\"^^xsd:integer");
 
-  auto result = QueryFiltersFixture::cache->run_query(tree);
+  auto result = QueryFiltersFixture::cache->run_query(tree, time_control)
+                    ->as_query_result_original();
 
   auto query_values_set =
-      get_values_from_result_table(result.table(), *QueryFiltersFixture::pcm);
+      get_values_from_result_table(result->table(), *QueryFiltersFixture::pcm);
 
   std::set<int> expected_values;
 
@@ -1591,10 +1616,11 @@ TEST_F(QueryFiltersFixture, test_num_abs_eval_1) {
   lhs_eq_expr->mutable_term_node()->set_term_type(proto_msg::TermType::LITERAL);
   lhs_eq_expr->mutable_term_node()->set_term_value("\"50\"^^xsd:integer");
 
-  auto result = QueryFiltersFixture::cache->run_query(tree);
+  auto result = QueryFiltersFixture::cache->run_query(tree, time_control)
+                    ->as_query_result_original();
 
   auto query_values_set =
-      get_values_from_result_table(result.table(), *QueryFiltersFixture::pcm);
+      get_values_from_result_table(result->table(), *QueryFiltersFixture::pcm);
 
   std::set<int> expected_values;
 
@@ -1668,10 +1694,11 @@ TEST_F(QueryFiltersFixture, test_num_ceiling_floor_eval_1) {
       proto_msg::TermType::LITERAL);
   div_rhs_expr->mutable_term_node()->set_term_value("\"2\"^^xsd:double");
 
-  auto result = QueryFiltersFixture::cache->run_query(tree);
+  auto result = QueryFiltersFixture::cache->run_query(tree, time_control)
+                    ->as_query_result_original();
 
   auto query_values_set = get_values_double_from_result_table(
-      result.table(), *QueryFiltersFixture::pcm);
+      result->table(), *QueryFiltersFixture::pcm);
 
   std::set<double> expected_values;
 
@@ -1745,10 +1772,11 @@ TEST_F(QueryFiltersFixture, test_num_round_floor_eval_1) {
       proto_msg::TermType::LITERAL);
   div_rhs_expr->mutable_term_node()->set_term_value("\"2\"^^xsd:double");
 
-  auto result = QueryFiltersFixture::cache->run_query(tree);
+  auto result = QueryFiltersFixture::cache->run_query(tree, time_control)
+                    ->as_query_result_original();
 
   auto query_values_set = get_values_double_from_result_table(
-      result.table(), *QueryFiltersFixture::pcm);
+      result->table(), *QueryFiltersFixture::pcm);
 
   std::set<double> expected_values;
 
@@ -1795,10 +1823,11 @@ TEST_F(QueryFiltersFixture, test_regex_eval_1) {
   flags_term->set_term_value("\"i\"");
   flags_term->set_term_type(proto_msg::TermType::LITERAL);
 
-  auto result = QueryFiltersFixture::cache->run_query(tree);
+  auto result = QueryFiltersFixture::cache->run_query(tree, time_control)
+                    ->as_query_result_original();
 
   auto query_values_set = get_string_values_from_result_table(
-      result.table(), *QueryFiltersFixture::pcm);
+      result->table(), *QueryFiltersFixture::pcm);
 
   std::set<std::string> query_values_set_content;
 
@@ -1853,15 +1882,16 @@ static void run_test_same_term_one(const std::string &predicate_str,
   rhs_term_node->set_term_type(proto_msg::TermType::LITERAL);
   rhs_term_node->set_term_value(term_str);
 
-  auto result = QueryFiltersFixture::cache->run_query(tree);
+  auto result = QueryFiltersFixture::cache->run_query(tree, time_control)
+                    ->as_query_result_original();
 
   auto query_values_set = get_string_values_from_result_table(
-      result.table(), *QueryFiltersFixture::pcm);
+      result->table(), *QueryFiltersFixture::pcm);
 
   ASSERT_EQ(query_values_set.size(), 1);
   ASSERT_NE(query_values_set.find(term_str), query_values_set.end());
 
-  out_result = std::move(result);
+  out_result = std::move(*result);
   out_string_set = std::move(query_values_set);
 }
 
@@ -1937,10 +1967,11 @@ TEST_F(QueryFiltersFixture, test_str_after_1) {
   suffix_query_term->set_term_type(proto_msg::TermType::LITERAL);
   suffix_query_term->set_term_value("\".988Z\"");
 
-  auto result = QueryFiltersFixture::cache->run_query(tree);
+  auto result = QueryFiltersFixture::cache->run_query(tree, time_control)
+                    ->as_query_result_original();
 
   auto query_values_set = get_string_values_from_result_table(
-      result.table(), *QueryFiltersFixture::pcm);
+      result->table(), *QueryFiltersFixture::pcm);
 
   std::set<std::string> expected_dates;
 
@@ -1996,10 +2027,11 @@ TEST_F(QueryFiltersFixture, test_str_before_1) {
   suffix_query_term->set_term_type(proto_msg::TermType::LITERAL);
   suffix_query_term->set_term_value("\"20\"");
 
-  auto result = QueryFiltersFixture::cache->run_query(tree);
+  auto result = QueryFiltersFixture::cache->run_query(tree, time_control)
+                    ->as_query_result_original();
 
   auto query_values_set = get_string_values_from_result_table(
-      result.table(), *QueryFiltersFixture::pcm);
+      result->table(), *QueryFiltersFixture::pcm);
 
   std::set<std::string> expected_dates;
 
@@ -2061,10 +2093,11 @@ TEST_F(QueryFiltersFixture, test_str_concat_1) {
   suffix_query_term->set_term_type(proto_msg::TermType::LITERAL);
   suffix_query_term->set_term_value(some_suffix_z_quoted);
 
-  auto result = QueryFiltersFixture::cache->run_query(tree);
+  auto result = QueryFiltersFixture::cache->run_query(tree, time_control)
+                    ->as_query_result_original();
 
   auto query_values_set = get_string_values_from_result_table(
-      result.table(), *QueryFiltersFixture::pcm);
+      result->table(), *QueryFiltersFixture::pcm);
 
   std::set<std::string> expected_dates;
 
@@ -2124,10 +2157,11 @@ TEST_F(QueryFiltersFixture, test_str_contains_1) {
   suffix_query_term->set_term_type(proto_msg::TermType::LITERAL);
   suffix_query_term->set_term_value(some_suffix_z_quoted);
 
-  auto result = QueryFiltersFixture::cache->run_query(tree);
+  auto result = QueryFiltersFixture::cache->run_query(tree, time_control)
+                    ->as_query_result_original();
 
   auto query_values_set = get_string_values_from_result_table(
-      result.table(), *QueryFiltersFixture::pcm);
+      result->table(), *QueryFiltersFixture::pcm);
 
   std::set<std::string> expected_dates;
 
@@ -2184,10 +2218,11 @@ run_str_encode_for_uri_query(const std::string &to_encode_date_str) {
   rhs_equality_term->set_term_type(proto_msg::TermType::LITERAL);
   rhs_equality_term->set_term_value("\"" + encoded_str + "\"");
 
-  auto result = QueryFiltersFixture::cache->run_query(tree);
+  auto result = QueryFiltersFixture::cache->run_query(tree, time_control)
+                    ->as_query_result_original();
 
   auto query_values_set = get_string_values_from_result_table(
-      result.table(), *QueryFiltersFixture::pcm);
+      result->table(), *QueryFiltersFixture::pcm);
 
   ASSERT_EQ(query_values_set.size(), 1);
   ASSERT_NE(
@@ -2244,10 +2279,11 @@ TEST_F(QueryFiltersFixture, test_str_lang_eval_1) {
   rhs_equality_term->set_term_value("\"es\"");
   rhs_equality_term->set_term_type(proto_msg::TermType::LITERAL);
 
-  auto result = QueryFiltersFixture::cache->run_query(tree);
+  auto result = QueryFiltersFixture::cache->run_query(tree, time_control)
+                    ->as_query_result_original();
 
   auto query_values_set = get_string_values_from_result_table(
-      result.table(), *QueryFiltersFixture::pcm);
+      result->table(), *QueryFiltersFixture::pcm);
 
   std::set<std::string> expected_set;
   for (const auto &date : dates) {
@@ -2297,10 +2333,11 @@ TEST_F(QueryFiltersFixture, test_str_length_eval_1) {
                                     "\"^^xsd:integer");
   rhs_equality_term->set_term_type(proto_msg::TermType::LITERAL);
 
-  auto result = QueryFiltersFixture::cache->run_query(tree);
+  auto result = QueryFiltersFixture::cache->run_query(tree, time_control)
+                    ->as_query_result_original();
 
   auto query_values_set = get_string_values_from_result_table(
-      result.table(), *QueryFiltersFixture::pcm);
+      result->table(), *QueryFiltersFixture::pcm);
 
   std::set<std::string> expected_set;
   for (const auto &date : dates) {
@@ -2350,10 +2387,11 @@ TEST_F(QueryFiltersFixture, test_str_lowercase_eval_1) {
   rhs_equality_term->set_term_value("\"some_uppercase_string\"");
   rhs_equality_term->set_term_type(proto_msg::TermType::LITERAL);
 
-  auto result = QueryFiltersFixture::cache->run_query(tree);
+  auto result = QueryFiltersFixture::cache->run_query(tree, time_control)
+                    ->as_query_result_original();
 
   auto query_values_set = get_string_values_from_result_table(
-      result.table(), *QueryFiltersFixture::pcm);
+      result->table(), *QueryFiltersFixture::pcm);
   ASSERT_GT(query_values_set.size(), 0);
   ASSERT_NE(query_values_set.find("\"SOME_UPPERCASE_STRING\""),
             query_values_set.end());
@@ -2398,10 +2436,11 @@ TEST_F(QueryFiltersFixture, test_str_uppercase_eval_1) {
   rhs_equality_term->set_term_value("\"SOME_LOWERCASE_STRING\"");
   rhs_equality_term->set_term_type(proto_msg::TermType::LITERAL);
 
-  auto result = QueryFiltersFixture::cache->run_query(tree);
+  auto result = QueryFiltersFixture::cache->run_query(tree, time_control)
+                    ->as_query_result_original();
 
   auto query_values_set = get_string_values_from_result_table(
-      result.table(), *QueryFiltersFixture::pcm);
+      result->table(), *QueryFiltersFixture::pcm);
   ASSERT_EQ(query_values_set.size(), 1);
   ASSERT_NE(query_values_set.find("\"some_lowercase_string\""),
             query_values_set.end());
@@ -2461,10 +2500,11 @@ TEST_F(QueryFiltersFixture, test_str_replace_eval_1) {
   rhs_equality_term->set_term_value("\"fourth_replaced\"");
   rhs_equality_term->set_term_type(proto_msg::TermType::LITERAL);
 
-  auto result = QueryFiltersFixture::cache->run_query(tree);
+  auto result = QueryFiltersFixture::cache->run_query(tree, time_control)
+                    ->as_query_result_original();
 
   auto query_values_set = get_string_values_from_result_table(
-      result.table(), *QueryFiltersFixture::pcm);
+      result->table(), *QueryFiltersFixture::pcm);
   ASSERT_EQ(query_values_set.size(), 1);
   ASSERT_NE(query_values_set.find("\"fourth_string\""), query_values_set.end());
 }
@@ -2523,10 +2563,11 @@ TEST_F(QueryFiltersFixture, test_str_replace_eval_2) {
   rhs_equality_term->set_term_value("\"SOME_UPPERCASE_replaced\"");
   rhs_equality_term->set_term_type(proto_msg::TermType::LITERAL);
 
-  auto result = QueryFiltersFixture::cache->run_query(tree);
+  auto result = QueryFiltersFixture::cache->run_query(tree, time_control)
+                    ->as_query_result_original();
 
   auto query_values_set = get_string_values_from_result_table(
-      result.table(), *QueryFiltersFixture::pcm);
+      result->table(), *QueryFiltersFixture::pcm);
   ASSERT_EQ(query_values_set.size(), 1);
   ASSERT_NE(query_values_set.find("\"SOME_UPPERCASE_STRING\""),
             query_values_set.end());
@@ -2581,10 +2622,11 @@ TEST_F(QueryFiltersFixture, test_str_substring_eval_1) {
   rhs_equality_term->set_term_value("\"string\"");
   rhs_equality_term->set_term_type(proto_msg::TermType::LITERAL);
 
-  auto result = QueryFiltersFixture::cache->run_query(tree);
+  auto result = QueryFiltersFixture::cache->run_query(tree, time_control)
+                    ->as_query_result_original();
 
   auto query_values_set = get_string_values_from_result_table(
-      result.table(), *QueryFiltersFixture::pcm);
+      result->table(), *QueryFiltersFixture::pcm);
 
   ASSERT_GE(query_values_set.size(), 1);
   ASSERT_NE(query_values_set.find("\"first_string\""), query_values_set.end());
@@ -2629,10 +2671,11 @@ TEST_F(QueryFiltersFixture, test_unary_minus_eval_1) {
   rhs_equality_term->set_term_value("\"0\"^^xsd:integer");
   rhs_equality_term->set_term_type(proto_msg::TermType::LITERAL);
 
-  auto result = QueryFiltersFixture::cache->run_query(tree);
+  auto result = QueryFiltersFixture::cache->run_query(tree, time_control)
+                    ->as_query_result_original();
 
   auto query_values_set =
-      get_values_from_result_table(result.table(), *QueryFiltersFixture::pcm);
+      get_values_from_result_table(result->table(), *QueryFiltersFixture::pcm);
 
   std::set<int> expected_values;
   for (auto value : values1) {
@@ -2683,10 +2726,11 @@ TEST_F(QueryFiltersFixture, test_unary_plus_eval_1) {
   rhs_equality_term->set_term_value("\"0\"^^xsd:integer");
   rhs_equality_term->set_term_type(proto_msg::TermType::LITERAL);
 
-  auto result = QueryFiltersFixture::cache->run_query(tree);
+  auto result = QueryFiltersFixture::cache->run_query(tree, time_control)
+                    ->as_query_result_original();
 
   auto query_values_set =
-      get_values_from_result_table(result.table(), *QueryFiltersFixture::pcm);
+      get_values_from_result_table(result->table(), *QueryFiltersFixture::pcm);
 
   std::set<int> expected_values;
   for (auto value : values1) {
@@ -2748,12 +2792,13 @@ TEST_F(QueryFiltersFixture, test_extend_1) {
   rhs_term->set_term_value("\"1000\"^^xsd:integer");
   rhs_term->set_term_type(proto_msg::TermType::LITERAL);
 
-  auto result = QueryFiltersFixture::cache->run_query(tree);
+  auto result = QueryFiltersFixture::cache->run_query(tree, time_control)
+                    ->as_query_result_original();
 
   // print_table_debug2(result, *cache);
 
   auto query_values_set = get_values_from_result_table(
-      result.table(), *QueryFiltersFixture::pcm, result.get_extra_dict());
+      result->table(), *QueryFiltersFixture::pcm, result->get_extra_dict());
 
   std::set<int> expected_values;
   for (auto value : values1) {
@@ -2823,15 +2868,16 @@ TEST_F(QueryFiltersFixture, test_exists_1) {
   rhs_term->set_term_type(proto_msg::TermType::VARIABLE);
   rhs_term->set_term_value("?x");
 
-  auto result = QueryFiltersFixture::cache->run_query(tree);
+  auto result = QueryFiltersFixture::cache->run_query(tree, time_control)
+                    ->as_query_result_original();
 
   auto query_values_set = get_values_from_result_table(
-      result.table(), *QueryFiltersFixture::pcm, result.get_extra_dict());
+      result->table(), *QueryFiltersFixture::pcm, result->get_extra_dict());
 
   std::set<int> expected_values;
   for (auto value : values1) {
     for (const auto &date : dates) {
-      auto date_info = ExprProcessorPersistentData::get().parse_iso8601(date);
+      auto date_info = ParsingUtils::parse_iso8601(date);
       if (date_info.day == value)
         expected_values.insert(value);
     }
@@ -2898,15 +2944,16 @@ TEST_F(QueryFiltersFixture, test_not_exists_1) {
   rhs_term->set_term_type(proto_msg::TermType::VARIABLE);
   rhs_term->set_term_value("?x");
 
-  auto result = QueryFiltersFixture::cache->run_query(tree);
+  auto result = QueryFiltersFixture::cache->run_query(tree, time_control)
+                    ->as_query_result_original();
 
   auto query_values_set = get_values_from_result_table(
-      result.table(), *QueryFiltersFixture::pcm, result.get_extra_dict());
+      result->table(), *QueryFiltersFixture::pcm, result->get_extra_dict());
 
   std::set<int> not_expected_values;
   for (auto value : values1) {
     for (const auto &date : dates) {
-      auto date_info = ExprProcessorPersistentData::get().parse_iso8601(date);
+      auto date_info = ParsingUtils::parse_iso8601(date);
       if (date_info.day == value)
         not_expected_values.insert(value);
     }

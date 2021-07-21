@@ -7,6 +7,7 @@
 
 #include "ResultTableIterator.hpp"
 #include "VarLazyBinding.hpp"
+#include <TimeControl.hpp>
 #include <memory>
 #include <query_processing/expr/EvalData.hpp>
 #include <vector>
@@ -23,7 +24,8 @@ public:
   ResultTableIteratorExtend(
       std::shared_ptr<ResultTableIterator> input_it,
       std::unique_ptr<EvalData> &&eval_data,
-      std::vector<std::unique_ptr<VarLazyBinding>> &&var_bindings);
+      std::vector<std::unique_ptr<VarLazyBinding>> &&var_bindings,
+      TimeControl &time_control);
   bool has_next() override;
   std::vector<unsigned long> next() override;
   std::vector<unsigned long> &get_headers() override;

@@ -9,13 +9,16 @@
 #include "Triple.hpp"
 #include "VarIndexManager.hpp"
 #include <K2TreeMixed.hpp>
+#include <TimeControl.hpp>
 #include <memory>
 class BGPOpsFactory {
 public:
   static std::unique_ptr<BGPOp> create_bgp_op(
-      std::unique_ptr<K2TreeMixed::K2TreeScanner> &&scanner, Triple triple,
-      VarIndexManager &vim, std::vector<long> &join_incidence,
-      std::unordered_map<unsigned long, unsigned long> &header_rev_map);
+      std::unique_ptr<K2TreeMixed::K2TreeScanner> &&scanner,
+      std::shared_ptr<Triple> triple, VarIndexManager &vim,
+      std::vector<long> &join_incidence,
+      std::unordered_map<unsigned long, unsigned long> &header_rev_map,
+      TimeControl &time_control);
 };
 
 #endif // RDFCACHEK2_BGPOPSFACTORY_HPP

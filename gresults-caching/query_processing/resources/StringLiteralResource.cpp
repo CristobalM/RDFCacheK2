@@ -9,7 +9,7 @@
 #include "FloatResource.hpp"
 #include "IntegerResource.hpp"
 #include "StringLiteralLangResource.hpp"
-#include <query_processing/ExprProcessorPersistentData.hpp>
+#include <query_processing/ParsingUtils.hpp>
 #include <sstream>
 
 bool StringLiteralResource::is_string_literal() const { return true; }
@@ -36,13 +36,11 @@ bool StringLiteralResource::operator==(const TermResource &rhs) const {
     if (rhs_resource.resource_type != RDFResourceType::RDF_TYPE_LITERAL)
       return false;
     auto rhs_datatype =
-        ExprProcessorPersistentData::get().extract_data_type_from_string(
-            rhs_resource.value);
+        ParsingUtils::extract_data_type_from_string(rhs_resource.value);
     if (data_type != rhs_datatype)
       return false;
     auto rhs_value =
-        ExprProcessorPersistentData::get().extract_literal_content_from_string(
-            rhs_resource.value);
+        ParsingUtils::extract_literal_content_from_string(rhs_resource.value);
     return value == rhs_value;
   }
 
@@ -61,8 +59,7 @@ bool StringLiteralResource::contains(TermResource &pattern_resource) const {
   if (pattern_resource.is_concrete()) {
     const auto &pattern_full_string = pattern_resource.get_resource().value;
     auto pattern_data_type =
-        ExprProcessorPersistentData::get().extract_data_type_from_string(
-            pattern_full_string);
+        ParsingUtils::extract_data_type_from_string(pattern_full_string);
     if (pattern_data_type != data_type)
       return false;
     return value.find(pattern_full_string) != std::string::npos;
@@ -138,14 +135,14 @@ StringLiteralResource::cast_to(ExprDataType expr_data_type) {
   }
   case EDT_DATETIME:
     return std::make_shared<DateTimeResource>(
-        ExprProcessorPersistentData::get().parse_iso8601(value));
+        ParsingUtils::parse_iso8601(value));
   case EDT_UNKNOWN:
   default:
     return TermResource::null();
   }
 }
 bool StringLiteralResource::is_number() {
-  return ExprProcessorPersistentData::get().string_is_numeric(value);
+  return ParsingUtils::string_is_numeric(value);
 }
 int StringLiteralResource::diff_compare(const TermResource &rhs) const {
   return rhs.reverse_diff_compare(*this);

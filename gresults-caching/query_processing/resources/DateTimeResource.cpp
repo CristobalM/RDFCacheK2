@@ -4,7 +4,7 @@
 
 #include "DateTimeResource.hpp"
 #include "StringLiteralResource.hpp"
-#include <query_processing/ExprProcessorPersistentData.hpp>
+#include <query_processing/ParsingUtils.hpp>
 bool DateTimeResource::is_datetime() const { return true; }
 const std::string &DateTimeResource::get_literal_string() const {
   return TermResource::get_literal_string();
@@ -26,15 +26,14 @@ bool DateTimeResource::operator==(const TermResource &rhs) const {
 
   if (rhs.is_string_literal()) {
     auto literal_string = rhs.get_literal_string();
-    const auto rhs_dateinfo =
-        ExprProcessorPersistentData::get().parse_iso8601(literal_string);
+    const auto rhs_dateinfo = ParsingUtils::parse_iso8601(literal_string);
     return date_info == rhs_dateinfo;
   }
 
   // then it must be concrete
 
-  return date_info == ExprProcessorPersistentData::get().parse_iso8601(
-                          rhs.get_content_string_copy());
+  return date_info ==
+         ParsingUtils::parse_iso8601(rhs.get_content_string_copy());
 }
 int DateTimeResource::reverse_diff_compare(
     const DateTimeResource &date_time_resource) const {
@@ -47,13 +46,12 @@ DateTimeResource::cast_to(ExprDataType expr_data_type) {
     return TermResource::null();
 
   return std::make_shared<StringLiteralResource>(
-      ExprProcessorPersistentData::date_info_to_iso8601_string(date_info),
-      EDT_DATETIME);
+      ParsingUtils::date_info_to_iso8601_string(date_info), EDT_DATETIME);
 }
 int DateTimeResource::diff_compare(const TermResource &rhs) const {
   return rhs.reverse_diff_compare(*this);
 }
 bool DateTimeResource::can_cast_to_literal_string() const { return true; }
 std::string DateTimeResource::get_content_string_copy() const {
-  return ExprProcessorPersistentData::date_info_to_iso8601_string(date_info);
+  return ParsingUtils::date_info_to_iso8601_string(date_info);
 }

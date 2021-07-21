@@ -17,9 +17,8 @@ StrLangEval::eval_resource(const ExprEval::row_t &row) {
   std::string lang_tag_str;
 
   if (lang_tag_resource->is_concrete()) {
-    lang_tag_str =
-        ExprProcessorPersistentData::get().extract_literal_content_from_string(
-            lang_tag_resource->get_resource().value);
+    lang_tag_str = ParsingUtils::extract_literal_content_from_string(
+        lang_tag_resource->get_resource().value);
 
   } else if (lang_tag_resource->is_string_literal_lang()) {
     lang_tag_str = lang_tag_resource->get_literal_lang_string();
@@ -31,9 +30,8 @@ StrLangEval::eval_resource(const ExprEval::row_t &row) {
   }
 
   if (input_str_resource->is_concrete()) {
-    auto lexical_form =
-        ExprProcessorPersistentData::get().extract_literal_content_from_string(
-            input_str_resource->get_resource().value);
+    auto lexical_form = ParsingUtils::extract_literal_content_from_string(
+        input_str_resource->get_resource().value);
     return std::make_shared<StringLiteralLangResource>(std::move(lexical_form),
                                                        std::move(lang_tag_str));
   }
@@ -59,7 +57,7 @@ StrLangEval::eval_resource(const ExprEval::row_t &row) {
 }
 void StrLangEval::validate() {
   ExprEval::validate();
-  assert_fsize(2);
+  assert_fun_size(2);
 }
 void StrLangEval::init() {
   ExprEval::init();

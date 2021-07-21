@@ -16,8 +16,11 @@ message CacheResponse{
         QueryResultResponse query_result_response = 3;
         InvalidQueryResponse invalid_query_response = 4;
         ResultTablePartResponse result_table_part_response = 5;
+        ErrorResponse error_response = 6;
     }
 }
+
+message ErrorResponse{}
 
 message ResultTablePartResponse{
     int32 id = 1;

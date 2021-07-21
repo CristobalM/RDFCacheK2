@@ -12,7 +12,7 @@
 
 #include <request_msg.pb.h>
 
-#include "ExprProcessorPersistentData.hpp"
+#include "ParsingUtils.hpp"
 #include "PredicatesCacheManager.hpp"
 #include "ResultTable.hpp"
 #include "VarIndexManager.hpp"

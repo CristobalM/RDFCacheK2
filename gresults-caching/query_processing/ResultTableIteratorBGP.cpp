@@ -3,12 +3,13 @@
 //
 
 #include "ResultTableIteratorBGP.hpp"
+#include <TimeControl.hpp>
 ResultTableIteratorBGP::ResultTableIteratorBGP(
     std::vector<std::unique_ptr<BGPOp>> &&bgp_ops,
-    std::vector<unsigned long> &headers)
-    : bgp_ops(std::move(bgp_ops)), headers(headers), next_available(false),
-      tmp_holder(headers.size(), 0), s_i(0),
-      finished_ops(headers.size(), false) {
+    std::vector<unsigned long> &headers, TimeControl &time_control)
+    : ResultTableIterator(time_control), bgp_ops(std::move(bgp_ops)),
+      headers(headers), next_available(false), tmp_holder(headers.size(), 0),
+      s_i(0), finished_ops((this->bgp_ops).size(), false) {
   next_concrete();
 }
 
@@ -19,6 +20,8 @@ std::vector<unsigned long> ResultTableIteratorBGP::next() {
 }
 
 void ResultTableIteratorBGP::ops_until_last() {
+  if (!time_control.tick())
+    return;
   BGPOp::RunResult run_result{};
   run_result.valid_value = false;
   while (s_i < (long)(bgp_ops.size() - 1) && s_i >= 0) {
@@ -33,6 +36,8 @@ void ResultTableIteratorBGP::ops_until_last() {
       }
 
       run_result = bgp_op->run(tmp_holder);
+      if (!time_control.tick())
+        return;
 
       if (run_result.scan_done) {
         finished_ops[s_i] = true;
@@ -57,6 +62,8 @@ void ResultTableIteratorBGP::reset_iterator() {
   next();
 }
 std::vector<unsigned long> ResultTableIteratorBGP::next_concrete() {
+  if (!time_control.tick())
+    return next_value;
   auto result = next_value;
   next_available = false;
 
@@ -78,6 +85,9 @@ std::vector<unsigned long> ResultTableIteratorBGP::next_concrete() {
     }
 
     run_result = last_op->run(tmp_holder);
+    if (!time_control.tick())
+      return result;
+
     if (run_result.scan_done) {
       finished_ops[s_i] = true;
     }

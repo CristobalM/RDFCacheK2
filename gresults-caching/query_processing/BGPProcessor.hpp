@@ -1,19 +1,21 @@
-
 //
-// Created by Cristobal Miranda, 2020
+// Created by cristobal on 7/11/21.
 //
 
 #ifndef RDFCACHEK2_BGPPROCESSOR_HPP
 #define RDFCACHEK2_BGPPROCESSOR_HPP
 
-#include <memory>
-
-#include <request_msg.pb.h>
-
-#include "PredicatesCacheManager.hpp"
-#include "ResultTable.hpp"
+#include "BGPOp.hpp"
+#include "ResultTableIteratorBGP.hpp"
 #include "Triple.hpp"
 #include "VarIndexManager.hpp"
+#include <PredicatesCacheManager.hpp>
+#include <ResultTable.hpp>
+#include <sparql_tree.pb.h>
+
+#include <TimeControl.hpp>
+#include <set>
+#include <vector>
 
 class BGPProcessor {
 
@@ -21,46 +23,36 @@ class BGPProcessor {
   const PredicatesCacheManager &cm;
   VarIndexManager &vim;
 
-  std::vector<Triple> triples;
-
-  std::shared_ptr<ResultTable> current_table;
+  std::vector<std::shared_ptr<Triple>> triples;
 
   enum BAND_TYPE { COL_BAND = 0, ROW_BAND = 1 };
 
+  std::set<unsigned long> header_values;
+  std::vector<unsigned long> header_vec;
+
+  std::vector<long> join_incidence;
+  std::unordered_map<unsigned long, unsigned long> header_reverse_map;
+
+  TimeControl &time_control;
+
 public:
   BGPProcessor(const proto_msg::BGPNode &bgp_node,
-               const PredicatesCacheManager &cm, VarIndexManager &vim);
+               const PredicatesCacheManager &cm, VarIndexManager &vim,
+               TimeControl &time_control);
 
   std::shared_ptr<ResultTable> execute();
+  std::shared_ptr<ResultTableIterator> execute_it();
 
 private:
   void set_triples_from_proto();
-  void fill_table_with_first_triple();
-  void combine_triple_with_table(const Triple &triple);
-  void add_full_predicate_to_table(const Triple &triple);
-  void add_column_to_table(const Triple &triple);
-  void add_row_to_table(const Triple &triple);
-  void combine_full_predicate_to_table(const Triple &triple);
-  void combine_column_to_table(const Triple &triple);
-  void combine_row_to_table(const Triple &triple);
 
-  int find_var_position_in_headers(unsigned long var_index);
-
-  void cross_product_table_with_triple(const Triple &triple);
-  void left_join_table_with_triple_subject(const Triple &triple,
-                                           unsigned long subject_var_index);
-  void left_join_table_with_triple_object(const Triple &triple,
-                                          unsigned long object_var_index);
-  void intersect_table_with_predicate(const Triple &triple,
-                                      unsigned long subject_var_index,
-                                      unsigned long object_var_index);
-
-  void cross_product_table_with_band(const Triple &triple, BAND_TYPE band_type);
-  void intersect_table_with_band(unsigned long pos_in_headers,
-                                 const Triple &triple, BAND_TYPE band_type);
-
-  void add_row_to_table_if_found(const Triple &triple);
-  void combine_with_no_var_triple(const Triple &triple);
+  void find_headers();
+  void add_variable(Term &term);
+  std::vector<std::unique_ptr<K2TreeMixed::K2TreeScanner>> build_scanners();
+  std::vector<std::unique_ptr<BGPOp>> build_bgp_ops(
+      std::vector<std::unique_ptr<K2TreeMixed::K2TreeScanner>> &&scanners);
+  void build_rev_map();
+  bool do_all_predicates_have_trees();
 };
 
-#endif
+#endif // RDFCACHEK2_BGPPROCESSOR_HPP

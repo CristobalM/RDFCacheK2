@@ -9,10 +9,10 @@ NowEval::eval_resource(const ExprEval::row_t &row) {
   return std::make_unique<DateTimeResource>(eval_date_time(row));
 }
 DateInfo NowEval::eval_date_time(const ExprEval::row_t &) {
-  return ExprProcessorPersistentData::get().get_now_dateinfo();
+  return ParsingUtils::get_now_dateinfo();
 }
 void NowEval::validate() {
   ExprEval::validate();
-  assert_fsize(0);
+  assert_fun_size(0);
 }
 void NowEval::init() { ExprEval::init(); }

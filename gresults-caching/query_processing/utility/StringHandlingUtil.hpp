@@ -14,6 +14,29 @@ struct StringLiteralData {
   ExprDataType type;
   std::string lang_tag;
   bool error;
+
+  bool has_type() { return type != ExprDataType::EDT_UNKNOWN; }
+  bool has_lang_tag() { return !lang_tag.empty(); }
+  std::string type_to_str() {
+    switch (type) {
+    case EDT_INTEGER:
+      return "integer";
+    case EDT_DECIMAL:
+      return "decimal";
+    case EDT_FLOAT:
+      return "float";
+    case EDT_DOUBLE:
+      return "double";
+    case EDT_UNKNOWN:
+    case EDT_STRING:
+      return "string";
+    case EDT_BOOLEAN:
+      return "boolean";
+    case EDT_DATETIME:
+      return "dateTime";
+    }
+    return "string";
+  }
 };
 
 class StringHandlingUtil {
