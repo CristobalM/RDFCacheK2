@@ -5,15 +5,15 @@
 #include "OneVarCPBGPOp.hpp"
 
 template <BGPOp::VARS WV>
-OneVarCPBGPOp<WV>::OneVarCPBGPOp(
-    std::unique_ptr<K2TreeMixed::K2TreeScanner> &&scanner,
-    unsigned long var_pos, TimeControl &time_control)
+OneVarCPBGPOp<WV>::OneVarCPBGPOp(std::unique_ptr<K2TreeScanner> &&scanner,
+                                 unsigned long var_pos,
+                                 TimeControl &time_control)
     : scanner(std::move(scanner)), var_pos(var_pos),
       time_control(time_control) {}
 template <BGPOp::VARS WV>
 BGPOp::RunResult
 OneVarCPBGPOp<WV>::run(std::vector<unsigned long> &row_to_fill) {
-  BGPOp::RunResult result;
+  BGPOp::RunResult result{};
   if (!time_control.tick())
     return result;
 
@@ -21,7 +21,7 @@ OneVarCPBGPOp<WV>::run(std::vector<unsigned long> &row_to_fill) {
     result.scan_done = true;
     result.valid_value = false;
     return result;
-  };
+  }
 
   auto next_pair = scanner->next();
   unsigned long value;
@@ -36,15 +36,14 @@ OneVarCPBGPOp<WV>::run(std::vector<unsigned long> &row_to_fill) {
   result.valid_value = true;
 
   return result;
-};
+}
 
 template <BGPOp::VARS WV> void OneVarCPBGPOp<WV>::reset_op() {
   scanner->reset_scan();
 }
-template <BGPOp::VARS WV>
-K2TreeMixed::K2TreeScanner &OneVarCPBGPOp<WV>::get_scanner() {
+template <BGPOp::VARS WV> K2TreeScanner &OneVarCPBGPOp<WV>::get_scanner() {
   return *scanner;
-};
+}
 
 template class OneVarCPBGPOp<BGPOp::VARS::SUBJECT_VAR>;
 template class OneVarCPBGPOp<BGPOp::VARS::OBJECT_VAR>;

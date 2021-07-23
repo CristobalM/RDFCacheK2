@@ -10,7 +10,7 @@ const std::string &DateTimeResource::get_literal_string() const {
   return TermResource::get_literal_string();
 }
 RDFResource DateTimeResource::get_resource_clone() const {
-  return TermResource::get_resource_clone();
+  return RDFResource(get_content_string_copy(), RDF_TYPE_LITERAL);
 }
 ExprDataType DateTimeResource::get_datatype() const {
   return ExprDataType::EDT_DATETIME;

@@ -6,9 +6,8 @@
 
 template <BGPOp::VARS WV>
 TwoVarJoinOneBGPOp<WV>::TwoVarJoinOneBGPOp(
-    std::unique_ptr<K2TreeMixed::K2TreeScanner> &&scanner,
-    unsigned long subject_pos, unsigned long object_pos,
-    TimeControl &time_control)
+    std::unique_ptr<K2TreeScanner> &&scanner, unsigned long subject_pos,
+    unsigned long object_pos, TimeControl &time_control)
     : scanner(std::move(scanner)), subject_pos(subject_pos),
       object_pos(object_pos), current_band(0), time_control(time_control) {}
 template <BGPOp::VARS WV>
@@ -21,15 +20,15 @@ TwoVarJoinOneBGPOp<WV>::run(std::vector<unsigned long> &row_to_fill) {
   auto &k2tree = scanner->get_tree();
   unsigned long join_value;
   unsigned long *set_value;
-  K2TreeMixed::BandType band_type;
+  K2TreeScanner::BandType band_type;
   if constexpr (WV == BGPOp::SUBJECT_VAR) {
     join_value = row_to_fill[subject_pos];
     set_value = &row_to_fill[object_pos];
-    band_type = K2TreeMixed::BandType::COLUMN_BAND_TYPE;
+    band_type = K2TreeScanner::BandType::COLUMN_BAND_TYPE;
   } else {
     join_value = row_to_fill[object_pos];
     set_value = &row_to_fill[subject_pos];
-    band_type = K2TreeMixed::BandType::ROW_BAND_TYPE;
+    band_type = K2TreeScanner::BandType::ROW_BAND_TYPE;
   }
 
   if (!current_band_scanner || join_value != current_band) {
@@ -59,8 +58,7 @@ template <BGPOp::VARS WV> void TwoVarJoinOneBGPOp<WV>::reset_op() {
   current_band_scanner = nullptr;
   current_band = 0;
 }
-template <BGPOp::VARS WV>
-K2TreeMixed::K2TreeScanner &TwoVarJoinOneBGPOp<WV>::get_scanner() {
+template <BGPOp::VARS WV> K2TreeScanner &TwoVarJoinOneBGPOp<WV>::get_scanner() {
   return *scanner;
 }
 

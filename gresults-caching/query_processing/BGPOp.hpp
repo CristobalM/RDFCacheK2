@@ -23,7 +23,7 @@ public:
   // returns true if scanner reached its end
   virtual RunResult run(std::vector<unsigned long> &row_to_fill) = 0;
   virtual void reset_op() = 0;
-  virtual K2TreeMixed::K2TreeScanner &get_scanner() = 0;
+  virtual K2TreeScanner &get_scanner() = 0;
   virtual ~BGPOp() = default;
 };
 

@@ -11,17 +11,18 @@
 #include <TimeControl.hpp>
 #include <memory>
 class TripleExistenceBGPOP : public BGPOp {
-  std::unique_ptr<K2TreeMixed::K2TreeScanner> scanner;
-  std::shared_ptr<Triple> triple;
+  std::unique_ptr<K2TreeScanner> scanner;
+  unsigned long subject_id;
+  unsigned long object_id;
   TimeControl &time_control;
 
 public:
-  TripleExistenceBGPOP(std::unique_ptr<K2TreeMixed::K2TreeScanner> &&scanner,
-                       std::shared_ptr<Triple> triple,
+  TripleExistenceBGPOP(std::unique_ptr<K2TreeScanner> &&scanner,
+                       unsigned long subject_id, unsigned long object_id,
                        TimeControl &time_control);
   RunResult run(std::vector<unsigned long> &row_to_fill) override;
   void reset_op() override;
-  K2TreeMixed::K2TreeScanner &get_scanner() override;
+  K2TreeScanner &get_scanner() override;
 };
 
 #endif // RDFCACHEK2_TRIPLEEXISTENCEBGPOP_HPP

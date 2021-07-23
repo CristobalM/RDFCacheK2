@@ -28,3 +28,6 @@ int IRIResource::reverse_diff_compare(
 int IRIResource::diff_compare(const TermResource &rhs) const {
   return rhs.reverse_diff_compare(*this);
 }
+RDFResource IRIResource::get_resource_clone() const {
+  return RDFResource(value, RDF_TYPE_IRI);
+}

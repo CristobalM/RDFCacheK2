@@ -123,9 +123,7 @@ bundle-code: # clean-all
 	tar -zcvf ${BUNDLE_DIR}.tar.gz ${BUNDLE_DIR}/
 	cp ${BUNDLE_DIR}.tar.gz docker
 	tar -zcvf RDFCacheK2-docker.tar.gz docker
-
-
-
+	rm -rf _bundled_code.tar.gz _bundled_code/ docker/_bundled_code.tar.gz
 
 format:
 	find . -path ./lib -prune -o -regex '.*\.\(cpp\|hpp\)' -exec clang-format -style=file -i {} \;

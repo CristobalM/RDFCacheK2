@@ -10,6 +10,7 @@ class NullResource : public TermResource {
 public:
   bool operator==(const TermResource &rhs) const override;
   bool is_null() const override;
+  RDFResource get_resource_clone() const override;
 };
 
 #endif // RDFCACHEK2_NULLRESOURCE_HPP

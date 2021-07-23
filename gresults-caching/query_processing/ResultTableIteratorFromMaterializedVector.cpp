@@ -14,7 +14,10 @@ std::vector<unsigned long> &
 ResultTableIteratorFromMaterializedVector::get_headers() {
   return result_table_vector->headers;
 }
-void ResultTableIteratorFromMaterializedVector::reset_iterator() {}
+void ResultTableIteratorFromMaterializedVector::reset_iterator() {
+  current_pos = 0;
+}
+
 ResultTableIteratorFromMaterializedVector::
     ResultTableIteratorFromMaterializedVector(
         std::shared_ptr<ResultTableVector> result_table_vector,

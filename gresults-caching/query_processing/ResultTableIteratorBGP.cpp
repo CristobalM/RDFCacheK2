@@ -51,6 +51,7 @@ void ResultTableIteratorBGP::ops_until_last() {
     }
   }
 }
+
 std::vector<unsigned long> &ResultTableIteratorBGP::get_headers() {
   return headers;
 }
@@ -59,8 +60,9 @@ void ResultTableIteratorBGP::reset_iterator() {
   for (auto &bgp_op : bgp_ops) {
     bgp_op->reset_op();
   }
-  next();
+  next_concrete();
 }
+
 std::vector<unsigned long> ResultTableIteratorBGP::next_concrete() {
   if (!time_control.tick())
     return next_value;

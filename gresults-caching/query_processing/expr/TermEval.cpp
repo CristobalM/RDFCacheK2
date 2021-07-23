@@ -44,14 +44,23 @@ TermEval::eval_variable_get_resource(const ExprEval::row_t &row) const {
   }
   const std::string &var_name = term.term_value();
 
+  unsigned long value_id = 0;
   if (this->eval_data.var_pos_mapping->find(var_name) ==
       this->eval_data.var_pos_mapping->end()) {
-    this->eval_data.time_control.report_error(
-        "eval_variable_get_resource: Variable " + var_name + " not in table");
-    return RDFResource::null_resource();
+
+    auto var_id = this->eval_data.vim.assign_index_if_not_found(var_name);
+    if (this->eval_data.var_binding_qproc->is_bound(var_id)) {
+      value_id = this->eval_data.var_binding_qproc->get_value(var_id);
+    } else {
+      this->eval_data.time_control.report_error(
+          "eval_variable_get_resource: Variable " + var_name + " not in table");
+      return RDFResource::null_resource();
+    }
   }
-  auto pos = this->eval_data.var_pos_mapping->at(var_name);
-  auto value_id = row[pos];
+  if (value_id == 0) {
+    auto pos = this->eval_data.var_pos_mapping->at(var_name);
+    value_id = row[pos];
+  }
   if (value_id == 0)
     return RDFResource::null_resource();
   auto last_cache_id = this->eval_data.cm->get_last_id();

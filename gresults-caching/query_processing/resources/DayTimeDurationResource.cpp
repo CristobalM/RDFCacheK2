@@ -79,3 +79,6 @@ std::string DayTimeDurationResource::get_content_string_copy() const {
   }
   return ss.str();
 }
+RDFResource DayTimeDurationResource::get_resource_clone() const {
+  return RDFResource(get_content_string_copy(), RDF_TYPE_LITERAL);
+}

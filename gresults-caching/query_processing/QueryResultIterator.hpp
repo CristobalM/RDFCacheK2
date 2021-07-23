@@ -13,18 +13,23 @@
 class QueryResultIterator {
   std::shared_ptr<ResultTableIterator> result_it;
   std::shared_ptr<PredicatesCacheManager> cm;
-  std::unique_ptr<VarIndexManager> vim;
-  std::unique_ptr<NaiveDynamicStringDictionary> extra_str_dict;
+  std::shared_ptr<VarIndexManager> vim;
+  std::shared_ptr<NaiveDynamicStringDictionary> extra_str_dict;
 
 public:
   QueryResultIterator(
       std::shared_ptr<ResultTableIterator> result_it,
       std::shared_ptr<PredicatesCacheManager> cm,
-      std::unique_ptr<VarIndexManager> &&vim,
-      std::unique_ptr<NaiveDynamicStringDictionary> &&extra_str_dict);
+      std::shared_ptr<VarIndexManager> vim,
+      std::shared_ptr<NaiveDynamicStringDictionary> extra_str_dict);
   QueryResultIterator(std::shared_ptr<ResultTableIterator> result_it,
                       std::shared_ptr<PredicatesCacheManager> cm,
-                      std::unique_ptr<VarIndexManager> &&vim);
+                      std::shared_ptr<VarIndexManager> vim);
+
+  QueryResultIterator(const QueryResultIterator &other) = delete;
+  QueryResultIterator &operator=(const QueryResultIterator &other) = delete;
+  QueryResultIterator(QueryResultIterator &&other) noexcept;
+  QueryResultIterator &operator=(QueryResultIterator &&other) noexcept;
 
   QueryResultIterator(const QueryResultIterator &other) = delete;
   QueryResultIterator &operator=(const QueryResultIterator &other) = delete;
@@ -38,10 +43,12 @@ public:
   bool has_extra_dict() const;
   std::shared_ptr<QueryResult> as_query_result_original();
 
-  std::unique_ptr<VarIndexManager> get_vim_ptr();
-  std::unique_ptr<NaiveDynamicStringDictionary> get_extr_str_dict_ptr();
+  std::shared_ptr<VarIndexManager> get_vim_ptr();
+  std::shared_ptr<NaiveDynamicStringDictionary> get_extr_str_dict_ptr();
 
   RDFResource extract_resource(unsigned long id);
+
+  std::shared_ptr<ResultTableIterator> get_it_shared();
 };
 
 #endif // RDFCACHEK2_QUERYRESULTITERATOR_HPP

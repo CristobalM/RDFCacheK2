@@ -30,6 +30,7 @@ public:
   int diff_compare(const TermResource &rhs) const override;
   bool can_cast_to_literal_string() const override;
   std::string get_content_string_copy() const override;
+  RDFResource get_resource_clone() const override;
 };
 
 #endif // RDFCACHEK2_DAYTIMEDURATIONRESOURCE_HPP

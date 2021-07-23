@@ -26,6 +26,7 @@ public:
       const DataTypeResource &data_type_resource) const override;
   std::shared_ptr<TermResource> cast_to(ExprDataType expr_data_type) override;
   int diff_compare(const TermResource &rhs) const override;
+  RDFResource get_resource_clone() const override;
 };
 
 #endif // RDFCACHEK2_DATATYPERESOURCE_HPP

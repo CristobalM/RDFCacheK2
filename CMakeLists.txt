@@ -43,7 +43,13 @@ set(CORE_SOURCE_FILES
         core/CacheSettings.cpp
         core/InMemoryCacheSettings.cpp
         core/PredicateFetchResult.cpp
-        )
+        core/BandScanner.cpp
+        core/BandScanner.hpp
+        core/FullScanner.cpp
+        core/FullScanner.hpp
+        core/K2TreeScanner.hpp
+        core/EmptyScanner.cpp
+        core/EmptyScanner.hpp)
 
 set(PROC_SOURCE_FILES
         proc/QueueIteratorDictString.cpp
@@ -236,7 +242,7 @@ set(GRAPH_RESULT_CACHING_FILE
         gresults-caching/query_processing/OrderNodeProcessorVec.cpp
         gresults-caching/query_processing/OrderNodeProcessorVec.hpp
 
-        )
+        gresults-caching/query_processing/SequenceProcessor.cpp gresults-caching/query_processing/SequenceProcessor.hpp gresults-caching/query_processing/VarDependencyGraph.cpp gresults-caching/query_processing/VarDependencyGraph.hpp gresults-caching/query_processing/QProc.hpp gresults-caching/query_processing/VarsCollection.cpp gresults-caching/query_processing/VarsCollection.hpp gresults-caching/query_processing/VDGNode.cpp gresults-caching/query_processing/VDGNode.hpp gresults-caching/query_processing/ResultTableIteratorCrossProduct.cpp gresults-caching/query_processing/ResultTableIteratorCrossProduct.hpp gresults-caching/query_processing/VarBindingQProc.cpp gresults-caching/query_processing/VarBindingQProc.hpp gresults-caching/query_processing/ResultTableIteratorJoinSeqBinding.cpp gresults-caching/query_processing/ResultTableIteratorJoinSeqBinding.hpp)
 
 
 set(NETWORK_SOURCE_FILES

@@ -55,3 +55,30 @@ DataTypeResource::cast_to(ExprDataType expr_data_type) {
 int DataTypeResource::diff_compare(const TermResource &rhs) const {
   return rhs.reverse_diff_compare(*this);
 }
+RDFResource DataTypeResource::get_resource_clone() const {
+  switch (datatype) {
+  case EDT_INTEGER:
+    return RDFResource("<http://www.w3.org/2001/XMLSchema#integer>",
+                       RDF_TYPE_IRI);
+  case EDT_DECIMAL:
+    return RDFResource("<http://www.w3.org/2001/XMLSchema#decimal>",
+                       RDF_TYPE_IRI);
+  case EDT_FLOAT:
+    return RDFResource("<http://www.w3.org/2001/XMLSchema#float>",
+                       RDF_TYPE_IRI);
+  case EDT_DOUBLE:
+    return RDFResource("<http://www.w3.org/2001/XMLSchema#double>",
+                       RDF_TYPE_IRI);
+  case EDT_STRING:
+    return RDFResource("<http://www.w3.org/2001/XMLSchema#string>",
+                       RDF_TYPE_IRI);
+  case EDT_BOOLEAN:
+    return RDFResource("<http://www.w3.org/2001/XMLSchema#boolean>",
+                       RDF_TYPE_IRI);
+  case EDT_DATETIME:
+    return RDFResource("<http://www.w3.org/2001/XMLSchema#dateTime>",
+                       RDF_TYPE_IRI);
+  default:
+    return RDFResource::null_resource();
+  }
+}

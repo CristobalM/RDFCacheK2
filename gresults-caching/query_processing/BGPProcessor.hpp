@@ -8,6 +8,7 @@
 #include "BGPOp.hpp"
 #include "ResultTableIteratorBGP.hpp"
 #include "Triple.hpp"
+#include "VarBindingQProc.hpp"
 #include "VarIndexManager.hpp"
 #include <PredicatesCacheManager.hpp>
 #include <ResultTable.hpp>
@@ -34,11 +35,13 @@ class BGPProcessor {
   std::unordered_map<unsigned long, unsigned long> header_reverse_map;
 
   TimeControl &time_control;
+  std::shared_ptr<VarBindingQProc> var_binding_qproc;
 
 public:
   BGPProcessor(const proto_msg::BGPNode &bgp_node,
                const PredicatesCacheManager &cm, VarIndexManager &vim,
-               TimeControl &time_control);
+               TimeControl &time_control,
+               std::shared_ptr<VarBindingQProc> var_binding_qproc);
 
   std::shared_ptr<ResultTable> execute();
   std::shared_ptr<ResultTableIterator> execute_it();
@@ -48,9 +51,9 @@ private:
 
   void find_headers();
   void add_variable(Term &term);
-  std::vector<std::unique_ptr<K2TreeMixed::K2TreeScanner>> build_scanners();
-  std::vector<std::unique_ptr<BGPOp>> build_bgp_ops(
-      std::vector<std::unique_ptr<K2TreeMixed::K2TreeScanner>> &&scanners);
+  std::vector<std::unique_ptr<K2TreeScanner>> build_scanners();
+  std::vector<std::unique_ptr<BGPOp>>
+  build_bgp_ops(std::vector<std::unique_ptr<K2TreeScanner>> &&scanners);
   void build_rev_map();
   bool do_all_predicates_have_trees();
 };

@@ -6,6 +6,7 @@
 #include <utility>
 #include <vector>
 
+#include "K2TreeScanner.hpp"
 #include "ResultTable.hpp"
 #include "k2tree_stats.hpp"
 
@@ -19,6 +20,7 @@ extern "C" {
 
 struct k2node;
 struct k2qstate;
+class K2TreeScanner;
 
 struct K2TreeConfig {
   uint32_t treedepth;
@@ -102,79 +104,9 @@ public:
 
   enum BandType { COLUMN_BAND_TYPE = 0, ROW_BAND_TYPE = 1 };
 
-  struct K2TreeScanner {
-    using ul_pair_t = std::pair<unsigned long, unsigned long>;
-
-    virtual bool has_next() = 0;
-    virtual std::pair<unsigned long, unsigned long> next() = 0;
-    virtual void reset_scan() = 0;
-
-    virtual bool is_band() = 0;
-    virtual BandType get_band_type() = 0;
-    virtual unsigned long get_band_value() = 0;
-
-    virtual K2TreeMixed &get_tree() = 0;
-
-    virtual ~K2TreeScanner() = default;
-  };
-
-  struct FullScanner : public K2TreeScanner {
-
-    FullScanner(K2TreeMixed &k2tree, TimeControl &time_control);
-
-    bool has_next() override;
-    std::pair<unsigned long, unsigned long> next() override;
-    ~FullScanner() override;
-    void reset_scan() override;
-    bool is_band() override;
-    BandType get_band_type() override;
-    K2TreeMixed &get_tree() override;
-    unsigned long get_band_value() override;
-
-  private:
-    k2node_lazy_handler_naive_scan_t lazy_handler;
-    K2TreeMixed &k2tree;
-    TimeControl &time_control;
-  };
-
-  struct BandScanner : public K2TreeScanner {
-    BandScanner(K2TreeMixed &k2tree, unsigned long band,
-                K2TreeMixed::BandType band_type, TimeControl &time_control);
-    bool has_next() override;
-    std::pair<unsigned long, unsigned long> next() override;
-    ~BandScanner() override;
-    void reset_scan() override;
-    bool is_band() override;
-    BandType get_band_type() override;
-    K2TreeMixed &get_tree() override;
-    unsigned long get_band_value() override;
-
-  private:
-    unsigned long band;
-    K2TreeMixed::BandType band_type;
-    k2node_lazy_handler_report_band_t lazy_handler;
-    K2TreeMixed &k2tree;
-    TimeControl &time_control;
-  };
-
-  struct EmptyScanner : public K2TreeScanner {
-    explicit EmptyScanner(K2TreeMixed &k2tree);
-    bool has_next() override;
-    std::pair<unsigned long, unsigned long> next() override;
-    void reset_scan() override;
-    bool is_band() override;
-    BandType get_band_type() override;
-    unsigned long get_band_value() override;
-    K2TreeMixed &get_tree() override;
-
-  private:
-    K2TreeMixed &k2tree;
-  };
-
-  std::unique_ptr<K2TreeMixed::K2TreeScanner>
-  create_full_scanner(TimeControl &time_control);
-  std::unique_ptr<K2TreeMixed::K2TreeScanner>
-  create_band_scanner(unsigned long band, K2TreeMixed::BandType band_type,
+  std::unique_ptr<K2TreeScanner> create_full_scanner(TimeControl &time_control);
+  std::unique_ptr<K2TreeScanner>
+  create_band_scanner(unsigned long band, K2TreeScanner::BandType band_type,
                       TimeControl &time_control);
 
   struct FullScanIterator {

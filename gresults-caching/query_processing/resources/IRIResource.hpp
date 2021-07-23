@@ -19,6 +19,7 @@ public:
   int reverse_diff_compare(
       const StringLiteralResource &string_literal_resource) const override;
   int diff_compare(const TermResource &rhs) const override;
+  RDFResource get_resource_clone() const override;
 };
 
 #endif // RDFCACHEK2_IRIRESOURCE_HPP

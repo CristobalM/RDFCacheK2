@@ -56,6 +56,10 @@ public:
   bool bgp_node_is_valid(const proto_msg::BGPNode &node);
   bool union_node_is_valid(const proto_msg::UnionNode &node);
   bool sequence_is_valid(const proto_msg::SequenceNode &node);
+  void ensure_available_predicates(const proto_msg::SparqlNode &node);
+  void ensure_available_predicates_expr(const proto_msg::ExprNode &expr_node);
+  void ensure_available_predicates_bgp(const proto_msg::BGPNode &bgp_node);
+  void ensure_available_predicate(const proto_msg::RDFTerm &term);
 };
 
 #endif // RDFCACHEK2_CACHE_HPP

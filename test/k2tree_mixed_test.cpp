@@ -265,8 +265,8 @@ TEST(k2tree_mixed_test, can_scan_band_lazy_with_virtual_scanner) {
   }
 
   unsigned long i = 1;
-  auto scanner =
-      tree.create_band_scanner(1, K2TreeMixed::ROW_BAND_TYPE, time_control);
+  auto scanner = tree.create_band_scanner(
+      1, K2TreeScanner::BandType::ROW_BAND_TYPE, time_control);
 
   while (scanner->has_next()) {
     auto curr = scanner->next();

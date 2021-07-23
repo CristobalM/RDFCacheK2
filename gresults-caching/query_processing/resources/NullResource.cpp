@@ -8,3 +8,6 @@ bool NullResource::operator==(const TermResource &rhs) const {
 }
 
 bool NullResource::is_null() const { return true; }
+RDFResource NullResource::get_resource_clone() const {
+  return RDFResource::null_resource();
+}

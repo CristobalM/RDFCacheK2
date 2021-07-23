@@ -26,7 +26,8 @@ public:
       std::shared_ptr<ResultTableIterator> input_it, VarIndexManager &vim,
       std::vector<const proto_msg::ExprNode *> &expr_nodes,
       std::shared_ptr<PredicatesCacheManager> cm,
-      NaiveDynamicStringDictionary &extra_str_dict, TimeControl &time_control);
+      NaiveDynamicStringDictionary &extra_str_dict, TimeControl &time_control,
+      std::shared_ptr<VarBindingQProc> var_binding_qproc);
   bool has_next() override;
   std::vector<unsigned long> next() override;
   std::vector<unsigned long> &get_headers() override;

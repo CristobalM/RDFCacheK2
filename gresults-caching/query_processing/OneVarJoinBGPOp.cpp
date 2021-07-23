@@ -44,13 +44,12 @@ template <BGPOp::VARS WV> void OneVarJoinBGPOp<WV>::reset_op() {
   scanner->reset_scan();
 }
 template <BGPOp::VARS WV>
-OneVarJoinBGPOp<WV>::OneVarJoinBGPOp(
-    std::unique_ptr<K2TreeMixed::K2TreeScanner> &&scanner,
-    unsigned long var_pos, TimeControl &time_control)
+OneVarJoinBGPOp<WV>::OneVarJoinBGPOp(std::unique_ptr<K2TreeScanner> &&scanner,
+                                     unsigned long var_pos,
+                                     TimeControl &time_control)
     : scanner(std::move(scanner)), var_pos(var_pos),
       time_control(time_control) {}
-template <BGPOp::VARS WV>
-K2TreeMixed::K2TreeScanner &OneVarJoinBGPOp<WV>::get_scanner() {
+template <BGPOp::VARS WV> K2TreeScanner &OneVarJoinBGPOp<WV>::get_scanner() {
   return *scanner;
 }
 

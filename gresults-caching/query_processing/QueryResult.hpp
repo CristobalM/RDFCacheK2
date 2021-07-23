@@ -11,18 +11,18 @@
 class QueryResult {
   std::shared_ptr<ResultTable> result_table;
   std::shared_ptr<PredicatesCacheManager> cm;
-  std::unique_ptr<VarIndexManager> vim;
-  std::unique_ptr<NaiveDynamicStringDictionary> extra_str_dict;
+  std::shared_ptr<VarIndexManager> vim;
+  std::shared_ptr<NaiveDynamicStringDictionary> extra_str_dict;
 
 public:
   QueryResult();
   QueryResult(std::shared_ptr<ResultTable> &result_table,
               std::shared_ptr<PredicatesCacheManager> cm,
-              std::unique_ptr<VarIndexManager> &&vim);
+              std::shared_ptr<VarIndexManager> vim);
   QueryResult(std::shared_ptr<ResultTable> result_table,
               std::shared_ptr<PredicatesCacheManager> cm,
-              std::unique_ptr<VarIndexManager> &&vim,
-              std::unique_ptr<NaiveDynamicStringDictionary> &&extra_str_dict);
+              std::shared_ptr<VarIndexManager> vim,
+              std::shared_ptr<NaiveDynamicStringDictionary> extra_str_dict);
 
   ResultTable &table();
   VarIndexManager &get_vim();

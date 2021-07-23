@@ -66,6 +66,8 @@ public:
 
   unsigned long get_last_id() const;
 
+  void ensure_available_predicate(RDFResource predicate_resource);
+
 private:
   void handle_not_found(unsigned long &resource_id, RDFResource &resource);
   uint64_t get_resource_index_notfound_zero(const RDFResource &resource) const;

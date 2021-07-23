@@ -159,7 +159,6 @@ void ServerTask::process_cache_query(Message &message) {
   }
 
   TimeControl time_control(100'000, 5s);
-  time_control.start_timer();
   auto query_result =
       cache.run_query(tree, time_control)->as_query_result_original();
 

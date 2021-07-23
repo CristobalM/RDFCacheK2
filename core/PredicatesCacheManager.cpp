@@ -228,3 +228,12 @@ bool PredicatesCacheManager::has_predicate(
 
   return predicates_index->has_predicate(index);
 }
+void PredicatesCacheManager::ensure_available_predicate(
+    RDFResource predicate_resource) {
+  auto id = get_resource_index(predicate_resource);
+  if (id == 0)
+    return;
+  if (predicates_index->has_predicate(id)) {
+    predicates_index->fetch_k2tree(id);
+  }
+}

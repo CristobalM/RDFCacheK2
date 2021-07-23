@@ -6,6 +6,11 @@
 #include <stdexcept>
 #include <vector>
 
+#include "BandScanner.hpp"
+#include "EmptyScanner.hpp"
+#include "FullScanner.hpp"
+#include "K2TreeScanner.hpp"
+
 K2TreeMixed::K2TreeMixed(uint32_t treedepth)
     : K2TreeMixed(treedepth, MAX_NODES_IN_BLOCK) {}
 
@@ -633,100 +638,16 @@ K2TreeMixed::begin_band_scan(unsigned long band_value, BandType band_type) {
 K2TreeMixed::BandScanIterator K2TreeMixed::end_band_scan() {
   return K2TreeMixed::BandScanIterator(nullptr);
 }
-std::unique_ptr<K2TreeMixed::K2TreeScanner>
+std::unique_ptr<K2TreeScanner>
 K2TreeMixed::create_full_scanner(TimeControl &time_control) {
-  return std::unique_ptr<K2TreeScanner>(
-      std::make_unique<FullScanner>(*this, time_control));
+  return std::make_unique<FullScanner>(*this, time_control);
 }
-std::unique_ptr<K2TreeMixed::K2TreeScanner>
+std::unique_ptr<K2TreeScanner>
 K2TreeMixed::create_band_scanner(unsigned long band,
-                                 K2TreeMixed::BandType band_type,
+                                 K2TreeScanner::BandType band_type,
                                  TimeControl &time_control) {
-  return std::unique_ptr<K2TreeScanner>(
-      std::make_unique<BandScanner>(*this, band, band_type, time_control));
+  return std::make_unique<BandScanner>(*this, band, band_type, time_control);
 }
-std::unique_ptr<K2TreeMixed::K2TreeScanner>
-K2TreeMixed::create_empty_scanner() {
+std::unique_ptr<K2TreeScanner> K2TreeMixed::create_empty_scanner() {
   return std::make_unique<EmptyScanner>(*this);
 }
-
-bool K2TreeMixed::FullScanner::has_next() { return lazy_handler.has_next; }
-std::pair<unsigned long, unsigned long> K2TreeMixed::FullScanner::next() {
-  pair2dl_t result;
-  k2node_naive_scan_points_lazy_next(&lazy_handler, &result);
-  time_control.tick_only_count();
-  return {result.col, result.row};
-}
-
-K2TreeMixed::FullScanner::FullScanner(K2TreeMixed &k2tree,
-                                      TimeControl &time_control)
-    : k2tree(k2tree), time_control(time_control) {
-  k2node_naive_scan_points_lazy_init(k2tree.get_root_k2node(),
-                                     k2tree.get_k2qstate(), &lazy_handler);
-}
-K2TreeMixed::FullScanner::~FullScanner() {
-  k2node_naive_scan_points_lazy_clean(&lazy_handler);
-}
-void K2TreeMixed::FullScanner::reset_scan() {
-  k2node_naive_scan_points_lazy_reset(&lazy_handler);
-}
-bool K2TreeMixed::FullScanner::is_band() { return false; }
-K2TreeMixed::BandType K2TreeMixed::FullScanner::get_band_type() {
-  throw std::runtime_error("Not band");
-}
-K2TreeMixed &K2TreeMixed::FullScanner::get_tree() { return k2tree; }
-unsigned long K2TreeMixed::FullScanner::get_band_value() {
-  throw std::runtime_error("Not band");
-}
-
-bool K2TreeMixed::BandScanner::has_next() { return lazy_handler.has_next; }
-std::pair<unsigned long, unsigned long> K2TreeMixed::BandScanner::next() {
-  uint64_t result;
-  k2node_report_band_next(&lazy_handler, &result);
-  if (band_type == COLUMN_BAND_TYPE) {
-    return {band, result};
-  }
-  time_control.tick_only_count();
-  return {result, band};
-}
-K2TreeMixed::BandScanner::~BandScanner() {
-  k2node_report_band_lazy_clean(&lazy_handler);
-}
-
-K2TreeMixed::BandScanner::BandScanner(K2TreeMixed &k2tree, unsigned long band,
-                                      K2TreeMixed::BandType band_type,
-                                      TimeControl &time_control)
-    : band(band), band_type(band_type), k2tree(k2tree),
-      time_control(time_control) {
-  if (band_type == COLUMN_BAND_TYPE) {
-    k2node_report_column_lazy_init(&lazy_handler, k2tree.get_root_k2node(),
-                                   k2tree.get_k2qstate(), band);
-  } else {
-    k2node_report_row_lazy_init(&lazy_handler, k2tree.get_root_k2node(),
-                                k2tree.get_k2qstate(), band);
-  }
-}
-void K2TreeMixed::BandScanner::reset_scan() {
-  k2node_report_band_reset(&lazy_handler);
-}
-bool K2TreeMixed::BandScanner::is_band() { return true; }
-K2TreeMixed::BandType K2TreeMixed::BandScanner::get_band_type() {
-  return band_type;
-}
-K2TreeMixed &K2TreeMixed::BandScanner::get_tree() { return k2tree; }
-unsigned long K2TreeMixed::BandScanner::get_band_value() { return band; }
-
-bool K2TreeMixed::EmptyScanner::has_next() { return false; }
-std::pair<unsigned long, unsigned long> K2TreeMixed::EmptyScanner::next() {
-  throw std::runtime_error("empty scanner");
-}
-void K2TreeMixed::EmptyScanner::reset_scan() {}
-bool K2TreeMixed::EmptyScanner::is_band() { return false; }
-K2TreeMixed::BandType K2TreeMixed::EmptyScanner::get_band_type() {
-  throw std::runtime_error("empty scanner");
-}
-unsigned long K2TreeMixed::EmptyScanner::get_band_value() {
-  throw std::runtime_error("empty scanner");
-}
-K2TreeMixed &K2TreeMixed::EmptyScanner::get_tree() { return k2tree; }
-K2TreeMixed::EmptyScanner::EmptyScanner(K2TreeMixed &k2tree) : k2tree(k2tree) {}
