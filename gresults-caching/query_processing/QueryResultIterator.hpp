@@ -31,11 +31,6 @@ public:
   QueryResultIterator(QueryResultIterator &&other) noexcept;
   QueryResultIterator &operator=(QueryResultIterator &&other) noexcept;
 
-  QueryResultIterator(const QueryResultIterator &other) = delete;
-  QueryResultIterator &operator=(const QueryResultIterator &other) = delete;
-  QueryResultIterator(QueryResultIterator &&other) noexcept;
-  QueryResultIterator &operator=(QueryResultIterator &&other) noexcept;
-
   ResultTableIterator &get_it();
   VarIndexManager &get_vim();
   NaiveDynamicStringDictionary &get_extra_dict();
