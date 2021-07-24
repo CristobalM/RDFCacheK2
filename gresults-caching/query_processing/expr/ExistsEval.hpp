@@ -43,26 +43,9 @@ private:
                                     std::set<std::string> &set) const;
   void explore_sequence_node_for_vars(const proto_msg::SequenceNode &node,
                                       std::set<std::string> &set) const;
-  void bind_row_vars_next_eval_data(NaiveDynamicStringDictionary &dictionary,
-                                    BoundVarsMap &bound_vars_map,
-                                    const row_t &row);
-  void bind_vars_to_sparql_tree(BoundVarsMap &map,
-                                proto_msg::SparqlTree &sparql_tree);
-  void bind_vars_to_node(BoundVarsMap &map, proto_msg::SparqlNode &node);
-  void bind_vars_to_project_node(BoundVarsMap &map,
-                                 proto_msg::ProjectNode &node);
-  void replace_vars(BoundVarsMap &map, proto_msg::ProjectNode &node);
-  void bind_vars_to_bgp_node(BoundVarsMap &map, proto_msg::BGPNode &bgp_node);
-  void bind_vars_to_term_node(BoundVarsMap &map, proto_msg::RDFTerm &term);
-  void bind_vars_to_expr_node(BoundVarsMap &map,
-                              proto_msg::ExprNode &expr_node);
-  void bind_vars_to_function_expr_node(BoundVarsMap &map,
-                                       proto_msg::FunctionNode &node);
-  void bind_vars_to_union_node(BoundVarsMap &map, proto_msg::UnionNode &node);
-  void bind_vars_to_filter_node(BoundVarsMap &map, proto_msg::FilterNode &node);
-  void bind_vars_to_extend_node(BoundVarsMap &map, proto_msg::ExtendNode &node);
-  void bind_vars_to_sequence_node(BoundVarsMap &map,
-                                  proto_msg::SequenceNode &node);
+  std::shared_ptr<VarBindingQProc>
+  bind_row_vars_next_eval_data(NaiveDynamicStringDictionary &dictionary,
+                               const row_t &row);
 };
 
 #endif // RDFCACHEK2_EXISTSEVAL_HPP

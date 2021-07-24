@@ -16,42 +16,20 @@ ExistsEval::eval_resource(const ExprEval::row_t &row) {
 }
 bool ExistsEval::eval_boolean(const ExprEval::row_t &row) {
   has_constant_subtree();
-  // std::unique_ptr<QueryResultIterator> query_result = nullptr;
-
-  proto_msg::SparqlTree sparql_tree;
-  // auto pattern_copy = expr_node.function_node().exprs(0).pattern_node();
-  // *sparql_tree.mutable_root() = pattern_copy;
-  sparql_tree.mutable_root()->CopyFrom(
-      expr_node.function_node().exprs(0).pattern_node());
+  const auto &query_tree = expr_node.function_node().exprs(0).pattern_node();
   if (!is_constant) {
-    auto next_vim = std::make_unique<VarIndexManager>(eval_data.vim);
-    auto extra_dict =
-        std::make_unique<NaiveDynamicStringDictionary>(eval_data.extra_dict);
-    auto bound_vars_map = std::make_unique<BoundVarsMap>();
-
-    bind_row_vars_next_eval_data(*extra_dict, *bound_vars_map, row);
-    bind_vars_to_sparql_tree(*bound_vars_map, sparql_tree);
-    /*
-        query_result = std::make_unique<QueryResultIterator>(
-            QueryProcessor(eval_data.cm, std::move(next_vim),
-                            std::move(extra_dict), eval_data.time_control)
-                .run_query(sparql_tree));
-        */
+    auto next_vim = std::make_shared<VarIndexManager>(eval_data.vim);
+    auto var_binding_qproc =
+        bind_row_vars_next_eval_data(*eval_data.extra_dict, row);
     auto qproc = QueryProcessor(eval_data.cm, std::move(next_vim),
-                                std::move(extra_dict), eval_data.time_control);
-    auto rit = qproc.run_query(sparql_tree);
+                                eval_data.extra_dict, eval_data.time_control);
+    auto rit = qproc.run_query(query_tree, std::move(var_binding_qproc));
     return rit.get_it().has_next();
   } else {
-    /*
-    query_result = std::make_unique<QueryResultIterator>(
-        QueryProcessor(eval_data.cm, eval_data.time_control)
-            .run_query(sparql_tree));
-            */
     auto rit = QueryProcessor(eval_data.cm, eval_data.time_control)
-                   .run_query(sparql_tree);
+                   .run_query(query_tree);
     return rit.get_it().has_next();
   }
-  // return query_result->get_it().has_next();
 }
 void ExistsEval::validate() {
   ExprEval::validate();
@@ -213,12 +191,12 @@ void ExistsEval::explore_sequence_node_for_vars(
     explore_node_for_vars(node.nodes(i), set);
   }
 }
-void ExistsEval::bind_row_vars_next_eval_data(
-    NaiveDynamicStringDictionary &dictionary, BoundVarsMap &bound_vars_map,
-    const row_t &row) {
-
+std::shared_ptr<VarBindingQProc> ExistsEval::bind_row_vars_next_eval_data(
+    NaiveDynamicStringDictionary &dictionary, const row_t &row) {
+  auto result = std::make_shared<VarBindingQProc>();
   for (const auto &var_pair : eval_data.vim.var_indexes) {
     const auto &var_name = var_pair.first;
+    const auto var_id = var_pair.second;
     RDFResource resource;
     if (this->eval_data.var_pos_mapping->find(var_name) ==
         this->eval_data.var_pos_mapping->end())
@@ -227,166 +205,13 @@ void ExistsEval::bind_row_vars_next_eval_data(
     auto value_id = row[pos];
     auto last_cache_id = this->eval_data.cm->get_last_id();
     if (value_id > last_cache_id)
-      resource =
-          this->eval_data.extra_dict.extract_resource(value_id - last_cache_id);
+      resource = this->eval_data.extra_dict->extract_resource(value_id -
+                                                              last_cache_id);
     else
       resource = this->eval_data.cm->extract_resource(value_id);
 
     dictionary.add_resource(resource);
-    bound_vars_map.bind(var_name, std::move(resource));
+    result->bind(var_id, value_id);
   }
-}
-
-void ExistsEval::bind_vars_to_sparql_tree(BoundVarsMap &map,
-                                          proto_msg::SparqlTree &sparql_tree) {
-  bind_vars_to_node(map, *sparql_tree.mutable_root());
-}
-void ExistsEval::bind_vars_to_node(BoundVarsMap &map,
-                                   proto_msg::SparqlNode &node) {
-  switch (node.node_case()) {
-  case proto_msg::SparqlNode::kProjectNode:
-    bind_vars_to_project_node(map, *node.mutable_project_node());
-    break;
-  case proto_msg::SparqlNode::kLeftJoinNode:
-    bind_vars_to_node(map, *node.mutable_left_join_node()->mutable_left_node());
-    bind_vars_to_node(map,
-                      *node.mutable_left_join_node()->mutable_right_node());
-    break;
-  case proto_msg::SparqlNode::kBgpNode:
-    bind_vars_to_bgp_node(map, *node.mutable_bgp_node());
-    break;
-  case proto_msg::SparqlNode::kExprNode:
-    bind_vars_to_expr_node(map, *node.mutable_expr_node());
-    break;
-  case proto_msg::SparqlNode::kUnionNode:
-    bind_vars_to_union_node(map, *node.mutable_union_node());
-    break;
-  case proto_msg::SparqlNode::kDistinctNode:
-    bind_vars_to_node(map, *node.mutable_distinct_node()->mutable_sub_node());
-    break;
-  case proto_msg::SparqlNode::kOptionalNode:
-    bind_vars_to_node(map, *node.mutable_optional_node()->mutable_left_node());
-    bind_vars_to_node(map, *node.mutable_optional_node()->mutable_right_node());
-    break;
-  case proto_msg::SparqlNode::kMinusNode:
-    bind_vars_to_node(map, *node.mutable_minus_node()->mutable_left_node());
-    bind_vars_to_node(map, *node.mutable_minus_node()->mutable_right_node());
-    break;
-  case proto_msg::SparqlNode::kFilterNode:
-    bind_vars_to_filter_node(map, *node.mutable_filter_node());
-    break;
-  case proto_msg::SparqlNode::kExtendNode:
-    bind_vars_to_extend_node(map, *node.mutable_extend_node());
-    break;
-  case proto_msg::SparqlNode::kSequenceNode:
-    bind_vars_to_sequence_node(map, *node.mutable_sequence_node());
-    break;
-  case proto_msg::SparqlNode::kSliceNode:
-    bind_vars_to_node(map, *node.mutable_slice_node()->mutable_node());
-    break;
-  default:
-    with_error = true;
-  }
-}
-void ExistsEval::bind_vars_to_project_node(BoundVarsMap &map,
-                                           proto_msg::ProjectNode &node) {
-  for (int i = 0; i < node.vars_size(); i++) {
-    const auto &var = node.vars(i);
-    if (map.has_var(var)) {
-      replace_vars(map, node);
-      break;
-    }
-  }
-  bind_vars_to_node(map, *node.mutable_sub_op());
-}
-void ExistsEval::replace_vars(BoundVarsMap &map, proto_msg::ProjectNode &node) {
-  std::vector<std::string> next_vars;
-  for (int i = 0; i < node.vars_size(); i++) {
-    const auto &var = node.vars(i);
-    if (!map.has_var(var))
-      next_vars.push_back(var);
-  }
-  node.clear_vars();
-  for (const auto &var : next_vars) {
-    node.mutable_vars()->Add(std::string(var));
-  }
-}
-void ExistsEval::bind_vars_to_bgp_node(BoundVarsMap &map,
-                                       proto_msg::BGPNode &bgp_node) {
-  for (int i = 0; i < bgp_node.triple_size(); i++) {
-    auto &triple = *bgp_node.mutable_triple(i);
-
-    bind_vars_to_term_node(map, *triple.mutable_subject());
-    bind_vars_to_term_node(map, *triple.mutable_predicate());
-    bind_vars_to_term_node(map, *triple.mutable_object());
-  }
-}
-void ExistsEval::bind_vars_to_term_node(BoundVarsMap &map,
-                                        proto_msg::RDFTerm &term) {
-  if (term.term_type() != proto_msg::TermType::VARIABLE ||
-      !map.has_var(term.term_value()))
-    return;
-  auto resource = map.get_resource_from(term.term_value());
-  switch (resource.resource_type) {
-  case RDF_TYPE_IRI:
-    term.set_term_type(proto_msg::TermType::IRI);
-    break;
-  case RDF_TYPE_BLANK:
-    term.set_term_type(proto_msg::TermType::BLANK_NODE);
-    break;
-  case RDF_TYPE_LITERAL:
-    term.set_term_type(proto_msg::TermType::LITERAL);
-    break;
-  default:
-    with_error = true;
-  }
-  term.set_term_value(std::move(resource.value));
-}
-void ExistsEval::bind_vars_to_expr_node(BoundVarsMap &map,
-                                        proto_msg::ExprNode &expr_node) {
-  switch (expr_node.expr_case()) {
-  case proto_msg::ExprNode::kFunctionNode:
-    bind_vars_to_function_expr_node(map, *expr_node.mutable_function_node());
-    break;
-  case proto_msg::ExprNode::kTermNode:
-    bind_vars_to_term_node(map, *expr_node.mutable_term_node());
-    break;
-  case proto_msg::ExprNode::kPatternNode:
-    bind_vars_to_node(map, *expr_node.mutable_pattern_node());
-    break;
-  default:
-    with_error = true;
-  }
-}
-void ExistsEval::bind_vars_to_function_expr_node(
-    BoundVarsMap &map, proto_msg::FunctionNode &node) {
-  for (int i = 0; i < node.exprs_size(); i++) {
-    bind_vars_to_expr_node(map, *node.mutable_exprs(i));
-  }
-}
-void ExistsEval::bind_vars_to_union_node(BoundVarsMap &map,
-                                         proto_msg::UnionNode &node) {
-  for (int i = 0; i < node.nodes_list_size(); i++) {
-    bind_vars_to_node(map, *node.mutable_nodes_list(i));
-  }
-}
-void ExistsEval::bind_vars_to_filter_node(BoundVarsMap &map,
-                                          proto_msg::FilterNode &node) {
-  for (int i = 0; i < node.exprs_size(); i++) {
-    bind_vars_to_expr_node(map, *node.mutable_exprs(i));
-  }
-  bind_vars_to_node(map, *node.mutable_node());
-}
-void ExistsEval::bind_vars_to_extend_node(BoundVarsMap &map,
-                                          proto_msg::ExtendNode &node) {
-  for (int i = 0; i < node.assignments_size(); i++) {
-    bind_vars_to_expr_node(map, *node.mutable_assignments(i)->mutable_expr());
-  }
-  bind_vars_to_node(map, *node.mutable_node());
-}
-void ExistsEval::bind_vars_to_sequence_node(BoundVarsMap &map,
-                                            proto_msg::SequenceNode &node) {
-  for (int i = 0; i < node.nodes_size(); i++) {
-    bind_vars_to_node(map, *node.mutable_nodes(i));
-  }
+  return result;
 }

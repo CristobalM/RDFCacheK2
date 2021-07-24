@@ -65,8 +65,8 @@ TermEval::eval_variable_get_resource(const ExprEval::row_t &row) const {
     return RDFResource::null_resource();
   auto last_cache_id = this->eval_data.cm->get_last_id();
   if (value_id > last_cache_id)
-    return this->eval_data.extra_dict.extract_resource(value_id -
-                                                       last_cache_id);
+    return this->eval_data.extra_dict->extract_resource(value_id -
+                                                        last_cache_id);
   return this->eval_data.cm->extract_resource(value_id);
 }
 

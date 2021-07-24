@@ -34,7 +34,7 @@ public:
                  std::shared_ptr<NaiveDynamicStringDictionary> extra_str_dict,
                  TimeControl &time_control);
 
-  QueryResultIterator run_query(proto_msg::SparqlTree const &query_tree);
+  QueryResultIterator run_query(const proto_msg::SparqlNode &query_tree);
   VarIndexManager &get_vim() override;
   std::shared_ptr<PredicatesCacheManager> get_cache_manager() override;
 

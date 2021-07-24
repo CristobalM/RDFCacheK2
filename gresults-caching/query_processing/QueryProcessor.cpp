@@ -62,7 +62,7 @@ std::shared_ptr<ResultTableIterator> QueryProcessor::process_left_join_node(
   }
 
   return std::make_shared<ResultTableFilterIterator>(
-      resulting_it, *vim, nodes, cm, *extra_str_dict, time_control,
+      resulting_it, *vim, nodes, cm, extra_str_dict, time_control,
       var_binding_qproc);
 }
 
@@ -129,9 +129,9 @@ std::shared_ptr<ResultTableIterator> QueryProcessor::process_node(
 }
 
 QueryResultIterator
-QueryProcessor::run_query(proto_msg::SparqlTree const &query_tree) {
+QueryProcessor::run_query(const proto_msg::SparqlNode &query_tree) {
   auto var_binding_qproc = std::make_shared<VarBindingQProc>();
-  auto result = process_node(query_tree.root(), var_binding_qproc);
+  auto result = process_node(query_tree, var_binding_qproc);
   if (extra_str_dict)
     return QueryResultIterator(result, cm, vim, std::move(extra_str_dict));
   return QueryResultIterator(result, cm, vim);
@@ -230,7 +230,7 @@ std::shared_ptr<ResultTableIterator> QueryProcessor::process_filter_node(
   }
 
   return std::make_shared<ResultTableFilterIterator>(
-      resulting_it, *vim, nodes, cm, *extra_str_dict, time_control,
+      resulting_it, *vim, nodes, cm, extra_str_dict, time_control,
       var_binding_qproc);
 }
 std::shared_ptr<ResultTableIterator> QueryProcessor::process_extend_node(
@@ -243,7 +243,7 @@ std::shared_ptr<ResultTableIterator> QueryProcessor::process_extend_node(
   auto var_pos_mapping = create_var_pos_mapping(*resulting_it);
 
   auto eval_data = std::make_unique<EvalData>(
-      *vim, cm, std::move(var_pos_mapping), *extra_str_dict, time_control,
+      *vim, cm, std::move(var_pos_mapping), extra_str_dict, time_control,
       var_binding_qproc);
   std::vector<std::unique_ptr<VarLazyBinding>> var_bindings;
   for (int i = 0; i < node.assignments_size(); i++) {
@@ -335,7 +335,7 @@ std::shared_ptr<ResultTableIterator> QueryProcessor::process_order_node(
     return result_it;
   auto var_pos_mapping = create_var_pos_mapping(*result_it);
 
-  EvalData eval_data(*vim, cm, std::move(var_pos_mapping), *extra_str_dict,
+  EvalData eval_data(*vim, cm, std::move(var_pos_mapping), extra_str_dict,
                      time_control, var_binding_qproc);
 
   auto table = result_it->materialize_vector();

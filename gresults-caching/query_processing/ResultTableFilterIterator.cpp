@@ -20,11 +20,12 @@ ResultTableFilterIterator::ResultTableFilterIterator(
     std::shared_ptr<ResultTableIterator> input_it, VarIndexManager &vim,
     std::vector<const proto_msg::ExprNode *> &expr_nodes,
     std::shared_ptr<PredicatesCacheManager> cm,
-    NaiveDynamicStringDictionary &extra_str_dict, TimeControl &time_control,
+    std::shared_ptr<NaiveDynamicStringDictionary> extra_str_dict,
+    TimeControl &time_control,
     std::shared_ptr<VarBindingQProc> var_binding_qproc)
     : ResultTableIterator(time_control), input_it(std::move(input_it)),
       next_available(false), var_pos_mapping(get_var_pos_mapping(vim)),
-      eval_data(vim, std::move(cm), var_pos_mapping, extra_str_dict,
+      eval_data(vim, std::move(cm), var_pos_mapping, std::move(extra_str_dict),
                 time_control, std::move(var_binding_qproc)) {
   for (const auto *node : expr_nodes) {
     bool_expressions.push_back(

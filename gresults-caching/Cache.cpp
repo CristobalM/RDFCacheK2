@@ -22,7 +22,7 @@ Cache::run_query(const proto_msg::SparqlTree &query_tree,
   ensure_available_predicates(query_tree.root());
   time_control.start_timer();
   return std::make_shared<QueryResultIterator>(
-      QueryProcessor(cache_manager, time_control).run_query(query_tree));
+      QueryProcessor(cache_manager, time_control).run_query(query_tree.root()));
 }
 
 RDFResource Cache::extract_resource(unsigned long index) const {

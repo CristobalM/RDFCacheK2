@@ -87,10 +87,10 @@ ResultTableIteratorExtend::get_rdf_resource_id_value(RDFResource &resource) {
   auto resource_id = cm.get_resource_index(resource);
 
   if (resource_id == 0) {
-    auto extra_dict_value = extra_str_dict.locate_resource(resource);
+    auto extra_dict_value = extra_str_dict->locate_resource(resource);
     if (extra_dict_value == 0) {
-      extra_str_dict.add_resource(resource);
-      extra_dict_value = extra_str_dict.locate_resource(resource);
+      extra_str_dict->add_resource(resource);
+      extra_dict_value = extra_str_dict->locate_resource(resource);
     }
     resource_id = extra_dict_value + cm.get_last_id();
   }

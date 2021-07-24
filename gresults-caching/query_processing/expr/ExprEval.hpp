@@ -23,7 +23,7 @@ protected:
   std::vector<std::unique_ptr<ExprEval>> children;
 
   const EvalData &eval_data;
-  const proto_msg::ExprNode &expr_node;
+  const proto_msg::ExprNode expr_node;
 
   bool with_error;
 
@@ -58,7 +58,7 @@ public:
   double produce_double(const row_t &row);
   DateInfo produce_date_time(const row_t &row);
 
-  ExprEval(const EvalData &eval_data, const proto_msg::ExprNode &expr_node);
+  ExprEval(const EvalData &eval_data, proto_msg::ExprNode expr_node);
   virtual std::shared_ptr<TermResource> eval_resource(const row_t &row);
   virtual std::shared_ptr<TermResource> eval_datatype(const row_t &row);
   virtual bool eval_boolean(const row_t &row);

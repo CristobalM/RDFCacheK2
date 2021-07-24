@@ -10,6 +10,7 @@
 #include <pcrecpp.h>
 #include <query_processing/expr/LangMatchesEval.hpp>
 #include <query_processing/expr/LogicalNotEval.hpp>
+#include <utility>
 
 #include "AddEval.hpp"
 #include "BNodeEval.hpp"
@@ -84,9 +85,8 @@
 #include "query_processing/resources/DoubleResource.hpp"
 #include "query_processing/resources/IntegerResource.hpp"
 
-ExprEval::ExprEval(const EvalData &eval_data,
-                   const proto_msg::ExprNode &expr_node)
-    : eval_data(eval_data), expr_node(expr_node), with_error(false),
+ExprEval::ExprEval(const EvalData &eval_data, proto_msg::ExprNode expr_node)
+    : eval_data(eval_data), expr_node(std::move(expr_node)), with_error(false),
       with_constant_subtree(false),
 
       was_resource_cached(false), was_datatype_cached(false),
