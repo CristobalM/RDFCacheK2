@@ -12,7 +12,7 @@
 class ResultTableIteratorJoinSeqBinding : public ResultTableIterator {
 
   std::shared_ptr<ResultTableIterator> input_it;
-  const proto_msg::SparqlNode &proto_node;
+  const proto_msg::SparqlNode proto_node;
   std::shared_ptr<VarBindingQProc> var_binding_qproc;
 
   std::vector<unsigned long> headers;
@@ -35,7 +35,7 @@ class ResultTableIteratorJoinSeqBinding : public ResultTableIterator {
 public:
   ResultTableIteratorJoinSeqBinding(
       std::shared_ptr<ResultTableIterator> input_it,
-      const proto_msg::SparqlNode &proto_node,
+      proto_msg::SparqlNode proto_node,
       std::shared_ptr<VarBindingQProc> var_binding_qproc,
       std::set<unsigned long> &right_table_vars, TimeControl &time_control,
       std::shared_ptr<PredicatesCacheManager> cache_manager,

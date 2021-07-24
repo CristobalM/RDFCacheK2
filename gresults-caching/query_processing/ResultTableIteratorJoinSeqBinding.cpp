@@ -22,14 +22,15 @@ void ResultTableIteratorJoinSeqBinding::reset_iterator() {
 
 ResultTableIteratorJoinSeqBinding::ResultTableIteratorJoinSeqBinding(
     std::shared_ptr<ResultTableIterator> input_it,
-    const proto_msg::SparqlNode &proto_node,
+    proto_msg::SparqlNode proto_node,
     std::shared_ptr<VarBindingQProc> var_binding_qproc,
     std::set<unsigned long> &right_table_vars, TimeControl &time_control,
     std::shared_ptr<PredicatesCacheManager> cache_manager,
     std::shared_ptr<VarIndexManager> vim,
     std::shared_ptr<NaiveDynamicStringDictionary> extra_str_dict)
     : ResultTableIterator(time_control), input_it(std::move(input_it)),
-      proto_node(proto_node), var_binding_qproc(std::move(var_binding_qproc)),
+      proto_node(std::move(proto_node)),
+      var_binding_qproc(std::move(var_binding_qproc)),
       current_var_binding_qproc(nullptr), current_right_it(nullptr),
       next_available(false), left_row_active(false),
       cache_manager(std::move(cache_manager)), vim(std::move(vim)),

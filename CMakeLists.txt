@@ -55,8 +55,7 @@ set(PROC_SOURCE_FILES
         proc/QueueIteratorDictString.cpp
         proc/SDFeed.cpp
         proc/SDBuilder.cpp
-
-        algorithms/external_sort_generic.hpp)
+)
 
 set(GRAPH_RESULT_CACHING_FILE
         gresults-caching/GraphResult.cpp

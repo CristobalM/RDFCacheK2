@@ -37,9 +37,9 @@
 QueryProcessor::QueryProcessor(
     std::shared_ptr<PredicatesCacheManager> cache_manager,
     TimeControl &time_control)
-    : QueryProcessor(std::move(cache_manager),
-                     std::make_unique<VarIndexManager>(), nullptr,
-                     time_control) {}
+    : QueryProcessor(
+          std::move(cache_manager), std::make_unique<VarIndexManager>(),
+          std::make_shared<NaiveDynamicStringDictionary>(), time_control) {}
 
 std::shared_ptr<ResultTableIterator> QueryProcessor::process_left_join_node(
     const proto_msg::LeftJoinNode &left_join_node,
@@ -60,9 +60,6 @@ std::shared_ptr<ResultTableIterator> QueryProcessor::process_left_join_node(
     const auto &expr_node = left_join_node.expr_list(i);
     nodes.push_back(&expr_node);
   }
-
-  if (extra_str_dict)
-    extra_str_dict = std::make_unique<NaiveDynamicStringDictionary>();
 
   return std::make_shared<ResultTableFilterIterator>(
       resulting_it, *vim, nodes, cm, *extra_str_dict, time_control,
@@ -232,9 +229,6 @@ std::shared_ptr<ResultTableIterator> QueryProcessor::process_filter_node(
     nodes.push_back(&expr_node);
   }
 
-  if (!extra_str_dict)
-    extra_str_dict = std::make_unique<NaiveDynamicStringDictionary>();
-
   return std::make_shared<ResultTableFilterIterator>(
       resulting_it, *vim, nodes, cm, *extra_str_dict, time_control,
       var_binding_qproc);
@@ -245,9 +239,6 @@ std::shared_ptr<ResultTableIterator> QueryProcessor::process_extend_node(
   auto resulting_it = process_node(node.node(), var_binding_qproc);
   if (!time_control.tick())
     return resulting_it;
-  if (!extra_str_dict) {
-    extra_str_dict = std::make_unique<NaiveDynamicStringDictionary>();
-  }
 
   auto var_pos_mapping = create_var_pos_mapping(*resulting_it);
 
@@ -420,10 +411,6 @@ QueryProcessor::process_table_node(const proto_msg::TableNode &node,
     auto &var = node.vars(i);
     auto id = vim->assign_index_if_not_found(var);
     result_table_list->headers.push_back(id);
-  }
-
-  if (!extra_str_dict) {
-    extra_str_dict = std::make_unique<NaiveDynamicStringDictionary>();
   }
 
   for (int i = 0; i < node.rows_size(); i++) {
