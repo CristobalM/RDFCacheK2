@@ -15,7 +15,6 @@
 #include "TimeControl.hpp"
 #include "network_msg_definitions.hpp"
 
-#include <graph_result.pb.h>
 #include <message_type.pb.h>
 #include <response_msg.pb.h>
 
@@ -30,38 +29,6 @@ ServerTask::ServerTask(int client_socket_fd, Cache &cache,
                        TaskProcessor &task_processor)
     : client_socket_fd(client_socket_fd), cache(cache),
       task_processor(task_processor) {}
-
-// static void print_table_debug(QueryResult &query_result, ServerTask
-// &server_task){
-//   std::cout << " Debug print table" << std::endl;
-//   auto &vim = query_result.get_vim();
-//   auto &table = query_result.table();
-
-//   if(table.headers.size() == 0) throw std::runtime_error("No headers present
-//   in table");
-
-//   auto rev_map = vim.reverse();
-//   for(auto header: table.headers){
-//     std::cout << rev_map[header] << ",";
-//   }
-//   std::cout << std::endl;
-
-//   int counter = 0;
-//   for(auto &row: table.data){
-//     if(row.size() != table.headers.size()){
-//       throw std::runtime_error(std::to_string(counter) + "th row has size " +
-//       std::to_string(row.size()) + " but should be " +
-//       std::to_string(table.headers.size()));
-//     }
-//     counter++;
-//     for(auto col: row){
-//       std::cout << server_task.get_cache().extract_resource(col).value <<
-//       ",";
-//     }
-//     std::cout << "\n";
-//   }
-//   std::cout << std::endl;
-// }
 
 bool read_nbytes_from_socket(int client_socket_fd, char *read_buffer,
                              size_t bytes_to_read) {
@@ -158,22 +125,9 @@ void ServerTask::process_cache_query(Message &message) {
     return;
   }
 
-  TimeControl time_control(100'000, 5s);
-  auto query_result =
-      cache.run_query(tree, time_control)->as_query_result_original();
-
-  if (time_control.has_error()) {
-    send_invalid_response();
-    std::cerr << time_control.get_query_error().get_str() << std::endl;
-  } else if (time_control.finished()) {
-    auto response =
-        create_response_from_query_result(std::move(query_result), message);
-    send_response(response);
-  } else {
-    // check if this dont cause memory errors
-    std::cout << "timed out..." << std::endl;
-    send_timeout();
-  }
+  auto time_control = std::make_unique<TimeControl>(100'000, 5s);
+  auto query_result_it = cache.run_query(tree, *time_control);
+  begin_streaming_results(query_result_it, std::move(time_control));
 }
 
 void ServerTask::send_invalid_response() {
@@ -185,119 +139,6 @@ void ServerTask::send_invalid_response() {
   send_response(cache_response);
 }
 
-proto_msg::CacheResponse ServerTask::create_response_from_query_result(
-    std::shared_ptr<QueryResult> query_result, Message &message) {
-  auto &vim = query_result->get_vim();
-  auto &table = query_result->table();
-
-  proto_msg::CacheResponse cache_response;
-  cache_response.set_response_type(
-      proto_msg::MessageType::RESULT_TABLE_RESPONSE);
-
-  auto &tree =
-      message.get_cache_request().cache_run_query_algebra().sparql_tree();
-
-  std::set<uint64_t> keys; // will store values in ascending order
-
-  for (const auto &row : table.get_data()) {
-    for (auto value : row) {
-      keys.insert(value);
-    }
-  }
-
-  size_t keys_size = 0;
-  for (const auto &key : keys) {
-    RDFResource key_res;
-    if (key > cache.get_pcm().get_last_id()) {
-      key_res = query_result->get_extra_dict().extract_resource(
-          key - cache.get_pcm().get_last_id());
-    } else {
-      key_res = cache.extract_resource(key);
-    }
-    keys_size += key_res.value.size() * sizeof(char);
-  }
-  keys_size += keys.size() * sizeof(uint64_t);
-  keys_size += query_result->table().get_data().size() *
-               query_result->table().headers.size() * sizeof(uint64_t);
-
-  if (keys_size > MAX_PROTO_MESSAGE_SIZE_ALLOWED) {
-    return create_parts_response(std::move(keys), std::move(query_result));
-  }
-
-  if (tree.root().node_case() == proto_msg::SparqlNode::kProjectNode) {
-    auto &project_node = tree.root().project_node();
-    auto &headers = query_result->table().headers;
-    std::unordered_map<unsigned long, unsigned long> reversed_uindexes;
-    for (size_t i = 0; i < headers.size(); i++) {
-      reversed_uindexes[headers[i]] = i;
-    }
-
-    std::vector<unsigned long> resulting_vars_order;
-
-    for (int i = 0; i < project_node.vars_size(); i++) {
-      const auto &var = project_node.vars(i);
-      auto var_index = vim.var_indexes[var];
-      resulting_vars_order.push_back(reversed_uindexes[var_index]);
-    }
-
-    for (const auto &row : table.get_data()) {
-      auto *response_row =
-          cache_response.mutable_query_result_response()->add_rows();
-      for (size_t i = 0; i < row.size(); i++) {
-        auto value = row[resulting_vars_order[i]];
-        response_row->add_row(value);
-      }
-    }
-    for (int i = 0; i < project_node.vars_size(); i++) {
-      const auto &var = project_node.vars(i);
-      cache_response.mutable_query_result_response()->add_header(var);
-    }
-  } else {
-    for (const auto &row : table.get_data()) {
-      auto *response_row =
-          cache_response.mutable_query_result_response()->add_rows();
-
-      for (auto value : row) {
-        response_row->add_row(value);
-      }
-    }
-    auto reversed_indexes = vim.reverse();
-    for (auto header : table.headers) {
-      const auto &var = reversed_indexes[header];
-      cache_response.mutable_query_result_response()->add_header(var);
-    }
-  }
-
-  for (auto key : keys) {
-    RDFResource key_res;
-    if (key > cache.get_pcm().get_last_id()) {
-      key_res = query_result->get_extra_dict().extract_resource(
-          key - cache.get_pcm().get_last_id());
-    } else {
-      key_res = cache.extract_resource(key);
-    }
-
-    auto *kv = cache_response.mutable_query_result_response()->add_kvs();
-    kv->set_key(key);
-    kv->set_value(key_res.value);
-    switch (key_res.resource_type) {
-    case RDFResourceType::RDF_TYPE_BLANK:
-      kv->set_type(proto_msg::TermType::BLANK_NODE);
-      break;
-
-    case RDFResourceType::RDF_TYPE_IRI:
-      kv->set_type(proto_msg::TermType::IRI);
-      break;
-
-    case RDFResourceType::RDF_TYPE_LITERAL:
-    case NULL_RESOURCE_TYPE:
-      kv->set_type(proto_msg::TermType::LITERAL);
-      break;
-    }
-  }
-
-  return cache_response;
-}
 void ServerTask::send_response(proto_msg::CacheResponse &cache_response) {
 
   std::string serialized = cache_response.SerializeAsString();
@@ -318,13 +159,6 @@ void ServerTask::process_connection_end() {
   cache_response.mutable_connection_end_response()->set_end(true);
   send_response(cache_response);
 }
-proto_msg::CacheResponse
-ServerTask::create_parts_response(std::set<uint64_t> &&keys,
-                                  std::shared_ptr<QueryResult> result) {
-  auto &streamer =
-      task_processor.create_streamer(std::move(keys), std::move(result));
-  return streamer.get_next_response();
-}
 void ServerTask::process_receive_remaining_result(Message &message) {
   int id = message.get_cache_request().receive_remaining_result().id();
   if (!task_processor.has_streamer(id)) {
@@ -339,10 +173,14 @@ void ServerTask::process_receive_remaining_result(Message &message) {
     task_processor.clean_streamer(id);
   }
 }
-void ServerTask::send_timeout() {
-  std::cout << "query timed out... aborting" << std::endl;
-  proto_msg::CacheResponse cache_response;
-  cache_response.set_response_type(proto_msg::MessageType::TIMED_OUT_RESPONSE);
-  cache_response.mutable_error_response();
-  send_response(cache_response);
+void ServerTask::begin_streaming_results(
+    std::shared_ptr<QueryResultIterator> query_result_iterator,
+    std::unique_ptr<TimeControl> &&time_control) {
+  auto &streamer = task_processor.create_streamer(
+      std::move(query_result_iterator), std::move(time_control));
+  auto first_response = streamer.get_next_response();
+  send_response(first_response);
+  if (streamer.all_sent()) {
+    task_processor.clean_streamer(streamer.get_id());
+  }
 }

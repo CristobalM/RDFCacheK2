@@ -80,6 +80,19 @@ struct RDFResource {
     }
   }
   bool is_null() const { return resource_type == NULL_RESOURCE_TYPE; }
+  proto_msg::TermType get_proto_type() {
+    switch (resource_type) {
+    case RDF_TYPE_IRI:
+      return proto_msg::TermType::IRI;
+    case RDF_TYPE_BLANK:
+      return proto_msg::TermType::BLANK_NODE;
+    case RDF_TYPE_LITERAL:
+      return proto_msg::TermType::LITERAL;
+      break;
+    case NULL_RESOURCE_TYPE:
+      return proto_msg::TermType::UNKNOWN_TERM_TYPE;
+    }
+  }
 };
 
 struct RDFResourceReference {

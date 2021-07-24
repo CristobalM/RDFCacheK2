@@ -3,6 +3,7 @@
 //
 
 #include "CacheServerTaskProcessor.hpp"
+#include "QueryResultPartStreamer.hpp"
 
 void CacheServerTaskProcessor::process_request(int client_socket_fd) {
   auto server_task_uptr =
@@ -47,21 +48,26 @@ bool CacheServerTaskProcessor::tasks_available() {
   std::lock_guard<std::mutex> lock_guard(mutex);
   return !server_tasks.empty();
 }
-QueryResultStreamer &CacheServerTaskProcessor::get_streamer(int id) {
+I_QRStreamer &CacheServerTaskProcessor::get_streamer(int id) {
   return *streamer_map[id];
 }
 
-QueryResultStreamer &CacheServerTaskProcessor::create_streamer(
-    std::set<uint64_t> &&keys, std::shared_ptr<QueryResult> query_result) {
-  int next_id = current_id++;
-  std::cout << "creating streamer with id " << next_id << std::endl;
-  streamer_map[next_id] = std::make_unique<QueryResultStreamer>(
-      std::move(keys), std::move(query_result), next_id, &cache.get_pcm());
-  return *streamer_map[next_id];
-}
 bool CacheServerTaskProcessor::has_streamer(int id) {
   return streamer_map.find(id) != streamer_map.end();
 }
+
+I_QRStreamer &CacheServerTaskProcessor::create_streamer(
+    std::shared_ptr<QueryResultIterator> query_result_iterator,
+    std::unique_ptr<TimeControl> &&time_control) {
+  streamer_map[current_id] = std::make_unique<QueryResultPartStreamer>(
+      current_id, std::move(query_result_iterator), std::move(time_control),
+      DEFAULT_THRESHOLD_PART_SZ);
+
+  std::cout << "streamers now: " << streamer_map.size() << std::endl;
+  return *streamer_map[current_id++];
+}
+
 void CacheServerTaskProcessor::clean_streamer(int id) {
+  streamer_map[id].reset();
   streamer_map.erase(id);
 }

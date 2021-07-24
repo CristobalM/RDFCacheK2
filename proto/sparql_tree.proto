@@ -236,6 +236,7 @@ enum TermType {
   LITERAL = 1;
   BLANK_NODE = 2;
   VARIABLE = 3;
+  UNKNOWN_TERM_TYPE = 4;
 }
 
 enum BasicType {

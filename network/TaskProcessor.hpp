@@ -5,20 +5,21 @@
 #ifndef RDFCACHEK2_TASKPROCESSOR_HPP
 #define RDFCACHEK2_TASKPROCESSOR_HPP
 
-#include "QueryResultStreamer.hpp"
+#include "I_QRStreamer.hpp"
+#include "TimeControl.hpp"
 #include <cstdint>
-#include <query_processing/QueryResult.hpp>
+#include <query_processing/QueryResultIterator.hpp>
 #include <set>
 #include <utility>
 
 class TaskProcessor {
 public:
-  virtual QueryResultStreamer &get_streamer(int id) = 0;
-  virtual QueryResultStreamer &
-  create_streamer(std::set<uint64_t> &&keys,
-                  std::shared_ptr<QueryResult> query_result) = 0;
+  virtual I_QRStreamer &get_streamer(int id) = 0;
   virtual ~TaskProcessor() = default;
   virtual bool has_streamer(int id) = 0;
+  virtual I_QRStreamer &
+  create_streamer(std::shared_ptr<QueryResultIterator> query_result_iterator,
+                  std::unique_ptr<TimeControl> &&time_control) = 0;
   virtual void clean_streamer(int id) = 0;
 };
 

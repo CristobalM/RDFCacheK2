@@ -56,7 +56,7 @@ set(PROC_SOURCE_FILES
         proc/SDFeed.cpp
         proc/SDBuilder.cpp
 
-        )
+        algorithms/external_sort_generic.hpp)
 
 set(GRAPH_RESULT_CACHING_FILE
         gresults-caching/GraphResult.cpp
@@ -119,8 +119,6 @@ set(GRAPH_RESULT_CACHING_FILE
         gresults-caching/query_processing/ResultTableIteratorExtend.hpp
         gresults-caching/query_processing/ResultTableIteratorMinus.hpp
         gresults-caching/query_processing/ResultTableIteratorMinus.cpp
-        gresults-caching/query_processing/InnerJoinProcessor.hpp
-        gresults-caching/query_processing/InnerJoinProcessor.cpp
         gresults-caching/query_processing/ResultTableIteratorInnerJoin.cpp
         gresults-caching/query_processing/ResultTableIteratorInnerJoin.hpp
         gresults-caching/query_processing/ResultTableIteratorSlice.hpp
@@ -252,8 +250,7 @@ set(NETWORK_SOURCE_FILES
         network/CacheServerTaskProcessor.cpp
         network/ServerWorker.cpp
         network/Message.cpp
-        network/QueryResultStreamer.cpp
-        )
+        network/QueryResultPartStreamer.cpp network/QueryResultPartStreamer.hpp network/I_QRStreamer.hpp)
 
 
 set(PROTO_MESSAGES

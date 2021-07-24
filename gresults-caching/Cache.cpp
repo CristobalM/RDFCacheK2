@@ -72,8 +72,11 @@ bool Cache::node_is_valid(const proto_msg::SparqlNode &node) {
 bool Cache::bgp_node_is_valid(const proto_msg::BGPNode &node) {
   for (int i = 0; i < node.triple_size(); i++) {
     const auto &triple = node.triple(i);
-    if (triple.predicate().term_type() != proto_msg::TermType::IRI)
+    if (triple.predicate().term_type() != proto_msg::TermType::IRI) {
+      std::cerr << "Error, predicate " << triple.predicate().term_value()
+                << " is not an IRI " << std::endl;
       return false;
+    }
     //    if (!cache_manager->has_predicate(triple.predicate().term_value()))
     //      return false;
   }
