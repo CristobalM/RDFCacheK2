@@ -66,7 +66,6 @@ private:
       const std::shared_ptr<VarBindingQProc> &var_binding_qproc);
 
   void remove_repeated_rows(ResultTable &input_table);
-  void left_to_right_sort(ResultTable &input_table);
   std::shared_ptr<ResultTableIterator> process_filter_node(
       const proto_msg::FilterNode &node,
       const std::shared_ptr<VarBindingQProc> &var_binding_qproc);
@@ -92,7 +91,7 @@ private:
   process_path_node(const proto_msg::TripleWithPath &path);
   std::shared_ptr<ResultTableIterator>
   process_table_node(const proto_msg::TableNode &node,
-                     std::shared_ptr<VarBindingQProc> var_binding_qproc);
+                     const std::shared_ptr<VarBindingQProc> &var_binding_qproc);
   std::shared_ptr<ResultTableIterator>
   process_group_by_node(const proto_msg::GroupByNode &node);
   std::shared_ptr<ResultTableIterator>
@@ -102,8 +101,9 @@ private:
   void left_to_right_sort_vec(ResultTableVector &result_table_vector);
   std::shared_ptr<ResultTable>
   convert_to_result_table_list(ResultTableVector &result_table_vector);
-  RDFResource resource_from_proto_term(const proto_msg::RDFTerm &term);
-  RDFResourceType resource_type_from_term(const proto_msg::RDFTerm &term);
+  static RDFResource resource_from_proto_term(const proto_msg::RDFTerm &term);
+  static RDFResourceType
+  resource_type_from_term(const proto_msg::RDFTerm &term);
   unsigned long id_from_resource(RDFResource &resource);
   std::string sanitize_term(const proto_msg::RDFTerm &term);
   std::string sanitize_number_term(const proto_msg::RDFTerm &term);

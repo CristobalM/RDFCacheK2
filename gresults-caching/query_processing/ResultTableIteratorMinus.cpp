@@ -1,9 +1,9 @@
 //
-// Created by cristobal on 7/14/21.
+// Created by cristobal on 25-07-21.
 //
 
 #include "ResultTableIteratorMinus.hpp"
-#include <TimeControl.hpp>
+#include "QueryProcessor.hpp"
 bool ResultTableIteratorMinus::has_next() { return next_available; }
 std::vector<unsigned long> ResultTableIteratorMinus::next() {
   return next_concrete();
@@ -11,70 +11,92 @@ std::vector<unsigned long> ResultTableIteratorMinus::next() {
 std::vector<unsigned long> &ResultTableIteratorMinus::get_headers() {
   return left_it->get_headers();
 }
-void ResultTableIteratorMinus::reset_iterator() {
-  left_it->reset_iterator();
-  next_available = false;
-  next_concrete();
-}
+void ResultTableIteratorMinus::reset_iterator() { left_it->reset_iterator(); }
+
 ResultTableIteratorMinus::ResultTableIteratorMinus(
-    std::shared_ptr<ResultTableIterator> left_it, ResultTableIterator &right_it,
-    TimeControl &time_control)
+    std::shared_ptr<ResultTableIterator> left_it,
+    proto_msg::SparqlNode right_node,
+    std::shared_ptr<VarBindingQProc> var_binding_qproc,
+    TimeControl &time_control,
+    std::shared_ptr<PredicatesCacheManager> cache_manager,
+    std::shared_ptr<VarIndexManager> vim,
+    std::shared_ptr<NaiveDynamicStringDictionary> extra_str_dict)
     : ResultTableIterator(time_control), left_it(std::move(left_it)),
-      right_index(build_right_index(right_it, time_control)),
-      next_available(false), key_holder(right_it.get_headers().size(), 0),
-      key_positions_left(build_key_positions_left(right_it.get_headers())) {
+      right_node(std::move(right_node)),
+      var_binding_qproc(std::move(var_binding_qproc)), next_available(false),
+      current_right_it(nullptr), cache_manager(std::move(cache_manager)),
+      vim(std::move(vim)), extra_str_dict(std::move(extra_str_dict))
+
+{
   next_concrete();
 }
-ResultTableIteratorMinus::set_t
-ResultTableIteratorMinus::build_right_index(ResultTableIterator &right_it,
-                                            TimeControl &time_control) {
-  set_t result;
-  while (right_it.has_next()) {
-    auto current = right_it.next();
-    if (!time_control.tick())
-      return result;
-    result.insert(std::move(current));
-  }
-  return result;
-}
+
 std::vector<unsigned long> ResultTableIteratorMinus::next_concrete() {
-  auto result = next_result;
+  if (!time_control.tick())
+    return next_result;
   next_available = false;
+  auto result = next_result;
 
   while (left_it->has_next()) {
-    auto current_lr = left_it->next();
+    auto current_left_row = left_it->next();
     if (!time_control.tick())
       return result;
 
-    select_key_values(current_lr);
-    // then value is not on right, so it should be considered
-    if (right_index.find(key_holder) == right_index.end()) {
-      next_available = true;
-      next_result = std::move(current_lr);
-      return result;
+    auto changed_bindings =
+        create_var_binding_qproc_if_needed(current_left_row);
+
+    if (changed_bindings || !current_right_it) {
+      current_right_it =
+          QueryProcessor(cache_manager, vim, extra_str_dict, time_control)
+              .run_query(right_node, current_var_binding_qproc)
+              .get_it_shared();
+      if (!time_control.tick())
+        return result;
     }
-    // at this point the current_lr should be discarded, then continue until
-    // there are no more items on the left
+
+    if (!current_right_it->has_next()) {
+      next_result = std::move(current_left_row);
+      next_available = true;
+      break;
+    }
   }
   return result;
 }
-void ResultTableIteratorMinus::select_key_values(
+
+bool ResultTableIteratorMinus::create_var_binding_qproc_if_needed(
     std::vector<unsigned long> &left_row) {
-  for (size_t i = 0; i < key_positions_left.size(); i++) {
-    key_holder[i] = left_row[key_positions_left[i]];
+  bool changed = false;
+
+  if (!current_var_binding_qproc) {
+    current_var_binding_qproc =
+        std::make_shared<VarBindingQProc>(*var_binding_qproc);
+    changed = true;
   }
-}
-std::vector<unsigned long> ResultTableIteratorMinus::build_key_positions_left(
-    std::vector<unsigned long> &right_headers) {
-  std::vector<unsigned long> result;
-  auto &left_headers = left_it->get_headers();
-  for (unsigned long right_header : right_headers) {
-    for (size_t j = 0; j < left_headers.size(); j++) {
-      if (left_headers[j] == right_header) {
-        result.push_back(j);
-        continue;
+  auto &input_headers = left_it->get_headers();
+
+  if (!changed) {
+    for (size_t i = 0; i < input_headers.size(); i++) {
+      auto header_val = input_headers[i];
+      auto left_val = left_row[i];
+      if (!current_var_binding_qproc->is_bound(header_val) ||
+          current_var_binding_qproc->get_value(header_val) != left_val) {
+        changed = true;
+        break;
       }
     }
+    if (changed) {
+      current_var_binding_qproc =
+          std::make_shared<VarBindingQProc>(*var_binding_qproc);
+    }
   }
-  return result;
+
+  if (changed) {
+    for (size_t i = 0; i < input_headers.size(); i++) {
+      auto header_val = input_headers[i];
+      auto left_val = left_row[i];
+      current_var_binding_qproc->bind(header_val, left_val);
+    }
+  }
+
+  return changed;
 }

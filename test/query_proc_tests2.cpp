@@ -438,7 +438,6 @@ public:
   static void add_problematic_query_3_input_not_exist(int until) {
     for (int i = 0; i < until; i++) {
       auto var_1_value = pq3_var_1_gen(i);
-      // std::cout << "adding i = " << i << ": " << var_1_value << std::endl;
 
       pcm->add_triple(RDFTripleResource(RDFResource(var_1_value, RDF_TYPE_IRI),
                                         RDFResource(ns_type, RDF_TYPE_IRI),
@@ -751,8 +750,6 @@ TEST_F(QueryProcTests2Fixture, can_do_minus_op_test_1) {
 
   rhs_equality_term->set_term_value("\"0\"^^xsd:integer");
   rhs_equality_term->set_term_type(proto_msg::TermType::LITERAL);
-
-  std::cout << tree.DebugString() << std::endl;
 
   auto result = QueryProcTests2Fixture::cache->run_query(tree, time_control)
                     ->as_query_result_original();

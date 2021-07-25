@@ -1,28 +1,28 @@
 //
-// Created by cristobal on 7/13/21.
+// Created by cristobal on 25-07-21.
 //
 
-#ifndef RDFCACHEK2_OptionalProcessor_HPP
-#define RDFCACHEK2_OptionalProcessor_HPP
+#ifndef RDFCACHEK2_OPTIONALPROCESSOR_HPP
+#define RDFCACHEK2_OPTIONALPROCESSOR_HPP
 
-#include <TimeControl.hpp>
-#include <memory>
-#include <set>
-#include <unordered_map>
-#include <vector>
+#include "QProc.hpp"
+#include "VarBindingQProc.hpp"
+#include <sparql_tree.pb.h>
+class OptionalProcessor {
+  const proto_msg::SparqlNode &left_node;
+  const proto_msg::SparqlNode &right_node;
+  QProc *query_processor;
+  std::shared_ptr<VarBindingQProc> var_binding_qproc;
+  TimeControl &time_control;
 
-#include "LWRHMapJoinLazyBaseProcessor.hpp"
-#include "QueryProcHashing.hpp"
-#include "ResultTable.hpp"
-#include "ResultTableIterator.hpp"
-#include "VarIndexManager.hpp"
-
-class OptionalProcessor : public LWRHMapJoinLazyBaseProcessor {
 public:
-  OptionalProcessor(std::shared_ptr<ResultTableIterator> left_it,
-                    std::shared_ptr<ResultTableIterator> right_it,
+  OptionalProcessor(const proto_msg::SparqlNode &left_node,
+                    const proto_msg::SparqlNode &right_node,
+                    QProc *query_processor,
+                    std::shared_ptr<VarBindingQProc> var_binding_qproc,
                     TimeControl &time_control);
-  std::shared_ptr<ResultTable> execute();
   std::shared_ptr<ResultTableIterator> execute_it();
+  std::set<unsigned long> get_right_table_vars_set();
 };
-#endif // RDFCACHEK2_OptionalProcessor_HPP
+
+#endif // RDFCACHEK2_OPTIONALPROCESSOR_HPP

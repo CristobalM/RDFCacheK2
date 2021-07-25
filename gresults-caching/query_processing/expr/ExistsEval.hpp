@@ -19,8 +19,7 @@ public:
 
 private:
   bool has_constant_subtree() override;
-  std::set<std::string> gather_inside_variables() const;
-  std::set<std::string> gather_outside_variables() const;
+  std::set<unsigned long> gather_outside_variables() const;
   void explore_node_for_vars(const proto_msg::SparqlNode &node,
                              std::set<std::string> &set) const;
   void explore_node_for_vars_project_node(const proto_msg::ProjectNode &node,
@@ -31,14 +30,6 @@ private:
                                       std::set<std::string> &set) const;
   void explore_term_for_vars(const proto_msg::RDFTerm &term,
                              std::set<std::string> &set) const;
-  void explore_expr_for_vars(const proto_msg::ExprNode &node,
-                             std::set<std::string> &set) const;
-  void explore_fun_expr_for_vars(const proto_msg::FunctionNode &fun_node,
-                                 std::set<std::string> &set) const;
-  void explore_union_for_vars(const proto_msg::UnionNode &node,
-                              std::set<std::string> &set) const;
-  void explore_filter_node_for_vars(const proto_msg::FilterNode &node,
-                                    std::set<std::string> &set) const;
   void explore_extend_node_for_vars(const proto_msg::ExtendNode &node,
                                     std::set<std::string> &set) const;
   void explore_sequence_node_for_vars(const proto_msg::SequenceNode &node,

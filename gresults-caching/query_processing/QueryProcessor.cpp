@@ -13,6 +13,7 @@
 #include <utility>
 
 #include "BGPProcessor.hpp"
+#include "MinusProcessor.hpp"
 #include "OptionalProcessor.hpp"
 #include "OrderNodeProcessorVec.hpp"
 #include "QueryProcessor.hpp"
@@ -22,7 +23,6 @@
 #include "ResultTableIteratorExtend.hpp"
 #include "ResultTableIteratorFromMaterialized.hpp"
 #include "ResultTableIteratorFromMaterializedVector.hpp"
-#include "ResultTableIteratorMinus.hpp"
 #include "ResultTableIteratorProject.hpp"
 #include "ResultTableIteratorSlice.hpp"
 #include "ResultTableIteratorUnion.hpp"
@@ -44,14 +44,10 @@ QueryProcessor::QueryProcessor(
 std::shared_ptr<ResultTableIterator> QueryProcessor::process_left_join_node(
     const proto_msg::LeftJoinNode &left_join_node,
     const std::shared_ptr<VarBindingQProc> &var_binding_qproc) {
-  auto left_it = process_node(left_join_node.left_node(), var_binding_qproc);
-  if (!time_control.tick())
-    return left_it;
-  auto right_it = process_node(left_join_node.right_node(), var_binding_qproc);
-  if (!time_control.tick())
-    return left_it;
   auto resulting_it =
-      OptionalProcessor(left_it, right_it, time_control).execute_it();
+      OptionalProcessor(left_join_node.left_node(), left_join_node.right_node(),
+                        this, var_binding_qproc, time_control)
+          .execute_it();
   if (!time_control.tick())
     return resulting_it;
   std::vector<const proto_msg::ExprNode *> nodes;
@@ -174,13 +170,10 @@ std::shared_ptr<ResultTableIterator> QueryProcessor::process_distinct_node(
 std::shared_ptr<ResultTableIterator> QueryProcessor::process_optional_node(
     const proto_msg::OptionalNode &optional_node,
     const std::shared_ptr<VarBindingQProc> &var_binding_qproc) {
-  auto left_it = process_node(optional_node.left_node(), var_binding_qproc);
-  if (!time_control.tick())
-    return left_it;
-  auto right_it = process_node(optional_node.right_node(), var_binding_qproc);
-  if (!time_control.tick())
-    return left_it;
-  return OptionalProcessor(left_it, right_it, time_control).execute_it();
+  return OptionalProcessor(optional_node.left_node(),
+                           optional_node.right_node(), this, var_binding_qproc,
+                           time_control)
+      .execute_it();
 }
 
 void QueryProcessor::remove_repeated_rows(ResultTable &input_table) {
@@ -198,21 +191,6 @@ void QueryProcessor::remove_repeated_rows(ResultTable &input_table) {
       it++;
     }
   }
-}
-
-void QueryProcessor::left_to_right_sort(ResultTable &input_table) {
-
-  input_table.data.sort([](const std::vector<unsigned long> &lhs,
-                           const std::vector<unsigned long> &rhs) {
-    for (size_t i = 0; i < lhs.size(); i++) {
-      auto lhs_i = lhs.at(i);
-      auto rhs_i = rhs.at(i);
-      if (lhs_i == rhs_i)
-        continue;
-      return lhs_i < rhs_i;
-    }
-    return true;
-  });
 }
 
 std::shared_ptr<ResultTableIterator> QueryProcessor::process_filter_node(
@@ -264,24 +242,9 @@ std::shared_ptr<ResultTableIterator> QueryProcessor::process_extend_node(
 std::shared_ptr<ResultTableIterator> QueryProcessor::process_minus_node(
     const proto_msg::MinusNode &node,
     const std::shared_ptr<VarBindingQProc> &var_binding_qproc) {
-  auto left_it = process_node(node.left_node(), var_binding_qproc);
-  if (!time_control.tick())
-    return left_it;
-  auto right_it = process_node(node.right_node(), var_binding_qproc);
-  if (!time_control.tick())
-    return left_it;
-  std::set<unsigned long> left_headers_set(left_it->get_headers().begin(),
-                                           left_it->get_headers().end());
-
-  for (auto rh : right_it->get_headers()) {
-    // right headers have to be a subset of left headers
-    if (left_headers_set.find(rh) == left_headers_set.end()) {
-      return left_it;
-    }
-  }
-
-  return std::make_shared<ResultTableIteratorMinus>(left_it, *right_it,
-                                                    time_control);
+  // auto left_it = process_node(node.left_node(), var_binding_qproc);
+  return MinusProcessor(node, this, time_control, var_binding_qproc)
+      .execute_it();
 }
 std::shared_ptr<ResultTableIterator> QueryProcessor::process_sequence_node(
     const proto_msg::SequenceNode &node,
@@ -392,7 +355,7 @@ std::shared_ptr<ResultTable> QueryProcessor::convert_to_result_table_list(
   auto result = std::make_shared<ResultTable>();
   result->headers = std::move(result_table_vector.headers);
 
-  long pos = result_table_vector.data.size() - 1;
+  long pos = static_cast<long>(result_table_vector.data.size()) - 1;
 
   for (; pos >= 0; pos--) {
     if (!time_control.tick())
@@ -404,7 +367,7 @@ std::shared_ptr<ResultTable> QueryProcessor::convert_to_result_table_list(
 }
 std::shared_ptr<ResultTableIterator>
 QueryProcessor::process_table_node(const proto_msg::TableNode &node,
-                                   std::shared_ptr<VarBindingQProc>) {
+                                   const std::shared_ptr<VarBindingQProc> &) {
   auto result_table_list = std::make_shared<ResultTable>();
 
   for (int i = 0; i < node.vars_size(); i++) {

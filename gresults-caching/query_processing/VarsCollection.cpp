@@ -1,27 +1,9 @@
 //
 // Created by cristobal on 7/21/21.
 //
-
 #include "VarsCollection.hpp"
-VarsCollection::VarsCollection(VarIndexManager &vim, int position)
-    : vim(vim), position(position) {}
-void VarsCollection::add_table_var(const std::string &var_str) {
-  auto id = get_id(var_str);
-  all_vars.insert(id);
-  table_vars.insert(id);
-  if (reference_vars.find(id) == reference_vars.end()) {
-    reference_vars.erase(id);
-  }
-}
-unsigned long VarsCollection::get_id(const std::string &var_str) {
-  return vim.assign_index_if_not_found(var_str);
-}
-void VarsCollection::add_reference_var(const std::string &var_str) {
-  auto id = get_id(var_str);
-  all_vars.insert(id);
-  if (table_vars.find(id) == table_vars.end())
-    reference_vars.insert(id);
-}
+#include <algorithm>
+
 std::set<unsigned long> &VarsCollection::get_reference_vars() {
   return reference_vars;
 }
@@ -31,3 +13,7 @@ int VarsCollection::get_position() const { return position; }
 const std::set<unsigned long> &VarsCollection::get_table_vars_c() const {
   return table_vars;
 }
+VarsCollection::VarsCollection(GatheredVars &&gathered_vars, int position)
+    : position(position), all_vars(std::move(gathered_vars.all_vars)),
+      table_vars(std::move(gathered_vars.table_vars)),
+      reference_vars(std::move(gathered_vars.ref_vars)) {}

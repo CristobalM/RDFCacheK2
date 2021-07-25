@@ -1,47 +1,47 @@
 //
-// Created by cristobal on 7/14/21.
+// Created by cristobal on 25-07-21.
 //
 
 #ifndef RDFCACHEK2_RESULTTABLEITERATORMINUS_HPP
 #define RDFCACHEK2_RESULTTABLEITERATORMINUS_HPP
 
-#include "QueryProcHashing.hpp"
 #include "ResultTableIterator.hpp"
-#include <TimeControl.hpp>
-#include <memory>
-#include <set>
-#include <unordered_set>
+#include "VarBindingQProc.hpp"
+#include "VarIndexManager.hpp"
+#include <NaiveDynamicStringDictionary.hpp>
+#include <PredicatesCacheManager.hpp>
+#include <sparql_tree.pb.h>
 class ResultTableIteratorMinus : public ResultTableIterator {
-
-  using set_t = std::unordered_set<std::vector<unsigned long>, fnv_hash_64>;
-
   std::shared_ptr<ResultTableIterator> left_it;
-  // std::shared_ptr<ResultTableIterator> right_it;
-
-  set_t right_index;
-
+  proto_msg::SparqlNode right_node;
+  std::shared_ptr<VarBindingQProc> var_binding_qproc;
   bool next_available;
   std::vector<unsigned long> next_result;
 
-  std::vector<unsigned long> key_holder;
-  std::vector<unsigned long> key_positions_left;
+  std::shared_ptr<ResultTableIterator> current_right_it;
+
+  std::shared_ptr<PredicatesCacheManager> cache_manager;
+  std::shared_ptr<VarIndexManager> vim;
+  std::shared_ptr<NaiveDynamicStringDictionary> extra_str_dict;
+
+  std::shared_ptr<VarBindingQProc> current_var_binding_qproc;
 
 public:
+  ResultTableIteratorMinus(
+      std::shared_ptr<ResultTableIterator> left_it,
+      proto_msg::SparqlNode right_node,
+      std::shared_ptr<VarBindingQProc> var_binding_qproc,
+      TimeControl &time_control,
+      std::shared_ptr<PredicatesCacheManager> cache_manager,
+      std::shared_ptr<VarIndexManager> vim,
+      std::shared_ptr<NaiveDynamicStringDictionary> extra_str_dict);
   bool has_next() override;
   std::vector<unsigned long> next() override;
   std::vector<unsigned long> &get_headers() override;
   void reset_iterator() override;
-  ResultTableIteratorMinus(std::shared_ptr<ResultTableIterator> left_it,
-                           ResultTableIterator &right_it,
-                           TimeControl &time_control);
-
-private:
-  static ResultTableIteratorMinus::set_t
-  build_right_index(ResultTableIterator &right_it, TimeControl &time_control);
   std::vector<unsigned long> next_concrete();
-  void select_key_values(std::vector<unsigned long> &left_row);
-  std::vector<unsigned long>
-  build_key_positions_left(std::vector<unsigned long> &right_headers);
+  bool create_var_binding_qproc_if_needed(
+      std::vector<unsigned long> &current_left_row);
 };
 
 #endif // RDFCACHEK2_RESULTTABLEITERATORMINUS_HPP

@@ -80,7 +80,6 @@ set(GRAPH_RESULT_CACHING_FILE
         gresults-caching/query_processing/DateInfo.cpp
 
 
-        gresults-caching/query_processing/OptionalProcessor.cpp
         gresults-caching/query_processing/ResultTableIterator.hpp
         gresults-caching/query_processing/ResultTableIterator.cpp
 
@@ -94,14 +93,8 @@ set(GRAPH_RESULT_CACHING_FILE
         gresults-caching/query_processing/BGPProcessor.hpp
         gresults-caching/query_processing/ResultTableIteratorBGP.cpp
         gresults-caching/query_processing/ResultTableIteratorBGP.hpp
-        gresults-caching/query_processing/ResultTableIteratorLeftOuterJoin.cpp
-        gresults-caching/query_processing/ResultTableIteratorLeftOuterJoin.hpp
         gresults-caching/query_processing/QueryProcHashing.hpp
         gresults-caching/query_processing/QueryProcHashing.cpp
-        gresults-caching/query_processing/LWRHMapJoinLazyBaseProcessor.cpp
-        gresults-caching/query_processing/LWRHMapJoinLazyBaseProcessor.hpp
-        gresults-caching/query_processing/ResultTableIteratorLRWHMapBase.hpp
-        gresults-caching/query_processing/ResultTableIteratorLRWHMapBase.cpp
         gresults-caching/query_processing/ResultTableFilterIterator.cpp
         gresults-caching/query_processing/ResultTableFilterIterator.hpp
         gresults-caching/query_processing/ResultTableIteratorProject.cpp
@@ -116,10 +109,6 @@ set(GRAPH_RESULT_CACHING_FILE
         gresults-caching/query_processing/VarLazyBinding.hpp
         gresults-caching/query_processing/ResultTableIteratorExtend.cpp
         gresults-caching/query_processing/ResultTableIteratorExtend.hpp
-        gresults-caching/query_processing/ResultTableIteratorMinus.hpp
-        gresults-caching/query_processing/ResultTableIteratorMinus.cpp
-        gresults-caching/query_processing/ResultTableIteratorInnerJoin.cpp
-        gresults-caching/query_processing/ResultTableIteratorInnerJoin.hpp
         gresults-caching/query_processing/ResultTableIteratorSlice.hpp
         gresults-caching/query_processing/ResultTableIteratorSlice.cpp
         gresults-caching/query_processing/ResultTableIteratorEmpty.cpp
@@ -239,7 +228,7 @@ set(GRAPH_RESULT_CACHING_FILE
         gresults-caching/query_processing/OrderNodeProcessorVec.cpp
         gresults-caching/query_processing/OrderNodeProcessorVec.hpp
 
-        gresults-caching/query_processing/SequenceProcessor.cpp gresults-caching/query_processing/SequenceProcessor.hpp gresults-caching/query_processing/VarDependencyGraph.cpp gresults-caching/query_processing/VarDependencyGraph.hpp gresults-caching/query_processing/QProc.hpp gresults-caching/query_processing/VarsCollection.cpp gresults-caching/query_processing/VarsCollection.hpp gresults-caching/query_processing/VDGNode.cpp gresults-caching/query_processing/VDGNode.hpp gresults-caching/query_processing/ResultTableIteratorCrossProduct.cpp gresults-caching/query_processing/ResultTableIteratorCrossProduct.hpp gresults-caching/query_processing/VarBindingQProc.cpp gresults-caching/query_processing/VarBindingQProc.hpp gresults-caching/query_processing/ResultTableIteratorJoinSeqBinding.cpp gresults-caching/query_processing/ResultTableIteratorJoinSeqBinding.hpp)
+        gresults-caching/query_processing/SequenceProcessor.cpp gresults-caching/query_processing/SequenceProcessor.hpp gresults-caching/query_processing/VarDependencyGraph.cpp gresults-caching/query_processing/VarDependencyGraph.hpp gresults-caching/query_processing/QProc.hpp gresults-caching/query_processing/VarsCollection.cpp gresults-caching/query_processing/VarsCollection.hpp gresults-caching/query_processing/VDGNode.cpp gresults-caching/query_processing/VDGNode.hpp gresults-caching/query_processing/ResultTableIteratorCrossProduct.cpp gresults-caching/query_processing/ResultTableIteratorCrossProduct.hpp gresults-caching/query_processing/VarBindingQProc.cpp gresults-caching/query_processing/VarBindingQProc.hpp gresults-caching/query_processing/ResultTableIteratorJoinSeqBinding.cpp gresults-caching/query_processing/ResultTableIteratorJoinSeqBinding.hpp gresults-caching/query_processing/MinusProcessor.cpp gresults-caching/query_processing/MinusProcessor.hpp gresults-caching/query_processing/ResultTableIteratorMinus.cpp gresults-caching/query_processing/ResultTableIteratorMinus.hpp gresults-caching/query_processing/OptionalProcessor.cpp gresults-caching/query_processing/OptionalProcessor.hpp gresults-caching/query_processing/ResultTableIteratorLeftOuterJoin.cpp gresults-caching/query_processing/ResultTableIteratorLeftOuterJoin.hpp gresults-caching/query_processing/utility/ProtoGatherVars.cpp gresults-caching/query_processing/utility/ProtoGatherVars.hpp gresults-caching/query_processing/utility/GatheredVars.cpp gresults-caching/query_processing/utility/GatheredVars.hpp)
 
 
 set(NETWORK_SOURCE_FILES

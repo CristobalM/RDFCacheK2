@@ -38,21 +38,7 @@ private:
   std::vector<VarsCollection> get_vars_sequence();
   VarsCollection get_vars_from_node(const proto_msg::SparqlNode &node,
                                     int position);
-  void get_vars_from_node_rec(const proto_msg::SparqlNode &node,
-                              VarsCollection &vars_collection,
-                              bool mark_table_vars_as_ref);
-  static void add_vars_from_triple(const proto_msg::TripleNode &triple_node,
-                                   VarsCollection &vars_collection,
-                                   bool mark_table_vars_as_ref);
-  void get_vars_from_expr_rec(const proto_msg::ExprNode &expr_node,
-                              VarsCollection &vars_collection);
-  void
-  add_vars_from_assignment(const proto_msg::AssignmentNode &assignment_node,
-                           VarsCollection &vars_collection,
-                           bool mark_table_vars_as_ref);
-  static void cond_add_var(const std::string &var_str,
-                           VarsCollection &vars_collection,
-                           bool mark_table_vars_as_ref);
+
   static std::vector<unsigned long>
   generate_headers(VarDependencyGraph &vd_graph);
 };
