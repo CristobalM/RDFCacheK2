@@ -9,8 +9,11 @@
 std::shared_ptr<TermResource>
 StrSubstringEval::eval_resource(const ExprEval::row_t &row) {
   auto source_resource = children[0]->produce_resource(row);
-  int starting_loc = children[1]->produce_integer(row);
-  int length = children[2]->produce_integer(row);
+  auto starting_loc = (unsigned long)children[1]->produce_integer(row);
+  unsigned long length = std::string::npos;
+  if (children.size() > 2) {
+    length = (unsigned long)children[2]->produce_integer(row);
+  }
   if (children_with_error())
     return resource_with_error();
   auto source_literal_data =
@@ -28,7 +31,7 @@ StrSubstringEval::eval_resource(const ExprEval::row_t &row) {
 }
 void StrSubstringEval::validate() {
   ExprEval::validate();
-  assert_fun_size(3);
+  assert_fun_size_between_inclusive(2, 3);
 }
 void StrSubstringEval::init() {
   ExprEval::init();
