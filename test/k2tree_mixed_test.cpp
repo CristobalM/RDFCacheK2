@@ -222,22 +222,6 @@ TEST(k2tree_mixed_test, can_report_row_and_sip) {
   ASSERT_TRUE(tree.has_valid_structure());
 }
 
-TEST(k2tree_mixed_test, can_scan_full_lazy_with_iterator) {
-  unsigned long treedepth = 10;
-  K2TreeMixed tree(treedepth, 255, 5);
-
-  for (int i = 1; i < 100; i++) {
-    tree.insert(i, 1);
-  }
-
-  unsigned long i = 1;
-  for (auto it = tree.begin_full_scan(); it != tree.end_full_scan(); ++it) {
-    auto curr = *it;
-    ASSERT_EQ(curr.first, i++);
-  }
-  ASSERT_EQ(i, 100);
-}
-
 TEST(k2tree_mixed_test, can_scan_full_lazy_with_virtual_scanner) {
   unsigned long treedepth = 10;
   K2TreeMixed tree(treedepth, 255, 5);

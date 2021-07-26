@@ -19,8 +19,6 @@ class PredicatesCacheManager {
 
   NaiveDynamicStringDictionary extra_dicts;
 
-  K2TreeConfig k2tree_config;
-
 public:
   double measured_time_sd_lookup;
 

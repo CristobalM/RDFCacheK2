@@ -17,8 +17,6 @@ public:
   std::pair<unsigned long, unsigned long> next() override;
   ~BandScanner() override;
   void reset_scan() override;
-  bool is_band() override;
-  BandType get_band_type() override;
   K2TreeMixed &get_tree() override;
   unsigned long get_band_value() override;
 

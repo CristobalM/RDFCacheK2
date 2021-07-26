@@ -42,7 +42,5 @@ BandScanner::BandScanner(K2TreeMixed &k2tree, unsigned long band,
   }
 }
 void BandScanner::reset_scan() { k2node_report_band_reset(&lazy_handler); }
-bool BandScanner::is_band() { return true; }
-K2TreeScanner::BandType BandScanner::get_band_type() { return band_type; }
 K2TreeMixed &BandScanner::get_tree() { return k2tree; }
 unsigned long BandScanner::get_band_value() { return band; }

@@ -34,18 +34,6 @@ bool same_block_topologies(const struct block *lhs, const struct block *rhs);
 
 bool same_bvs(const struct block *lhs, const struct block *rhs);
 
-bool same_vectors(const struct vector_uint32_t &lhs,
-                  const struct vector_uint32_t &rhs);
-
-void fill_vector_with_coordinates(std::vector<unsigned long> &target,
-                                  struct vector_pair2dl_t *input,
-                                  BandType band_type);
-
-std::vector<unsigned long> get_k2tree_band(unsigned long band_index,
-                                           BandType band_type,
-                                           struct block *root,
-                                           struct queries_state *qs);
-
 K2Tree::K2Tree(uint32_t tree_depth) : root(create_block()) {
   qs = std::make_unique<struct queries_state>();
   init_queries_state(qs.get(), tree_depth, MAX_NODES_IN_BLOCK, root);
@@ -172,30 +160,6 @@ void K2Tree::traverse_column(unsigned long column,
   }
 }
 
-std::vector<unsigned long> K2Tree::get_row(unsigned long row) {
-  return get_k2tree_band(row, BAND_ROW, root, qs.get());
-}
-
-std::vector<unsigned long> K2Tree::get_column(unsigned long column) {
-  return get_k2tree_band(column, BAND_COLUMN, root, qs.get());
-}
-
-void fill_vector_with_coordinates(std::vector<unsigned long> &target,
-                                  struct vector_pair2dl_t *input,
-                                  BandType band_type) {
-  for (int i = 0; i < input->nof_items; i++) {
-    struct pair2dl current = input->data[i];
-    switch (band_type) {
-    case BAND_ROW:
-      target.emplace_back(current.row);
-      break;
-    case BAND_COLUMN:
-      target.emplace_back(current.col);
-      break;
-    }
-  }
-}
-
 void K2Tree::write_to_ostream(std::ostream &os) {
   k2tree_data data;
   data.root = root;
@@ -236,8 +200,6 @@ K2TreeStats K2Tree::k2tree_stats() {
   return result;
 }
 
-unsigned long K2Tree::get_tree_depth() { return qs->treedepth; }
-
 bool K2Tree::same_as(const K2Tree &other) {
   return same_blocks(root, other.root);
 }
@@ -272,59 +234,10 @@ ResultTable K2Tree::row_as_table(unsigned long row) {
   return ResultTable(row, std::move(data));
 }
 
-std::vector<unsigned long> get_k2tree_band(unsigned long band_index,
-                                           BandType band_type,
-                                           struct block *root,
-                                           struct queries_state *qs) {
-  struct vector_pair2dl_t result {};
-  int err_check;
-  err_check = vector_pair2dl_t__init_vector_with_capacity(&result, 1024);
-  if (err_check)
-    throw std::runtime_error(
-        "get_k2tree_band: CAN'T INITIALIZE VECTOR, CODE: " +
-        std::to_string(err_check));
-
-  switch (band_type) {
-  case BAND_ROW:
-    err_check = report_row(root, band_index, qs, &result);
-    break;
-  case BAND_COLUMN:
-    err_check = report_column(root, band_index, qs, &result);
-    break;
-  default:
-    throw std::runtime_error("get_k2tree_band: UNKNOWN band_type " +
-                             std::to_string(band_type));
-  }
-
-  if (err_check) {
-    vector_pair2dl_t__free_vector(&result);
-    throw std::runtime_error("get_k2tree_band: CODE: " +
-                             std::to_string(err_check));
-  }
-
-  std::vector<unsigned long> out;
-  switch (band_type) {
-  case BAND_ROW:
-    fill_vector_with_coordinates(out, &result, BAND_COLUMN);
-    break;
-  case BAND_COLUMN:
-    fill_vector_with_coordinates(out, &result, BAND_ROW);
-    break;
-  }
-
-  vector_pair2dl_t__free_vector(&result);
-
-  return out;
-}
-
 struct k2tree_measurement K2Tree::measure_in_memory_size() {
   return measure_tree_size(root);
 }
 
 struct block *K2Tree::get_root_block() {
   return root;
-}
-
-struct queries_state *K2Tree::get_qs() {
-  return qs.get();
 }

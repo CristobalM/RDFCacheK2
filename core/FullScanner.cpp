@@ -33,10 +33,6 @@ FullScanner::~FullScanner() {
 void FullScanner::reset_scan() {
   k2node_naive_scan_points_lazy_reset(&lazy_handler);
 }
-bool FullScanner::is_band() { return false; }
-K2TreeScanner::BandType FullScanner::get_band_type() {
-  throw std::runtime_error("Not band");
-}
 K2TreeMixed &FullScanner::get_tree() { return k2tree; }
 unsigned long FullScanner::get_band_value() {
   throw std::runtime_error("Not band");

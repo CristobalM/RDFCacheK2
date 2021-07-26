@@ -28,7 +28,7 @@ bool InEval::eval_boolean(const ExprEval::row_t &row) {
 
 void InEval::validate() {
   ExprEval::validate();
-  if (expr_node.function_node().exprs_size() > 0)
+  if (expr_node.function_node().exprs_size() == 0)
     throw std::runtime_error(
         "Invalid size " +
         std::to_string(expr_node.function_node().exprs_size()) +

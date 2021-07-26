@@ -41,16 +41,11 @@ public:
   ~K2Tree() noexcept(false);
 
   struct block *get_root_block();
-  struct queries_state *get_qs();
 
   void insert(unsigned long col, unsigned long row);
   bool has(unsigned long col, unsigned long row);
 
-  unsigned long get_tree_depth();
-
   std::vector<std::pair<unsigned long, unsigned long>> get_all_points();
-  std::vector<unsigned long> get_row(unsigned long row);
-  std::vector<unsigned long> get_column(unsigned long row);
 
   void scan_points(point_reporter_fun_t fun_reporter, void *report_state);
   void traverse_row(unsigned long row, point_reporter_fun_t fun_reporter,

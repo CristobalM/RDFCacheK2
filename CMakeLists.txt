@@ -538,9 +538,6 @@ if (GTest_FOUND)
     add_executable(predicates_metadata_serialization_test test/predicates_metadata_serialization_test.cpp)
     target_link_libraries(predicates_metadata_serialization_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} pthread)
 
-    add_executable(join_util_test test/join_util_test.cpp)
-    target_link_libraries(join_util_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} pthread)
-
     add_executable(k2mixed_from_file test/k2mixed_from_file.cpp)
     target_link_libraries(k2mixed_from_file ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES})
 

@@ -15,8 +15,6 @@ public:
   bool has_next() override;
   std::pair<unsigned long, unsigned long> next() override;
   void reset_scan() override;
-  bool is_band() override;
-  BandType get_band_type() override;
   unsigned long get_band_value() override;
   K2TreeMixed &get_tree() override;
   ~FullScanner() override;

@@ -15,7 +15,6 @@ PredicatesCacheManager::PredicatesCacheManager(
     std::unique_ptr<PredicatesIndexCacheMDFile> &&predicates_index)
     : isd_manager(std::move(isd_manager)),
       predicates_index(std::move(predicates_index)),
-      k2tree_config(this->predicates_index->get_config()),
       measured_time_sd_lookup(0) {}
 
 PredicatesCacheManager::PredicatesCacheManager(

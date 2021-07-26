@@ -75,21 +75,14 @@ public:
   unsigned long get_tree_depth() const;
 
   std::vector<std::pair<unsigned long, unsigned long>> get_all_points();
-  std::vector<unsigned long> get_row(unsigned long row) const;
-  std::vector<unsigned long> get_column(unsigned long col) const;
 
   void scan_points(point_reporter_fun_t fun_reporter, void *report_state) const;
-  std::vector<std::pair<unsigned long, unsigned long>>
-  scan_points_into_vector() const;
   void traverse_row(unsigned long row, point_reporter_fun_t fun_reporter,
                     void *report_state) const;
   void traverse_column(unsigned long column, point_reporter_fun_t fun_reporter,
                        void *report_state) const;
 
   struct k2tree_measurement measure_in_memory_size() const;
-
-  ResultTable column_as_table(unsigned long column) const;
-  ResultTable row_as_table(unsigned long row) const;
 
   K2TreeStats k2tree_stats() const;
 
@@ -108,90 +101,6 @@ public:
   std::unique_ptr<K2TreeScanner>
   create_band_scanner(unsigned long band, K2TreeScanner::BandType band_type,
                       TimeControl &time_control);
-
-  struct FullScanIterator {
-    using ul_pair_t = std::pair<unsigned long, unsigned long>;
-    using iterator_category = std::input_iterator_tag;
-    using difference_type = std::ptrdiff_t;
-    using value_type = ul_pair_t;
-    using pointer = ul_pair_t *;
-    using reference = ul_pair_t &;
-
-    explicit FullScanIterator(K2TreeMixed &k2tree);
-    explicit FullScanIterator(pointer ptr);
-
-    FullScanIterator(const FullScanIterator &original);
-
-    ~FullScanIterator();
-
-    reference operator*();
-    pointer operator->();
-    FullScanIterator &operator++();
-    FullScanIterator operator++(int);
-    friend bool operator==(const FullScanIterator &lhs,
-                           const FullScanIterator &rhs);
-    friend bool operator!=(const FullScanIterator &lhs,
-                           const FullScanIterator &rhs);
-
-  private:
-    k2node_lazy_handler_naive_scan_t lazy_handler;
-    ul_pair_t current;
-    bool finished;
-    bool init_called;
-
-    k2node_lazy_handler_naive_scan_t
-    deep_copy_handler(const k2node_lazy_handler_naive_scan_t &handler);
-    lazy_handler_naive_scan_t
-    deep_copy_sub_handler(const lazy_handler_naive_scan_t &handler);
-    k2node_lazy_naive_state_stack
-    deep_copy_states_stack(const k2node_lazy_naive_state_stack &original_stack);
-    lazy_naive_state_stack
-    deep_copy_sub_states_stack(const lazy_naive_state_stack &original_stack);
-  };
-
-  FullScanIterator begin_full_scan();
-  FullScanIterator end_full_scan();
-
-  struct BandScanIterator {
-    using iterator_category = std::input_iterator_tag;
-    using difference_type = std::ptrdiff_t;
-    using value_type = unsigned long;
-    using pointer = unsigned long *;
-    using reference = unsigned long &;
-
-    explicit BandScanIterator(K2TreeMixed &k2tree, unsigned long band,
-                              BandType band_type);
-    explicit BandScanIterator(pointer ptr);
-    BandScanIterator(const BandScanIterator &original);
-    ~BandScanIterator();
-
-    reference operator*();
-    pointer operator->();
-    BandScanIterator &operator++();
-    BandScanIterator operator++(int);
-    friend bool operator==(const BandScanIterator &lhs,
-                           const BandScanIterator &rhs);
-    friend bool operator!=(const BandScanIterator &lhs,
-                           const BandScanIterator &rhs);
-
-  private:
-    k2node_lazy_handler_report_band_t lazy_handler;
-    bool finished;
-    bool init_called;
-    unsigned long current;
-    k2node_lazy_handler_report_band_t deep_copy_band_lazy_handler(
-        const k2node_lazy_handler_report_band_t &original_handler);
-    lazy_handler_report_band_t deep_copy_sub_band_lazy_handler(
-        const lazy_handler_report_band_t &sub_handler);
-    k2node_lazy_report_band_state_t_stack deep_copy_band_lazy_stack(
-        const k2node_lazy_report_band_state_t_stack &original_stack);
-    lazy_report_band_state_t_stack deep_copy_band_sub_stack(
-        const lazy_report_band_state_t_stack &original_stack);
-  };
-
-  BandScanIterator begin_band_scan(unsigned long band_value,
-                                   BandType band_type);
-  K2TreeMixed::BandScanIterator end_band_scan();
 
   std::unique_ptr<K2TreeScanner> create_empty_scanner();
 
