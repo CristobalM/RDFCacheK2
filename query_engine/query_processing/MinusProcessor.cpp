@@ -21,7 +21,8 @@ std::shared_ptr<ResultTableIterator> MinusProcessor::execute_it() {
   return std::make_shared<ResultTableIteratorMinus>(
       left_it, minus_node.right_node(), var_binding_qproc, time_control,
       query_processor->get_cache_manager(), query_processor->get_vim_ptr(),
-      query_processor->get_extra_str_dict_ptr());
+      query_processor->get_extra_str_dict_ptr(),
+      query_processor->get_temp_files_dir());
 }
 
 bool MinusProcessor::with_shared_headers(

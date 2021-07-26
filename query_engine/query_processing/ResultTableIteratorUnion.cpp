@@ -30,7 +30,8 @@ void ResultTableIteratorUnion::reset_iterator() {
 std::vector<unsigned long> ResultTableIteratorUnion::next_concrete() {
   auto &it = iterators[current_it_pos];
   auto next_row_pre = it->next();
-  time_control.tick();
+  if (!time_control.tick())
+    return std::vector<unsigned long>();
   auto next_row = get_mapped_row(next_row_pre, current_it_pos);
   if (!it->has_next()) {
     current_it_pos++;

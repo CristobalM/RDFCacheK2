@@ -23,7 +23,15 @@ void VDGNode::connect_if_share_vars(VDGNode &other) {
 
   if (!intersection_table_ref_lr.empty() &&
       !intersection_table_ref_rl.empty()) {
-    throw std::runtime_error("LR and RL intersections are both non empty");
+    // throw std::runtime_error("LR and RL intersections are both non empty");
+    // connect_to(other);
+    // other.connect_to(*this);
+    if (intersection_table_ref_lr.size() >= intersection_table_ref_rl.size()) {
+      connect_to(other);
+    } else {
+      other.connect_to(*this);
+    }
+    return;
   }
 
   if (!intersection_table_ref_lr.empty()) {

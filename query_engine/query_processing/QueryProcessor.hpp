@@ -25,14 +25,15 @@ class QueryProcessor : public QProc {
   std::shared_ptr<VarIndexManager> vim;
   std::shared_ptr<NaiveDynamicStringDictionary> extra_str_dict;
   TimeControl &time_control;
+  const std::string &temp_files_dir;
 
 public:
   QueryProcessor(std::shared_ptr<PredicatesCacheManager> cache_manager,
-                 TimeControl &time_control);
+                 TimeControl &time_control, const std::string &temp_files_dir);
   QueryProcessor(std::shared_ptr<PredicatesCacheManager> cache_manager,
                  std::shared_ptr<VarIndexManager> vim,
                  std::shared_ptr<NaiveDynamicStringDictionary> extra_str_dict,
-                 TimeControl &time_control);
+                 TimeControl &time_control, const std::string &temp_files_dir);
 
   QueryResultIterator run_query(const proto_msg::SparqlNode &query_tree);
   VarIndexManager &get_vim() override;
@@ -44,6 +45,7 @@ public:
   std::shared_ptr<VarIndexManager> get_vim_ptr() override;
   std::shared_ptr<NaiveDynamicStringDictionary>
   get_extra_str_dict_ptr() override;
+  const std::string &get_temp_files_dir() override;
 
 private:
   std::shared_ptr<ResultTableIterator>

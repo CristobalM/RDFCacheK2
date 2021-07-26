@@ -125,7 +125,8 @@ void ServerTask::process_cache_query(Message &message) {
     return;
   }
 
-  auto time_control = std::make_unique<TimeControl>(100'000, 5s);
+  auto time_control = std::make_unique<TimeControl>(
+      100'000, std::chrono::milliseconds(cache.get_timeout_ms()));
   auto query_result_it = cache.run_query(tree, *time_control);
   begin_streaming_results(query_result_it, std::move(time_control));
 }

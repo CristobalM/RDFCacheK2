@@ -21,7 +21,8 @@ TwoVarCProductBGPOp::run(std::vector<unsigned long> &row_to_fill) {
   };
 
   auto next_pair = scanner->next();
-
+  if (!time_control.tick())
+    return result;
   row_to_fill[subject_pos] = next_pair.first;
   row_to_fill[object_pos] = next_pair.second;
 

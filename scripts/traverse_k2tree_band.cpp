@@ -7,7 +7,7 @@
 
 #include <K2TreeMixed.hpp>
 #include <PredicatesIndexCacheMDFile.hpp>
-#include <external_sort.hpp>
+#include <triple_external_sort.hpp>
 
 namespace fs = std::filesystem;
 

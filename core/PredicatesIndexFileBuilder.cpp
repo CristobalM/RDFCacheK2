@@ -1,8 +1,8 @@
 #include "PredicatesIndexFileBuilder.hpp"
 #include "K2TreeMixed.hpp"
-#include "external_sort.hpp"
 #include "hashing.hpp"
 #include "serialization_util.hpp"
+#include "triple_external_sort.hpp"
 #include <iostream>
 #include <unordered_map>
 

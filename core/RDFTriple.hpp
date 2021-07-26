@@ -88,10 +88,10 @@ struct RDFResource {
       return proto_msg::TermType::BLANK_NODE;
     case RDF_TYPE_LITERAL:
       return proto_msg::TermType::LITERAL;
-      break;
     case NULL_RESOURCE_TYPE:
       return proto_msg::TermType::UNKNOWN_TERM_TYPE;
     }
+    return proto_msg::TermType::UNKNOWN_TERM_TYPE;
   }
 };
 

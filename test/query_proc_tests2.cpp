@@ -177,8 +177,8 @@ public:
           RDFResource("\"" + str + "\"", RDFResourceType::RDF_TYPE_LITERAL)));
     }
 
-    cache =
-        std::make_unique<Cache>(pcm, CacheReplacement::STRATEGY::LRU, 100'000);
+    cache = std::make_unique<Cache>(pcm, CacheReplacement::STRATEGY::LRU,
+                                    100'000, "./", 5000);
   }
 
   static void add_problematic_query_1_input() {

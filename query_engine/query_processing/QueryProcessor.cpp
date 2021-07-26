@@ -15,14 +15,12 @@
 #include "BGPProcessor.hpp"
 #include "MinusProcessor.hpp"
 #include "OptionalProcessor.hpp"
-#include "OrderNodeProcessorVec.hpp"
 #include "QueryProcessor.hpp"
 #include "QueryResultIterator.hpp"
 #include "ResultTableFilterIterator.hpp"
-#include "ResultTableIteratorEmpty.hpp"
 #include "ResultTableIteratorExtend.hpp"
 #include "ResultTableIteratorFromMaterialized.hpp"
-#include "ResultTableIteratorFromMaterializedVector.hpp"
+#include "ResultTableIteratorOrder.hpp"
 #include "ResultTableIteratorProject.hpp"
 #include "ResultTableIteratorSlice.hpp"
 #include "ResultTableIteratorUnion.hpp"
@@ -36,10 +34,11 @@
 
 QueryProcessor::QueryProcessor(
     std::shared_ptr<PredicatesCacheManager> cache_manager,
-    TimeControl &time_control)
-    : QueryProcessor(
-          std::move(cache_manager), std::make_unique<VarIndexManager>(),
-          std::make_shared<NaiveDynamicStringDictionary>(), time_control) {}
+    TimeControl &time_control, const std::string &temp_files_dir)
+    : QueryProcessor(std::move(cache_manager),
+                     std::make_unique<VarIndexManager>(),
+                     std::make_shared<NaiveDynamicStringDictionary>(),
+                     time_control, temp_files_dir) {}
 
 std::shared_ptr<ResultTableIterator> QueryProcessor::process_left_join_node(
     const proto_msg::LeftJoinNode &left_join_node,
@@ -59,7 +58,7 @@ std::shared_ptr<ResultTableIterator> QueryProcessor::process_left_join_node(
 
   return std::make_shared<ResultTableFilterIterator>(
       resulting_it, *vim, nodes, cm, extra_str_dict, time_control,
-      var_binding_qproc);
+      var_binding_qproc, temp_files_dir);
 }
 
 std::shared_ptr<ResultTableIterator> QueryProcessor::process_project_node(
@@ -152,19 +151,31 @@ std::shared_ptr<ResultTableIterator> QueryProcessor::process_union_node(
 std::shared_ptr<ResultTableIterator> QueryProcessor::process_distinct_node(
     const proto_msg::DistinctNode &distinct_node,
     std::shared_ptr<VarBindingQProc> var_binding_qproc) {
-  auto resulting_it =
-      process_node(distinct_node.sub_node(), std::move(var_binding_qproc));
+
+  auto result_it = process_node(distinct_node.sub_node(), var_binding_qproc);
   if (!time_control.tick())
-    return resulting_it;
-  auto table = resulting_it->materialize_vector();
-  if (!time_control.tick())
-    return std::make_shared<ResultTableIteratorEmpty>(
-        resulting_it->get_headers(), time_control);
-  left_to_right_sort_vec(*table);
-  auto result_table_list = convert_to_result_table_list(*table);
-  remove_repeated_rows(*result_table_list);
-  return std::make_shared<ResultTableIteratorFromMaterialized>(
-      std::move(result_table_list), time_control);
+    return result_it;
+
+  proto_msg::OrderNode order_node;
+  auto &headers = result_it->get_headers();
+  auto reversed_vim = vim->reverse();
+  for (auto value : headers) {
+    auto s_header = reversed_vim[value];
+    auto *sort_condition = order_node.mutable_sort_conditions()->Add();
+    auto *term_node = sort_condition->mutable_expr()->mutable_term_node();
+    term_node->set_term_value(s_header);
+    term_node->set_term_type(proto_msg::VARIABLE);
+    sort_condition->set_direction(proto_msg::SortDirection::ASCENDING);
+  }
+
+  auto var_pos_mapping = create_var_pos_mapping(*result_it);
+
+  EvalData eval_data(*vim, cm, std::move(var_pos_mapping), extra_str_dict,
+                     time_control, var_binding_qproc, temp_files_dir);
+
+  return std::make_shared<ResultTableIteratorOrder>(
+      std::move(result_it), order_node, std::move(eval_data), false,
+      time_control);
 }
 
 std::shared_ptr<ResultTableIterator> QueryProcessor::process_optional_node(
@@ -209,7 +220,7 @@ std::shared_ptr<ResultTableIterator> QueryProcessor::process_filter_node(
 
   return std::make_shared<ResultTableFilterIterator>(
       resulting_it, *vim, nodes, cm, extra_str_dict, time_control,
-      var_binding_qproc);
+      var_binding_qproc, temp_files_dir);
 }
 std::shared_ptr<ResultTableIterator> QueryProcessor::process_extend_node(
     const proto_msg::ExtendNode &node,
@@ -222,7 +233,7 @@ std::shared_ptr<ResultTableIterator> QueryProcessor::process_extend_node(
 
   auto eval_data = std::make_unique<EvalData>(
       *vim, cm, std::move(var_pos_mapping), extra_str_dict, time_control,
-      var_binding_qproc);
+      var_binding_qproc, temp_files_dir);
   std::vector<std::unique_ptr<VarLazyBinding>> var_bindings;
   for (int i = 0; i < node.assignments_size(); i++) {
     const auto &assignment_node = node.assignments(i);
@@ -286,9 +297,10 @@ QueryProcessor::QueryProcessor(
     std::shared_ptr<PredicatesCacheManager> cache_manager,
     std::shared_ptr<VarIndexManager> vim,
     std::shared_ptr<NaiveDynamicStringDictionary> extra_str_dict,
-    TimeControl &time_control)
+    TimeControl &time_control, const std::string &temp_files_dir)
     : cm(std::move(cache_manager)), vim(std::move(vim)),
-      extra_str_dict(std::move(extra_str_dict)), time_control(time_control) {}
+      extra_str_dict(std::move(extra_str_dict)), time_control(time_control),
+      temp_files_dir(temp_files_dir) {}
 
 std::shared_ptr<ResultTableIterator> QueryProcessor::process_order_node(
     const proto_msg::OrderNode &node,
@@ -299,16 +311,10 @@ std::shared_ptr<ResultTableIterator> QueryProcessor::process_order_node(
   auto var_pos_mapping = create_var_pos_mapping(*result_it);
 
   EvalData eval_data(*vim, cm, std::move(var_pos_mapping), extra_str_dict,
-                     time_control, var_binding_qproc);
+                     time_control, var_binding_qproc, temp_files_dir);
 
-  auto table = result_it->materialize_vector();
-  if (!time_control.tick())
-    return std::make_shared<ResultTableIteratorEmpty>(result_it->get_headers(),
-                                                      time_control);
-  return std::make_shared<ResultTableIteratorFromMaterializedVector>(
-      OrderNodeProcessorVec(std::move(table), node, eval_data, time_control)
-          .execute(),
-      time_control);
+  return std::make_shared<ResultTableIteratorOrder>(
+      std::move(result_it), node, std::move(eval_data), false, time_control);
 }
 
 std::shared_ptr<std::unordered_map<std::string, unsigned long>>
@@ -442,4 +448,7 @@ std::shared_ptr<VarIndexManager> QueryProcessor::get_vim_ptr() { return vim; }
 std::shared_ptr<NaiveDynamicStringDictionary>
 QueryProcessor::get_extra_str_dict_ptr() {
   return extra_str_dict;
+}
+const std::string &QueryProcessor::get_temp_files_dir() {
+  return temp_files_dir;
 }

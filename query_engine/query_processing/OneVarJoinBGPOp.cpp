@@ -20,7 +20,7 @@ OneVarJoinBGPOp<WV>::run(std::vector<unsigned long> &row_to_fill) {
   while (scanner->has_next()) {
     auto next_pair = scanner->next();
     if (!time_control.tick())
-      break;
+      return result;
     unsigned long cmp_value;
     if constexpr (WV == BGPOp::SUBJECT_VAR) {
       cmp_value = next_pair.first;

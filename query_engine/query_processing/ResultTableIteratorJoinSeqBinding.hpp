@@ -31,6 +31,7 @@ class ResultTableIteratorJoinSeqBinding : public ResultTableIterator {
   std::shared_ptr<VarIndexManager> vim;
 
   std::shared_ptr<NaiveDynamicStringDictionary> extra_str_dict;
+  const std::string &temp_files_dir;
 
 public:
   ResultTableIteratorJoinSeqBinding(
@@ -40,7 +41,8 @@ public:
       std::set<unsigned long> &right_table_vars, TimeControl &time_control,
       std::shared_ptr<PredicatesCacheManager> cache_manager,
       std::shared_ptr<VarIndexManager> vim,
-      std::shared_ptr<NaiveDynamicStringDictionary> extra_str_dict);
+      std::shared_ptr<NaiveDynamicStringDictionary> extra_str_dict,
+      const std::string &temp_files_dir);
   bool has_next() override;
   std::vector<unsigned long> next() override;
   std::vector<unsigned long> &get_headers() override;

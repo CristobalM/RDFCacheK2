@@ -20,21 +20,23 @@ ResultTableIteratorMinus::ResultTableIteratorMinus(
     TimeControl &time_control,
     std::shared_ptr<PredicatesCacheManager> cache_manager,
     std::shared_ptr<VarIndexManager> vim,
-    std::shared_ptr<NaiveDynamicStringDictionary> extra_str_dict)
+    std::shared_ptr<NaiveDynamicStringDictionary> extra_str_dict,
+    const std::string &temp_files_dir)
     : ResultTableIterator(time_control), left_it(std::move(left_it)),
       right_node(std::move(right_node)),
       var_binding_qproc(std::move(var_binding_qproc)), next_available(false),
       current_right_it(nullptr), cache_manager(std::move(cache_manager)),
-      vim(std::move(vim)), extra_str_dict(std::move(extra_str_dict))
+      vim(std::move(vim)), extra_str_dict(std::move(extra_str_dict)),
+      temp_files_dir(temp_files_dir)
 
 {
   next_concrete();
 }
 
 std::vector<unsigned long> ResultTableIteratorMinus::next_concrete() {
+  next_available = false;
   if (!time_control.tick())
     return next_result;
-  next_available = false;
   auto result = next_result;
 
   while (left_it->has_next()) {
@@ -46,10 +48,10 @@ std::vector<unsigned long> ResultTableIteratorMinus::next_concrete() {
         create_var_binding_qproc_if_needed(current_left_row);
 
     if (changed_bindings || !current_right_it) {
-      current_right_it =
-          QueryProcessor(cache_manager, vim, extra_str_dict, time_control)
-              .run_query(right_node, current_var_binding_qproc)
-              .get_it_shared();
+      current_right_it = QueryProcessor(cache_manager, vim, extra_str_dict,
+                                        time_control, temp_files_dir)
+                             .run_query(right_node, current_var_binding_qproc)
+                             .get_it_shared();
       if (!time_control.tick())
         return result;
     }

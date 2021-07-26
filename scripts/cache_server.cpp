@@ -22,6 +22,9 @@ struct parsed_options {
   unsigned long memory_budget_bytes;
   int port;
   int workers_count;
+
+  std::string temp_files_dir;
+  unsigned long time_out_ms;
 };
 
 parsed_options parse_cmline(int argc, char **argv);
@@ -58,14 +61,17 @@ int main(int argc, char **argv) {
   auto pcm = std::make_shared<PredicatesCacheManager>(std::move(sds),
                                                       parsed.index_file);
 
-  Cache cache(pcm, CacheReplacement::LRU, parsed.memory_budget_bytes);
+  fs::create_directories(fs::path(parsed.temp_files_dir));
+
+  Cache cache(pcm, CacheReplacement::LRU, parsed.memory_budget_bytes,
+              parsed.temp_files_dir, parsed.time_out_ms);
 
   CacheServer server(cache, parsed.port, parsed.workers_count);
   server.start();
 }
 
 parsed_options parse_cmline(int argc, char **argv) {
-  const char short_options[] = "I:O:i:b:l:m:p:w:";
+  const char short_options[] = "I:O:i:b:l:m:p:w:t:T:";
   struct option long_options[] = {
       {"index-file", required_argument, nullptr, 'I'},
       {"iris-file", required_argument, nullptr, 'i'},
@@ -74,6 +80,8 @@ parsed_options parse_cmline(int argc, char **argv) {
       {"memory-budget", required_argument, nullptr, 'm'},
       {"port", required_argument, nullptr, 'p'},
       {"workers", required_argument, nullptr, 'w'},
+      {"temp-files-dir", required_argument, nullptr, 't'},
+      {"timeout-ms", required_argument, nullptr, 'T'},
   };
 
   int opt, opt_index;
@@ -85,6 +93,8 @@ parsed_options parse_cmline(int argc, char **argv) {
   bool has_memory_budget = false;
   bool has_port = false;
   bool has_workers = false;
+  bool has_temp_files_dir = false;
+  bool has_timeout = false;
   parsed_options out{};
 
   while ((
@@ -121,6 +131,14 @@ parsed_options parse_cmline(int argc, char **argv) {
       out.workers_count = std::stoi(std::string(optarg));
       has_workers = true;
       break;
+    case 't':
+      out.temp_files_dir = optarg;
+      has_temp_files_dir = true;
+      break;
+    case 'T':
+      out.time_out_ms = std::stoul(std::string(optarg));
+      has_timeout = true;
+      break;
     default:
       break;
     }
@@ -140,6 +158,10 @@ parsed_options parse_cmline(int argc, char **argv) {
     throw std::runtime_error("port (p) argument is required");
   if (!has_workers)
     throw std::runtime_error("workers (w) argument is required");
+  if (!has_temp_files_dir)
+    throw std::runtime_error("temp-files-dir (t) argument is required");
+  if (!has_timeout)
+    throw std::runtime_error("timeout-ms (T) argument is required");
 
   return out;
 }

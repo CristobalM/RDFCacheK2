@@ -7,7 +7,8 @@
 bool ResultTableIteratorProject::has_next() { return input_it->has_next(); }
 std::vector<unsigned long> ResultTableIteratorProject::next() {
   auto original_row = input_it->next();
-  time_control.tick();
+  if (!time_control.tick())
+    return tmp_holder;
   for (size_t i = 0; i < tmp_holder.size(); i++) {
     tmp_holder[i] = original_row[vars_to_keep_position[i]];
   }

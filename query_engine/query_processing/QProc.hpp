@@ -22,6 +22,7 @@ public:
   virtual std::shared_ptr<VarIndexManager> get_vim_ptr() = 0;
   virtual std::shared_ptr<NaiveDynamicStringDictionary>
   get_extra_str_dict_ptr() = 0;
+  virtual const std::string &get_temp_files_dir() = 0;
 };
 
 #endif // RDFCACHEK2_QPROC_HPP

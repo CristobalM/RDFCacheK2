@@ -24,7 +24,6 @@ public:
 
   bool in_same_component(VDGNode &first, VDGNode &second);
   std::vector<std::vector<VDGNode *>> get_connected_components();
-  std::vector<std::vector<int>> get_connected_components_positions();
 
   std::pair<std::vector<std::vector<int>>,
             std::vector<std::vector<std::set<unsigned long>>>>

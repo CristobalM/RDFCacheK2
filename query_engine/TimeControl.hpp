@@ -9,6 +9,7 @@
 #include <chrono>
 #include <memory>
 #include <string>
+#include <vector>
 
 class TimeControl {
   long ticks_until_check;
@@ -21,7 +22,15 @@ class TimeControl {
   std::unique_ptr<QueryError> q_error;
 
 public:
+  static constexpr bool with_time_control = true;
+
   TimeControl(long ticks_until_check, std::chrono::milliseconds time_duration);
+
+  TimeControl(const TimeControl &other);
+  TimeControl(TimeControl &&other) noexcept;
+  TimeControl &operator=(const TimeControl &other);
+  TimeControl &operator=(TimeControl &&other) noexcept;
+
   bool tick();
   void start_timer();
   bool finished() const;

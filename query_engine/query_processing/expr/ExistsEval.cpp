@@ -22,12 +22,14 @@ bool ExistsEval::eval_boolean(const ExprEval::row_t &row) {
     auto next_vim = std::make_shared<VarIndexManager>(eval_data.vim);
     auto var_binding_qproc =
         bind_row_vars_next_eval_data(*eval_data.extra_dict, row);
-    auto qproc = QueryProcessor(eval_data.cm, std::move(next_vim),
-                                eval_data.extra_dict, eval_data.time_control);
+    auto qproc =
+        QueryProcessor(eval_data.cm, std::move(next_vim), eval_data.extra_dict,
+                       eval_data.time_control, eval_data.temp_files_dir);
     auto rit = qproc.run_query(query_tree, std::move(var_binding_qproc));
     return rit.get_it().has_next();
   } else {
-    auto rit = QueryProcessor(eval_data.cm, eval_data.time_control)
+    auto rit = QueryProcessor(eval_data.cm, eval_data.time_control,
+                              eval_data.temp_files_dir)
                    .run_query(query_tree);
     return rit.get_it().has_next();
   }

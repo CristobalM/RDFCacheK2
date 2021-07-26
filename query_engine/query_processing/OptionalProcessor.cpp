@@ -21,8 +21,8 @@ std::shared_ptr<ResultTableIterator> OptionalProcessor::execute_it() {
   return std::make_shared<ResultTableIteratorLeftOuterJoin>(
       std::move(left_it), right_node, var_binding_qproc, right_table_vars,
       time_control, query_processor->get_cache_manager(),
-      query_processor->get_vim_ptr(),
-      query_processor->get_extra_str_dict_ptr());
+      query_processor->get_vim_ptr(), query_processor->get_extra_str_dict_ptr(),
+      query_processor->get_temp_files_dir());
 }
 std::set<unsigned long> OptionalProcessor::get_right_table_vars_set() {
   auto gathered_vars = ProtoGatherVars::get_vars_from_node(

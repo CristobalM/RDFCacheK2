@@ -31,17 +31,13 @@ std::vector<VDGNode *> VarDependencyGraph::get_topological_sort() {
   std::vector<bool> visited(nodes.size(), false);
   std::vector<VDGNode *> result(nodes.size(), nullptr);
   int current_position = 0;
-  /*
-  for (auto &node : nodes) {
-    topological_sort_dfs(*node, visited, result, current_position);
-  }
-   */
+
   std::map<int, std::vector<int>> roots_grouped_by_component;
 
-  for (int i = 0; i < (int)roots.size(); i++) {
-    auto &curr_node = *nodes[roots[i]];
+  for (int root : roots) {
+    auto &curr_node = *nodes[root];
     int cc_id = dds_find(curr_node);
-    roots_grouped_by_component[cc_id].push_back(roots[i]);
+    roots_grouped_by_component[cc_id].push_back(root);
   }
 
   for (auto &kv_rgc : roots_grouped_by_component) {
@@ -53,6 +49,10 @@ std::vector<VDGNode *> VarDependencyGraph::get_topological_sort() {
       auto &node = *nodes[r_i];
       topological_sort_dfs(node, visited, result, current_position);
     }
+  }
+  // for cc with no roots
+  for (auto &node : nodes) {
+    topological_sort_dfs(*node, visited, result, current_position);
   }
 
   return result;
@@ -132,20 +132,6 @@ VarDependencyGraph::get_connected_components() {
   }
   if (!current_cc.empty()) {
     result.push_back(std::move(current_cc));
-  }
-  return result;
-}
-std::vector<std::vector<int>>
-VarDependencyGraph::get_connected_components_positions() {
-  auto ccs = get_connected_components();
-  std::vector<std::vector<int>> result;
-  for (auto &cc : ccs) {
-    std::vector<int> cc_ps;
-    cc_ps.reserve(cc.size());
-    for (auto *vdg_node : cc) {
-      cc_ps.push_back(vdg_node->get_position());
-    }
-    result.push_back(std::move(cc_ps));
   }
   return result;
 }

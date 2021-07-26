@@ -1,6 +1,4 @@
 #!/bin/bash
-
-
 exit_on_error() {
     exit_code=$1
     last_command=${@:2}
@@ -12,7 +10,6 @@ exit_on_error() {
 
 # enable !! command completion
 set -o history -o histexpand
-
 
 mkdir -p lib
 cd lib || (echo "cant enter lib" && exit)
@@ -30,9 +27,7 @@ else
     fi
     cd ${LIB_CSD}
 fi
-
 cd ..
-
 
 LIB_CPPBASE64="cpp-base64"
 if [[ -d ${LIB_CPPBASE64} ]]; then
@@ -46,7 +41,6 @@ else
     fi
     cd ${LIB_CPPBASE64}
 fi
-
 cd ..
 
 
@@ -62,7 +56,6 @@ else
     fi
     cd ${LIB_NTPARSER}
 fi
-
 cd ..
 
 git submodule update --init --recursive
@@ -77,8 +70,24 @@ else
         echo "Couldn't retrieve ${LIB_CK2TREE} repository.. exiting"
         exit 1
     fi
-    cd ${LIB_NTPARSER}
+    cd ${LIB_CK2TREE}
 fi
-
-
 cd ..
+
+# TODO: loop through dependencies like this to avoid duplication
+git submodule update --init --recursive
+git pull --recurse-submodules
+LIB_EXTERNAL_SORT="external-sort"
+if [[ -d ${LIB_EXTERNAL_SORT} ]]; then
+    cd ${LIB_EXTERNAL_SORT}
+    git fetch
+    git pull
+else
+    if ! (git clone https://github.com/CristobalM/${LIB_EXTERNAL_SORT}) then
+        echo "Couldn't retrieve ${LIB_EXTERNAL_SORT} repository.. exiting"
+        exit 1
+    fi
+    cd ${LIB_EXTERNAL_SORT}
+fi
+cd ..
+

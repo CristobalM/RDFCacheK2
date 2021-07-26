@@ -11,10 +11,12 @@
 
 Cache::Cache(std::shared_ptr<PredicatesCacheManager> &cache_manager,
              CacheReplacement::STRATEGY cache_replacement_strategy,
-             size_t memory_budget_bytes)
+             size_t memory_budget_bytes, std::string temp_files_dir,
+             unsigned long timeout_ms)
     : cache_manager(cache_manager),
       cache_replacement(CacheReplacementFactory::select_strategy(
-          cache_replacement_strategy, memory_budget_bytes, cache_manager)) {}
+          cache_replacement_strategy, memory_budget_bytes, cache_manager)),
+      temp_files_dir(std::move(temp_files_dir)), timeout_ms(timeout_ms) {}
 
 std::shared_ptr<QueryResultIterator>
 Cache::run_query(const proto_msg::SparqlTree &query_tree,
@@ -22,7 +24,8 @@ Cache::run_query(const proto_msg::SparqlTree &query_tree,
   ensure_available_predicates(query_tree.root());
   time_control.start_timer();
   return std::make_shared<QueryResultIterator>(
-      QueryProcessor(cache_manager, time_control).run_query(query_tree.root()));
+      QueryProcessor(cache_manager, time_control, temp_files_dir)
+          .run_query(query_tree.root()));
 }
 
 RDFResource Cache::extract_resource(unsigned long index) const {
@@ -191,3 +194,4 @@ void Cache::ensure_available_predicate(const proto_msg::RDFTerm &term) {
     return;
   cache_manager->ensure_available_predicate(RDFResource(term));
 }
+unsigned long Cache::get_timeout_ms() { return timeout_ms; }

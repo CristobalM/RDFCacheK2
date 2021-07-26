@@ -30,7 +30,8 @@ std::shared_ptr<ResultTableIterator> SequenceProcessor::execute_it() {
           result_it, curr_proto_node, var_binding_qproc, current_sets[i],
           time_control, query_processor->get_cache_manager(),
           query_processor->get_vim_ptr(),
-          query_processor->get_extra_str_dict_ptr());
+          query_processor->get_extra_str_dict_ptr(),
+          query_processor->get_temp_files_dir());
     }
     to_cross_product_iterators.push_back(std::move(result_it));
   }

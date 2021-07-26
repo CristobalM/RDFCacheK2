@@ -27,14 +27,16 @@ ResultTableIteratorJoinSeqBinding::ResultTableIteratorJoinSeqBinding(
     std::set<unsigned long> &right_table_vars, TimeControl &time_control,
     std::shared_ptr<PredicatesCacheManager> cache_manager,
     std::shared_ptr<VarIndexManager> vim,
-    std::shared_ptr<NaiveDynamicStringDictionary> extra_str_dict)
+    std::shared_ptr<NaiveDynamicStringDictionary> extra_str_dict,
+    const std::string &temp_files_dir)
     : ResultTableIterator(time_control), input_it(std::move(input_it)),
       proto_node(std::move(proto_node)),
       var_binding_qproc(std::move(var_binding_qproc)),
       current_var_binding_qproc(nullptr), current_right_it(nullptr),
       next_available(false), left_row_active(false),
       cache_manager(std::move(cache_manager)), vim(std::move(vim)),
-      extra_str_dict(std::move(extra_str_dict)) {
+      extra_str_dict(std::move(extra_str_dict)),
+      temp_files_dir(temp_files_dir) {
 
   build_headers(right_table_vars);
   next_concrete();
@@ -92,9 +94,9 @@ bool ResultTableIteratorJoinSeqBinding::create_var_binding_qproc_if_needed(
   return changed;
 }
 std::vector<unsigned long> ResultTableIteratorJoinSeqBinding::next_concrete() {
+  next_available = false;
   if (!time_control.tick())
     return next_value;
-  next_available = false;
   auto result = next_value;
 
   if (!left_row_active) {
@@ -109,10 +111,10 @@ std::vector<unsigned long> ResultTableIteratorJoinSeqBinding::next_concrete() {
           create_var_binding_qproc_if_needed(current_left_row);
 
       if (changed_bindings || !current_right_it) {
-        current_right_it =
-            QueryProcessor(cache_manager, vim, extra_str_dict, time_control)
-                .run_query(proto_node, current_var_binding_qproc)
-                .get_it_shared();
+        current_right_it = QueryProcessor(cache_manager, vim, extra_str_dict,
+                                          time_control, temp_files_dir)
+                               .run_query(proto_node, current_var_binding_qproc)
+                               .get_it_shared();
         if (!time_control.tick())
           return result;
         right_header_pos_map =

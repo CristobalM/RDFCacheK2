@@ -79,7 +79,7 @@ K2Tree &K2Tree::operator=(K2Tree &&rhs) {
 }
 
 K2Tree::~K2Tree() noexcept(false) {
-  int err_check = 0;
+  int err_check;
   if (root) {
     err_check = free_rec_block(root);
     if (err_check)

@@ -29,7 +29,10 @@ std::shared_ptr<ResultTable> BGPProcessor::execute() {
 
   result->headers = it_handler->get_headers();
   while (it_handler->has_next()) {
-    result->data.push_back(it_handler->next());
+    auto curr = it_handler->next();
+    if (!time_control.tick())
+      return result;
+    result->data.push_back(std::move(curr));
   }
   return result;
 }

@@ -19,6 +19,8 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 endif ()
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
+configure_file(${CMAKE_SOURCE_DIR}/CTestCustom.cmake ${CMAKE_BINARY_DIR})
+
 
 add_definitions(-DLIGHT_FIELDS)
 
@@ -87,8 +89,6 @@ set(GRAPH_RESULT_CACHING_FILE
         query_engine/query_processing/OneVarJoinBGPOp.hpp
         query_engine/query_processing/OptionalProcessor.cpp
         query_engine/query_processing/OptionalProcessor.hpp
-        query_engine/query_processing/OrderNodeProcessorVec.cpp
-        query_engine/query_processing/OrderNodeProcessorVec.hpp
         query_engine/query_processing/ParsingUtils.cpp
         query_engine/query_processing/QProc.hpp
         query_engine/query_processing/QueryProcHashing.cpp
@@ -111,8 +111,6 @@ set(GRAPH_RESULT_CACHING_FILE
         query_engine/query_processing/ResultTableIteratorExtend.hpp
         query_engine/query_processing/ResultTableIteratorFromMaterialized.cpp
         query_engine/query_processing/ResultTableIteratorFromMaterialized.hpp
-        query_engine/query_processing/ResultTableIteratorFromMaterializedVector.cpp
-        query_engine/query_processing/ResultTableIteratorFromMaterializedVector.hpp
         query_engine/query_processing/ResultTableIteratorJoinSeqBinding.cpp
         query_engine/query_processing/ResultTableIteratorJoinSeqBinding.hpp
         query_engine/query_processing/ResultTableIteratorLeftOuterJoin.cpp
@@ -243,7 +241,7 @@ set(GRAPH_RESULT_CACHING_FILE
         query_engine/query_processing/utility/ProtoGatherVars.cpp
         query_engine/query_processing/utility/ProtoGatherVars.hpp
         query_engine/query_processing/utility/StringHandlingUtil.cpp
-        )
+        query_engine/query_processing/ResultTableIteratorOrder.cpp query_engine/query_processing/ResultTableIteratorOrder.hpp query_engine/query_processing/ExternalSortedFileHandler.cpp query_engine/query_processing/ExternalSortedFileHandler.hpp query_engine/query_processing/utility/UuidGenerator.cpp query_engine/query_processing/utility/UuidGenerator.hpp query_engine/query_processing/RowSortConnector.cpp query_engine/query_processing/RowSortConnector.hpp)
 
 
 set(NETWORK_SOURCE_FILES
@@ -268,18 +266,27 @@ set(PROTO_MESSAGES
 
 set(PROTO_MESSAGES_PATH ${CMAKE_SOURCE_DIR}/proto/generated)
 
-set(INCLUDES memory core network proc algorithms utils ${PROTO_MESSAGES_PATH} ${CMAKE_SOURCE_DIR}/query_engine)
+set(INCLUDES
+        memory
+        core
+        network
+        proc
+        algorithms
+        utils
+        query_engine
+        ${PROTO_MESSAGES_PATH}
+        )
 
 set(K2TREE_PATH ${CMAKE_SOURCE_DIR}/lib/c-k2tree-dyn)
 
 set(LIB_CPPBASE64_PATH lib/cpp-base64)
-
+set(LIB_EXTERNAL_SORT_PATH lib/external-sort)
 
 set(INCLUDES_LIBS
         ${K2TREE_PATH}/include
         ${LIB_CPPBASE64_PATH}
+        ${LIB_EXTERNAL_SORT_PATH}/include
         )
-
 
 set(LIB_CSD_BPATH lib/libCSD)
 set(LIB_CSD_INCLUDES
@@ -430,7 +437,7 @@ add_executable(base64_transform scripts/base64_transform.cpp)
 target_include_directories(base64_transform PUBLIC ${LIB_CPPBASE64_PATH})
 target_link_libraries(base64_transform ${PROC_LIBS})
 
-add_executable(external_sort scripts/external_sort.cpp)
+add_executable(external_sort scripts/triple_external_sort.cpp)
 target_include_directories(external_sort PUBLIC ${INCLUDES})
 target_link_libraries(external_sort pthread Utils stdc++fs)
 

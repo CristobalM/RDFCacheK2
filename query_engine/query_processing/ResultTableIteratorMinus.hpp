@@ -26,6 +26,8 @@ class ResultTableIteratorMinus : public ResultTableIterator {
 
   std::shared_ptr<VarBindingQProc> current_var_binding_qproc;
 
+  const std::string &temp_files_dir;
+
 public:
   ResultTableIteratorMinus(
       std::shared_ptr<ResultTableIterator> left_it,
@@ -34,7 +36,8 @@ public:
       TimeControl &time_control,
       std::shared_ptr<PredicatesCacheManager> cache_manager,
       std::shared_ptr<VarIndexManager> vim,
-      std::shared_ptr<NaiveDynamicStringDictionary> extra_str_dict);
+      std::shared_ptr<NaiveDynamicStringDictionary> extra_str_dict,
+      const std::string &temp_files_dir);
   bool has_next() override;
   std::vector<unsigned long> next() override;
   std::vector<unsigned long> &get_headers() override;

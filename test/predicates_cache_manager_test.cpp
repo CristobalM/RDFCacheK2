@@ -11,7 +11,7 @@
 #include <K2TreeMixed.hpp>
 #include <PredicatesCacheManager.hpp>
 #include <RDFTriple.hpp>
-#include <external_sort.hpp>
+#include <triple_external_sort.hpp>
 
 TEST(predicates_cache_manager_test, test1) {
 

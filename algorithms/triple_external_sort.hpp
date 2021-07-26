@@ -1,5 +1,5 @@
-#ifndef _EXTERNAL_SORT_HPP_
-#define _EXTERNAL_SORT_HPP_
+#ifndef _TRIPLE_EXTERNAL_SORT_HPP_
+#define _TRIPLE_EXTERNAL_SORT_HPP_
 
 #include <algorithm>
 #include <cstdio>
@@ -20,16 +20,16 @@
 #include "serialization_util.hpp"
 
 struct TripleValue {
-  uint64_t first;
-  uint64_t second;
-  uint64_t third;
+  uint64_t first{};
+  uint64_t second{};
+  uint64_t third{};
 
-  TripleValue() {}
+  TripleValue() = default;
 
   TripleValue(uint64_t first, uint64_t second, uint64_t third)
       : first(first), second(second), third(third) {}
 
-  TripleValue(std::istream &file) { read_from_file(file); }
+  explicit TripleValue(std::istream &file) { read_from_file(file); }
 
   void read_from_file(std::istream &file) {
     first = read_u64(file);
@@ -54,7 +54,7 @@ struct FileData {
     return triple;
   }
 
-  bool finished() { return current_triple >= size; }
+  bool finished() const { return current_triple >= size; }
 };
 
 using pair_tvalue_int = std::pair<TripleValue, int>;
@@ -372,4 +372,4 @@ void external_sort_triples(const std::string &input_filename,
   rename(current_filenames[0].c_str(), output_filename.c_str());
 }
 
-#endif /* _EXTERNAL_SORT_HPP_ */
+#endif /* _TRIPLE_EXTERNAL_SORT_HPP_ */

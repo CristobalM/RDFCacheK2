@@ -32,6 +32,8 @@ std::vector<unsigned long> ResultTableIteratorExtend::build_headers() {
 }
 std::vector<unsigned long> ResultTableIteratorExtend::next_concrete() {
   auto next_row_pre = input_it->next();
+  if (!time_control.tick())
+    return std::vector<unsigned long>();
   auto next_row = get_transformed_row(next_row_pre);
   time_control.tick();
   return next_row;

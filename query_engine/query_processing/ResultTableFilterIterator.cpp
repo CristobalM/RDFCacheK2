@@ -22,11 +22,12 @@ ResultTableFilterIterator::ResultTableFilterIterator(
     std::shared_ptr<PredicatesCacheManager> cm,
     std::shared_ptr<NaiveDynamicStringDictionary> extra_str_dict,
     TimeControl &time_control,
-    std::shared_ptr<VarBindingQProc> var_binding_qproc)
+    std::shared_ptr<VarBindingQProc> var_binding_qproc,
+    const std::string &temp_files_dir)
     : ResultTableIterator(time_control), input_it(std::move(input_it)),
       next_available(false), var_pos_mapping(get_var_pos_mapping(vim)),
       eval_data(vim, std::move(cm), var_pos_mapping, std::move(extra_str_dict),
-                time_control, std::move(var_binding_qproc)) {
+                time_control, std::move(var_binding_qproc), temp_files_dir) {
   for (const auto *node : expr_nodes) {
     bool_expressions.push_back(
         ExprProcessor(eval_data, *node).create_evaluator());

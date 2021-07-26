@@ -28,7 +28,8 @@ public:
       std::shared_ptr<PredicatesCacheManager> cm,
       std::shared_ptr<NaiveDynamicStringDictionary> extra_str_dict,
       TimeControl &time_control,
-      std::shared_ptr<VarBindingQProc> var_binding_qproc);
+      std::shared_ptr<VarBindingQProc> var_binding_qproc,
+      const std::string &temp_files_dir);
   bool has_next() override;
   std::vector<unsigned long> next() override;
   std::vector<unsigned long> &get_headers() override;

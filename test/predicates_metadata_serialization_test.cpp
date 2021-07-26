@@ -2,10 +2,10 @@
 
 #include <PredicatesIndexCacheMD.hpp>
 #include <PredicatesIndexFileBuilder.hpp>
-#include <external_sort.hpp>
 #include <serialization_util.hpp>
 #include <sstream>
 #include <string>
+#include <triple_external_sort.hpp>
 #include <utility>
 
 static std::pair<PredicatesIndexCacheMD, unsigned long> build_picmd() {

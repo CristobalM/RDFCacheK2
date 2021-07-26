@@ -2,9 +2,9 @@
 #include <stdexcept>
 #include <string>
 
-#include <external_sort.hpp>
 #include <getopt.h>
 #include <serialization_util.hpp>
+#include <triple_external_sort.hpp>
 
 struct parsed_options {
   std::string input_file;

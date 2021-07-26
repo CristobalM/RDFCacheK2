@@ -2,8 +2,8 @@
 
 #include <sstream>
 
-#include <external_sort.hpp>
 #include <serialization_util.hpp>
+#include <triple_external_sort.hpp>
 
 struct Comparator {
 

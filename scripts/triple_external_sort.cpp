@@ -4,9 +4,9 @@
 #include <iterator>
 #include <stdexcept>
 
-#include <external_sort.hpp>
 #include <getopt.h>
 #include <stdlib.h>
+#include <triple_external_sort.hpp>
 
 struct parsed_options {
   std::string input_file;

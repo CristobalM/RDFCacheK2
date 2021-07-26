@@ -4,10 +4,10 @@
 #include <stdexcept>
 #include <string>
 
-#include <external_sort.hpp>
 #include <getopt.h>
 #include <nt_parser.hpp>
 #include <serialization_util.hpp>
+#include <triple_external_sort.hpp>
 
 #include <ISDManager.hpp>
 #include <SDEntitiesMapping.hpp>

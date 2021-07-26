@@ -45,6 +45,8 @@ TwoVarJoinOneBGPOp<WV>::run(std::vector<unsigned long> &row_to_fill) {
   }
 
   auto next_pair = current_band_scanner->next();
+  if (!time_control.tick())
+    return result;
   if constexpr (WV == BGPOp::SUBJECT_VAR) {
     *set_value = next_pair.second;
   } else {

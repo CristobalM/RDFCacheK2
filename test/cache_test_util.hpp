@@ -7,8 +7,8 @@
 #include <Cache.hpp>
 #include <RDFTriple.hpp>
 #include <ResultTable.hpp>
-#include <external_sort.hpp>
 #include <query_processing/QueryResult.hpp>
+#include <triple_external_sort.hpp>
 
 void build_cache_test_file(const std::string &fname,
                            std::vector<TripleValue> &data);
