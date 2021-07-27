@@ -87,6 +87,8 @@ int main(int argc, char **argv) {
         << stats.inner_blocks_stats.blocks_data << ","
         << stats.inner_blocks_stats.blocks_counted << ","
         << stats.inner_blocks_stats.allocated_u32s << "\n";
+
+    predicates_index.discard_in_memory_predicate(predicate_id);
   }
 
   std::cout << "Different strings: " << sds->last_id() << "\n"
