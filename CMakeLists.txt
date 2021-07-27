@@ -79,6 +79,8 @@ set(GRAPH_RESULT_CACHING_FILE
         query_engine/query_processing/DateInfo.hpp
         query_engine/query_processing/DateInfo.hpp
         query_engine/query_processing/ExprProcessor.cpp
+        query_engine/query_processing/ExternalSortedFileHandler.cpp
+        query_engine/query_processing/ExternalSortedFileHandler.hpp
         query_engine/query_processing/MinusProcessor.cpp
         query_engine/query_processing/MinusProcessor.hpp
         query_engine/query_processing/OneVarCPBGPOp.cpp
@@ -117,6 +119,8 @@ set(GRAPH_RESULT_CACHING_FILE
         query_engine/query_processing/ResultTableIteratorLeftOuterJoin.hpp
         query_engine/query_processing/ResultTableIteratorMinus.cpp
         query_engine/query_processing/ResultTableIteratorMinus.hpp
+        query_engine/query_processing/ResultTableIteratorOrder.cpp
+        query_engine/query_processing/ResultTableIteratorOrder.hpp
         query_engine/query_processing/ResultTableIteratorProject.cpp
         query_engine/query_processing/ResultTableIteratorProject.hpp
         query_engine/query_processing/ResultTableIteratorSlice.cpp
@@ -125,6 +129,8 @@ set(GRAPH_RESULT_CACHING_FILE
         query_engine/query_processing/ResultTableIteratorUnion.hpp
         query_engine/query_processing/ResultTableVector.cpp
         query_engine/query_processing/ResultTableVector.hpp
+        query_engine/query_processing/RowSortConnector.cpp
+        query_engine/query_processing/RowSortConnector.hpp
         query_engine/query_processing/SequenceProcessor.cpp
         query_engine/query_processing/SequenceProcessor.hpp
         query_engine/query_processing/Triple.cpp
@@ -241,7 +247,9 @@ set(GRAPH_RESULT_CACHING_FILE
         query_engine/query_processing/utility/ProtoGatherVars.cpp
         query_engine/query_processing/utility/ProtoGatherVars.hpp
         query_engine/query_processing/utility/StringHandlingUtil.cpp
-        query_engine/query_processing/ResultTableIteratorOrder.cpp query_engine/query_processing/ResultTableIteratorOrder.hpp query_engine/query_processing/ExternalSortedFileHandler.cpp query_engine/query_processing/ExternalSortedFileHandler.hpp query_engine/query_processing/utility/UuidGenerator.cpp query_engine/query_processing/utility/UuidGenerator.hpp query_engine/query_processing/RowSortConnector.cpp query_engine/query_processing/RowSortConnector.hpp)
+        query_engine/query_processing/utility/UuidGenerator.cpp
+        query_engine/query_processing/utility/UuidGenerator.hpp
+        )
 
 
 set(NETWORK_SOURCE_FILES

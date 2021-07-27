@@ -88,7 +88,7 @@ bundle-code: # clean-all
 	--include 'core/***' \
 	--include 'docker/***' \
 	--include 'example/***' \
-	--include 'gresults-caching/***' \
+	--include 'query_engine/***' \
 	--include 'memory/***' \
 	--include 'network/***' \
 	--include 'proc/***' \
