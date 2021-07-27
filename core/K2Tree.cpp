@@ -12,6 +12,7 @@ extern "C" {
 
 #include "K2Tree.hpp"
 #include "block_serialization.hpp"
+#include "block_stats.hpp"
 #include "exceptions.hpp"
 
 namespace {
@@ -164,27 +165,10 @@ K2Tree K2Tree::read_from_istream(std::istream &is) {
   return K2Tree(data.root, data.treedepth, data.max_node_count);
 }
 
-void rec_occup_ratio_count(struct block *b, K2TreeStats &k2tree_stats);
-void rec_occup_ratio_count(struct block *b, K2TreeStats &k2tree_stats) {
-  k2tree_stats.allocated_u32s += b->container_size;
-  k2tree_stats.nodes_count += b->nodes_count;
-  k2tree_stats.containers_sz_sum += sizeof(struct block);
-
-  k2tree_stats.frontier_data += b->children * sizeof(uint32_t);
-  k2tree_stats.blocks_data += b->children * sizeof(struct block *);
-  k2tree_stats.blocks_counted += 1;
-
-  struct block **children = b->children_blocks;
-  for (int i = 0; i < b->children; i++) {
-    struct block *child_block = children[i];
-    rec_occup_ratio_count(child_block, k2tree_stats);
-  }
-}
-
 K2TreeStats K2Tree::k2tree_stats() {
   K2TreeStats result{};
 
-  rec_occup_ratio_count(root, result);
+  block_rec_occup_ratio_count(root, result);
 
   auto scanned_points = get_all_points();
   result.number_of_points = static_cast<int>(scanned_points.size());

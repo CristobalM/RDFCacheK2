@@ -25,6 +25,8 @@ struct parsed_options {
 
   std::string temp_files_dir;
   unsigned long time_out_ms;
+
+  bool load_all_predicates;
 };
 
 parsed_options parse_cmline(int argc, char **argv);
@@ -63,6 +65,17 @@ int main(int argc, char **argv) {
 
   fs::create_directories(fs::path(parsed.temp_files_dir));
 
+  if (parsed.load_all_predicates) {
+    std::cout << "Loading all predicates..." << std::endl;
+    auto start = std::chrono::high_resolution_clock::now();
+    pcm->load_all_predicates();
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration =
+        std::chrono::duration_cast<std::chrono::seconds>(end - start);
+    std::cout << "Done loading all predicates, took " << duration.count()
+              << " seconds" << std::endl;
+  }
+
   Cache cache(pcm, CacheReplacement::LRU, parsed.memory_budget_bytes,
               parsed.temp_files_dir, parsed.time_out_ms);
 
@@ -71,7 +84,7 @@ int main(int argc, char **argv) {
 }
 
 parsed_options parse_cmline(int argc, char **argv) {
-  const char short_options[] = "I:O:i:b:l:m:p:w:t:T:";
+  const char short_options[] = "I:O:i:b:l:m:p:w:t:T:A::";
   struct option long_options[] = {
       {"index-file", required_argument, nullptr, 'I'},
       {"iris-file", required_argument, nullptr, 'i'},
@@ -82,6 +95,7 @@ parsed_options parse_cmline(int argc, char **argv) {
       {"workers", required_argument, nullptr, 'w'},
       {"temp-files-dir", required_argument, nullptr, 't'},
       {"timeout-ms", required_argument, nullptr, 'T'},
+      {"load-all-predicates", required_argument, nullptr, 'A'},
   };
 
   int opt, opt_index;
@@ -96,6 +110,8 @@ parsed_options parse_cmline(int argc, char **argv) {
   bool has_temp_files_dir = false;
   bool has_timeout = false;
   parsed_options out{};
+
+  out.load_all_predicates = false;
 
   while ((
       opt = getopt_long(argc, argv, short_options, long_options, &opt_index))) {
@@ -139,6 +155,8 @@ parsed_options parse_cmline(int argc, char **argv) {
       out.time_out_ms = std::stoul(std::string(optarg));
       has_timeout = true;
       break;
+    case 'A':
+      out.load_all_predicates = true;
     default:
       break;
     }

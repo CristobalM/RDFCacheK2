@@ -258,3 +258,34 @@ TEST(k2tree_mixed_test, can_scan_band_lazy_with_virtual_scanner) {
   }
   ASSERT_EQ(i, 100);
 }
+
+static void print_stats(K2TreeMixedStats &stats) {
+  std::cout << "total ptrs: " << stats.total_ptrs << "\n"
+            << "total blocks: " << stats.total_blocks << "\n"
+            << "number_of_points: " << stats.inner_blocks_stats.number_of_points
+            << "\n"
+            << "allocated_u32s: " << stats.inner_blocks_stats.allocated_u32s
+            << "\n"
+            << "inner blocks_counted: "
+            << stats.inner_blocks_stats.blocks_counted << "\n"
+            << "inner blocks ptrs total size: "
+            << stats.inner_blocks_stats.blocks_data << "\n"
+            << "total size in blocks structs: "
+            << stats.inner_blocks_stats.containers_sz_sum << "\n"
+            << "total frontier size (positions): "
+            << stats.inner_blocks_stats.frontier_data << "\n"
+            << "total nodes count: " << stats.inner_blocks_stats.nodes_count
+            << "\n";
+}
+
+TEST(k2tree_mixed_test, stats_1) {
+  unsigned long treedepth = 32;
+  K2TreeMixed tree(treedepth, 4096, 10);
+
+  for (int i = 1; i < 10'000'000; i++) {
+    tree.insert(i, 1);
+  }
+
+  auto stats = tree.k2tree_stats();
+  print_stats(stats);
+}

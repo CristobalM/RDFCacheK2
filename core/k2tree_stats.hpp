@@ -11,4 +11,10 @@ struct K2TreeStats {
   int blocks_counted;
 };
 
+struct K2TreeMixedStats {
+  K2TreeStats inner_blocks_stats;
+  int total_ptrs;
+  int total_blocks;
+};
+
 #endif

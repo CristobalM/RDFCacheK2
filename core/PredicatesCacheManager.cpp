@@ -219,3 +219,9 @@ void PredicatesCacheManager::ensure_available_predicate(
     predicates_index->fetch_k2tree(id);
   }
 }
+void PredicatesCacheManager::load_all_predicates() {
+  auto &metadata = predicates_index->get_metadata();
+  for (auto predicate_id : metadata.get_ids_vector()) {
+    predicates_index->fetch_k2tree(predicate_id);
+  }
+}

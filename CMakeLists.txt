@@ -49,7 +49,7 @@ set(CORE_SOURCE_FILES
         core/FullScanner.hpp
         core/K2TreeScanner.hpp
         core/EmptyScanner.cpp
-        core/EmptyScanner.hpp)
+        core/EmptyScanner.hpp core/block_stats.cpp core/block_stats.hpp)
 
 set(PROC_SOURCE_FILES
         proc/SDFeed.cpp

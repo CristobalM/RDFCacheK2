@@ -5,6 +5,7 @@
 #include <serialization_util.hpp>
 
 #include <hashing.hpp>
+#include <iostream>
 
 PredicatesIndexCacheMD::PredicatesIndexCacheMD(
     std::unique_ptr<std::istream> &&is)
@@ -52,7 +53,7 @@ bool PredicatesIndexCacheMD::load_single_predicate(uint64_t predicate_index) {
   auto raw_k2tree_sz = end_pos - predicate_metadata.tree_offset;
   std::vector<char> raw_k2tree(raw_k2tree_sz, 0);
 
-  is->read(raw_k2tree.data(), raw_k2tree.size());
+  is->read(raw_k2tree.data(), static_cast<std::streamsize>(raw_k2tree.size()));
 
   auto md5_calc = md5calc(raw_k2tree);
 
@@ -66,9 +67,14 @@ bool PredicatesIndexCacheMD::load_single_predicate(uint64_t predicate_index) {
                   raw_k2tree.end())); // TODO: optimization using a custom
                                       // stream to avoid copying the data
 
+  std::cout << "Loading predicate " << predicate_metadata.predicate_id << " ..."
+            << std::endl;
+
   predicates[predicate_metadata.predicate_id] =
       std::make_unique<K2TreeMixed>(K2TreeMixed::read_from_istream(ss));
   is->seekg(pos);
+  std::cout << "Loaded " << predicate_metadata.predicate_id << std::endl;
+
   return true;
 }
 

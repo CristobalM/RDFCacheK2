@@ -10,6 +10,7 @@
 #include "EmptyScanner.hpp"
 #include "FullScanner.hpp"
 #include "K2TreeScanner.hpp"
+#include "block_stats.hpp"
 
 K2TreeMixed::K2TreeMixed(uint32_t treedepth)
     : K2TreeMixed(treedepth, MAX_NODES_IN_BLOCK) {}
@@ -124,8 +125,10 @@ struct k2tree_measurement K2TreeMixed::measure_in_memory_size() const {
   return k2node_measure_tree_size(root, st->cut_depth);
 }
 
-K2TreeStats K2TreeMixed::k2tree_stats() const {
-  throw "k2tree_stats not implemented";
+K2TreeMixedStats K2TreeMixed::k2tree_stats() const {
+  K2TreeMixedStats results{};
+  k2node_rec_occup_ratio_count(root, &st->qs, 0, st->cut_depth, results);
+  return results;
 }
 
 bool same_k2node(struct k2node *lhs, struct k2node *rhs, uint32_t current_depth,
