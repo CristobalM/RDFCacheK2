@@ -31,7 +31,6 @@
 #include "VarIndexManager.hpp"
 #include "VarLazyBinding.hpp"
 #include <query_processing/utility/StringHandlingUtil.hpp>
-#include <quicksort_stoppable.hpp>
 
 QueryProcessor::QueryProcessor(
     std::shared_ptr<PredicatesCacheManager> cache_manager,
@@ -338,24 +337,6 @@ QueryProcessor::get_var_ids(const std::vector<std::string> &vars_vector) {
     result.insert(vim->var_indexes[v]);
   }
   return result;
-}
-void QueryProcessor::left_to_right_sort_vec(
-    ResultTableVector &result_table_vector) {
-
-  inplace_quicksort_stoppable(
-      result_table_vector.data,
-      [](const std::vector<unsigned long> &lhs,
-         const std::vector<unsigned long> &rhs) {
-        for (size_t i = 0; i < lhs.size(); i++) {
-          auto lhs_i = lhs.at(i);
-          auto rhs_i = rhs.at(i);
-          if (lhs_i == rhs_i)
-            continue;
-          return lhs_i < rhs_i;
-        }
-        return true;
-      },
-      time_control);
 }
 std::shared_ptr<ResultTableIterator>
 QueryProcessor::process_table_node(const proto_msg::TableNode &node,

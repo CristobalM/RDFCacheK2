@@ -1,5 +1,5 @@
-#ifndef _BLOCK_SERIALIZATION_HPP_
-#define _BLOCK_SERIALIZATION_HPP_
+#ifndef RDFCACHEK2_BLOCK_SERIALIZATION_HPP_
+#define RDFCACHEK2_BLOCK_SERIALIZATION_HPP_
 
 #include <cstdint>
 #include <istream>

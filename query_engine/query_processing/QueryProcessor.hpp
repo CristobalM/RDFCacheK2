@@ -100,17 +100,10 @@ private:
   process_reduced_node(const proto_msg::ReducedNode &node);
   std::set<unsigned long>
   get_var_ids(const std::vector<std::string> &vars_vector);
-  void left_to_right_sort_vec(ResultTableVector &result_table_vector);
   static RDFResource resource_from_proto_term(const proto_msg::RDFTerm &term);
   static RDFResourceType
   resource_type_from_term(const proto_msg::RDFTerm &term);
   unsigned long id_from_resource(RDFResource &resource);
-  std::string sanitize_term(const proto_msg::RDFTerm &term);
-  std::string sanitize_number_term(const proto_msg::RDFTerm &term);
-  std::string sanitize_boolean_term(const proto_msg::RDFTerm &term);
-  std::string sanitize_date_term(const proto_msg::RDFTerm &term);
-  std::string infer_number_type_str(std::string &input_string_number);
-  std::string to_lowercase(std::string input);
 };
 
 #endif // RDFCACHEK2_QUERYPROCESSOR_HPP

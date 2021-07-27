@@ -7,11 +7,8 @@ extern "C" {
 #include <memalloc.h>
 }
 
-#include <cmath>
-#include <iterator>
 #include <list>
 #include <memory>
-#include <unordered_map>
 
 #include "K2Tree.hpp"
 #include "block_serialization.hpp"
@@ -26,14 +23,6 @@ enum BandType {
 
 }
 
-bool same_blocks(const struct block *lhs, const struct block *rhs);
-
-bool same_block_frontiers(const struct block *lhs, const struct block *rhs);
-
-bool same_block_topologies(const struct block *lhs, const struct block *rhs);
-
-bool same_bvs(const struct block *lhs, const struct block *rhs);
-
 K2Tree::K2Tree(uint32_t tree_depth) : root(create_block()) {
   qs = std::make_unique<struct queries_state>();
   init_queries_state(qs.get(), tree_depth, MAX_NODES_IN_BLOCK, root);
@@ -42,23 +31,25 @@ K2Tree::K2Tree(uint32_t tree_depth) : root(create_block()) {
 K2Tree::K2Tree(uint32_t tree_depth, uint32_t max_node_count)
     : root(create_block()) {
   qs = std::make_unique<struct queries_state>();
-  init_queries_state(qs.get(), tree_depth, max_node_count, root);
+  init_queries_state(qs.get(), tree_depth,
+                     static_cast<MAX_NODE_COUNT_T>(max_node_count), root);
 }
 
 K2Tree::K2Tree(struct block *root, uint32_t tree_depth, uint32_t nodes_in_block)
     : root(root) {
   qs = std::make_unique<struct queries_state>();
-  init_queries_state(qs.get(), tree_depth, nodes_in_block, root);
+  init_queries_state(qs.get(), tree_depth,
+                     static_cast<MAX_NODE_COUNT_T>(nodes_in_block), root);
 }
 
-K2Tree::K2Tree(K2Tree &&other) {
+K2Tree::K2Tree(K2Tree &&other) noexcept {
   root = nullptr;
   qs = nullptr;
   std::swap(root, other.root);
   std::swap(qs, other.qs);
 }
 
-K2Tree &K2Tree::operator=(K2Tree &&rhs) {
+K2Tree &K2Tree::operator=(K2Tree &&rhs) noexcept {
   root = nullptr;
   qs = nullptr;
   std::swap(root, rhs.root);
@@ -161,7 +152,7 @@ void K2Tree::traverse_column(unsigned long column,
 }
 
 void K2Tree::write_to_ostream(std::ostream &os) {
-  k2tree_data data;
+  k2tree_data data{};
   data.root = root;
   data.max_node_count = qs->max_nodes_count;
   data.treedepth = qs->treedepth;
@@ -173,6 +164,7 @@ K2Tree K2Tree::read_from_istream(std::istream &is) {
   return K2Tree(data.root, data.treedepth, data.max_node_count);
 }
 
+void rec_occup_ratio_count(struct block *b, K2TreeStats &k2tree_stats);
 void rec_occup_ratio_count(struct block *b, K2TreeStats &k2tree_stats) {
   k2tree_stats.allocated_u32s += b->container_size;
   k2tree_stats.nodes_count += b->nodes_count;
@@ -195,7 +187,7 @@ K2TreeStats K2Tree::k2tree_stats() {
   rec_occup_ratio_count(root, result);
 
   auto scanned_points = get_all_points();
-  result.number_of_points = scanned_points.size();
+  result.number_of_points = static_cast<int>(scanned_points.size());
 
   return result;
 }

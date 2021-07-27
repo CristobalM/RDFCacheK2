@@ -5,6 +5,8 @@
 #include "CacheServerTaskProcessor.hpp"
 #include "QueryResultPartStreamer.hpp"
 
+#include <iostream>
+
 void CacheServerTaskProcessor::process_request(int client_socket_fd) {
   auto server_task_uptr =
       std::make_unique<ServerTask>(client_socket_fd, cache, *this);

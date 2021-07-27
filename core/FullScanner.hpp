@@ -20,8 +20,8 @@ public:
   ~FullScanner() override;
 
 private:
-  struct k2qstate st;
-  k2node_lazy_handler_naive_scan_t lazy_handler;
+  struct k2qstate st {};
+  k2node_lazy_handler_naive_scan_t lazy_handler{};
   K2TreeMixed &k2tree;
   TimeControl &time_control;
 };

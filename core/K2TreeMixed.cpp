@@ -25,7 +25,9 @@ K2TreeMixed::K2TreeMixed(struct k2node *root, uint32_t treedepth,
                          uint64_t points_count)
     : root(root), points_count(points_count) {
   st = std::make_unique<struct k2qstate>();
-  int err = init_k2qstate(st.get(), treedepth, max_node_count, cut_depth);
+  int err = init_k2qstate(st.get(), static_cast<TREE_DEPTH_T>(treedepth),
+                          static_cast<MAX_NODE_COUNT_T>(max_node_count),
+                          static_cast<TREE_DEPTH_T>(cut_depth));
   if (err)
     throw std::runtime_error("Cant init k2qstate: " + std::to_string(err));
 }
@@ -187,7 +189,7 @@ void serialize_to_vec_with_k2node_ptrs(struct k2node *node,
     current_node_location++;
     for (int i = 0; i < 4; i++) {
       if (node->k2subtree.children[i]) {
-        uint32_t bit_location = (31 - (subpos_bits_start + i));
+        auto bit_location = static_cast<uint32_t>(31 - (subpos_bits_start + i));
         container |= (1U << bit_location);
       }
     }
@@ -240,7 +242,7 @@ unsigned long K2TreeMixed::write_to_ostream(std::ostream &os) const {
   write_u32(os, st->k2tree_depth);
   write_u32(os, st->cut_depth);
   write_u32(os, st->qs.max_nodes_count);
-  write_u32(os, containers_count);
+  write_u32(os, static_cast<uint32_t>(containers_count));
   unsigned long bytes_written = sizeof(uint32_t) * 4 + sizeof(uint64_t);
   for (int i = 0; i < containers_count; i++) {
     write_u32(os, containers[i]);
@@ -317,7 +319,7 @@ std::vector<unsigned long> K2TreeMixed::sip_join_k2trees(
   sip_input.nodes = root_nodes.data();
   sip_input.sts = states.data();
   sip_input.join_coords = join_coordinates.data();
-  sip_input.join_size = join_coordinates.size();
+  sip_input.join_size = static_cast<int>(join_coordinates.size());
 
   std::vector<unsigned long> result;
 

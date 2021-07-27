@@ -10,7 +10,9 @@ extern "C" {
 #include "BandScanner.hpp"
 #include <K2TreeMixed.hpp>
 
-bool BandScanner::has_next() { return lazy_handler.has_next; }
+bool BandScanner::has_next() {
+  return static_cast<bool>(lazy_handler.has_next);
+}
 std::pair<unsigned long, unsigned long> BandScanner::next() {
   uint64_t result;
   k2node_report_band_next(&lazy_handler, &result);

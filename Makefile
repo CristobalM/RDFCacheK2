@@ -52,11 +52,8 @@ proto-build:
 	mkdir -p ./proto/java-generated && \
 	protoc -I=proto --cpp_out=./proto/generated --java_out=./proto/java-generated \
 		./proto/message_type.proto \
-		./proto/k2tree.proto \
-		./proto/graph_result.proto \
 		./proto/request_msg.proto \
 		./proto/response_msg.proto \
-		./proto/predicates_index_cache.proto \
 		./proto/sparql_tree.proto
 
 proto-clean:

@@ -20,20 +20,6 @@ public:
 private:
   bool has_constant_subtree() override;
   std::set<unsigned long> gather_outside_variables() const;
-  void explore_node_for_vars(const proto_msg::SparqlNode &node,
-                             std::set<std::string> &set) const;
-  void explore_node_for_vars_project_node(const proto_msg::ProjectNode &node,
-                                          std::set<std::string> &set) const;
-  void explore_node_for_vars_left_join_node(const proto_msg::LeftJoinNode &node,
-                                            std::set<std::string> &set) const;
-  void explore_node_for_vars_bgp_node(const proto_msg::BGPNode &node,
-                                      std::set<std::string> &set) const;
-  void explore_term_for_vars(const proto_msg::RDFTerm &term,
-                             std::set<std::string> &set) const;
-  void explore_extend_node_for_vars(const proto_msg::ExtendNode &node,
-                                    std::set<std::string> &set) const;
-  void explore_sequence_node_for_vars(const proto_msg::SequenceNode &node,
-                                      std::set<std::string> &set) const;
   std::shared_ptr<VarBindingQProc>
   bind_row_vars_next_eval_data(NaiveDynamicStringDictionary &dictionary,
                                const row_t &row);

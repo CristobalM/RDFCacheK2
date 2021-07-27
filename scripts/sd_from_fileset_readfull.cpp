@@ -146,7 +146,6 @@ parsed_options parse_cmline(int argc, char **argv) {
     default:
       print_help();
       exit(1);
-      break;
     }
   }
 

@@ -119,19 +119,4 @@ struct RDFTripleResource {
       : subject(subject), predicate(predicate), object(object) {}
 };
 
-struct RDFTripleResourceReference {
-  RDFResourceReference subject;
-  RDFResourceReference predicate;
-  RDFResourceReference object;
-  RDFTripleResourceReference(RDFResourceReference subject,
-                             RDFResourceReference predicate,
-                             RDFResourceReference object)
-      : subject(subject), predicate(predicate), object(object) {}
-
-  RDFTripleResourceReference(const RDFTripleResource &rdf_triple_resource)
-      : subject(rdf_triple_resource.subject),
-        predicate(rdf_triple_resource.predicate),
-        object(rdf_triple_resource.object) {}
-};
-
 #endif // RDFCACHEK2_RDFTRIPLE_HPP

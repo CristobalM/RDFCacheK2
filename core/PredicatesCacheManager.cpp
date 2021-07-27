@@ -62,23 +62,6 @@ void PredicatesCacheManager::handle_not_found(unsigned long &resource_id,
   if (resource_id != NORESULT)
     return;
 
-  std::string res_type_name;
-  switch (resource.resource_type) {
-  case RDF_TYPE_IRI:
-    res_type_name = "IRI";
-    break;
-  case RDF_TYPE_BLANK:
-    res_type_name = "BLANK_NODE";
-    break;
-  case RDF_TYPE_LITERAL:
-    res_type_name = "LITERAL";
-    break;
-  default:
-    throw std::runtime_error("Unknown resource type: '" +
-                             std::to_string(resource.resource_type) +
-                             "' with value '" + resource.value + "'");
-  }
-
   resource_id = extra_dicts.locate_resource(resource);
   if (resource_id == 0) {
     extra_dicts.add_resource(resource);

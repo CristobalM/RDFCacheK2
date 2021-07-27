@@ -16,8 +16,6 @@
 
 #include "CacheReplacement.hpp"
 
-#include "ICacheSettings.hpp"
-
 #include "query_processing/QueryResult.hpp"
 
 struct CacheStats {
@@ -47,8 +45,6 @@ public:
         CacheReplacement::STRATEGY cache_replacement_strategy,
         size_t memory_budget_bytes, std::string temp_files_dir,
         unsigned long timeout_ms);
-
-  CacheStats cache_stats();
 
   std::shared_ptr<QueryResultIterator>
   run_query(const proto_msg::SparqlTree &query_tree, TimeControl &time_control);

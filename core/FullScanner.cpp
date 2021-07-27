@@ -10,7 +10,9 @@ extern "C" {
 #include "FullScanner.hpp"
 #include "K2TreeMixed.hpp"
 
-bool FullScanner::has_next() { return lazy_handler.has_next; }
+bool FullScanner::has_next() {
+  return static_cast<bool>(lazy_handler.has_next);
+}
 std::pair<unsigned long, unsigned long> FullScanner::next() {
   pair2dl_t result;
   k2node_naive_scan_points_lazy_next(&lazy_handler, &result);

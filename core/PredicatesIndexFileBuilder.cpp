@@ -46,7 +46,7 @@ PredicatesCacheMetadata PredicatesIndexFileBuilder::build(
   }
   if (current_k2tree) {
     write_ktree_with_size(tmp_stream, *current_k2tree);
-    current_k2tree = nullptr;
+    current_k2tree.reset();
   }
 
   std::unordered_map<uint64_t, PredicateMetadata> metadata_map;

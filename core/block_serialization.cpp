@@ -18,7 +18,7 @@ k2tree_data read_tree_from_istream(std::istream &is) {
   }
 
   std::list<struct block *> blocks_to_adjust;
-  struct block *current_block;
+  struct block *current_block = nullptr;
 
   for (uint32_t i = 0; i < blocks_count; i++) {
     current_block = read_block_from_istream(is);
@@ -26,7 +26,7 @@ k2tree_data read_tree_from_istream(std::istream &is) {
     adjust_blocks(blocks_to_adjust);
   }
   // root is always the last block in the serialization
-  k2tree_data out;
+  k2tree_data out{};
   out.max_node_count = max_node_count;
   out.root = current_block;
   out.treedepth = treedepth;
@@ -53,7 +53,7 @@ struct block *read_block_from_istream(std::istream &is) {
   new_block->container_size = container_size;
 
   uint32_t *container = k2tree_alloc_u32array((int)new_block->container_size);
-  new_block->container = reinterpret_cast<BVCTYPE *>(container);
+  new_block->container = container;
   for (uint32_t sub_block_i = 0; sub_block_i < container_size; sub_block_i++) {
     new_block->container[sub_block_i] = read_u32(is);
   }
@@ -92,8 +92,8 @@ unsigned long write_block_to_ostream(struct block *b, std::ostream &os) {
 }
 
 unsigned long write_tree_to_ostream(k2tree_data data, std::ostream &os) {
-  write_u16(os, data.max_node_count);
-  write_u16(os, data.treedepth);
+  write_u16(os, static_cast<uint16_t>(data.max_node_count));
+  write_u16(os, static_cast<uint16_t>(data.treedepth));
   auto start_pos = os.tellp();
   write_u32(os, 0);
 

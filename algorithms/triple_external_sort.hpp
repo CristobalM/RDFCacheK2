@@ -18,7 +18,7 @@
 
 #include "ParallelWorker.hpp"
 #include "serialization_util.hpp"
-
+// TODO: refactor to use external-sort library and delete this file
 struct TripleValue {
   uint64_t first{};
   uint64_t second{};

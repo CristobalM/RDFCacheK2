@@ -5,15 +5,11 @@
 #include "TCPServerConnection.hpp"
 
 #include <iostream>
-#include <memory>
 
-#include <MemoryManager.hpp>
 #include <netinet/in.h>
 #include <sys/socket.h>
-#include <unistd.h>
 
 #include "CacheServerTaskProcessor.hpp"
-#include "Message.hpp"
 #include "exception/CantBindToPortException.hpp"
 #include "exception/CantEstablishSocketException.hpp"
 #include "exception/CantStartListeningException.hpp"

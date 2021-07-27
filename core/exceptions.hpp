@@ -22,11 +22,4 @@ public:
                            std::to_string(predicate_index)) {}
 };
 
-class RootNotFound : std::runtime_error {
-public:
-  RootNotFound()
-      : std::runtime_error(
-            "Root block was not found when reading binary string") {}
-};
-
 #endif // RDFCACHEK2_EXCEPT_HPP

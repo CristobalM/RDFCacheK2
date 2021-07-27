@@ -4,11 +4,6 @@
 
 #include <gtest/gtest.h>
 #include <random>
-
-#include <K2Tree.hpp>
-
-#include <graph_result.pb.h>
-
 #include <serialization_util.hpp>
 
 TEST(u64_network_host, test_one) {

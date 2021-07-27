@@ -42,8 +42,6 @@ set(CORE_SOURCE_FILES
         core/EmptyISDManager.cpp
         core/block_serialization.cpp
         core/K2TreeMixed.cpp
-        core/CacheSettings.cpp
-        core/InMemoryCacheSettings.cpp
         core/PredicateFetchResult.cpp
         core/BandScanner.cpp
         core/BandScanner.hpp
@@ -54,7 +52,6 @@ set(CORE_SOURCE_FILES
         core/EmptyScanner.hpp)
 
 set(PROC_SOURCE_FILES
-        proc/QueueIteratorDictString.cpp
         proc/SDFeed.cpp
         proc/SDBuilder.cpp
         )
@@ -263,10 +260,7 @@ set(NETWORK_SOURCE_FILES
 
 
 set(PROTO_MESSAGES
-        proto/generated/graph_result.pb.cc
-        proto/generated/k2tree.pb.cc
         proto/generated/message_type.pb.cc
-        proto/generated/predicates_index_cache.pb.cc
         proto/generated/request_msg.pb.cc
         proto/generated/response_msg.pb.cc
         proto/generated/sparql_tree.pb.cc
@@ -275,7 +269,6 @@ set(PROTO_MESSAGES
 set(PROTO_MESSAGES_PATH ${CMAKE_SOURCE_DIR}/proto/generated)
 
 set(INCLUDES
-        memory
         core
         network
         proc
@@ -327,10 +320,6 @@ include_directories(
 link_directories(${LINK_LIBS})
 
 
-add_library(MemoryManager STATIC
-        memory/MemoryManager.cpp
-        )
-
 add_library(RDFCacheK2 STATIC ${CORE_SOURCE_FILES} ${GRAPH_RESULT_CACHING_FILE})
 add_library(RDFCacheK2_Network STATIC ${NETWORK_SOURCE_FILES})
 #add_library(RDFCacheK2_GR STATIC ${GRAPH_RESULT_CACHING_FILE})
@@ -375,7 +364,6 @@ include_directories(${CURL_INCLUDE_DIR})
 set(BASE_LIBS
         RDFCacheK2
         k2dyn
-        MemoryManager
         ProtoMessages
         ${Protobuf_LIBRARIES}
         CSD
@@ -401,7 +389,6 @@ set(DEFAULT_LIBS
         RDFCacheK2
         RDFCacheK2_Network
         k2dyn
-        MemoryManager
 
         ProtoMessages
         ${Protobuf_LIBRARIES}
@@ -498,7 +485,6 @@ target_include_directories(traverse_k2tree_band PUBLIC ${INCLUDES})
 target_link_libraries(traverse_k2tree_band ${DEFAULT_LIBS})
 
 
-add_executable(four_sided_queue_example example/four_sided_queue_example.cpp)
 
 
 add_executable(k2tree_example example/k2tree_example.cpp)
@@ -518,9 +504,6 @@ if (GTest_FOUND)
 
     add_executable(predicates_cache_manager_test test/predicates_cache_manager_test.cpp test/cache_test_util.cpp)
     target_link_libraries(predicates_cache_manager_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} pthread)
-
-    add_executable(four_sided_queue_test test/four_sided_queue_test.cpp)
-    target_link_libraries(four_sided_queue_test ${GTEST_BOTH_LIBRARIES} pthread)
 
     add_executable(k2tree_tests test/k2tree_tests.cpp)
     target_link_libraries(k2tree_tests ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} pthread)
@@ -559,7 +542,6 @@ if (GTest_FOUND)
     add_test(NAME serialization_test COMMAND ./serialization_test)
     add_test(NAME k2tree_serialization_test COMMAND ./k2tree_serialization_test)
     add_test(NAME predicates_cache_manager_test COMMAND ./predicates_cache_manager_test)
-    add_test(NAME four_sided_queue_test COMMAND ./four_sided_queue_test)
     add_test(NAME k2tree_tests COMMAND ./k2tree_tests)
     add_test(NAME result_table_test COMMAND ./result_table_test)
     add_test(NAME k2tree_mixed_test COMMAND ./k2tree_mixed_test)

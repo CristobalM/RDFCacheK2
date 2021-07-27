@@ -21,10 +21,10 @@ public:
   unsigned long get_band_value() override;
 
 private:
-  struct k2qstate st;
+  struct k2qstate st {};
   unsigned long band;
   K2TreeScanner::BandType band_type;
-  k2node_lazy_handler_report_band_t lazy_handler;
+  k2node_lazy_handler_report_band_t lazy_handler{};
   K2TreeMixed &k2tree;
   TimeControl &time_control;
 };

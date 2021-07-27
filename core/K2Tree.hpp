@@ -35,8 +35,8 @@ public:
   K2Tree(const K2Tree &other) = delete;
   K2Tree &operator=(K2Tree &rhs) = delete;
 
-  K2Tree(K2Tree &&other);
-  K2Tree &operator=(K2Tree &&rhs);
+  K2Tree(K2Tree &&other) noexcept;
+  K2Tree &operator=(K2Tree &&rhs) noexcept;
 
   ~K2Tree() noexcept(false);
 

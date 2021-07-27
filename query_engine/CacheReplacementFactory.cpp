@@ -10,7 +10,6 @@ CacheReplacement CacheReplacementFactory::select_strategy(
   switch (cache_replacement_strategy) {
   case CacheReplacement::STRATEGY::LRU:
     return LRUCacheReplacement(memory_budget_bytes, predicates_cache_manager);
-    break;
   default:
     throw "Invalid strategy selected " +
         std::to_string(cache_replacement_strategy);
