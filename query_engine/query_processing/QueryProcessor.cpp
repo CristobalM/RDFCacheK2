@@ -174,7 +174,7 @@ std::shared_ptr<ResultTableIterator> QueryProcessor::process_distinct_node(
                      time_control, var_binding_qproc, temp_files_dir);
 
   return std::make_shared<ResultTableIteratorOrder>(
-      std::move(result_it), order_node, std::move(eval_data), false,
+      std::move(result_it), order_node, std::move(eval_data), true,
       time_control);
 }
 

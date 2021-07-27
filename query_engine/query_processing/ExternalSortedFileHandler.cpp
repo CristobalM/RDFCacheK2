@@ -49,9 +49,14 @@ std::vector<unsigned long> ExternalSortedFileHandler::next() {
 
 void ExternalSortedFileHandler::fall_back_to_memory_operations_only() {
   disk_operations = false;
-  std::cout << "external sort falled back to memory sort" << std::endl;
+  std::cout << "external sort switched to in-memory sort" << std::endl;
   ExternalSort::IntroSort<RowSortConnector, TimeControl>::sort(
       initial_data, comparator, time_control);
+
+  if (remove_duplicates) {
+    initial_data.erase(std::unique(initial_data.begin(), initial_data.end()),
+                       initial_data.end());
+  }
 }
 
 void ExternalSortedFileHandler::perform_disk_operations() {
