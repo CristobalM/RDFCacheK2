@@ -104,6 +104,7 @@ bundle-code: # clean-all
 	--include 'CMakeLists.txt' \
 	--include 'clang-format.txt' \
 	--include 'Makefile' \
+	--include 'CTestCustom.cmake' \
 	--include '*.sh' \
 	--include 'lib/' \
 	--include 'lib/c-k2tree-dyn/' \
