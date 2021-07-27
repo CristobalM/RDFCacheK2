@@ -3,6 +3,7 @@
 //
 
 #include "OptionalProcessor.hpp"
+#include "ResultTableIteratorEmpty.hpp"
 #include "ResultTableIteratorLeftOuterJoin.hpp"
 #include <memory>
 #include <query_processing/utility/ProtoGatherVars.hpp>
@@ -17,6 +18,8 @@ OptionalProcessor::OptionalProcessor(
       time_control(time_control) {}
 std::shared_ptr<ResultTableIterator> OptionalProcessor::execute_it() {
   auto left_it = query_processor->process_node(left_node, var_binding_qproc);
+  if (!time_control.tick())
+    return std::make_shared<ResultTableIteratorEmpty>(time_control);
   auto right_table_vars = get_right_table_vars_set();
   return std::make_shared<ResultTableIteratorLeftOuterJoin>(
       std::move(left_it), right_node, var_binding_qproc, right_table_vars,

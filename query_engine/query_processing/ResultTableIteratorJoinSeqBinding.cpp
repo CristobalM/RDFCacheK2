@@ -128,10 +128,10 @@ std::vector<unsigned long> ResultTableIteratorJoinSeqBinding::next_concrete() {
   }
 
   if (current_right_it->has_next()) {
-    next_available = true;
     auto right_row = current_right_it->next();
     if (!time_control.tick())
       return result;
+    next_available = true;
     map_rows_to_holder(current_left_row, left_header_pos_map);
     map_rows_to_holder(right_row, right_header_pos_map);
     next_value = tmp_holder;

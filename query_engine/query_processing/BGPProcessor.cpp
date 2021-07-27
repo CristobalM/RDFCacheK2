@@ -23,19 +23,6 @@ void BGPProcessor::set_triples_from_proto() {
   }
 }
 
-std::shared_ptr<ResultTable> BGPProcessor::execute() {
-  auto it_handler = execute_it();
-  auto result = std::make_shared<ResultTable>();
-
-  result->headers = it_handler->get_headers();
-  while (it_handler->has_next()) {
-    auto curr = it_handler->next();
-    if (!time_control.tick())
-      return result;
-    result->data.push_back(std::move(curr));
-  }
-  return result;
-}
 std::shared_ptr<ResultTableIterator> BGPProcessor::execute_it() {
   find_headers();
   if (!do_all_predicates_have_trees()) {

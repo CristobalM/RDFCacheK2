@@ -101,8 +101,6 @@ private:
   std::set<unsigned long>
   get_var_ids(const std::vector<std::string> &vars_vector);
   void left_to_right_sort_vec(ResultTableVector &result_table_vector);
-  std::shared_ptr<ResultTable>
-  convert_to_result_table_list(ResultTableVector &result_table_vector);
   static RDFResource resource_from_proto_term(const proto_msg::RDFTerm &term);
   static RDFResourceType
   resource_type_from_term(const proto_msg::RDFTerm &term);

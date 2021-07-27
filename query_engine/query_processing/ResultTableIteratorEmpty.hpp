@@ -17,6 +17,8 @@ public:
 
   ResultTableIteratorEmpty(std::vector<unsigned long> headers,
                            TimeControl &time_control);
+
+  explicit ResultTableIteratorEmpty(TimeControl &time_control);
 };
 
 #endif // RDFCACHEK2_RESULTTABLEITERATOREMPTY_HPP

@@ -43,7 +43,6 @@ public:
                TimeControl &time_control,
                std::shared_ptr<VarBindingQProc> var_binding_qproc);
 
-  std::shared_ptr<ResultTable> execute();
   std::shared_ptr<ResultTableIterator> execute_it();
 
 private:

@@ -35,10 +35,10 @@ void ResultTableIteratorCrossProduct::build_headers() {
   tmp_holder = std::vector<unsigned long>(headers.size(), 0);
 }
 std::vector<unsigned long> ResultTableIteratorCrossProduct::next_concrete() {
+  next_available = false;
   if (!time_control.tick())
     return next_result;
   auto result = next_result;
-  next_available = false;
 
   if (!left_row_active) {
     for (;;) {
@@ -54,10 +54,11 @@ std::vector<unsigned long> ResultTableIteratorCrossProduct::next_concrete() {
     }
   }
 
-  next_available = true;
   auto right_row = right_it->next();
   if (!time_control.tick())
     return result;
+
+  next_available = true;
   map_values_to_holder(right_row);
   next_result = tmp_holder;
   if (!right_it->has_next()) {

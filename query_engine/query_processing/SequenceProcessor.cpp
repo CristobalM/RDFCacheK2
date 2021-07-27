@@ -32,6 +32,8 @@ std::shared_ptr<ResultTableIterator> SequenceProcessor::execute_it() {
           query_processor->get_vim_ptr(),
           query_processor->get_extra_str_dict_ptr(),
           query_processor->get_temp_files_dir());
+      if (!time_control.tick())
+        return std::make_shared<ResultTableIteratorEmpty>(time_control);
     }
     to_cross_product_iterators.push_back(std::move(result_it));
   }
@@ -45,6 +47,8 @@ std::shared_ptr<ResultTableIterator> SequenceProcessor::execute_it() {
     auto curr_it = to_cross_product_iterators[i];
     result_it = std::make_shared<ResultTableIteratorCrossProduct>(
         result_it, std::move(curr_it), time_control);
+    if (!time_control.tick())
+      return std::make_shared<ResultTableIteratorEmpty>(time_control);
   }
   return result_it;
 }

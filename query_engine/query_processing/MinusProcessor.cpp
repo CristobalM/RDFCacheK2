@@ -3,6 +3,7 @@
 //
 
 #include "MinusProcessor.hpp"
+#include "ResultTableIteratorEmpty.hpp"
 #include "ResultTableIteratorMinus.hpp"
 #include <query_processing/utility/ProtoGatherVars.hpp>
 MinusProcessor::MinusProcessor(
@@ -15,6 +16,8 @@ MinusProcessor::MinusProcessor(
 std::shared_ptr<ResultTableIterator> MinusProcessor::execute_it() {
   auto left_it =
       query_processor->process_node(minus_node.left_node(), var_binding_qproc);
+  if (!time_control.tick())
+    return std::make_shared<ResultTableIteratorEmpty>(time_control);
   auto right_vars_set = get_right_vars_set();
   if (!with_shared_headers(left_it->get_headers(), right_vars_set))
     return left_it;

@@ -24,8 +24,11 @@ OneVarCPBGPOp<WV>::run(std::vector<unsigned long> &row_to_fill) {
   }
 
   auto next_pair = scanner->next();
-  if (!time_control.tick())
+  if (!time_control.tick()) {
+    result.scan_done = true;
+    result.valid_value = false;
     return result;
+  }
   unsigned long value;
   if constexpr (WV == BGPOp::SUBJECT_VAR) {
     value = next_pair.first;

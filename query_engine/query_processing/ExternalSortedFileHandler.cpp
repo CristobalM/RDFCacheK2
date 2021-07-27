@@ -53,6 +53,11 @@ void ExternalSortedFileHandler::fall_back_to_memory_operations_only() {
   ExternalSort::IntroSort<RowSortConnector, TimeControl>::sort(
       initial_data, comparator, time_control);
 
+  if (!time_control.tick()) {
+    current_pos_initial_data = (int)initial_data.size();
+    return;
+  };
+
   if (remove_duplicates) {
     initial_data.erase(std::unique(initial_data.begin(), initial_data.end()),
                        initial_data.end());
@@ -114,6 +119,8 @@ std::vector<unsigned long> ExternalSortedFileHandler::next_wdisk() {
   next_available = false;
   RowSortConnector value;
   if (RowSortConnector::read_value(*sorted_file_is, value)) {
+    if (!time_control.tick())
+      return result;
     next_available = true;
     next_value = std::move(value.get_row());
   }

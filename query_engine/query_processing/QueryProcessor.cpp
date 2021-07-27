@@ -18,6 +18,7 @@
 #include "QueryProcessor.hpp"
 #include "QueryResultIterator.hpp"
 #include "ResultTableFilterIterator.hpp"
+#include "ResultTableIteratorEmpty.hpp"
 #include "ResultTableIteratorExtend.hpp"
 #include "ResultTableIteratorFromMaterialized.hpp"
 #include "ResultTableIteratorOrder.hpp"
@@ -140,7 +141,7 @@ std::shared_ptr<ResultTableIterator> QueryProcessor::process_union_node(
     auto &node = union_node.nodes_list(i);
     auto it = process_node(node, var_binding_qproc);
     if (!time_control.tick())
-      return it;
+      return std::make_shared<ResultTableIteratorEmpty>(time_control);
     its.push_back(std::move(it));
   }
 
@@ -154,7 +155,7 @@ std::shared_ptr<ResultTableIterator> QueryProcessor::process_distinct_node(
 
   auto result_it = process_node(distinct_node.sub_node(), var_binding_qproc);
   if (!time_control.tick())
-    return result_it;
+    return std::make_shared<ResultTableIteratorEmpty>(time_control);
 
   proto_msg::OrderNode order_node;
   auto &headers = result_it->get_headers();
@@ -210,7 +211,7 @@ std::shared_ptr<ResultTableIterator> QueryProcessor::process_filter_node(
 
   auto resulting_it = process_node(node.node(), var_binding_qproc);
   if (!time_control.tick())
-    return resulting_it;
+    return std::make_shared<ResultTableIteratorEmpty>(time_control);
   std::vector<const proto_msg::ExprNode *> nodes;
 
   for (int i = 0; i < node.exprs_size(); i++) {
@@ -227,7 +228,7 @@ std::shared_ptr<ResultTableIterator> QueryProcessor::process_extend_node(
     const std::shared_ptr<VarBindingQProc> &var_binding_qproc) {
   auto resulting_it = process_node(node.node(), var_binding_qproc);
   if (!time_control.tick())
-    return resulting_it;
+    return std::make_shared<ResultTableIteratorEmpty>(time_control);
 
   auto var_pos_mapping = create_var_pos_mapping(*resulting_it);
 
@@ -283,7 +284,7 @@ std::shared_ptr<ResultTableIterator> QueryProcessor::process_slice_node(
     std::shared_ptr<VarBindingQProc> var_binding_qproc) {
   auto result_it = process_node(node.node(), std::move(var_binding_qproc));
   if (!time_control.tick())
-    return result_it;
+    return std::make_shared<ResultTableIteratorEmpty>(time_control);
   const long start = node.start();
   const long length = node.length();
 
@@ -307,7 +308,7 @@ std::shared_ptr<ResultTableIterator> QueryProcessor::process_order_node(
     const std::shared_ptr<VarBindingQProc> &var_binding_qproc) {
   auto result_it = process_node(node.node(), var_binding_qproc);
   if (!time_control.tick())
-    return result_it;
+    return std::make_shared<ResultTableIteratorEmpty>(time_control);
   auto var_pos_mapping = create_var_pos_mapping(*result_it);
 
   EvalData eval_data(*vim, cm, std::move(var_pos_mapping), extra_str_dict,
@@ -355,21 +356,6 @@ void QueryProcessor::left_to_right_sort_vec(
         return true;
       },
       time_control);
-}
-std::shared_ptr<ResultTable> QueryProcessor::convert_to_result_table_list(
-    ResultTableVector &result_table_vector) {
-  auto result = std::make_shared<ResultTable>();
-  result->headers = std::move(result_table_vector.headers);
-
-  long pos = static_cast<long>(result_table_vector.data.size()) - 1;
-
-  for (; pos >= 0; pos--) {
-    if (!time_control.tick())
-      return result;
-    result->data.push_front(std::move(result_table_vector.data[pos]));
-    result_table_vector.data.erase(result_table_vector.data.begin() + pos);
-  }
-  return result;
 }
 std::shared_ptr<ResultTableIterator>
 QueryProcessor::process_table_node(const proto_msg::TableNode &node,
