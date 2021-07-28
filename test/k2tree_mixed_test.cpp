@@ -259,23 +259,9 @@ TEST(k2tree_mixed_test, can_scan_band_lazy_with_virtual_scanner) {
   ASSERT_EQ(i, 100);
 }
 
-static void print_stats(K2TreeMixedStats &stats) {
-  std::cout << "total ptrs: " << stats.total_ptrs << "\n"
-            << "total blocks: " << stats.total_blocks << "\n"
-            << "number_of_points: " << stats.inner_blocks_stats.number_of_points
-            << "\n"
-            << "allocated_u32s: " << stats.inner_blocks_stats.allocated_u32s
-            << "\n"
-            << "inner blocks_counted: "
-            << stats.inner_blocks_stats.blocks_counted << "\n"
-            << "inner blocks ptrs total size: "
-            << stats.inner_blocks_stats.blocks_data << "\n"
-            << "total size in blocks structs: "
-            << stats.inner_blocks_stats.containers_sz_sum << "\n"
-            << "total frontier size (positions): "
-            << stats.inner_blocks_stats.frontier_data << "\n"
-            << "total nodes count: " << stats.inner_blocks_stats.nodes_count
-            << "\n";
+static void print_stats(struct k2tree_measurement &stats) {
+  std::cout << stats.total_blocks << "," << stats.bytes_topology << ","
+            << stats.total_bytes << "\n";
 }
 
 TEST(k2tree_mixed_test, stats_1) {

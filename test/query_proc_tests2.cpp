@@ -15,6 +15,7 @@
 #include <PredicatesCacheManager.hpp>
 #include <hashing.hpp>
 #include <query_processing/utility/StringHandlingUtil.hpp>
+#include <query_processing/utility/UuidGenerator.hpp>
 
 using namespace std::chrono_literals;
 TimeControl time_control(1e12, 100min);
@@ -44,6 +45,8 @@ public:
   static std::vector<DateInfo> date_infos_expected;
 
   static std::string p21;
+  static std::string p214;
+  static std::string p2639;
   static std::string p27;
   static std::string p31;
   static std::string p570;
@@ -62,6 +65,10 @@ public:
   static std::string ont_prop;
   static size_t iterations_count_1;
   static int problematic_query_2_input_size;
+
+  static int pq3_sz;
+  static int pq4_sz;
+  static int pq5_sz;
 
   static std::string some_iri_gen(size_t id) {
     return "<some_iri_" + std::to_string(id) + ">";
@@ -421,9 +428,6 @@ public:
     return tree;
   }
 
-  static int pq3_sz;
-  static int pq4_sz;
-
   static std::string pq3_var_1_gen(int i) {
     return "<pq3_iri_var1_" + std::to_string(i) + ">";
   }
@@ -468,6 +472,28 @@ public:
           RDFTripleResource(RDFResource(var4_val, RDF_TYPE_IRI),
                             RDFResource(s_partof, RDF_TYPE_IRI),
                             RDFResource(es_wiki_org, RDF_TYPE_IRI)));
+    }
+  }
+
+  static void add_problematic_query_5_input() {
+    auto iri_gen = [](int v, int i) {
+      return "<some_iri_pq5_var_" + std::to_string(v) + "_" +
+             std::to_string(i) + ">";
+    };
+
+    static std::mt19937 generator(12345); // NOLINT(cert-msc51-cpp)
+    static std::uniform_int_distribution random_distr(0, 1000000000);
+    for (int i = 0; i < pq5_sz; i++) {
+      auto var_1_val = iri_gen(1, i);
+      auto var_2_val = UuidGenerator::generate_uuid_v4();
+      auto var_3_val = std::to_string(random_distr(generator));
+      pcm->add_triple(
+          RDFTripleResource(RDFResource(var_1_val, RDF_TYPE_IRI),
+                            RDFResource(p2639, RDF_TYPE_IRI),
+                            RDFResource(var_2_val, RDF_TYPE_LITERAL)));
+      pcm->add_triple(RDFTripleResource(
+          RDFResource(var_1_val, RDF_TYPE_IRI), RDFResource(p214, RDF_TYPE_IRI),
+          RDFResource(var_3_val, RDF_TYPE_LITERAL)));
     }
   }
 
@@ -623,6 +649,65 @@ public:
 
     return tree;
   }
+
+  static proto_msg::SparqlTree generate_problematic_query_5() {
+    proto_msg::SparqlTree tree;
+
+    auto *order_node = tree.mutable_root()->mutable_order_node();
+
+    auto *sc1 = order_node->mutable_sort_conditions()->Add();
+    sc1->set_direction(proto_msg::ASCENDING);
+    auto *sc1_term = sc1->mutable_expr()->mutable_term_node();
+    sc1_term->set_term_type(proto_msg::VARIABLE);
+    sc1_term->set_term_value("?var3");
+
+    auto *distinct_node = order_node->mutable_node()->mutable_distinct_node();
+    auto *project = distinct_node->mutable_sub_node()->mutable_project_node();
+
+    project->mutable_vars()->Add("?var1");
+    project->mutable_vars()->Add("?var2");
+    project->mutable_vars()->Add("?var3");
+
+    auto *filter = project->mutable_sub_op()->mutable_filter_node();
+    auto *seq = filter->mutable_node()->mutable_sequence_node();
+    auto *filter2 = seq->mutable_nodes()->Add()->mutable_filter_node();
+    auto *bgp_1 = filter2->mutable_node()->mutable_bgp_node();
+    auto *triple_1 = bgp_1->mutable_triple()->Add();
+    auto *subj_1 = triple_1->mutable_subject();
+    auto *pred_1 = triple_1->mutable_predicate();
+    auto *obj_1 = triple_1->mutable_object();
+    subj_1->set_term_type(proto_msg::VARIABLE);
+    subj_1->set_term_value("?var1");
+    pred_1->set_term_type(proto_msg::IRI);
+    pred_1->set_term_value(p2639);
+    obj_1->set_term_type(proto_msg::VARIABLE);
+    obj_1->set_term_value("?var2");
+    auto *filter2_e1 = filter2->mutable_exprs()->Add()->mutable_function_node();
+    filter2_e1->set_function_op(proto_msg::BOUND);
+    auto *bound1 = filter2_e1->mutable_exprs()->Add()->mutable_term_node();
+    bound1->set_term_value("?var2");
+    bound1->set_term_type(proto_msg::VARIABLE);
+
+    auto *bgp_2 = seq->mutable_nodes()->Add()->mutable_bgp_node();
+    auto *triple2 = bgp_2->mutable_triple()->Add();
+    auto *subj_2 = triple2->mutable_subject();
+    auto *pred_2 = triple2->mutable_predicate();
+    auto *obj_2 = triple2->mutable_object();
+    subj_2->set_term_type(proto_msg::VARIABLE);
+    subj_2->set_term_value("?var1");
+    pred_2->set_term_type(proto_msg::IRI);
+    pred_2->set_term_value(p214);
+    obj_2->set_term_type(proto_msg::VARIABLE);
+    obj_2->set_term_value("?var3");
+
+    auto *filter1_e1 = filter->mutable_exprs()->Add()->mutable_function_node();
+    filter1_e1->set_function_op(proto_msg::BOUND);
+    auto *bound2 = filter1_e1->mutable_exprs()->Add()->mutable_term_node();
+    bound2->set_term_type(proto_msg::VARIABLE);
+    bound2->set_term_value("?var3");
+
+    return tree;
+  }
 };
 
 std::string QueryProcTests2Fixture::fname;
@@ -639,6 +724,10 @@ std::vector<DateInfo> QueryProcTests2Fixture::date_infos_expected;
 
 std::string QueryProcTests2Fixture::p21 =
     "<http://www.wikidata.org/prop/direct/P21>";
+std::string QueryProcTests2Fixture::p214 =
+    "<http://www.wikidata.org/prop/direct/P214>";
+std::string QueryProcTests2Fixture::p2639 =
+    "<http://www.wikidata.org/prop/direct/P2639>";
 std::string QueryProcTests2Fixture::p27 =
     "<http://www.wikidata.org/prop/direct/P27>";
 std::string QueryProcTests2Fixture::p31 =
@@ -670,6 +759,7 @@ size_t QueryProcTests2Fixture::iterations_count_1 = 1500;
 int QueryProcTests2Fixture::problematic_query_2_input_size = 2000;
 int QueryProcTests2Fixture::pq3_sz = 1600;
 int QueryProcTests2Fixture::pq4_sz = 1600;
+int QueryProcTests2Fixture::pq5_sz = 1600;
 
 /*
 static std::set<std::string>
@@ -1299,6 +1389,17 @@ TEST_F(QueryProcTests2Fixture,
   auto query_result =
       cache->run_query(query, time_control)->as_query_result_original();
   ASSERT_EQ(query_result->table().data.size(), pq4_sz / 2);
+}
+
+TEST_F(QueryProcTests2Fixture, problematic_query5) {
+
+  auto query = generate_problematic_query_5();
+  add_problematic_query_5_input();
+
+  auto result =
+      cache->run_query(query, time_control)->as_query_result_original();
+
+  ASSERT_EQ(result->table().data.size(), pq5_sz);
 }
 
 int main(int argc, char **argv) {

@@ -53,40 +53,23 @@ int main(int argc, char **argv) {
 
   unsigned long total_points = 0;
 
-  ofs << "#"
-      << ","
-      << "predicate"
-      << ","
-      << "points"
-      << ","
-      << "upper_roots"
-      << ","
-      << "total_block_nodes"
-      << ","
-      << "frontier_pos_sz"
-      << ","
-      << "total_blocks_structs_sz"
-      << ","
-      << "blocks_ptrs_sz"
-      << ","
-      << "blocks_count"
-      << ","
-      << "total_blocks_sz"
+  ofs << "#,"
+      << "predicate,"
+      << "points,"
+      << "total_block_nodes,"
+      << "bytes_topology,"
+      << "total_bytes"
       << "\n";
   for (auto predicate_id : predicates_ids) {
     auto fetch_result = predicates_index.fetch_k2tree(predicate_id);
     const auto &k2tree = fetch_result.get();
     auto stats = k2tree.k2tree_stats();
-    total_points += k2tree.size();
+    size_t tree_number_of_points = k2tree.size();
+    total_points += tree_number_of_points;
     auto pred_resource = pcm.get_isd_manager()->get_resource(predicate_id);
     ofs << predicate_id << "," << pred_resource.value << ","
-        << stats.inner_blocks_stats.number_of_points << ","
-        << stats.total_blocks << "," << stats.inner_blocks_stats.nodes_count
-        << "," << stats.inner_blocks_stats.frontier_data << ","
-        << stats.inner_blocks_stats.containers_sz_sum << ","
-        << stats.inner_blocks_stats.blocks_data << ","
-        << stats.inner_blocks_stats.blocks_counted << ","
-        << stats.inner_blocks_stats.allocated_u32s << "\n";
+        << tree_number_of_points << "," << stats.total_blocks << ","
+        << stats.bytes_topology << "," << stats.total_bytes << "\n";
 
     predicates_index.discard_in_memory_predicate(predicate_id);
   }

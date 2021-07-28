@@ -78,7 +78,7 @@ std::string ParsingUtils::extract_literal_content_from_string(
   bool matched =
       re_literal.PartialMatch(re_input, &full_word, &content, &metadata);
   if (!matched)
-    return "";
+    return input_string;
   return content;
 }
 

@@ -84,7 +84,7 @@ public:
 
   struct k2tree_measurement measure_in_memory_size() const;
 
-  K2TreeMixedStats k2tree_stats() const;
+  k2tree_measurement k2tree_stats() const;
 
   bool same_as(const K2TreeMixed &other) const;
 

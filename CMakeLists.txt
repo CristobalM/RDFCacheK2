@@ -59,7 +59,6 @@ set(PROC_SOURCE_FILES
 set(GRAPH_RESULT_CACHING_FILE
         query_engine/Cache.cpp
         query_engine/CacheReplacementFactory.cpp
-        query_engine/GraphResult.cpp
         query_engine/LRU/LRUQueue.cpp
         query_engine/LRUCacheReplacement.cpp
         query_engine/LRUCacheReplacement.hpp
