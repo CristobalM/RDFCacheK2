@@ -490,6 +490,10 @@ add_executable(k2tree_example example/k2tree_example.cpp)
 target_link_libraries(k2tree_example ${BASE_LIBS})
 
 
+add_executable(count_nt_predicates scripts/count_nt_predicates)
+target_link_libraries(count_nt_predicates ${PROC_LIBS} ntparser)
+
+
 # Only create test executables if google test is found
 find_package(GTest QUIET)
 if (GTest_FOUND)
