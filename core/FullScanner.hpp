@@ -10,7 +10,7 @@
 #include <k2node.h>
 class FullScanner : public K2TreeScanner {
 public:
-  FullScanner(K2TreeMixed &k2tree, TimeControl &time_control);
+  FullScanner(K2TreeMixed &k2tree);
 
   bool has_next() override;
   std::pair<unsigned long, unsigned long> next() override;
@@ -23,7 +23,6 @@ private:
   struct k2qstate st {};
   k2node_lazy_handler_naive_scan_t lazy_handler{};
   K2TreeMixed &k2tree;
-  TimeControl &time_control;
 };
 
 #endif // RDFCACHEK2_FULLSCANNER_HPP

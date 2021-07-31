@@ -19,7 +19,6 @@ std::pair<unsigned long, unsigned long> BandScanner::next() {
   if (band_type == K2TreeScanner::BandType::COLUMN_BAND_TYPE) {
     return {band, result};
   }
-  time_control.tick_only_count();
   return {result, band};
 }
 BandScanner::~BandScanner() {
@@ -28,9 +27,8 @@ BandScanner::~BandScanner() {
 }
 
 BandScanner::BandScanner(K2TreeMixed &k2tree, unsigned long band,
-                         BandType band_type, TimeControl &time_control)
-    : band(band), band_type(band_type), k2tree(k2tree),
-      time_control(time_control) {
+                         BandType band_type)
+    : band(band), band_type(band_type), k2tree(k2tree) {
   auto *base_st = k2tree.get_k2qstate();
   init_k2qstate(&st, base_st->k2tree_depth, base_st->qs.max_nodes_count,
                 base_st->cut_depth);

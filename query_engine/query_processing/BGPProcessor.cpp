@@ -93,7 +93,7 @@ std::vector<std::unique_ptr<K2TreeScanner>> BGPProcessor::build_scanners() {
                          !var_binding_qproc->is_bound(object_id);
 
     if (subject_is_var && object_is_var) {
-      scanner = tree.create_full_scanner(time_control);
+      scanner = tree.create_full_scanner();
     } else if (subject_is_var) {
       unsigned long band_value;
       if (triple->object.type == TermType::VAR) {
@@ -102,7 +102,7 @@ std::vector<std::unique_ptr<K2TreeScanner>> BGPProcessor::build_scanners() {
         band_value = triple->object.id_value;
       }
       scanner = tree.create_band_scanner(
-          band_value, K2TreeScanner::BandType::ROW_BAND_TYPE, time_control);
+          band_value, K2TreeScanner::BandType::ROW_BAND_TYPE);
     } else if (object_is_var) {
       unsigned long band_value;
       if (triple->subject.type == TermType::VAR) {
@@ -111,7 +111,7 @@ std::vector<std::unique_ptr<K2TreeScanner>> BGPProcessor::build_scanners() {
         band_value = triple->subject.id_value;
       }
       scanner = tree.create_band_scanner(
-          band_value, K2TreeScanner::BandType::COLUMN_BAND_TYPE, time_control);
+          band_value, K2TreeScanner::BandType::COLUMN_BAND_TYPE);
     } else {
       scanner = tree.create_empty_scanner();
     }

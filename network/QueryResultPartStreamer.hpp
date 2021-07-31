@@ -27,6 +27,7 @@ public:
   proto_msg::CacheResponse timeout_proto();
   void set_finished();
   bool all_sent() override;
+  proto_msg::CacheResponse time_control_finished_error();
 };
 
 #endif // RDFCACHEK2_QUERYRESULTPARTSTREAMER_HPP

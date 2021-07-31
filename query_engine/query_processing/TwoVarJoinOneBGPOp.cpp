@@ -32,8 +32,7 @@ TwoVarJoinOneBGPOp<WV>::run(std::vector<unsigned long> &row_to_fill) {
   }
 
   if (!current_band_scanner || join_value != current_band) {
-    current_band_scanner =
-        k2tree.create_band_scanner(join_value, band_type, time_control);
+    current_band_scanner = k2tree.create_band_scanner(join_value, band_type);
     current_band = join_value;
     current_band_type = band_type;
   }

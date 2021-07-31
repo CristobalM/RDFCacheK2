@@ -26,7 +26,6 @@ void TimeControl::start_timer() {
   starting_time = std::chrono::system_clock::now();
 }
 bool TimeControl::finished() const { return !time_has_passed; }
-void TimeControl::tick_only_count() { current_ticks++; }
 bool TimeControl::has_error() { return with_error; }
 
 void TimeControl::report_error(std::unique_ptr<QueryError> &&query_error) {

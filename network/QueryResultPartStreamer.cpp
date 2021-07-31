@@ -12,7 +12,7 @@ QueryResultPartStreamer::QueryResultPartStreamer(
       threshold_part_size(threshold_part_size), first(true), done(false) {}
 proto_msg::CacheResponse QueryResultPartStreamer::get_next_response() {
   if (!time_control->tick())
-    return timeout_proto();
+    return time_control_finished_error();
 
   proto_msg::CacheResponse result;
 
@@ -38,12 +38,12 @@ proto_msg::CacheResponse QueryResultPartStreamer::get_next_response() {
     first = false;
   }
   if (!time_control->tick())
-    return timeout_proto();
+    return time_control_finished_error();
 
   while (result_it.has_next()) {
     auto next_row = result_it.next();
     if (!time_control->tick())
-      return timeout_proto();
+      return time_control_finished_error();
 
     auto *proto_row = proto_rows->Add();
 
@@ -83,3 +83,15 @@ proto_msg::CacheResponse QueryResultPartStreamer::timeout_proto() {
 
 void QueryResultPartStreamer::set_finished() { done = true; }
 bool QueryResultPartStreamer::all_sent() { return done; }
+proto_msg::CacheResponse
+QueryResultPartStreamer::time_control_finished_error() {
+  if (!time_control->has_error())
+    return timeout_proto();
+  std::cerr << "Query stopped early due to error: "
+            << time_control->get_query_error().get_str() << std::endl;
+  proto_msg::CacheResponse cache_response;
+  cache_response.set_response_type(
+      proto_msg::MessageType::INVALID_QUERY_RESPONSE);
+  cache_response.mutable_invalid_query_response();
+  return cache_response;
+}

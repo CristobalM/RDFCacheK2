@@ -34,7 +34,6 @@ public:
   bool tick();
   void start_timer();
   bool finished() const;
-  void tick_only_count();
   bool has_error();
   QueryError &get_query_error();
 

@@ -6,13 +6,12 @@
 #define RDFCACHEK2_BANDSCANNER_HPP
 
 #include "K2TreeScanner.hpp"
-#include <TimeControl.hpp>
 #include <k2node.h>
 
 class BandScanner : public K2TreeScanner {
 public:
   BandScanner(K2TreeMixed &k2tree, unsigned long band,
-              K2TreeScanner::BandType band_type, TimeControl &time_control);
+              K2TreeScanner::BandType band_type);
   bool has_next() override;
   std::pair<unsigned long, unsigned long> next() override;
   ~BandScanner() override;
@@ -26,7 +25,6 @@ private:
   K2TreeScanner::BandType band_type;
   k2node_lazy_handler_report_band_t lazy_handler{};
   K2TreeMixed &k2tree;
-  TimeControl &time_control;
 };
 
 #endif // RDFCACHEK2_BANDSCANNER_HPP

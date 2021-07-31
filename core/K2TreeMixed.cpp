@@ -357,15 +357,13 @@ bool K2TreeMixed::has_valid_structure() const {
   return result == 0;
 }
 
-std::unique_ptr<K2TreeScanner>
-K2TreeMixed::create_full_scanner(TimeControl &time_control) {
-  return std::make_unique<FullScanner>(*this, time_control);
+std::unique_ptr<K2TreeScanner> K2TreeMixed::create_full_scanner() {
+  return std::make_unique<FullScanner>(*this);
 }
 std::unique_ptr<K2TreeScanner>
 K2TreeMixed::create_band_scanner(unsigned long band,
-                                 K2TreeScanner::BandType band_type,
-                                 TimeControl &time_control) {
-  return std::make_unique<BandScanner>(*this, band, band_type, time_control);
+                                 K2TreeScanner::BandType band_type) {
+  return std::make_unique<BandScanner>(*this, band, band_type);
 }
 std::unique_ptr<K2TreeScanner> K2TreeMixed::create_empty_scanner() {
   return std::make_unique<EmptyScanner>(*this);

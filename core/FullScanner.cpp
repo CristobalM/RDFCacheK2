@@ -16,12 +16,10 @@ bool FullScanner::has_next() {
 std::pair<unsigned long, unsigned long> FullScanner::next() {
   pair2dl_t result;
   k2node_naive_scan_points_lazy_next(&lazy_handler, &result);
-  time_control.tick_only_count();
   return {result.col, result.row};
 }
 
-FullScanner::FullScanner(K2TreeMixed &k2tree, TimeControl &time_control)
-    : k2tree(k2tree), time_control(time_control) {
+FullScanner::FullScanner(K2TreeMixed &k2tree) : k2tree(k2tree) {
   auto *base_st = k2tree.get_k2qstate();
   init_k2qstate(&st, base_st->k2tree_depth, base_st->qs.max_nodes_count,
                 base_st->cut_depth);

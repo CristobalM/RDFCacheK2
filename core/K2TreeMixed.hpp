@@ -97,10 +97,9 @@ public:
 
   enum BandType { COLUMN_BAND_TYPE = 0, ROW_BAND_TYPE = 1 };
 
-  std::unique_ptr<K2TreeScanner> create_full_scanner(TimeControl &time_control);
+  std::unique_ptr<K2TreeScanner> create_full_scanner();
   std::unique_ptr<K2TreeScanner>
-  create_band_scanner(unsigned long band, K2TreeScanner::BandType band_type,
-                      TimeControl &time_control);
+  create_band_scanner(unsigned long band, K2TreeScanner::BandType band_type);
 
   std::unique_ptr<K2TreeScanner> create_empty_scanner();
 
