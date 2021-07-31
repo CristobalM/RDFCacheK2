@@ -258,20 +258,3 @@ TEST(k2tree_mixed_test, can_scan_band_lazy_with_virtual_scanner) {
   }
   ASSERT_EQ(i, 100);
 }
-
-static void print_stats(struct k2tree_measurement &stats) {
-  std::cout << stats.total_blocks << "," << stats.bytes_topology << ","
-            << stats.total_bytes << "\n";
-}
-
-TEST(k2tree_mixed_test, stats_1) {
-  unsigned long treedepth = 32;
-  K2TreeMixed tree(treedepth, 4096, 10);
-
-  for (int i = 1; i < 10'000'000; i++) {
-    tree.insert(i, 1);
-  }
-
-  auto stats = tree.k2tree_stats();
-  print_stats(stats);
-}

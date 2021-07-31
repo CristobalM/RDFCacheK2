@@ -553,7 +553,6 @@ if (GTest_FOUND)
     add_test(NAME cache_replacement_test COMMAND ./cache_replacement_test)
     add_test(NAME test_external_sort COMMAND ./test_external_sort)
     add_test(NAME predicates_metadata_serialization_test COMMAND ./predicates_metadata_serialization_test)
-    add_test(NAME join_util_test COMMAND ./join_util_test)
     add_test(NAME query_filters_test COMMAND ./query_filters_test)
     add_test(NAME query_proc_tests2 COMMAND ./query_proc_tests2)
 

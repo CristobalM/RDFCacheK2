@@ -11,6 +11,9 @@ QueryResultPartStreamer::QueryResultPartStreamer(
       time_control(std::move(time_control)),
       threshold_part_size(threshold_part_size), first(true), done(false) {}
 proto_msg::CacheResponse QueryResultPartStreamer::get_next_response() {
+  if (!time_control->tick())
+    return timeout_proto();
+
   proto_msg::CacheResponse result;
 
   result.set_response_type(proto_msg::RESULT_TABLE_PART_RESPONSE);
@@ -34,6 +37,8 @@ proto_msg::CacheResponse QueryResultPartStreamer::get_next_response() {
     }
     first = false;
   }
+  if (!time_control->tick())
+    return timeout_proto();
 
   while (result_it.has_next()) {
     auto next_row = result_it.next();
