@@ -3,6 +3,7 @@
 //
 
 #include <K2Tree.hpp>
+#include <K2TreeBulkOp.hpp>
 #include <K2TreeMixed.hpp>
 #include <algorithm>
 #include <gtest/gtest.h>
@@ -85,13 +86,14 @@ TEST(k2tree_serialization_custom_mixed, test1) {
   int rows = 300;
 
   std::cout << "inserting" << std::endl;
+  K2TreeBulkOp bulk_op(k2Tree);
   for (int i = 0; i < cols; i++) {
     for (int j = 0; j < rows; j++) {
-      k2Tree.insert(i, j);
+      bulk_op.insert(i, j);
     }
   }
 
-  auto first_points = k2Tree.get_all_points();
+  auto first_points = k2Tree.get_all_points(bulk_op.get_stw());
   std::sort(first_points.begin(), first_points.end(), sort_pair);
 
   std::ostringstream oss;
@@ -102,8 +104,8 @@ TEST(k2tree_serialization_custom_mixed, test1) {
   std::istringstream iss(serialized);
 
   K2TreeMixed other_k2tree = K2TreeMixed::read_from_istream(iss);
-
-  auto second_points = other_k2tree.get_all_points();
+  K2TreeBulkOp other_bulk_op(other_k2tree);
+  auto second_points = other_k2tree.get_all_points(other_bulk_op.get_stw());
   std::sort(second_points.begin(), second_points.end(), sort_pair);
 
   ASSERT_EQ(first_points.size(), cols * rows) << "Invalid size";
@@ -118,28 +120,28 @@ TEST(k2tree_serialization_custom_mixed, test1) {
 
   for (int i = 0; i < cols; i++) {
     for (int j = 0; j < rows; j++) {
-      ASSERT_TRUE(other_k2tree.has(i, j))
+      ASSERT_TRUE(other_bulk_op.has(i, j))
           << "point (" << i << ", " << j << ") not found";
     }
   }
   for (int i = cols; i < 700; i++) {
     for (int j = 0; j < 700; j++) {
-      ASSERT_FALSE(other_k2tree.has(i, j))
+      ASSERT_FALSE(other_bulk_op.has(i, j))
           << "point (" << i << ", " << j << ") exists and shouldn't";
     }
   }
   for (int i = 0; i < 700; i++) {
     for (int j = rows; j < 700; j++) {
-      ASSERT_FALSE(other_k2tree.has(i, j))
+      ASSERT_FALSE(other_bulk_op.has(i, j))
           << "point (" << i << ", " << j << ") exists and shouldn't";
     }
   }
 
-  ASSERT_FALSE(other_k2tree.has(1 << 30, 1 << 30))
+  ASSERT_FALSE(other_bulk_op.has(1 << 30, 1 << 30))
       << "point (" << 1 << 30 << ", " << 1 << 30 << ") exists and shouldn't";
 
-  ASSERT_TRUE(k2Tree.has_valid_structure());
-  ASSERT_TRUE(other_k2tree.has_valid_structure());
+  ASSERT_TRUE(k2Tree.has_valid_structure(bulk_op.get_stw()));
+  ASSERT_TRUE(other_k2tree.has_valid_structure(other_bulk_op.get_stw()));
 }
 
 TEST(k2tree_serialization_custom_mixed, sip_band_works_on_deserialized_1) {
@@ -148,10 +150,12 @@ TEST(k2tree_serialization_custom_mixed, sip_band_works_on_deserialized_1) {
   int cols = 300;
   int rows = 300;
 
+  K2TreeBulkOp bulk_op(k2tree);
+
   std::cout << "inserting" << std::endl;
   for (int i = 0; i < cols; i++) {
     for (int j = 0; j < rows; j++) {
-      k2tree.insert(i, j);
+      bulk_op.insert(i, j);
     }
   }
 
@@ -200,6 +204,6 @@ TEST(k2tree_serialization_custom_mixed, sip_band_works_on_deserialized_1) {
   ASSERT_TRUE(k2tree.same_as(other_k2tree));
   ASSERT_TRUE(other_k2tree.same_as(k2tree));
 
-  ASSERT_TRUE(k2tree.has_valid_structure());
+  ASSERT_TRUE(k2tree.has_valid_structure(bulk_op.get_stw()));
   ASSERT_TRUE(other_k2tree.has_valid_structure());
 }

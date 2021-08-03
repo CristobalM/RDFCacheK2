@@ -17,9 +17,11 @@ OneVarIntersectBGPOp<WV>::run(std::vector<unsigned long> &row_to_fill) {
   auto &k2tree = scanner->get_tree();
 
   if constexpr (WV == BGPOp::VARS::SUBJECT_VAR) {
-    result.valid_value = k2tree.has(intersect_value, band_value);
+    result.valid_value =
+        k2tree.has(intersect_value, band_value, scanner->get_k2qw());
   } else {
-    result.valid_value = k2tree.has(band_value, intersect_value);
+    result.valid_value =
+        k2tree.has(band_value, intersect_value, scanner->get_k2qw());
   }
   return result;
 }

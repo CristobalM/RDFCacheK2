@@ -6,6 +6,7 @@
 #include <utility>
 #include <vector>
 
+#include "K2QStateWrapper.hpp"
 #include "K2TreeScanner.hpp"
 #include "ResultTable.hpp"
 #include "k2tree_stats.hpp"
@@ -19,7 +20,6 @@ extern "C" {
 }
 
 struct k2node;
-struct k2qstate;
 class K2TreeScanner;
 
 struct K2TreeConfig {
@@ -42,8 +42,11 @@ struct K2TreeConfig {
 
 class K2TreeMixed {
   struct k2node *root;
-  std::unique_ptr<struct k2qstate> st;
+  // std::unique_ptr<struct k2qstate> st;
   uint64_t points_count;
+  uint32_t tree_depth;
+  uint32_t cut_depth;
+  uint32_t max_nodes_count;
 
 public:
   explicit K2TreeMixed(uint32_t treedepth);
@@ -57,13 +60,15 @@ public:
   K2TreeMixed(const K2TreeMixed &other) = delete;
   K2TreeMixed &operator=(const K2TreeMixed &other) = delete;
 
-  K2TreeMixed(K2TreeMixed &&other);
-  K2TreeMixed &operator=(K2TreeMixed &&other);
+  K2TreeMixed(K2TreeMixed &&other) noexcept;
+  K2TreeMixed &operator=(K2TreeMixed &&other) noexcept;
 
   ~K2TreeMixed();
 
   struct k2node *get_root_k2node();
-  struct k2qstate *get_k2qstate();
+
+  void insert(unsigned long col, unsigned long row, K2QStateWrapper &stw);
+  bool has(unsigned long col, unsigned long row, K2QStateWrapper &stw) const;
 
   void insert(unsigned long col, unsigned long row);
   bool has(unsigned long col, unsigned long row) const;
@@ -74,11 +79,20 @@ public:
 
   unsigned long get_tree_depth() const;
 
+  std::vector<std::pair<unsigned long, unsigned long>>
+  get_all_points(K2QStateWrapper &stw);
+
   std::vector<std::pair<unsigned long, unsigned long>> get_all_points();
 
+  void scan_points(point_reporter_fun_t fun_reporter, void *report_state,
+                   K2QStateWrapper &stw) const;
   void scan_points(point_reporter_fun_t fun_reporter, void *report_state) const;
   void traverse_row(unsigned long row, point_reporter_fun_t fun_reporter,
+                    void *report_state, K2QStateWrapper &stw) const;
+  void traverse_row(unsigned long row, point_reporter_fun_t fun_reporter,
                     void *report_state) const;
+  void traverse_column(unsigned long column, point_reporter_fun_t fun_reporter,
+                       void *report_state, K2QStateWrapper &stw) const;
   void traverse_column(unsigned long column, point_reporter_fun_t fun_reporter,
                        void *report_state) const;
 
@@ -93,6 +107,7 @@ public:
 
   size_t size() const;
 
+  bool has_valid_structure(K2QStateWrapper &stw) const;
   bool has_valid_structure() const;
 
   enum BandType { COLUMN_BAND_TYPE = 0, ROW_BAND_TYPE = 1 };
@@ -102,6 +117,8 @@ public:
   create_band_scanner(unsigned long band, K2TreeScanner::BandType band_type);
 
   std::unique_ptr<K2TreeScanner> create_empty_scanner();
+
+  K2QStateWrapper create_k2qw() const;
 
 private:
   void clean_up();

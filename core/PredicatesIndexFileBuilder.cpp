@@ -1,4 +1,5 @@
 #include "PredicatesIndexFileBuilder.hpp"
+#include "K2TreeBulkOp.hpp"
 #include "K2TreeMixed.hpp"
 #include "hashing.hpp"
 #include "serialization_util.hpp"
@@ -24,6 +25,7 @@ PredicatesCacheMetadata PredicatesIndexFileBuilder::build(
   filedata.current_triple = 0;
   filedata.size = read_u64(input_file);
   std::unique_ptr<K2TreeMixed> current_k2tree;
+  std::unique_ptr<K2TreeBulkOp> current_bulk_op;
   std::vector<uint64_t> predicates_ids;
   uint64_t current_predicate = 0;
   bool first = true;
@@ -37,12 +39,13 @@ PredicatesCacheMetadata PredicatesIndexFileBuilder::build(
       }
       current_k2tree = std::make_unique<K2TreeMixed>(
           config.treedepth, config.max_node_count, config.cut_depth);
+      current_bulk_op = std::make_unique<K2TreeBulkOp>(*current_k2tree);
       current_predicate = triple.second;
       predicates_ids.push_back(current_predicate);
       first = false;
     }
 
-    current_k2tree->insert(triple.first, triple.third);
+    current_bulk_op->insert(triple.first, triple.third);
   }
   if (current_k2tree) {
     write_ktree_with_size(tmp_stream, *current_k2tree);

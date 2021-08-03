@@ -14,7 +14,7 @@ BGPOp::RunResult TripleExistenceBGPOP::run(std::vector<unsigned long> &) {
     return result;
 
   auto &k2tree = scanner->get_tree();
-  result.valid_value = k2tree.has(subject_id, object_id);
+  result.valid_value = k2tree.has(subject_id, object_id, scanner->get_k2qw());
   result.scan_done = true;
   return result;
 }

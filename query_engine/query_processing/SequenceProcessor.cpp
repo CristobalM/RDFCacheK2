@@ -61,10 +61,10 @@ SequenceProcessor::SequenceProcessor(
       time_control(time_control),
       var_binding_qproc(std::move(var_binding_qproc)) {
   auto vd_graph = VarDependencyGraph(get_vars_sequence());
-  auto [cc_positions, cc_sets] =
+  auto [cc_positions_extracted, cc_sets_extracted] =
       vd_graph.get_connected_components_positions_with_sets();
-  this->cc_positions = std::move(cc_positions);
-  this->cc_sets = std::move(cc_sets);
+  this->cc_positions = std::move(cc_positions_extracted);
+  this->cc_sets = std::move(cc_sets_extracted);
   resulting_headers = generate_headers(vd_graph);
 }
 

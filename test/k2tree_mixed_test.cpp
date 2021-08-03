@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 
+#include <K2TreeBulkOp.hpp>
 #include <K2TreeMixed.hpp>
 #include <chrono>
 #include <set>
@@ -14,8 +15,9 @@ TEST(k2tree_mixed_tests, single_band_sip_1) {
   const uint32_t matrix_side = 1 << tree_depth;
 
   K2TreeMixed tree(tree_depth, 256, 5);
+  K2TreeBulkOp bulk_op(tree);
   for (unsigned long i = 0; i < matrix_side; i++) {
-    tree.insert(i, 5);
+    bulk_op.insert(i, 5);
   }
   for (unsigned long i = 0; i < matrix_side; i++) {
     std::vector<const K2TreeMixed *> trees = {&tree};
@@ -29,25 +31,27 @@ TEST(k2tree_mixed_tests, single_band_sip_1) {
     ASSERT_EQ(join_result[0], 5);
   }
 
-  ASSERT_TRUE(tree.has_valid_structure());
+  ASSERT_TRUE(tree.has_valid_structure(bulk_op.get_stw()));
 }
 
 TEST(k2tree_mixed_tests, can_insert) {
   K2TreeMixed tree(10);
-  tree.insert(3, 3);
-  tree.insert(5, 3);
-  ASSERT_TRUE(tree.has(3, 3));
-  ASSERT_TRUE(tree.has(5, 3));
-  ASSERT_FALSE(tree.has(5, 2));
-  ASSERT_TRUE(tree.has_valid_structure());
+  K2TreeBulkOp bulk_op(tree);
+  bulk_op.insert(3, 3);
+  bulk_op.insert(5, 3);
+  ASSERT_TRUE(bulk_op.has(3, 3));
+  ASSERT_TRUE(bulk_op.has(5, 3));
+  ASSERT_FALSE(bulk_op.has(5, 2));
+  ASSERT_TRUE(tree.has_valid_structure(bulk_op.get_stw()));
 }
 
 TEST(k2tree_mixed_tests, same_insertion_doesnt_increase_size) {
   K2TreeMixed tree(10);
+  K2TreeBulkOp bulk_op(tree);
   for (int i = 0; i < 100; i++)
-    tree.insert(3, 3);
+    bulk_op.insert(3, 3);
   ASSERT_EQ(tree.size(), 1);
-  ASSERT_TRUE(tree.has_valid_structure());
+  ASSERT_TRUE(tree.has_valid_structure(bulk_op.get_stw()));
 }
 
 TEST(k2tree_mixed_test, exhaustive_validation) {
@@ -57,22 +61,23 @@ TEST(k2tree_mixed_test, exhaustive_validation) {
   unsigned long treedepth = 10;
   unsigned long side = 1 << treedepth;
   K2TreeMixed tree(10, 255, 5);
+  K2TreeBulkOp bulk_op(tree);
   for (auto point : points_to_insert) {
-    tree.insert(point.first, point.second);
+    bulk_op.insert(point.first, point.second);
   }
   for (auto point : points_to_insert) {
-    ASSERT_TRUE(tree.has(point.first, point.second));
+    ASSERT_TRUE(bulk_op.has(point.first, point.second));
   }
 
   for (unsigned long col = 0; col < side; col++) {
     for (unsigned long row = 0; row < side; row++) {
       auto pair = std::make_pair(col, row);
       if (points_to_insert.find(pair) == points_to_insert.end()) {
-        ASSERT_FALSE(tree.has(col, row));
+        ASSERT_FALSE(bulk_op.has(col, row));
       }
     }
   }
-  ASSERT_TRUE(tree.has_valid_structure());
+  ASSERT_TRUE(tree.has_valid_structure(bulk_op.get_stw()));
 }
 
 TEST(k2tree_mixed_test, can_sip_join) {
@@ -81,8 +86,9 @@ TEST(k2tree_mixed_test, can_sip_join) {
 
   unsigned long treedepth = 10;
   K2TreeMixed tree(treedepth, 255, 5);
+  K2TreeBulkOp bulk_op(tree);
   for (auto point : points_to_insert) {
-    tree.insert(point.first, point.second);
+    bulk_op.insert(point.first, point.second);
   }
   std::vector<const K2TreeMixed *> trees_to_join = {&tree};
   std::vector<struct sip_ipoint> coords;
@@ -95,7 +101,7 @@ TEST(k2tree_mixed_test, can_sip_join) {
   ASSERT_EQ(result[0], 0);
   ASSERT_EQ(result[1], 5);
   ASSERT_EQ(result[2], 100);
-  ASSERT_TRUE(tree.has_valid_structure());
+  ASSERT_TRUE(tree.has_valid_structure(bulk_op.get_stw()));
 }
 
 TEST(k2tree_mixed_test, can_serialize) {
@@ -105,8 +111,9 @@ TEST(k2tree_mixed_test, can_serialize) {
   unsigned long treedepth = 10;
   unsigned long side = 1 << treedepth;
   K2TreeMixed tree(10, 255, 5);
+  K2TreeBulkOp bulk_op(tree);
   for (auto point : points_to_insert) {
-    tree.insert(point.first, point.second);
+    bulk_op.insert(point.first, point.second);
   }
 
   std::stringstream ss;
@@ -115,9 +122,9 @@ TEST(k2tree_mixed_test, can_serialize) {
   ss.seekg(0);
 
   K2TreeMixed deserialized = K2TreeMixed::read_from_istream(ss);
-
+  K2TreeBulkOp deserialized_bulk_op(deserialized);
   for (auto point : points_to_insert) {
-    ASSERT_TRUE(deserialized.has(point.first, point.second))
+    ASSERT_TRUE(deserialized_bulk_op.has(point.first, point.second))
         << "Point (" << point.first << ", " << point.second << ") not found";
   }
 
@@ -125,23 +132,23 @@ TEST(k2tree_mixed_test, can_serialize) {
     for (unsigned long row = 0; row < side; row++) {
       auto pair = std::make_pair(col, row);
       if (points_to_insert.find(pair) == points_to_insert.end()) {
-        ASSERT_FALSE(deserialized.has(col, row))
+        ASSERT_FALSE(deserialized_bulk_op.has(col, row))
             << "Point (" << pair.first << ", " << pair.second
             << ") was found, but shouldn't exist";
       }
     }
   }
 
-  ASSERT_TRUE(tree.has_valid_structure());
-  ASSERT_TRUE(deserialized.has_valid_structure());
+  ASSERT_TRUE(tree.has_valid_structure(bulk_op.get_stw()));
+  ASSERT_TRUE(deserialized.has_valid_structure(deserialized_bulk_op.get_stw()));
 }
 
 TEST(k2tree_mixed_test, can_report_column) {
   unsigned long treedepth = 10;
   K2TreeMixed tree(treedepth, 255, 5);
-
+  K2TreeBulkOp bulk_op(tree);
   for (int i = 1; i < 100; i++) {
-    tree.insert(1, i);
+    bulk_op.insert(1, i);
   }
 
   std::vector<unsigned long> retrieved;
@@ -151,20 +158,20 @@ TEST(k2tree_mixed_test, can_report_column) {
         reinterpret_cast<std::vector<unsigned long> *>(report_state)
             ->push_back(row);
       },
-      &retrieved);
+      &retrieved, bulk_op.get_stw());
 
   for (int i = 0; i < 99; i++) {
     ASSERT_EQ(retrieved[i], i + 1);
   }
-  ASSERT_TRUE(tree.has_valid_structure());
+  ASSERT_TRUE(tree.has_valid_structure(bulk_op.get_stw()));
 }
 
 TEST(k2tree_mixed_test, can_report_row) {
   unsigned long treedepth = 10;
   K2TreeMixed tree(treedepth, 255, 5);
-
+  K2TreeBulkOp bulk_op(tree);
   for (int i = 1; i < 100; i++) {
-    tree.insert(i, 1);
+    bulk_op.insert(i, 1);
   }
 
   std::vector<unsigned long> retrieved;
@@ -174,20 +181,20 @@ TEST(k2tree_mixed_test, can_report_row) {
         reinterpret_cast<std::vector<unsigned long> *>(report_state)
             ->push_back(col);
       },
-      &retrieved);
+      &retrieved, bulk_op.get_stw());
 
   for (int i = 0; i < 99; i++) {
     ASSERT_EQ(retrieved[i], i + 1);
   }
-  ASSERT_TRUE(tree.has_valid_structure());
+  ASSERT_TRUE(tree.has_valid_structure(bulk_op.get_stw()));
 }
 
 TEST(k2tree_mixed_test, can_report_row_and_sip) {
   unsigned long treedepth = 10;
   K2TreeMixed tree(treedepth, 255, 5);
-
+  K2TreeBulkOp bulk_op(tree);
   for (int i = 1; i < 100; i++) {
-    tree.insert(i, 1);
+    bulk_op.insert(i, 1);
   }
 
   std::vector<unsigned long> retrieved;
@@ -197,7 +204,7 @@ TEST(k2tree_mixed_test, can_report_row_and_sip) {
         reinterpret_cast<std::vector<unsigned long> *>(report_state)
             ->push_back(col);
       },
-      &retrieved);
+      &retrieved, bulk_op.get_stw());
 
   std::vector<unsigned long> retrieved_sip;
 
@@ -225,9 +232,9 @@ TEST(k2tree_mixed_test, can_report_row_and_sip) {
 TEST(k2tree_mixed_test, can_scan_full_lazy_with_virtual_scanner) {
   unsigned long treedepth = 10;
   K2TreeMixed tree(treedepth, 255, 5);
-
+  K2TreeBulkOp bulk_op(tree);
   for (int i = 1; i < 100; i++) {
-    tree.insert(i, 1);
+    bulk_op.insert(i, 1);
   }
 
   unsigned long i = 1;
@@ -243,9 +250,9 @@ TEST(k2tree_mixed_test, can_scan_full_lazy_with_virtual_scanner) {
 TEST(k2tree_mixed_test, can_scan_band_lazy_with_virtual_scanner) {
   unsigned long treedepth = 10;
   K2TreeMixed tree(treedepth, 255, 5);
-
+  K2TreeBulkOp bulk_op(tree);
   for (int i = 1; i < 100; i++) {
-    tree.insert(i, 1);
+    bulk_op.insert(i, 1);
   }
 
   unsigned long i = 1;

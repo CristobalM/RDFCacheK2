@@ -1,9 +1,9 @@
 #include <gtest/gtest.h>
 
+#include <K2TreeBulkOp.hpp>
 #include <PredicatesIndexCacheMD.hpp>
 #include <PredicatesIndexFileBuilder.hpp>
 #include <serialization_util.hpp>
-#include <sstream>
 #include <string>
 #include <triple_external_sort.hpp>
 #include <utility>
@@ -64,10 +64,10 @@ TEST(predicates_metadata_serialization, same_k2tree_as_non_serialized) {
   auto [pc, sz] = build_picmd_2(predicate_id);
 
   K2TreeMixed non_serialized(32, 256, 10);
-
+  K2TreeBulkOp bulk_op_non_serialized(non_serialized);
   for (unsigned long i = 1; i <= sz; i++) {
     for (unsigned long j = i; j < 10; j++) {
-      non_serialized.insert(i, j);
+      bulk_op_non_serialized.insert(i, j);
     }
   }
 
@@ -112,29 +112,30 @@ TEST(predicates_metadata_serialization, can_create_save_and_retrieve) {
   unsigned long current_offset = 0;
   unsigned long last_predicate = 0;
   for (auto predicate_id : metadata.get_ids_vector()) {
-    auto metadata = metadata_map.at(predicate_id);
-    ASSERT_EQ(metadata.predicate_id, predicate_id);
-    ASSERT_GT(metadata.tree_offset, current_offset)
+    auto current_metadata = metadata_map.at(predicate_id);
+    ASSERT_EQ(current_metadata.predicate_id, predicate_id);
+    ASSERT_GT(current_metadata.tree_offset, current_offset)
         << "failed offset check at predicate " << predicate_id;
-    current_offset = metadata.tree_offset;
+    current_offset = current_metadata.tree_offset;
 
-    ASSERT_GT(metadata.predicate_id, last_predicate)
+    ASSERT_GT(current_metadata.predicate_id, last_predicate)
         << "failed predicate_id check at predicate " << predicate_id;
-    last_predicate = metadata.predicate_id;
+    last_predicate = current_metadata.predicate_id;
   }
 
   for (unsigned long i = sz; i > 0; i--) {
     auto fetch_result = pc.fetch_k2tree(i);
-    const auto &k2tree = fetch_result.get();
+    auto &k2tree = fetch_result.get_mutable();
+    K2TreeBulkOp bulk_op_curr(k2tree);
 
-    ASSERT_TRUE(k2tree.has(i, i));
-    ASSERT_TRUE(k2tree.has(i + 1, i + 1));
-    ASSERT_TRUE(k2tree.has(i + 2, i + 2));
-    ASSERT_FALSE(k2tree.has(i, i + 1));
+    ASSERT_TRUE(bulk_op_curr.has(i, i));
+    ASSERT_TRUE(bulk_op_curr.has(i + 1, i + 1));
+    ASSERT_TRUE(bulk_op_curr.has(i + 2, i + 2));
+    ASSERT_FALSE(bulk_op_curr.has(i, i + 1));
     ASSERT_EQ(k2tree.get_tree_depth(), 32);
 
     ASSERT_EQ(k2tree.size(), 3);
-    ASSERT_TRUE(k2tree.has_valid_structure());
+    ASSERT_TRUE(k2tree.has_valid_structure(bulk_op_curr.get_stw()));
   }
 }
 
@@ -151,17 +152,19 @@ TEST(predicates_metadata_serialization, can_sync_with_external) {
 
   for (unsigned long i = sz; i > 0; i--) {
     auto fetch_result = pc.fetch_k2tree(i);
-    const auto &k2tree = fetch_result.get();
-    ASSERT_TRUE(k2tree.has(i, i));
-    ASSERT_FALSE(k2tree.has(i, i + 1));
-    ASSERT_TRUE(k2tree.has_valid_structure());
+    auto &k2tree = fetch_result.get_mutable();
+    K2TreeBulkOp bulk_op(k2tree);
+    ASSERT_TRUE(bulk_op.has(i, i));
+    ASSERT_FALSE(bulk_op.has(i, i + 1));
+    ASSERT_TRUE(k2tree.has_valid_structure(bulk_op.get_stw()));
   }
 
   for (unsigned long i = 20'000; i < 30'000; i++) {
     auto fetch_result = pc.fetch_k2tree(i);
-    const auto &k2tree = fetch_result.get();
-    ASSERT_TRUE(k2tree.has(i, i));
-    ASSERT_FALSE(k2tree.has(i, i + 1));
-    ASSERT_TRUE(k2tree.has_valid_structure());
+    auto &k2tree = fetch_result.get_mutable();
+    K2TreeBulkOp bulk_op(k2tree);
+    ASSERT_TRUE(bulk_op.has(i, i));
+    ASSERT_FALSE(bulk_op.has(i, i + 1));
+    ASSERT_TRUE(k2tree.has_valid_structure(bulk_op.get_stw()));
   }
 }

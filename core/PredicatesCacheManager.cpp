@@ -3,6 +3,7 @@
 //
 
 #include "PredicatesCacheManager.hpp"
+#include "K2TreeBulkOp.hpp"
 #include <StringDictionary.h>
 #include <chrono>
 #include <filesystem>
@@ -111,8 +112,8 @@ NaiveDynamicStringDictionary &PredicatesCacheManager::get_dyn_dicts() {
 }
 
 void PredicatesCacheManager::replace_index_cache(
-    std::unique_ptr<PredicatesIndexCacheMDFile> &&predicates_index) {
-  this->predicates_index = std::move(predicates_index);
+    std::unique_ptr<PredicatesIndexCacheMDFile> &&predicates_index_input) {
+  this->predicates_index = std::move(predicates_index_input);
 }
 
 PredicateFetchResult PredicatesCacheManager::get_tree_by_predicate_name(

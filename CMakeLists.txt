@@ -49,7 +49,13 @@ set(CORE_SOURCE_FILES
         core/FullScanner.hpp
         core/K2TreeScanner.hpp
         core/EmptyScanner.cpp
-        core/EmptyScanner.hpp core/block_stats.cpp core/block_stats.hpp)
+        core/EmptyScanner.hpp
+        core/block_stats.cpp
+        core/block_stats.hpp
+        core/K2QStateWrapper.cpp
+        core/K2QStateWrapper.hpp
+        core/K2TreeBulkOp.cpp
+        core/K2TreeBulkOp.hpp)
 
 set(PROC_SOURCE_FILES
         proc/SDFeed.cpp

@@ -22,6 +22,8 @@ public:
   virtual K2TreeMixed &get_tree() = 0;
 
   virtual ~K2TreeScanner() = default;
+
+  virtual K2QStateWrapper &get_k2qw() = 0;
 };
 
 #endif // RDFCACHEK2_K2TREESCANNER_HPP

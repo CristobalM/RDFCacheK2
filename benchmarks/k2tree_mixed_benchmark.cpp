@@ -4,9 +4,9 @@
 #include <iostream>
 #include <random>
 #include <sstream>
-#include <unordered_map>
 #include <vector>
 
+#include <K2TreeBulkOp.hpp>
 #include <K2TreeMixed.hpp>
 
 #include "fisher_yates.hpp"
@@ -80,10 +80,11 @@ BenchmarkResult space_benchmark_random_insertion_by_depth_and_node_count(
 
   auto start = std::chrono::high_resolution_clock::now();
   unsigned long inserted_points = 0;
+  K2TreeBulkOp bulk_op(k2tree);
   for (size_t i = 0; i < cols.size(); i++) {
 
     for (size_t j = 0; j < rows.size(); j++) {
-      k2tree.insert(cols[i], rows[j]);
+      bulk_op.insert(cols[i], rows[j]);
       inserted_points++;
       if (inserted_points >= points_count)
         break;

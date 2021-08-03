@@ -5,6 +5,7 @@
 #ifndef RDFCACHEK2_FULLSCANNER_HPP
 #define RDFCACHEK2_FULLSCANNER_HPP
 
+#include "K2QStateWrapper.hpp"
 #include "K2TreeScanner.hpp"
 #include <TimeControl.hpp>
 #include <k2node.h>
@@ -18,9 +19,10 @@ public:
   unsigned long get_band_value() override;
   K2TreeMixed &get_tree() override;
   ~FullScanner() override;
+  K2QStateWrapper &get_k2qw() override;
 
 private:
-  struct k2qstate st {};
+  K2QStateWrapper stw;
   k2node_lazy_handler_naive_scan_t lazy_handler{};
   K2TreeMixed &k2tree;
 };

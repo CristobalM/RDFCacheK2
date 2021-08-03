@@ -16,7 +16,8 @@ TwoVarIntersectionBGPOp::run(std::vector<unsigned long> &row_to_fill) {
   auto intersect_value_subject = row_to_fill[subject_pos];
   auto intersect_value_object = row_to_fill[object_pos];
   auto &k2tree = scanner->get_tree();
-  if (k2tree.has(intersect_value_subject, intersect_value_object)) {
+  if (k2tree.has(intersect_value_subject, intersect_value_object,
+                 scanner->get_k2qw())) {
     result.valid_value = true;
     result.scan_done = true;
     return result;

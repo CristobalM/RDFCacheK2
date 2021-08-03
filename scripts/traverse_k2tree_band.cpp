@@ -1,12 +1,13 @@
 #include <filesystem>
-#include <fstream>
 #include <getopt.h>
 #include <iostream>
 #include <stdexcept>
 #include <string>
 
+#include <K2TreeBulkOp.hpp>
 #include <K2TreeMixed.hpp>
 #include <PredicatesIndexCacheMDFile.hpp>
+#include <set>
 #include <triple_external_sort.hpp>
 
 namespace fs = std::filesystem;
@@ -35,8 +36,9 @@ int main(int argc, char **argv) {
   auto fetch_result = pc.fetch_k2tree(parsed.predicate);
   auto &k2tree = fetch_result.get_mutable();
 
-  int debug_validate = debug_validate_k2node_rec(k2tree.get_root_k2node(),
-                                                 k2tree.get_k2qstate(), 0);
+  auto bulk_op = K2TreeBulkOp(k2tree);
+
+  bool debug_validate = k2tree.has_valid_structure(bulk_op.get_stw());
 
   std::ofstream ofs(parsed.output_file, std::ios::out | std::ios::trunc);
 
@@ -55,7 +57,7 @@ int main(int argc, char **argv) {
           reinterpret_cast<std::set<unsigned long> *>(report_state)
               ->insert(row);
         },
-        &band_tr);
+        &band_tr, bulk_op.get_stw());
   } else {
     k2tree.traverse_row(
         parsed.position,
@@ -64,7 +66,7 @@ int main(int argc, char **argv) {
           reinterpret_cast<std::set<unsigned long> *>(report_state)
               ->insert(col);
         },
-        &band_tr);
+        &band_tr, bulk_op.get_stw());
   }
 
   std::vector<const K2TreeMixed *> trees = {&k2tree};
@@ -83,17 +85,18 @@ int main(int argc, char **argv) {
       [](unsigned long, unsigned long, void *report_state) {
         (*reinterpret_cast<int *>(report_state))++;
       },
-      &real_points_count);
+      &real_points_count, bulk_op.get_stw());
 
   auto config = pc.get_config();
 
   K2TreeMixed copy_k2tree(config);
+  K2TreeBulkOp copy_bulk_op(copy_k2tree);
 
   trees[0]->scan_points(
       [](unsigned long col, unsigned long row, void *report_state) {
-        (*reinterpret_cast<K2TreeMixed *>(report_state)).insert(col, row);
+        (*reinterpret_cast<K2TreeBulkOp *>(report_state)).insert(col, row);
       },
-      &copy_k2tree);
+      &copy_bulk_op, copy_bulk_op.get_stw());
 
   std::vector<const K2TreeMixed *> other_trees = {&copy_k2tree};
 

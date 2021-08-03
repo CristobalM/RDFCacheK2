@@ -23,10 +23,12 @@ SOFTWARE.
 */
 #include <gtest/gtest.h>
 
+#include <K2TreeBulkOp.hpp>
 #include <K2TreeMixed.hpp>
 #include <algorithm>
 #include <fstream>
 #include <iostream>
+#include <set>
 #include <sstream>
 #include <string>
 #include <utility>
@@ -53,6 +55,7 @@ public:
 
     std::string line;
     std::string number_string;
+    K2TreeBulkOp bulk_op(*k2tree);
     while (std::getline(ifs, line)) {
       std::stringstream ss(line);
       int i = 0;
@@ -60,7 +63,7 @@ public:
       while (std::getline(ss, number_string, ',')) {
         numbers[i++] = std::stoul(number_string);
       }
-      k2tree->insert(numbers[0], numbers[1]);
+      bulk_op.insert(numbers[0], numbers[1]);
     }
   }
 

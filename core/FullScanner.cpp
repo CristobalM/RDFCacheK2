@@ -19,16 +19,13 @@ std::pair<unsigned long, unsigned long> FullScanner::next() {
   return {result.col, result.row};
 }
 
-FullScanner::FullScanner(K2TreeMixed &k2tree) : k2tree(k2tree) {
-  auto *base_st = k2tree.get_k2qstate();
-  init_k2qstate(&st, base_st->k2tree_depth, base_st->qs.max_nodes_count,
-                base_st->cut_depth);
-  k2node_naive_scan_points_lazy_init(k2tree.get_root_k2node(), &st,
+FullScanner::FullScanner(K2TreeMixed &k2tree)
+    : stw(k2tree.create_k2qw()), k2tree(k2tree) {
+  k2node_naive_scan_points_lazy_init(k2tree.get_root_k2node(), stw.get_ptr(),
                                      &lazy_handler);
 }
 FullScanner::~FullScanner() {
   k2node_naive_scan_points_lazy_clean(&lazy_handler);
-  clean_k2qstate(&st);
 }
 void FullScanner::reset_scan() {
   k2node_naive_scan_points_lazy_reset(&lazy_handler);
@@ -37,3 +34,4 @@ K2TreeMixed &FullScanner::get_tree() { return k2tree; }
 unsigned long FullScanner::get_band_value() {
   throw std::runtime_error("Not band");
 }
+K2QStateWrapper &FullScanner::get_k2qw() { return stw; }
