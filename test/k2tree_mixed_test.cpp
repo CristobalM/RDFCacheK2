@@ -3,6 +3,7 @@
 #include <K2TreeBulkOp.hpp>
 #include <K2TreeMixed.hpp>
 #include <chrono>
+#include <google/protobuf/message_lite.h>
 #include <set>
 #include <sstream>
 #include <utility>
@@ -264,4 +265,11 @@ TEST(k2tree_mixed_test, can_scan_band_lazy_with_virtual_scanner) {
     ASSERT_EQ(curr.first, i++);
   }
   ASSERT_EQ(i, 100);
+}
+
+int main(int argc, char **argv) {
+  ::testing::InitGoogleTest(&argc, argv);
+  int result = RUN_ALL_TESTS();
+  google::protobuf::ShutdownProtobufLibrary();
+  return result;
 }

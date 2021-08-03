@@ -40,8 +40,10 @@ struct block *read_block_from_istream(std::istream &is) {
 
   struct block *new_block = create_block();
 
-  init_block_topology(new_block, nodes_count);
-  init_block_frontier_with_capacity(new_block, children);
+  if (children > 0)
+    init_block_frontier_with_capacity(new_block, children);
+  else
+    init_block_frontier(new_block);
 
   new_block->children = children;
 

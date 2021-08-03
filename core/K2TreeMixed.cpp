@@ -261,8 +261,8 @@ struct k2node *deserialize_k2node_tree(std::istream &is,
                                        uint32_t &current_node_location) {
   struct k2node *node = create_k2node();
   if (current_depth < cut_depth) {
-    int container_pos = 4 * current_node_location / 32;
-    int subpos_bits_start = (4 * current_node_location) % 32;
+    int container_pos = 4 * static_cast<int>(current_node_location) / 32;
+    int subpos_bits_start = (4 * static_cast<int>(current_node_location)) % 32;
     uint32_t container = containers[container_pos];
     current_node_location++;
     for (int i = 0; i < 4; i++) {
