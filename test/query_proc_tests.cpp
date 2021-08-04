@@ -938,3 +938,10 @@ TEST(QueryProcTests, join_two_two_vars) {
 
   fs::remove(fname);
 }
+
+int main(int argc, char **argv) {
+  ::testing::InitGoogleTest(&argc, argv);
+  int result = RUN_ALL_TESTS();
+  google::protobuf::ShutdownProtobufLibrary();
+  return result;
+}

@@ -2966,3 +2966,10 @@ TEST_F(QueryFiltersFixture, test_not_exists_1) {
   ASSERT_GT(query_values_set.size(), 0);
   ASSERT_EQ(query_values_set, expected_values);
 }
+
+int main(int argc, char **argv) {
+  ::testing::InitGoogleTest(&argc, argv);
+  int result = RUN_ALL_TESTS();
+  google::protobuf::ShutdownProtobufLibrary();
+  return result;
+}

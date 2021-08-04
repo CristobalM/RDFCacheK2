@@ -11,8 +11,6 @@
 #include <memory>
 #include <vector>
 
-#include <unicode/smpdtfmt.h>
-
 #include "../ParsingUtils.hpp"
 #include "EvalData.hpp"
 #include "query_processing/resources/TermResource.hpp"

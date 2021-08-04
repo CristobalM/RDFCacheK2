@@ -3,6 +3,7 @@
 //
 
 #include "ResultTable.hpp"
+#include <google/protobuf/stubs/common.h>
 #include <gtest/gtest.h>
 #include <iostream>
 #include <random>
@@ -19,4 +20,11 @@ TEST(ResultTableTest, test1) {
     auto &v = *it;
     std::cout << v[0] << std::endl;
   }
+}
+
+int main(int argc, char **argv) {
+  ::testing::InitGoogleTest(&argc, argv);
+  int result = RUN_ALL_TESTS();
+  google::protobuf::ShutdownProtobufLibrary();
+  return result;
 }

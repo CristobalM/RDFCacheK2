@@ -3,6 +3,7 @@
 #include <K2TreeBulkOp.hpp>
 #include <PredicatesIndexCacheMD.hpp>
 #include <PredicatesIndexFileBuilder.hpp>
+#include <google/protobuf/stubs/common.h>
 #include <serialization_util.hpp>
 #include <string>
 #include <triple_external_sort.hpp>
@@ -167,4 +168,11 @@ TEST(predicates_metadata_serialization, can_sync_with_external) {
     ASSERT_FALSE(bulk_op.has(i, i + 1));
     ASSERT_TRUE(k2tree.has_valid_structure(bulk_op.get_stw()));
   }
+}
+
+int main(int argc, char **argv) {
+  ::testing::InitGoogleTest(&argc, argv);
+  int result = RUN_ALL_TESTS();
+  google::protobuf::ShutdownProtobufLibrary();
+  return result;
 }

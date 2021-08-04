@@ -27,6 +27,7 @@ SOFTWARE.
 #include <K2TreeMixed.hpp>
 #include <algorithm>
 #include <fstream>
+#include <google/protobuf/message_lite.h>
 #include <iostream>
 #include <set>
 #include <sstream>
@@ -145,4 +146,11 @@ TEST_F(K2MixedFromFileFixture, single_sip_band_by_band) {
   }
 
   ASSERT_TRUE(k2tree->has_valid_structure());
+}
+
+int main(int argc, char **argv) {
+  ::testing::InitGoogleTest(&argc, argv);
+  int result = RUN_ALL_TESTS();
+  google::protobuf::ShutdownProtobufLibrary();
+  return result;
 }

@@ -12,9 +12,6 @@
 
 #include <pcrecpp.h>
 
-#include <unicode/calendar.h>
-#include <unicode/smpdtfmt.h>
-
 #include "DateInfo.hpp"
 #include "ExprDataType.hpp"
 

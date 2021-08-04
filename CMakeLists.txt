@@ -353,13 +353,6 @@ include_directories(${Protobuf_INCLUDE_DIRS})
 find_package(OpenSSL REQUIRED)
 include_directories(${OPENSSL_INCLUDE_DIRS})
 
-#find_package(PCRE2 REQUIRED)
-#include_directories(${PCRE2_INCLUDE_DIRS})
-
-find_package(ICU REQUIRED COMPONENTS i18n)
-include_directories(${ICU_INCLUDE_DIRS})
-
-
 find_package(CURL REQUIRED)
 include_directories(${CURL_INCLUDE_DIR})
 
@@ -377,7 +370,6 @@ set(BASE_LIBS
         ${OPENSSL_LIBRARIES}
         stdc++fs
         pcrecpp
-        ICU::ICU
         ${CURL_LIBRARIES}
         )
 
@@ -403,7 +395,6 @@ set(DEFAULT_LIBS
         ${OPENSSL_LIBRARIES}
         stdc++fs
         pcrecpp
-        ICU::ICU
         ${CURL_LIBRARIES}
         pthread
         )

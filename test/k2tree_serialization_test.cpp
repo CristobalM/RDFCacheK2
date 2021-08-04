@@ -6,6 +6,7 @@
 #include <K2TreeBulkOp.hpp>
 #include <K2TreeMixed.hpp>
 #include <algorithm>
+#include <google/protobuf/stubs/common.h>
 #include <gtest/gtest.h>
 #include <random>
 #include <sstream>
@@ -206,4 +207,11 @@ TEST(k2tree_serialization_custom_mixed, sip_band_works_on_deserialized_1) {
 
   ASSERT_TRUE(k2tree.has_valid_structure(bulk_op.get_stw()));
   ASSERT_TRUE(other_k2tree.has_valid_structure());
+}
+
+int main(int argc, char **argv) {
+  ::testing::InitGoogleTest(&argc, argv);
+  int result = RUN_ALL_TESTS();
+  google::protobuf::ShutdownProtobufLibrary();
+  return result;
 }

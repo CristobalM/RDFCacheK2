@@ -6,7 +6,6 @@
 #define RDFCACHEK2_TERMEVAL_HPP
 
 #include <query_processing/utility/StringHandlingUtil.hpp>
-#include <unicode/smpdtfmt.h>
 
 #include "ExprEval.hpp"
 class TermEval : public ExprEval {

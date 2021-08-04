@@ -4,6 +4,7 @@
 
 #include <LRU/LRUController.hpp>
 #include <LRU/LRUQueue.hpp>
+#include <google/protobuf/message_lite.h>
 
 class DummyLRUController : public LRUController {
   unsigned long max_size_bytes;
@@ -41,4 +42,11 @@ TEST(CacheReplacementSuite, LRUReplacementTest_1) {
     ASSERT_EQ(queue.get_stats_erase_count(), 1);
     ASSERT_EQ(queue.get_stats_retrieval_count(), 11);
   }
+}
+
+int main(int argc, char **argv) {
+  ::testing::InitGoogleTest(&argc, argv);
+  int result = RUN_ALL_TESTS();
+  google::protobuf::ShutdownProtobufLibrary();
+  return result;
 }

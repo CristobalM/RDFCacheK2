@@ -254,11 +254,6 @@ double TermEval::eval_double_from_string(const std::string &input_string) {
 }
 
 DateInfo TermEval::eval_date_time(const ExprEval::row_t &row) {
-
-  static UErrorCode parser_err = U_ZERO_ERROR;
-  static icu::UnicodeString pattern("YYYY-MM-DDThh:mm:ss.sTZD");
-  static icu::SimpleDateFormat parser(pattern, parser_err);
-
   auto resource = eval_term_node(row);
 
   if (resource.resource_type != RDFResourceType::RDF_TYPE_LITERAL ||

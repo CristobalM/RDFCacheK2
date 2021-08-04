@@ -2,6 +2,7 @@
 // Created by Cristobal Miranda, 2020
 //
 
+#include <google/protobuf/message_lite.h>
 #include <gtest/gtest.h>
 #include <random>
 #include <serialization_util.hpp>
@@ -23,4 +24,11 @@ TEST(u64_network_host, test_one) {
     auto result = read_u64(iss);
     ASSERT_EQ(val, result) << "Fails for val = " << val;
   }
+}
+
+int main(int argc, char **argv) {
+  ::testing::InitGoogleTest(&argc, argv);
+  int result = RUN_ALL_TESTS();
+  google::protobuf::ShutdownProtobufLibrary();
+  return result;
 }

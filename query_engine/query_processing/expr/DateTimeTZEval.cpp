@@ -7,7 +7,6 @@
 #include "query_processing/resources/StringLiteralResource.hpp"
 #include <iomanip>
 #include <sstream>
-#include <unicode/smpdtfmt.h>
 
 void DateTimeTZEval::validate() {
   ExprEval::validate();

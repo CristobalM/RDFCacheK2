@@ -40,7 +40,7 @@ void write_u64(std::ostream &output_stream, uint64_t value) {
 }
 
 uint64_t read_u64(std::istream &input_stream) {
-  uint64_t result;
+  uint64_t result{};
   input_stream.read(reinterpret_cast<char *>(&result), sizeof(uint64_t));
   result = be64toh(result);
   return result;

@@ -3,11 +3,10 @@
 //
 
 #include <gtest/gtest.h>
-#include <iostream>
-#include <random>
 #include <set>
 
 #include <K2Tree.hpp>
+#include <google/protobuf/stubs/common.h>
 
 using pairs_set = std::set<std::pair<unsigned long, unsigned long>>;
 
@@ -103,4 +102,11 @@ TEST(k2tree_tests, scan_test_create_table) {
   auto it = joined_data.begin();
 
   ASSERT_EQ((*it)[0], 99) << "Join result different than 99";
+}
+
+int main(int argc, char **argv) {
+  ::testing::InitGoogleTest(&argc, argv);
+  int result = RUN_ALL_TESTS();
+  google::protobuf::ShutdownProtobufLibrary();
+  return result;
 }

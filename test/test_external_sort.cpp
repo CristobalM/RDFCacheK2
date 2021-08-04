@@ -2,6 +2,7 @@
 
 #include <sstream>
 
+#include <google/protobuf/message_lite.h>
 #include <serialization_util.hpp>
 #include <triple_external_sort.hpp>
 
@@ -46,4 +47,11 @@ TEST(ExternalSortSuite, test_1) {
 
   remove(test_out_file.c_str());
   remove(test_file.c_str());
+}
+
+int main(int argc, char **argv) {
+  ::testing::InitGoogleTest(&argc, argv);
+  int result = RUN_ALL_TESTS();
+  google::protobuf::ShutdownProtobufLibrary();
+  return result;
 }

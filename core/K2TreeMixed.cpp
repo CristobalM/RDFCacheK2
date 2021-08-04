@@ -335,6 +335,10 @@ std::vector<unsigned long> K2TreeMixed::sip_join_k2trees(
       },
       &result);
 
+  for (auto &state : states) {
+    clean_k2qstate(&state);
+  }
+
   if (err) {
     throw std::runtime_error(
         "K2TreeMixed::sip_join_k2trees:: error in k2node_sip_join: " +
