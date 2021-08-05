@@ -106,7 +106,7 @@ public:
           RDFResource("\"" + str + "\"", RDFResourceType::RDF_TYPE_LITERAL)));
     }
 
-    cache = std::make_unique<Cache>(pcm, 100'000, "./", 5000);
+    cache = std::make_unique<Cache>(pcm, 100'000, "./", 5000, false);
   }
 
   static void TearDownTestCase() {

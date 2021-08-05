@@ -101,7 +101,7 @@ TEST(QueryProcTests, test_optional_1) {
                                     RDFResource("<pred2>", RDF_TYPE_IRI),
                                     RDFResource("obj3", RDF_TYPE_LITERAL)));
 
-  Cache cache(pcm, 100'000, "./", 5000);
+  Cache cache(pcm, 100'000, "./", 5000, false);
 
   auto result = cache.run_query(tree, time_control);
 
@@ -191,7 +191,7 @@ TEST(QueryProcTests, test_union_1) {
                                     RDFResource("<pred2>", RDF_TYPE_IRI),
                                     RDFResource("obj3", RDF_TYPE_LITERAL)));
 
-  Cache cache(pcm, 100'000, "./", 5000);
+  Cache cache(pcm, 100'000, "./", 5000, false);
 
   auto plain_mapping = pcm->get_plain_mapping_debug();
 
@@ -255,7 +255,7 @@ TEST(QueryProcTests, test_bgp_node_1) {
                                     RDFResource("<pred1>", RDF_TYPE_IRI),
                                     RDFResource("obj1", RDF_TYPE_LITERAL)));
 
-  Cache cache(pcm, 100'000, "./", 5000);
+  Cache cache(pcm, 100'000, "./", 5000, false);
 
   auto result = cache.run_query(tree, time_control)->as_query_result_original();
 
@@ -345,7 +345,7 @@ TEST(QueryProcTests, test_bgp_node_2) {
                                     RDFResource("<pred2>", RDF_TYPE_IRI),
                                     RDFResource("obj2", RDF_TYPE_LITERAL)));
 
-  Cache cache(pcm, 100'000, "./", 5000);
+  Cache cache(pcm, 100'000, "./", 5000, false);
 
   auto result = cache.run_query(tree, time_control)->as_query_result_original();
 
@@ -459,7 +459,7 @@ TEST(QueryProcTests, test_bgp_node_3) {
                                     RDFResource("<pred3>", RDF_TYPE_IRI),
                                     RDFResource("obj1", RDF_TYPE_LITERAL)));
 
-  Cache cache(pcm, 100'000, "./", 5000);
+  Cache cache(pcm, 100'000, "./", 5000, false);
 
   auto result = cache.run_query(tree, time_control)->as_query_result_original();
 
@@ -677,7 +677,7 @@ TEST(QueryProcTests, test_bgp_node_4_compact_dicts) {
 
   ASSERT_EQ(pcm->get_dyn_dicts().size(), 0);
 
-  Cache cache(pcm, 100'000, "./", 5000);
+  Cache cache(pcm, 100'000, "./", 5000, false);
 
   proto_msg::SparqlTree tree;
   auto *project_node = tree.mutable_root()->mutable_project_node();
@@ -924,7 +924,7 @@ TEST(QueryProcTests, join_two_two_vars) {
                                     RDFResource("<pred2>", RDF_TYPE_IRI),
                                     RDFResource("y101", RDF_TYPE_LITERAL)));
 
-  Cache cache(pcm, 100'000, "./", 5000);
+  Cache cache(pcm, 100'000, "./", 5000, false);
 
   auto result = cache.run_query(tree, time_control)->as_query_result_original();
 
