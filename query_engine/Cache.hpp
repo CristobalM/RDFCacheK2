@@ -6,15 +6,15 @@
 #define RDFCACHEK2_CACHE_HPP
 
 #include <memory>
+#include <mutex>
 #include <string>
 
 #include <PredicatesCacheManager.hpp>
 #include <TimeControl.hpp>
+#include <caching/I_CacheReplacement.hpp>
 #include <query_processing/ParsingUtils.hpp>
 #include <query_processing/QueryResultIterator.hpp>
 #include <request_msg.pb.h>
-
-#include "CacheReplacement.hpp"
 
 #include "query_processing/QueryResult.hpp"
 
@@ -33,16 +33,16 @@ struct CacheStats {
 class Cache {
   std::shared_ptr<PredicatesCacheManager> cache_manager;
 
-  CacheReplacement cache_replacement;
-
   std::string temp_files_dir;
   unsigned long timeout_ms;
+
+  std::unique_ptr<I_CacheReplacement> cache_replacement;
+  std::mutex replacement_mutex;
 
 public:
   using cm_t = std::shared_ptr<PredicatesCacheManager>;
   using pcm_t = PredicatesCacheManager;
   Cache(std::shared_ptr<PredicatesCacheManager> &cache_manager,
-        CacheReplacement::STRATEGY cache_replacement_strategy,
         size_t memory_budget_bytes, std::string temp_files_dir,
         unsigned long timeout_ms);
 
@@ -61,6 +61,9 @@ public:
   void ensure_available_predicates_bgp(const proto_msg::BGPNode &bgp_node);
   void ensure_available_predicate(const proto_msg::RDFTerm &term);
   unsigned long get_timeout_ms();
+  bool has_all_predicates_loaded(std::vector<unsigned long> &predicates);
+  I_CacheReplacement &get_replacement();
+  std::mutex &get_replacement_mutex();
 };
 
 #endif // RDFCACHEK2_CACHE_HPP

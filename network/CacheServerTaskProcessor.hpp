@@ -11,6 +11,7 @@
 #include <queue>
 
 #include "Message.hpp"
+#include "ReplacementTaskProcessor.hpp"
 #include "ServerTask.hpp"
 #include "ServerWorker.hpp"
 #include "TCPServerConnection.hpp"
@@ -30,8 +31,11 @@ class CacheServerTaskProcessor : public TaskProcessor {
 
   int current_id;
 
-  static constexpr size_t DEFAULT_THRESHOLD_PART_SZ = 1'000'000;
+  static constexpr size_t DEFAULT_THRESHOLD_PART_SZ = 100'000'000; // 100 MB
   // static constexpr size_t DEFAULT_THRESHOLD_PART_SZ = 1'024;
+
+  ReplacementTaskProcessor replacement_task_processor;
+  // std::unique_ptr<ServerWorker<ReplacementTaskProcessor>> replacement_worker;
 
 public:
   explicit CacheServerTaskProcessor(Cache &cache, uint8_t workers_count);
@@ -48,8 +52,14 @@ public:
   bool has_streamer(int id) override;
   I_QRStreamer &
   create_streamer(std::shared_ptr<QueryResultIterator> query_result_iterator,
-                  std::unique_ptr<TimeControl> &&time_control) override;
+                  std::unique_ptr<TimeControl> &&time_control,
+                  std::vector<unsigned long> &&predicates_in_use) override;
   void clean_streamer(int id) override;
+  void
+  process_missed_predicates(std::vector<unsigned long> &&predicates) override;
+  std::mutex &get_replacement_mutex() override;
+  void mark_using(std::vector<unsigned long> &predicates) override;
+  void mark_ready(std::vector<unsigned long> &predicates_in_use) override;
 };
 
 #endif // RDFCACHEK2_CACHESERVERTASKPROCESSOR_HPP

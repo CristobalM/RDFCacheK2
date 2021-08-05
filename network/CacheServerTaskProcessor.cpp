@@ -30,7 +30,8 @@ std::unique_ptr<ServerTask> CacheServerTaskProcessor::get_server_task() {
 
 CacheServerTaskProcessor::CacheServerTaskProcessor(Cache &cache,
                                                    uint8_t workers_count)
-    : cache(cache), workers_count(workers_count), current_id(0) {}
+    : cache(cache), workers_count(workers_count), current_id(0),
+      replacement_task_processor(cache) {}
 
 void CacheServerTaskProcessor::start_workers(
     TCPServerConnection<CacheServerTaskProcessor> &connection) {
@@ -60,10 +61,11 @@ bool CacheServerTaskProcessor::has_streamer(int id) {
 
 I_QRStreamer &CacheServerTaskProcessor::create_streamer(
     std::shared_ptr<QueryResultIterator> query_result_iterator,
-    std::unique_ptr<TimeControl> &&time_control) {
+    std::unique_ptr<TimeControl> &&time_control,
+    std::vector<unsigned long> &&predicates_in_use) {
   streamer_map[current_id] = std::make_unique<QueryResultPartStreamer>(
       current_id, std::move(query_result_iterator), std::move(time_control),
-      DEFAULT_THRESHOLD_PART_SZ);
+      DEFAULT_THRESHOLD_PART_SZ, std::move(predicates_in_use));
 
   std::cout << "streamers now: " << streamer_map.size() << std::endl;
   return *streamer_map[current_id++];
@@ -72,4 +74,19 @@ I_QRStreamer &CacheServerTaskProcessor::create_streamer(
 void CacheServerTaskProcessor::clean_streamer(int id) {
   streamer_map[id].reset();
   streamer_map.erase(id);
+}
+void CacheServerTaskProcessor::process_missed_predicates(
+    std::vector<unsigned long> &&predicates) {
+  replacement_task_processor.add_task(std::move(predicates));
+}
+std::mutex &CacheServerTaskProcessor::get_replacement_mutex() {
+  return cache.get_replacement_mutex();
+}
+void CacheServerTaskProcessor::mark_using(
+    std::vector<unsigned long> &predicates) {
+  replacement_task_processor.mark_used(predicates);
+}
+void CacheServerTaskProcessor::mark_ready(
+    std::vector<unsigned long> &predicates_in_use) {
+  replacement_task_processor.mark_ready(predicates_in_use);
 }

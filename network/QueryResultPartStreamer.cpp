@@ -6,9 +6,11 @@
 #include <map>
 QueryResultPartStreamer::QueryResultPartStreamer(
     int id, std::shared_ptr<QueryResultIterator> query_result_iterator,
-    std::unique_ptr<TimeControl> &&time_control, size_t threshold_part_size)
+    std::unique_ptr<TimeControl> &&time_control, size_t threshold_part_size,
+    std::vector<unsigned long> &&predicates_in_use)
     : id(id), query_result_iterator(std::move(query_result_iterator)),
       time_control(std::move(time_control)),
+      predicates_in_use(std::move(predicates_in_use)),
       threshold_part_size(threshold_part_size), first(true), done(false) {}
 proto_msg::CacheResponse QueryResultPartStreamer::get_next_response() {
   if (!time_control->tick())
@@ -94,4 +96,7 @@ QueryResultPartStreamer::time_control_finished_error() {
       proto_msg::MessageType::INVALID_QUERY_RESPONSE);
   cache_response.mutable_invalid_query_response();
   return cache_response;
+}
+std::vector<unsigned long> &QueryResultPartStreamer::get_predicates_in_use() {
+  return predicates_in_use;
 }

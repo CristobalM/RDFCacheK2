@@ -9,7 +9,9 @@
 
 static void write_ktree_with_size(std::iostream &ios, K2TreeMixed &k2tree) {
   std::stringstream ss;
+  auto stats = k2tree.k2tree_stats();
   auto sz = k2tree.write_to_ostream(ss);
+  write_u64(ios, static_cast<uint64_t>(stats.total_bytes));
   write_u64(ios, sz);
   auto out_str = ss.str();
   ss.clear();
@@ -30,7 +32,6 @@ PredicatesCacheMetadata PredicatesIndexFileBuilder::build(
   uint64_t current_predicate = 0;
   bool first = true;
 
-  std::vector<TripleValue> triples_recorded_debug;
   while (!filedata.finished()) {
     auto triple = filedata.read_triple(input_file);
     if (triple.second != current_predicate || first) {
@@ -66,6 +67,7 @@ PredicatesCacheMetadata PredicatesIndexFileBuilder::build(
   tmp_stream.seekg(0);
   int i = 0;
   for (const auto predicate_id : predicates_ids) {
+    const auto total_bytes = read_u64(tmp_stream);
     const auto k2tree_serialized_size = read_u64(tmp_stream);
     const auto offset = output_file.tellp();
     std::array<char, 16> md5_read;
@@ -91,6 +93,7 @@ PredicatesCacheMetadata PredicatesIndexFileBuilder::build(
     tree_metadata.predicate_id = predicate_id;
     tree_metadata.tree_offset = offset;
     tree_metadata.tree_size = k2tree_serialized_size;
+    tree_metadata.tree_size_in_memory = total_bytes;
     tree_metadata.priority = 0;
     tree_metadata.k2tree_hash = std::move(md5_calc);
 

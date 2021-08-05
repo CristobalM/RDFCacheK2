@@ -3,20 +3,21 @@
 //
 
 #include <TimeControl.hpp>
+#include <caching/LRUReplacementStrategy.hpp>
 #include <chrono>
 #include <query_processing/QueryProcessor.hpp>
 
 #include "Cache.hpp"
-#include "CacheReplacementFactory.hpp"
+#include "caching/CacheReplacement.hpp"
 
 Cache::Cache(std::shared_ptr<PredicatesCacheManager> &cache_manager,
-             CacheReplacement::STRATEGY cache_replacement_strategy,
-             size_t memory_budget_bytes, std::string temp_files_dir,
+             size_t max_size_bytes, std::string temp_files_dir,
              unsigned long timeout_ms)
-    : cache_manager(cache_manager),
-      cache_replacement(CacheReplacementFactory::select_strategy(
-          cache_replacement_strategy, memory_budget_bytes, cache_manager)),
-      temp_files_dir(std::move(temp_files_dir)), timeout_ms(timeout_ms) {}
+    : cache_manager(cache_manager), temp_files_dir(std::move(temp_files_dir)),
+      timeout_ms(timeout_ms),
+      cache_replacement(
+          std::make_unique<CacheReplacement<LRUReplacementStrategy>>(
+              max_size_bytes, cache_manager.get(), replacement_mutex)) {}
 
 std::shared_ptr<QueryResultIterator>
 Cache::run_query(const proto_msg::SparqlTree &query_tree,
@@ -195,3 +196,12 @@ void Cache::ensure_available_predicate(const proto_msg::RDFTerm &term) {
   cache_manager->ensure_available_predicate(RDFResource(term));
 }
 unsigned long Cache::get_timeout_ms() { return timeout_ms; }
+bool Cache::has_all_predicates_loaded(std::vector<unsigned long> &predicates) {
+  return std::all_of(
+      predicates.begin(), predicates.end(), [this](unsigned long p) {
+        return cache_manager->get_predicates_index_cache().has_predicate_active(
+            p);
+      });
+}
+I_CacheReplacement &Cache::get_replacement() { return *cache_replacement; }
+std::mutex &Cache::get_replacement_mutex() { return replacement_mutex; }

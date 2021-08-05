@@ -76,8 +76,8 @@ int main(int argc, char **argv) {
               << " seconds" << std::endl;
   }
 
-  Cache cache(pcm, CacheReplacement::LRU, parsed.memory_budget_bytes,
-              parsed.temp_files_dir, parsed.time_out_ms);
+  Cache cache(pcm, parsed.memory_budget_bytes, parsed.temp_files_dir,
+              parsed.time_out_ms);
 
   CacheServer server(cache, parsed.port, parsed.workers_count);
   server.start();

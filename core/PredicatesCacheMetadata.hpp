@@ -12,7 +12,8 @@
 struct PredicateMetadata {
   uint64_t predicate_id;
   uint64_t tree_offset;
-  uint64_t tree_size;
+  uint64_t tree_size; // serialized size
+  uint64_t tree_size_in_memory;
   uint32_t priority;
   std::array<char, 16> k2tree_hash;
 

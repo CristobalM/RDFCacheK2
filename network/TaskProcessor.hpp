@@ -19,8 +19,14 @@ public:
   virtual bool has_streamer(int id) = 0;
   virtual I_QRStreamer &
   create_streamer(std::shared_ptr<QueryResultIterator> query_result_iterator,
-                  std::unique_ptr<TimeControl> &&time_control) = 0;
+                  std::unique_ptr<TimeControl> &&time_control,
+                  std::vector<unsigned long> &&predicates_in_use) = 0;
   virtual void clean_streamer(int id) = 0;
+  virtual void
+  process_missed_predicates(std::vector<unsigned long> &&predicates) = 0;
+  virtual std::mutex &get_replacement_mutex() = 0;
+  virtual void mark_using(std::vector<unsigned long> &predicates) = 0;
+  virtual void mark_ready(std::vector<unsigned long> &predicates_in_use) = 0;
 };
 
 #endif // RDFCACHEK2_TASKPROCESSOR_HPP

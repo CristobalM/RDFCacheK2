@@ -14,7 +14,6 @@
 #include <query_processing/expr/BoundVarsMap.hpp>
 #include <request_msg.pb.h>
 
-#include "CacheReplacement.hpp"
 #include "ParsingUtils.hpp"
 #include "QProc.hpp"
 #include "QueryResultIterator.hpp"
