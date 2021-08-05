@@ -77,7 +77,7 @@ int main(int argc, char **argv) {
   }
 
   Cache cache(pcm, parsed.memory_budget_bytes, parsed.temp_files_dir,
-              parsed.time_out_ms);
+              parsed.time_out_ms, !parsed.load_all_predicates);
 
   CacheServer server(cache, parsed.port, parsed.workers_count);
   server.start();

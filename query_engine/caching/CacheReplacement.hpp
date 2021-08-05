@@ -15,7 +15,6 @@
 #include <vector>
 
 template <class CRStrategy> class CacheReplacement : public I_CacheReplacement {
-
   struct StrategyWrapper {
     CRStrategy &strategy;
     explicit StrategyWrapper(CRStrategy &strategy) : strategy(strategy) {}

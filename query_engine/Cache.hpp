@@ -44,7 +44,7 @@ public:
   using pcm_t = PredicatesCacheManager;
   Cache(std::shared_ptr<PredicatesCacheManager> &cache_manager,
         size_t memory_budget_bytes, std::string temp_files_dir,
-        unsigned long timeout_ms);
+        unsigned long timeout_ms, bool enable_caching);
 
   std::shared_ptr<QueryResultIterator>
   run_query(const proto_msg::SparqlTree &query_tree, TimeControl &time_control);

@@ -24,7 +24,8 @@ bool LRUReplacementStrategy::operator()(unsigned long lhs,
   return priority_value_left <
          priority_value_right; // protection against overflow
   // priority queue must be in ascending order, new values will take higher
-  // values, so to comply with lru retrieve for deletion lower values
+  // values, so to comply with lru retrieve for deletion lower values.
+  // In practice this should never happen though, as 2^63 is extremely large.
 }
 LRUReplacementStrategy::LRUReplacementStrategy() : low(0), high(0) {}
 void LRUReplacementStrategy::hit_key(unsigned long key) {

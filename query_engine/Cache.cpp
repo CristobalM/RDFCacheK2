@@ -9,15 +9,16 @@
 
 #include "Cache.hpp"
 #include "caching/CacheReplacement.hpp"
+#include "caching/CacheReplacementFactory.hpp"
 
 Cache::Cache(std::shared_ptr<PredicatesCacheManager> &cache_manager,
              size_t max_size_bytes, std::string temp_files_dir,
-             unsigned long timeout_ms)
+             unsigned long timeout_ms, bool enable_caching)
     : cache_manager(cache_manager), temp_files_dir(std::move(temp_files_dir)),
       timeout_ms(timeout_ms),
-      cache_replacement(
-          std::make_unique<CacheReplacement<LRUReplacementStrategy>>(
-              max_size_bytes, cache_manager.get(), replacement_mutex)) {}
+      cache_replacement(CacheReplacementFactory::create_cache_replacement(
+          max_size_bytes, cache_manager.get(), replacement_mutex,
+          enable_caching)) {}
 
 std::shared_ptr<QueryResultIterator>
 Cache::run_query(const proto_msg::SparqlTree &query_tree,

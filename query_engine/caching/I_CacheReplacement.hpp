@@ -8,6 +8,11 @@
 #include <cstddef>
 class I_CacheReplacement {
 public:
+  enum REPLACEMENT_STRATEGY {
+    NO_CACHING = 0,
+    LRU,
+  };
+
   virtual ~I_CacheReplacement() = default;
   virtual bool hit_key(unsigned long key, size_t space_required) = 0;
   virtual void mark_using(unsigned long key) = 0;

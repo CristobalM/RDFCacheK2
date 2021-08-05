@@ -132,12 +132,13 @@ void ServerTask::process_cache_query(Message &message) {
     std::lock_guard lg(replacement_mutex);
     if (!cache.has_all_predicates_loaded(predicates_in_query)) {
       send_cache_miss_response();
-
+      // starts a task which also locks replacement_mutex
       task_processor.process_missed_predicates(std::move(predicates_in_query));
       return;
     }
   }
 
+  // locks replacement_mutex for each predicate separately
   task_processor.mark_using(predicates_in_query);
 
   auto time_control = std::make_unique<TimeControl>(

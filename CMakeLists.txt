@@ -254,7 +254,7 @@ set(GRAPH_RESULT_CACHING_FILE
         query_engine/caching/I_CacheReplacement.hpp
         query_engine/caching/LRUReplacementStrategy.cpp
         query_engine/caching/LRUReplacementStrategy.hpp
-        )
+        query_engine/caching/CacheReplacementFactory.cpp query_engine/caching/CacheReplacementFactory.hpp query_engine/caching/NoCachingReplacement.cpp query_engine/caching/NoCachingReplacement.hpp)
 
 
 set(NETWORK_SOURCE_FILES
