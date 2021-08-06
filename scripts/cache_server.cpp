@@ -84,7 +84,7 @@ int main(int argc, char **argv) {
 }
 
 parsed_options parse_cmline(int argc, char **argv) {
-  const char short_options[] = "I:O:i:b:l:m:p:w:t:T:A::";
+  const char short_options[] = "I:O:i:b:l:m:p:w:t:T:A";
   struct option long_options[] = {
       {"index-file", required_argument, nullptr, 'I'},
       {"iris-file", required_argument, nullptr, 'i'},
@@ -157,6 +157,7 @@ parsed_options parse_cmline(int argc, char **argv) {
       break;
     case 'A':
       out.load_all_predicates = true;
+      break;
     default:
       break;
     }
