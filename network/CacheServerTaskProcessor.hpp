@@ -36,6 +36,7 @@ class CacheServerTaskProcessor : public TaskProcessor {
 
   ReplacementTaskProcessor replacement_task_processor;
   // std::unique_ptr<ServerWorker<ReplacementTaskProcessor>> replacement_worker;
+  std::mutex replacement_mutex;
 
 public:
   explicit CacheServerTaskProcessor(Cache &cache, uint8_t workers_count);
@@ -57,9 +58,9 @@ public:
   void clean_streamer(int id) override;
   void
   process_missed_predicates(std::vector<unsigned long> &&predicates) override;
-  std::mutex &get_replacement_mutex() override;
   void mark_using(std::vector<unsigned long> &predicates) override;
   void mark_ready(std::vector<unsigned long> &predicates_in_use) override;
+  std::mutex &get_replacement_mutex() override;
 };
 
 #endif // RDFCACHEK2_CACHESERVERTASKPROCESSOR_HPP

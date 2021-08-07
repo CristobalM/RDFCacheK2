@@ -37,14 +37,14 @@ class Cache {
   unsigned long timeout_ms;
 
   std::unique_ptr<I_CacheReplacement> cache_replacement;
-  std::mutex replacement_mutex;
 
 public:
   using cm_t = std::shared_ptr<PredicatesCacheManager>;
   using pcm_t = PredicatesCacheManager;
   Cache(std::shared_ptr<PredicatesCacheManager> &cache_manager,
         size_t memory_budget_bytes, std::string temp_files_dir,
-        unsigned long timeout_ms, bool enable_caching);
+        unsigned long timeout_ms,
+        I_CacheReplacement::REPLACEMENT_STRATEGY replacement_strategy);
 
   std::shared_ptr<QueryResultIterator>
   run_query(const proto_msg::SparqlTree &query_tree, TimeControl &time_control);
@@ -63,7 +63,6 @@ public:
   unsigned long get_timeout_ms();
   bool has_all_predicates_loaded(std::vector<unsigned long> &predicates);
   I_CacheReplacement &get_replacement();
-  std::mutex &get_replacement_mutex();
 };
 
 #endif // RDFCACHEK2_CACHE_HPP

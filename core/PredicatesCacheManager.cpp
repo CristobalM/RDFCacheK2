@@ -212,7 +212,6 @@ void PredicatesCacheManager::ensure_available_predicate(
   }
 }
 void PredicatesCacheManager::load_all_predicates() {
-  std::lock_guard lg(retrieval_mutex);
   auto &metadata = predicates_index->get_metadata();
   for (auto predicate_id : metadata.get_ids_vector()) {
     predicates_index->fetch_k2tree(predicate_id);
@@ -225,10 +224,8 @@ size_t PredicatesCacheManager::get_predicate_size(unsigned long predicate_id) {
   return metadata_map.at(predicate_id).tree_size_in_memory;
 }
 void PredicatesCacheManager::remove_key(unsigned long key) {
-  std::lock_guard lg(retrieval_mutex);
   predicates_index->discard_in_memory_predicate(key);
 }
 void PredicatesCacheManager::retrieve_key(unsigned long key) {
-  std::lock_guard lg(retrieval_mutex);
   predicates_index->load_single_predicate(key);
 }

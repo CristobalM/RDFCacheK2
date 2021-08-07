@@ -15,9 +15,8 @@ struct MockDataManager : public I_DataManager {
 
 TEST(cache_replacement_test, can_do_simple_lru_replacement_1_test) {
   MockDataManager mock_data_manager;
-  std::mutex m;
   CacheReplacement<LRUReplacementStrategy> cache_replacement(
-      1'000'000, &mock_data_manager, m);
+      1'000'000, &mock_data_manager);
   std::vector<std::pair<unsigned long, size_t>> keys_with_sizes = {
       {1, 100'000}, {2, 100'000}, {3, 100'000}, {4, 100'000}, {5, 700'000},
       {6, 700'000}, {7, 700'000}, {8, 700'000}, {9, 300'000},
@@ -32,4 +31,51 @@ TEST(cache_replacement_test, can_do_simple_lru_replacement_1_test) {
     i++;
   }
   ASSERT_FALSE(cache_replacement.hit_key(10, 1000001));
+}
+
+TEST(cache_replacement_test, map_mutable_1) {
+  std::map<unsigned long, long> in_use;
+
+  auto mark_using = [&](unsigned long key) {
+    auto it = in_use.find(key);
+    if (it == in_use.end()) {
+      in_use[key] = 1;
+      return;
+    }
+    it->second++;
+  };
+  auto mark_ready = [&](unsigned long key) {
+    auto it = in_use.find(key);
+    if (it == in_use.end()) {
+      return;
+    }
+    it->second--;
+    if (it->second <= 0) {
+      in_use.erase(it);
+    }
+  };
+
+  for (unsigned long i = 0; i < 100; i++) {
+    mark_using(i);
+    mark_using(i);
+  }
+  for (unsigned long i = 0; i < 100; i++) {
+    ASSERT_EQ(in_use[i], 2);
+  }
+
+  for (unsigned long i = 0; i < 100; i++) {
+    mark_ready(i);
+  }
+  for (unsigned long i = 0; i < 100; i++) {
+    ASSERT_EQ(in_use[i], 1);
+  }
+
+  for (unsigned long i = 0; i < 100; i++) {
+    mark_ready(i);
+  }
+
+  for (unsigned long i = 0; i < 100; i++) {
+    ASSERT_EQ(in_use.find(i), in_use.end());
+  }
+  ASSERT_EQ(in_use.size(), 0);
 }

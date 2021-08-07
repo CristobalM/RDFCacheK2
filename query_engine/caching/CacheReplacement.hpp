@@ -35,17 +35,17 @@ template <class CRStrategy> class CacheReplacement : public I_CacheReplacement {
 
   std::map<unsigned long, int> in_use;
 
-  std::mutex &replacement_mutex;
+  std::mutex m;
 
 public:
-  CacheReplacement(size_t max_size_allowed, I_DataManager *data_manager,
-                   std::mutex &replacement_mutex);
+  CacheReplacement(size_t max_size_allowed, I_DataManager *data_manager);
 
   // returns true if the key can be allocated else returns false
   bool hit_key(unsigned long key, size_t space_required) override;
 
   void mark_using(unsigned long key) override;
   void mark_ready(unsigned long key) override;
+  bool is_using(unsigned long key);
 };
 
 #endif // RDFCACHEK2_CACHEREPLACEMENT_HPP

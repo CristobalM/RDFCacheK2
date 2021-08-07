@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <filesystem>
 #include <fstream>
 #include <memory>
@@ -14,6 +15,7 @@
 #include <StringDictionaryPFC.h>
 
 namespace fs = std::filesystem;
+
 struct parsed_options {
   std::string index_file;
   std::string iris_file;
@@ -26,7 +28,7 @@ struct parsed_options {
   std::string temp_files_dir;
   unsigned long time_out_ms;
 
-  bool load_all_predicates;
+  I_CacheReplacement::REPLACEMENT_STRATEGY replacement_strategy;
 };
 
 parsed_options parse_cmline(int argc, char **argv);
@@ -65,7 +67,8 @@ int main(int argc, char **argv) {
 
   fs::create_directories(fs::path(parsed.temp_files_dir));
 
-  if (parsed.load_all_predicates) {
+  if (parsed.replacement_strategy ==
+      I_CacheReplacement::REPLACEMENT_STRATEGY::NO_CACHING) {
     std::cout << "Loading all predicates..." << std::endl;
     auto start = std::chrono::high_resolution_clock::now();
     pcm->load_all_predicates();
@@ -77,14 +80,14 @@ int main(int argc, char **argv) {
   }
 
   Cache cache(pcm, parsed.memory_budget_bytes, parsed.temp_files_dir,
-              parsed.time_out_ms, !parsed.load_all_predicates);
+              parsed.time_out_ms, parsed.replacement_strategy);
 
   CacheServer server(cache, parsed.port, parsed.workers_count);
   server.start();
 }
 
 parsed_options parse_cmline(int argc, char **argv) {
-  const char short_options[] = "I:O:i:b:l:m:p:w:t:T:A";
+  const char short_options[] = "I:O:i:b:l:m:p:w:t:T:R:";
   struct option long_options[] = {
       {"index-file", required_argument, nullptr, 'I'},
       {"iris-file", required_argument, nullptr, 'i'},
@@ -95,7 +98,7 @@ parsed_options parse_cmline(int argc, char **argv) {
       {"workers", required_argument, nullptr, 'w'},
       {"temp-files-dir", required_argument, nullptr, 't'},
       {"timeout-ms", required_argument, nullptr, 'T'},
-      {"load-all-predicates", required_argument, nullptr, 'A'},
+      {"replacement-strategy", required_argument, nullptr, 'R'},
   };
 
   int opt, opt_index;
@@ -109,9 +112,8 @@ parsed_options parse_cmline(int argc, char **argv) {
   bool has_workers = false;
   bool has_temp_files_dir = false;
   bool has_timeout = false;
+  bool has_strategy = false;
   parsed_options out{};
-
-  out.load_all_predicates = false;
 
   while ((
       opt = getopt_long(argc, argv, short_options, long_options, &opt_index))) {
@@ -155,9 +157,20 @@ parsed_options parse_cmline(int argc, char **argv) {
       out.time_out_ms = std::stoul(std::string(optarg));
       has_timeout = true;
       break;
-    case 'A':
-      out.load_all_predicates = true;
-      break;
+    case 'R': {
+      std::string replacement_strategy_str(optarg);
+      std::for_each(replacement_strategy_str.begin(),
+                    replacement_strategy_str.end(),
+                    [](char &c) { c = (char)std::tolower(c); });
+      if (replacement_strategy_str == "lru") {
+        out.replacement_strategy =
+            I_CacheReplacement::REPLACEMENT_STRATEGY::LRU;
+      } else {
+        out.replacement_strategy =
+            I_CacheReplacement::REPLACEMENT_STRATEGY::NO_CACHING;
+      }
+      has_strategy = true;
+    } break;
     default:
       break;
     }
@@ -181,6 +194,9 @@ parsed_options parse_cmline(int argc, char **argv) {
     throw std::runtime_error("temp-files-dir (t) argument is required");
   if (!has_timeout)
     throw std::runtime_error("timeout-ms (T) argument is required");
+  if (!has_strategy)
+    throw std::runtime_error(
+        "replacement-strategy (R) (one of: 'LRU','None') argument is required");
 
   return out;
 }

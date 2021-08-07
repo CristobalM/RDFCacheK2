@@ -4,20 +4,23 @@
 
 #include "CacheReplacement.hpp"
 #include "LRUReplacementStrategy.hpp"
+#include <iostream>
 #include <stdexcept>
 
 template <class CRStrategy>
 CacheReplacement<CRStrategy>::CacheReplacement(size_t max_size_allowed,
-                                               I_DataManager *data_manager,
-                                               std::mutex &replacement_mutex)
+                                               I_DataManager *data_manager)
     : priority_set(StrategyWrapper(strategy)),
       max_size_allowed(max_size_allowed), size_used(0),
-      data_manager(data_manager), replacement_mutex(replacement_mutex) {}
+      data_manager(data_manager) {}
 template <class CRStrategy>
 bool CacheReplacement<CRStrategy>::hit_key(unsigned long key,
                                            size_t space_required) {
-  if (space_required > max_size_allowed)
+  if (space_required > max_size_allowed) {
+    std::cerr << "ignoring " << key << " because its size " << space_required
+              << " > max_allowed=" << max_size_allowed << std::endl;
     return false;
+  }
 
   auto it = priority_set.find(key);
 
@@ -30,21 +33,33 @@ bool CacheReplacement<CRStrategy>::hit_key(unsigned long key,
 
   auto next_size = space_required + size_used;
   it = priority_set.begin();
-  while (next_size > max_size_allowed) {
-    auto current_key = *it;
+  unsigned long in_use_sz;
+  {
+    std::lock_guard lg(m);
+    in_use_sz = in_use.size();
+  }
+  std::cerr << "priority set size: " << priority_set.size()
+            << ", predicates in use " << in_use_sz
+            << ", next_size: " << next_size
+            << ", max_size_allowed: " << max_size_allowed << std::endl;
 
+  while (next_size > max_size_allowed) {
     if (it == priority_set.end()) {
+      std::cerr << "reached end, cant free more space for now" << std::endl;
       return false;
     }
 
-    {
-      std::lock_guard lg(replacement_mutex);
-      if (in_use.find(current_key) != in_use.end()) {
-        it++;
-        continue;
-      }
+    auto current_key = *it;
+
+    if (is_using(current_key)) {
+      it++;
+      std::cerr << "using " << current_key << " trying next..." << std::endl;
+      continue;
     }
+
     auto next_it = std::next(it);
+
+    std::cerr << "going to replace " << current_key << std::endl;
 
     next_size -= space_map[current_key];
     space_map.erase(current_key);
@@ -63,26 +78,40 @@ bool CacheReplacement<CRStrategy>::hit_key(unsigned long key,
 }
 template <class CRStrategy>
 void CacheReplacement<CRStrategy>::mark_using(unsigned long key) {
-  std::lock_guard lg(replacement_mutex);
+  std::lock_guard lg(m);
+
   auto it = in_use.find(key);
   if (it == in_use.end()) {
     in_use[key] = 1;
+    std::cerr << "marking using " << key << ", next count: " << in_use[key]
+              << std::endl;
+
     return;
   }
   it->second++;
+  std::cerr << "marking using " << key << ", next count: " << it->second
+            << std::endl;
 }
 
 template <class CRStrategy>
 void CacheReplacement<CRStrategy>::mark_ready(unsigned long key) {
-  std::lock_guard lg(replacement_mutex);
+  std::lock_guard lg(m);
+
   auto it = in_use.find(key);
   if (it == in_use.end()) {
     return;
   }
   it->second--;
+  std::cerr << "marking ready " << key << ", next count: " << it->second
+            << std::endl;
   if (it->second <= 0) {
     in_use.erase(it);
   }
+}
+template <class CRStrategy>
+bool CacheReplacement<CRStrategy>::is_using(unsigned long key) {
+  std::lock_guard lg(m);
+  return in_use.find(key) != in_use.end();
 }
 
 template class CacheReplacement<LRUReplacementStrategy>;

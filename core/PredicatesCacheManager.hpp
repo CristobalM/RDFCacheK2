@@ -19,7 +19,6 @@ class PredicatesCacheManager : public I_DataManager {
   std::unique_ptr<PredicatesIndexCacheMDFile> predicates_index;
 
   NaiveDynamicStringDictionary extra_dicts;
-  std::mutex retrieval_mutex;
 
 public:
   double measured_time_sd_lookup;

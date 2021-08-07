@@ -138,7 +138,6 @@ void ServerTask::process_cache_query(Message &message) {
     }
   }
 
-  // locks replacement_mutex for each predicate separately
   task_processor.mark_using(predicates_in_query);
 
   auto time_control = std::make_unique<TimeControl>(
@@ -188,8 +187,8 @@ void ServerTask::process_receive_remaining_result(Message &message) {
   auto next_response = streamer.get_next_response();
   send_response(next_response);
   if (streamer.all_sent()) {
-    task_processor.clean_streamer(id);
     task_processor.mark_ready(streamer.get_predicates_in_use());
+    task_processor.clean_streamer(id);
   }
 }
 void ServerTask::begin_streaming_results(
@@ -202,8 +201,8 @@ void ServerTask::begin_streaming_results(
   auto first_response = streamer.get_next_response();
   send_response(first_response);
   if (streamer.all_sent()) {
-    task_processor.clean_streamer(streamer.get_id());
     task_processor.mark_ready(streamer.get_predicates_in_use());
+    task_processor.clean_streamer(streamer.get_id());
   }
 }
 
@@ -219,7 +218,7 @@ std::vector<unsigned long>
 ServerTask::get_predicates_in_query(const proto_msg::SparqlNode &query_tree) {
   std::set<unsigned long> result;
   get_predicates_in_query_rec(query_tree, result);
-  return {result.begin(), result.end()};
+  return std::vector<unsigned long>(result.begin(), result.end());
 }
 void ServerTask::get_predicates_in_query_rec(
     const proto_msg::SparqlNode &node, std::set<unsigned long> &result_set) {

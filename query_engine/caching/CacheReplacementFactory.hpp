@@ -14,11 +14,6 @@ public:
   static std::unique_ptr<I_CacheReplacement>
   create_cache_replacement(unsigned long max_size_bytes,
                            I_DataManager *cache_data_manager,
-                           std::mutex &replacement_mutex, bool enable_caching);
-  static std::unique_ptr<I_CacheReplacement>
-  create_cache_replacement(unsigned long max_size_bytes,
-                           I_DataManager *cache_data_manager,
-                           std::mutex &replacement_mutex,
                            I_CacheReplacement::REPLACEMENT_STRATEGY strategy);
 };
 

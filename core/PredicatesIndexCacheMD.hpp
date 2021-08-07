@@ -3,6 +3,7 @@
 
 #include <istream>
 #include <memory>
+#include <mutex>
 #include <set>
 #include <vector>
 
@@ -12,6 +13,8 @@
 
 class PredicatesIndexCacheMD {
   PredicatesCacheMetadata metadata;
+  std::mutex retrieval_mutex_1;
+  std::mutex retrieval_mutex_2;
 
 protected:
   std::unique_ptr<std::istream> is;

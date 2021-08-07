@@ -79,14 +79,19 @@ void CacheServerTaskProcessor::process_missed_predicates(
     std::vector<unsigned long> &&predicates) {
   replacement_task_processor.add_task(std::move(predicates));
 }
-std::mutex &CacheServerTaskProcessor::get_replacement_mutex() {
-  return cache.get_replacement_mutex();
-}
+
 void CacheServerTaskProcessor::mark_using(
     std::vector<unsigned long> &predicates) {
+  std::lock_guard lg(replacement_mutex);
   replacement_task_processor.mark_used(predicates);
 }
 void CacheServerTaskProcessor::mark_ready(
     std::vector<unsigned long> &predicates_in_use) {
+  std::lock_guard lg(replacement_mutex);
+  std::cerr << "marking ready predicates, size: " << predicates_in_use.size()
+            << std::endl;
   replacement_task_processor.mark_ready(predicates_in_use);
+}
+std::mutex &CacheServerTaskProcessor::get_replacement_mutex() {
+  return replacement_mutex;
 }

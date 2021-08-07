@@ -13,12 +13,12 @@
 
 Cache::Cache(std::shared_ptr<PredicatesCacheManager> &cache_manager,
              size_t max_size_bytes, std::string temp_files_dir,
-             unsigned long timeout_ms, bool enable_caching)
+             unsigned long timeout_ms,
+             I_CacheReplacement::REPLACEMENT_STRATEGY replacement_strategy)
     : cache_manager(cache_manager), temp_files_dir(std::move(temp_files_dir)),
       timeout_ms(timeout_ms),
       cache_replacement(CacheReplacementFactory::create_cache_replacement(
-          max_size_bytes, cache_manager.get(), replacement_mutex,
-          enable_caching)) {}
+          max_size_bytes, cache_manager.get(), replacement_strategy)) {}
 
 std::shared_ptr<QueryResultIterator>
 Cache::run_query(const proto_msg::SparqlTree &query_tree,
@@ -205,4 +205,3 @@ bool Cache::has_all_predicates_loaded(std::vector<unsigned long> &predicates) {
       });
 }
 I_CacheReplacement &Cache::get_replacement() { return *cache_replacement; }
-std::mutex &Cache::get_replacement_mutex() { return replacement_mutex; }
