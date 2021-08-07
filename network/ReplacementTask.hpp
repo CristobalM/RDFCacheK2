@@ -8,10 +8,11 @@
 #include <Cache.hpp>
 class ReplacementTask {
   Cache &cache;
-  std::vector<unsigned long> predicates;
+  std::shared_ptr<const std::vector<unsigned long>> predicates;
 
 public:
-  ReplacementTask(Cache &cache, std::vector<unsigned long> &&predicates);
+  ReplacementTask(Cache &cache,
+                  std::shared_ptr<const std::vector<unsigned long>> predicates);
   void process();
 };
 

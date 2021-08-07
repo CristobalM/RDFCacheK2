@@ -54,12 +54,13 @@ public:
   I_QRStreamer &
   create_streamer(std::shared_ptr<QueryResultIterator> query_result_iterator,
                   std::unique_ptr<TimeControl> &&time_control,
-                  std::vector<unsigned long> &&predicates_in_use) override;
+                  std::shared_ptr<const std::vector<unsigned long>>
+                      predicates_in_use) override;
   void clean_streamer(int id) override;
-  void
-  process_missed_predicates(std::vector<unsigned long> &&predicates) override;
-  void mark_using(std::vector<unsigned long> &predicates) override;
-  void mark_ready(std::vector<unsigned long> &predicates_in_use) override;
+  void process_missed_predicates(
+      std::shared_ptr<const std::vector<unsigned long>> predicates) override;
+  void mark_using(const std::vector<unsigned long> &predicates) override;
+  void mark_ready(const std::vector<unsigned long> &predicates_in_use) override;
   std::mutex &get_replacement_mutex() override;
 };
 

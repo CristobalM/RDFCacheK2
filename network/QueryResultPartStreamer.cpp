@@ -7,11 +7,13 @@
 QueryResultPartStreamer::QueryResultPartStreamer(
     int id, std::shared_ptr<QueryResultIterator> query_result_iterator,
     std::unique_ptr<TimeControl> &&time_control, size_t threshold_part_size,
-    std::vector<unsigned long> &&predicates_in_use)
+    std::shared_ptr<const std::vector<unsigned long>> predicates_in_use,
+    TaskProcessor *task_processor)
     : id(id), query_result_iterator(std::move(query_result_iterator)),
       time_control(std::move(time_control)),
       predicates_in_use(std::move(predicates_in_use)),
-      threshold_part_size(threshold_part_size), first(true), done(false) {}
+      task_processor(task_processor), threshold_part_size(threshold_part_size),
+      first(true), done(false) {}
 proto_msg::CacheResponse QueryResultPartStreamer::get_next_response() {
   if (!time_control->tick())
     return time_control_finished_error();
@@ -89,6 +91,7 @@ proto_msg::CacheResponse
 QueryResultPartStreamer::time_control_finished_error() {
   if (!time_control->has_error())
     return timeout_proto();
+  set_finished();
   std::cerr << "Query stopped early due to error: "
             << time_control->get_query_error().get_str() << std::endl;
   proto_msg::CacheResponse cache_response;
@@ -97,6 +100,11 @@ QueryResultPartStreamer::time_control_finished_error() {
   cache_response.mutable_invalid_query_response();
   return cache_response;
 }
-std::vector<unsigned long> &QueryResultPartStreamer::get_predicates_in_use() {
-  return predicates_in_use;
+const std::vector<unsigned long> &
+QueryResultPartStreamer::get_predicates_in_use() {
+  return *predicates_in_use;
+}
+QueryResultPartStreamer::~QueryResultPartStreamer() {
+  if (!predicates_in_use->empty())
+    task_processor->mark_ready(*predicates_in_use);
 }

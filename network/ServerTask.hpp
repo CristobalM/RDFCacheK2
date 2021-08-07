@@ -35,8 +35,8 @@ public:
   void begin_streaming_results(
       std::shared_ptr<QueryResultIterator> query_result_iterator,
       std::unique_ptr<TimeControl> &&time_control,
-      std::vector<unsigned long> &&predicates_in_use);
-  std::vector<unsigned long>
+      std::shared_ptr<const std::vector<unsigned long>> predicates_in_use);
+  std::shared_ptr<const std::vector<unsigned long>>
   get_predicates_in_query(const proto_msg::SparqlNode &query_tree);
   void send_cache_miss_response();
   void get_predicates_in_query_rec(const proto_msg::SparqlNode &node,

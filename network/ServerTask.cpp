@@ -130,7 +130,7 @@ void ServerTask::process_cache_query(Message &message) {
   {
     auto &replacement_mutex = task_processor.get_replacement_mutex();
     std::lock_guard lg(replacement_mutex);
-    if (!cache.has_all_predicates_loaded(predicates_in_query)) {
+    if (!cache.has_all_predicates_loaded(*predicates_in_query)) {
       send_cache_miss_response();
       // starts a task which also locks replacement_mutex
       task_processor.process_missed_predicates(std::move(predicates_in_query));
@@ -138,7 +138,8 @@ void ServerTask::process_cache_query(Message &message) {
     }
   }
 
-  task_processor.mark_using(predicates_in_query);
+  if (!predicates_in_query->empty())
+    task_processor.mark_using(*predicates_in_query);
 
   auto time_control = std::make_unique<TimeControl>(
       1'000, std::chrono::milliseconds(cache.get_timeout_ms()));
@@ -187,21 +188,22 @@ void ServerTask::process_receive_remaining_result(Message &message) {
   auto next_response = streamer.get_next_response();
   send_response(next_response);
   if (streamer.all_sent()) {
-    task_processor.mark_ready(streamer.get_predicates_in_use());
+    // task_processfor.mark_ready(streamer.get_predicates_in_use());
     task_processor.clean_streamer(id);
   }
 }
 void ServerTask::begin_streaming_results(
     std::shared_ptr<QueryResultIterator> query_result_iterator,
     std::unique_ptr<TimeControl> &&time_control,
-    std::vector<unsigned long> &&predicates_in_use) {
+    std::shared_ptr<const std::vector<unsigned long>> predicates_in_use) {
   auto &streamer = task_processor.create_streamer(
       std::move(query_result_iterator), std::move(time_control),
       std::move(predicates_in_use));
+
   auto first_response = streamer.get_next_response();
   send_response(first_response);
   if (streamer.all_sent()) {
-    task_processor.mark_ready(streamer.get_predicates_in_use());
+    // task_processor.mark_ready(streamer.get_predicates_in_use());
     task_processor.clean_streamer(streamer.get_id());
   }
 }
@@ -214,11 +216,12 @@ void ServerTask::send_cache_miss_response() {
   send_response(cache_response);
 }
 
-std::vector<unsigned long>
+std::shared_ptr<const std::vector<unsigned long>>
 ServerTask::get_predicates_in_query(const proto_msg::SparqlNode &query_tree) {
   std::set<unsigned long> result;
   get_predicates_in_query_rec(query_tree, result);
-  return std::vector<unsigned long>(result.begin(), result.end());
+  return std::make_shared<const std::vector<unsigned long>>(result.begin(),
+                                                            result.end());
 }
 void ServerTask::get_predicates_in_query_rec(
     const proto_msg::SparqlNode &node, std::set<unsigned long> &result_set) {

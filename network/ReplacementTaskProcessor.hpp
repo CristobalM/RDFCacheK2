@@ -21,10 +21,10 @@ public:
   ReplacementTaskProcessor(Cache &cache);
   bool tasks_available();
   std::unique_ptr<ReplacementTask> get_server_task();
-  void add_task(std::vector<unsigned long> &&predicates);
+  void add_task(std::shared_ptr<const std::vector<unsigned long>> predicates);
   void notify();
-  void mark_used(std::vector<unsigned long> &predicates);
-  void mark_ready(std::vector<unsigned long> &predicates_in_use);
+  void mark_used(const std::vector<unsigned long> &predicates);
+  void mark_ready(const std::vector<unsigned long> &predicates_in_use);
 };
 
 #endif // RDFCACHEK2_REPLACEMENTTASKPROCESSOR_HPP

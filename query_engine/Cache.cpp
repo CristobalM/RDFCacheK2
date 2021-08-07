@@ -197,7 +197,8 @@ void Cache::ensure_available_predicate(const proto_msg::RDFTerm &term) {
   cache_manager->ensure_available_predicate(RDFResource(term));
 }
 unsigned long Cache::get_timeout_ms() { return timeout_ms; }
-bool Cache::has_all_predicates_loaded(std::vector<unsigned long> &predicates) {
+bool Cache::has_all_predicates_loaded(
+    const std::vector<unsigned long> &predicates) {
   return std::all_of(
       predicates.begin(), predicates.end(), [this](unsigned long p) {
         return cache_manager->get_predicates_index_cache().has_predicate_active(

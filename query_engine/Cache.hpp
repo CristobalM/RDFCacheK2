@@ -61,7 +61,7 @@ public:
   void ensure_available_predicates_bgp(const proto_msg::BGPNode &bgp_node);
   void ensure_available_predicate(const proto_msg::RDFTerm &term);
   unsigned long get_timeout_ms();
-  bool has_all_predicates_loaded(std::vector<unsigned long> &predicates);
+  bool has_all_predicates_loaded(const std::vector<unsigned long> &predicates);
   I_CacheReplacement &get_replacement();
 };
 
