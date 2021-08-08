@@ -27,7 +27,6 @@ public:
   virtual void mark_using(const std::vector<unsigned long> &predicates) = 0;
   virtual void
   mark_ready(const std::vector<unsigned long> &predicates_in_use) = 0;
-  virtual std::mutex &get_replacement_mutex() = 0;
 };
 
 #endif // RDFCACHEK2_TASKPROCESSOR_HPP

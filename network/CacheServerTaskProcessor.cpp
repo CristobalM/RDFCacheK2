@@ -68,13 +68,11 @@ I_QRStreamer &CacheServerTaskProcessor::create_streamer(
     std::unique_ptr<TimeControl> &&time_control,
     std::shared_ptr<const std::vector<unsigned long>> predicates_in_use) {
   std::lock_guard lg(mutex);
-  std::cerr << "creating streamer " << current_id << " with "
-            << predicates_in_use->size() << " predicates" << std::endl;
+
   streamer_map[current_id] = std::make_unique<QueryResultPartStreamer>(
       current_id, std::move(query_result_iterator), std::move(time_control),
       DEFAULT_THRESHOLD_PART_SZ, std::move(predicates_in_use), this);
 
-  std::cerr << "streamers now: " << streamer_map.size() << std::endl;
   auto last_created = current_id;
   current_id++;
   return *streamer_map[last_created];
@@ -82,33 +80,20 @@ I_QRStreamer &CacheServerTaskProcessor::create_streamer(
 
 void CacheServerTaskProcessor::clean_streamer(int id) {
   std::lock_guard lg(mutex);
-  std::cerr << "cleaning streamer: " << id << " with "
-            << streamer_map[id]->get_predicates_in_use().size() << " predicates"
-            << std::endl;
   streamer_map[id] = nullptr;
   streamer_map.erase(id);
 }
 void CacheServerTaskProcessor::process_missed_predicates(
     std::shared_ptr<const std::vector<unsigned long>> predicates) {
-  std::lock_guard lg(mutex);
   replacement_task_processor.add_task(std::move(predicates));
 }
 
 void CacheServerTaskProcessor::mark_using(
     const std::vector<unsigned long> &predicates) {
-  std::lock_guard lg2(replacement_mutex);
-  std::cerr << "marking using predicates, size: " << predicates.size()
-            << std::endl;
   replacement_task_processor.mark_used(predicates);
 }
 void CacheServerTaskProcessor::mark_ready(
     const std::vector<unsigned long> &predicates_in_use) {
-  std::cerr << "m2" << std::endl;
-  std::lock_guard lg2(replacement_mutex);
-  std::cerr << "marking ready predicates, size: " << predicates_in_use.size()
-            << std::endl;
+  std::lock_guard lg(cache.get_replacement().get_replacement_mutex());
   replacement_task_processor.mark_ready(predicates_in_use);
-}
-std::mutex &CacheServerTaskProcessor::get_replacement_mutex() {
-  return replacement_mutex;
 }

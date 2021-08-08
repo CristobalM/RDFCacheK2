@@ -59,7 +59,7 @@ bool CacheReplacement<CRStrategy>::hit_key(unsigned long key,
 
     auto next_it = std::next(it);
 
-    std::cerr << "going to replace " << current_key << std::endl;
+    std::cerr << "going to drop " << current_key << std::endl;
 
     next_size -= space_map[current_key];
     space_map.erase(current_key);
@@ -78,32 +78,21 @@ bool CacheReplacement<CRStrategy>::hit_key(unsigned long key,
 }
 template <class CRStrategy>
 void CacheReplacement<CRStrategy>::mark_using(unsigned long key) {
-  std::lock_guard lg(m);
-
   auto it = in_use.find(key);
   if (it == in_use.end()) {
     in_use[key] = 1;
-    std::cerr << "marking using " << key << ", next count: " << in_use[key]
-              << std::endl;
-
     return;
   }
   it->second++;
-  std::cerr << "marking using " << key << ", next count: " << it->second
-            << std::endl;
 }
 
 template <class CRStrategy>
 void CacheReplacement<CRStrategy>::mark_ready(unsigned long key) {
-  std::lock_guard lg(m);
-
   auto it = in_use.find(key);
   if (it == in_use.end()) {
     return;
   }
   it->second--;
-  std::cerr << "marking ready " << key << ", next count: " << it->second
-            << std::endl;
   if (it->second <= 0) {
     in_use.erase(it);
   }
@@ -112,6 +101,10 @@ template <class CRStrategy>
 bool CacheReplacement<CRStrategy>::is_using(unsigned long key) {
   std::lock_guard lg(m);
   return in_use.find(key) != in_use.end();
+}
+template <class CRStrategy>
+std::mutex &CacheReplacement<CRStrategy>::get_replacement_mutex() {
+  return m;
 }
 
 template class CacheReplacement<LRUReplacementStrategy>;

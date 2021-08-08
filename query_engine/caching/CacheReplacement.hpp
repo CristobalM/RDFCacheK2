@@ -46,6 +46,7 @@ public:
   void mark_using(unsigned long key) override;
   void mark_ready(unsigned long key) override;
   bool is_using(unsigned long key);
+  std::mutex &get_replacement_mutex() override;
 };
 
 #endif // RDFCACHEK2_CACHEREPLACEMENT_HPP

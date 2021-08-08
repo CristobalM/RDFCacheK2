@@ -128,18 +128,19 @@ void ServerTask::process_cache_query(Message &message) {
   auto predicates_in_query = get_predicates_in_query(tree.root());
 
   {
-    auto &replacement_mutex = task_processor.get_replacement_mutex();
+    auto &replacement_mutex = cache.get_replacement().get_replacement_mutex();
+    // auto &replacement_mutex = task_processor.get_replacement_mutex();
     std::lock_guard lg(replacement_mutex);
     if (!cache.has_all_predicates_loaded(*predicates_in_query)) {
       send_cache_miss_response();
-      // starts a task which also locks replacement_mutex
       task_processor.process_missed_predicates(std::move(predicates_in_query));
+      // starts a task which also locks replacement_mutex
       return;
     }
-  }
 
-  if (!predicates_in_query->empty())
-    task_processor.mark_using(*predicates_in_query);
+    if (!predicates_in_query->empty())
+      task_processor.mark_using(*predicates_in_query);
+  }
 
   auto time_control = std::make_unique<TimeControl>(
       1'000, std::chrono::milliseconds(cache.get_timeout_ms()));
@@ -186,11 +187,10 @@ void ServerTask::process_receive_remaining_result(Message &message) {
   }
   auto &streamer = task_processor.get_streamer(id);
   auto next_response = streamer.get_next_response();
-  send_response(next_response);
   if (streamer.all_sent()) {
-    // task_processfor.mark_ready(streamer.get_predicates_in_use());
     task_processor.clean_streamer(id);
   }
+  send_response(next_response);
 }
 void ServerTask::begin_streaming_results(
     std::shared_ptr<QueryResultIterator> query_result_iterator,
@@ -201,11 +201,10 @@ void ServerTask::begin_streaming_results(
       std::move(predicates_in_use));
 
   auto first_response = streamer.get_next_response();
-  send_response(first_response);
   if (streamer.all_sent()) {
-    // task_processor.mark_ready(streamer.get_predicates_in_use());
     task_processor.clean_streamer(streamer.get_id());
   }
+  send_response(first_response);
 }
 
 void ServerTask::send_cache_miss_response() {

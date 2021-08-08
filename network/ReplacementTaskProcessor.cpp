@@ -21,7 +21,6 @@ void ReplacementTaskProcessor::add_task(
     std::shared_ptr<const std::vector<unsigned long>> predicates) {
   {
     std::lock_guard lg(m);
-    mark_used(*predicates);
     tasks.push(std::make_unique<ReplacementTask>(cache, std::move(predicates)));
   }
   notify();

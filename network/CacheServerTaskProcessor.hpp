@@ -61,7 +61,6 @@ public:
       std::shared_ptr<const std::vector<unsigned long>> predicates) override;
   void mark_using(const std::vector<unsigned long> &predicates) override;
   void mark_ready(const std::vector<unsigned long> &predicates_in_use) override;
-  std::mutex &get_replacement_mutex() override;
 };
 
 #endif // RDFCACHEK2_CACHESERVERTASKPROCESSOR_HPP
