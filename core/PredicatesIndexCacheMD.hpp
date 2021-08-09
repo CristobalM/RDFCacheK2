@@ -13,8 +13,8 @@
 
 class PredicatesIndexCacheMD {
   PredicatesCacheMetadata metadata;
-  std::mutex retrieval_mutex_1;
-  std::mutex retrieval_mutex_2;
+  std::mutex retrieval_mutex;
+  std::mutex map_mutex;
 
 protected:
   std::unique_ptr<std::istream> is;
@@ -53,6 +53,7 @@ public:
   const std::vector<uint64_t> &get_predicates_ids();
 
   const PredicatesCacheMetadata &get_metadata();
+  const PredicateMetadata &get_metadata_with_id(uint64_t predicate_id);
 };
 
 #endif /* _PREDICATES_INDEX_CACHE_MD_HPP_ */

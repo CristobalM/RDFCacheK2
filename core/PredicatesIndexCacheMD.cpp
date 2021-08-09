@@ -17,28 +17,18 @@ PredicatesIndexCacheMD::PredicatesIndexCacheMD(
       k2tree_config(other.k2tree_config) {}
 
 bool PredicatesIndexCacheMD::load_single_predicate(uint64_t predicate_index) {
-  {
-    std::lock_guard lg(retrieval_mutex_1);
-    if (metadata.get_map().find(predicate_index) == metadata.get_map().end()) {
-      return false;
-    }
-  }
+  if (!has_predicate_stored(predicate_index))
+    return false;
 
-  std::lock_guard lg2(retrieval_mutex_2);
+  std::lock_guard lg(retrieval_mutex);
 
   std::cerr << "retrieving predicate " << predicate_index << " from memory"
             << std::endl;
 
-  const auto &metadata_map = metadata.get_map();
+  const auto &predicate_metadata = get_metadata_with_id(predicate_index);
 
-  std::unique_ptr<PredicateMetadata> predicate_metadata;
-  {
-    std::lock_guard lg(retrieval_mutex_1);
-    predicate_metadata =
-        std::make_unique<PredicateMetadata>(metadata_map.at(predicate_index));
-  }
   auto pos = is->tellg();
-  is->seekg(predicate_metadata->tree_offset);
+  is->seekg(predicate_metadata.tree_offset);
 
   const auto &predicates_v = metadata.get_ids_vector();
   auto pos_it =
@@ -56,26 +46,23 @@ bool PredicatesIndexCacheMD::load_single_predicate(uint64_t predicate_index) {
     is->seekg(curr);
   } else {
 
-    std::lock_guard lg(retrieval_mutex_1);
-    if (metadata_map.find(*pos_it) == metadata_map.end()) {
+    if (!has_predicate_stored(*pos_it))
       throw std::runtime_error("predicate id " + std::to_string(*pos_it) +
                                " in list but not on metadata map");
-    }
-
-    auto &md = metadata_map.at(*pos_it);
+    const auto &md = get_metadata_with_id(*pos_it);
     end_pos = md.tree_offset;
   }
 
-  auto raw_k2tree_sz = end_pos - predicate_metadata->tree_offset;
+  auto raw_k2tree_sz = end_pos - predicate_metadata.tree_offset;
   std::vector<char> raw_k2tree(raw_k2tree_sz, 0);
 
   is->read(raw_k2tree.data(), static_cast<std::streamsize>(raw_k2tree.size()));
 
   auto md5_calc = md5calc(raw_k2tree);
 
-  if (md5_calc != predicate_metadata->k2tree_hash) {
+  if (md5_calc != predicate_metadata.k2tree_hash) {
     throw std::runtime_error("Calc hash differs from stored for predicate " +
-                             std::to_string(predicate_metadata->predicate_id));
+                             std::to_string(predicate_metadata.predicate_id));
   }
 
   std::stringstream ss(
@@ -83,13 +70,13 @@ bool PredicatesIndexCacheMD::load_single_predicate(uint64_t predicate_index) {
                   raw_k2tree.end())); // TODO: optimization using a custom
                                       // stream to avoid copying the data
 
-  std::cout << "Loading predicate " << predicate_metadata->predicate_id
-            << " ..." << std::endl;
+  std::cout << "Loading predicate " << predicate_metadata.predicate_id << " ..."
+            << std::endl;
 
-  predicates[predicate_metadata->predicate_id] =
+  predicates[predicate_metadata.predicate_id] =
       std::make_unique<K2TreeMixed>(K2TreeMixed::read_from_istream(ss));
   is->seekg(pos);
-  std::cout << "Loaded " << predicate_metadata->predicate_id << std::endl;
+  std::cout << "Loaded " << predicate_metadata.predicate_id << std::endl;
 
   return true;
 }
@@ -113,6 +100,7 @@ bool PredicatesIndexCacheMD::has_predicate_active(uint64_t predicate_index) {
 }
 
 bool PredicatesIndexCacheMD::has_predicate_stored(uint64_t predicate_index) {
+  std::lock_guard lg(map_mutex);
   return metadata.get_map().find(predicate_index) != metadata.get_map().end();
 }
 
@@ -144,8 +132,7 @@ void PredicatesIndexCacheMD::insert_point(uint64_t subject_index,
 // with this
 void PredicatesIndexCacheMD::sync_to_stream(std::ostream &os) {
 
-  std::lock_guard lg(retrieval_mutex_1);
-  std::lock_guard lg2(retrieval_mutex_2);
+  std::lock_guard lg(retrieval_mutex);
 
   std::vector<uint64_t> all_predicates(new_predicates.begin(),
                                        new_predicates.end());
@@ -211,8 +198,7 @@ void PredicatesIndexCacheMD::replace_istream(
 
 void PredicatesIndexCacheMD::discard_in_memory_predicate(
     uint64_t predicate_index) {
-  std::lock_guard lg(retrieval_mutex_1);
-  std::lock_guard lg2(retrieval_mutex_2);
+  std::lock_guard lg(retrieval_mutex);
   std::cerr << "removing predicate " << predicate_index << " from memory"
             << std::endl;
   predicates.erase(predicate_index);
@@ -226,4 +212,10 @@ const std::vector<uint64_t> &PredicatesIndexCacheMD::get_predicates_ids() {
 
 const PredicatesCacheMetadata &PredicatesIndexCacheMD::get_metadata() {
   return metadata;
+}
+const PredicateMetadata &
+PredicatesIndexCacheMD::get_metadata_with_id(uint64_t predicate_id) {
+  std::lock_guard lg(map_mutex);
+  const auto &metadata_map = metadata.get_map();
+  return metadata_map.at(predicate_id);
 }
