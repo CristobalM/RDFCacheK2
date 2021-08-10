@@ -8,8 +8,12 @@ class PredicatesIndexCacheMDFile : private PredicatesIndexCacheMD {
 
   std::string fname;
 
+  using buf_t = std::array<char, 10'000'000>;
+
+  buf_t buffer;
+
 public:
-  PredicatesIndexCacheMDFile(const std::string &fname);
+  explicit PredicatesIndexCacheMDFile(const std::string &fname);
 
   PredicatesIndexCacheMDFile(PredicatesIndexCacheMDFile &&other) noexcept;
 
@@ -30,6 +34,10 @@ public:
 
   const std::vector<uint64_t> &get_predicates_ids();
   const PredicatesCacheMetadata &get_metadata();
+
+private:
+  static std::unique_ptr<std::istream> load_file(const std::string &fname,
+                                          buf_t &buffer);
 };
 
 #endif /* _PREDICATES_INDEX_CACHE_MD_FILE_HPP_  */
