@@ -4,6 +4,7 @@
 
 #include <I_DataManager.hpp>
 #include <caching/CacheReplacement.hpp>
+#include <caching/FrequencyReplacementStrategy.hpp>
 #include <caching/LRUReplacementStrategy.hpp>
 #include <gtest/gtest.h>
 
@@ -28,6 +29,52 @@ TEST(cache_replacement_test, can_do_simple_lru_replacement_1_test) {
     ASSERT_TRUE(can_be_retrieved);
     ASSERT_EQ(mock_data_manager.keys.size(), expected_sizes[i])
         << "failed at i  = " << i;
+    i++;
+  }
+  ASSERT_FALSE(cache_replacement.hit_key(10, 1000001));
+}
+
+TEST(cache_replacement_test, can_do_simple_frequency_replacement_1_test) {
+  MockDataManager mock_data_manager;
+  CacheReplacement<FrequencyReplacementStrategy> cache_replacement(
+      1'000'000, &mock_data_manager);
+  std::vector<std::pair<unsigned long, size_t>> keys_with_sizes = {
+      {1, 100'000},  {1, 100'000},  {1, 100'000},  {1, 100'000},
+
+      {2, 100'000},  {2, 100'000},  {2, 100'000},
+
+      {3, 100'000},  {3, 100'000},
+
+      {4, 100'000},
+
+      {5, 700'000},  {6, 700'000},  {7, 700'000},  {8, 700'000},
+      {9, 300'000},  {10, 700'000}, {10, 700'000}, {10, 700'000},
+      {10, 700'000}, {10, 700'000}, {11, 100'000}, {12, 900'000},
+
+  };
+  int i = 0;
+  std::vector<size_t> expected_sizes = {1, 1, 1, 1, 2, 2, 2, 3, 3, 4, 4,
+                                        4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 1};
+  std::cout << "expected sizes length: " << expected_sizes.size() << std::endl;
+  int debug;
+  for (auto &pair : keys_with_sizes) {
+    std::cout << "hitting key " << pair.first << " with size " << pair.second
+              << std::endl;
+    if (pair.first == 10) {
+      debug = 1;
+    }
+    auto can_be_retrieved = cache_replacement.hit_key(pair.first, pair.second);
+    ASSERT_TRUE(can_be_retrieved) << "failed at i = " << i;
+    ASSERT_EQ(mock_data_manager.keys.size(), expected_sizes[i])
+        << "failed at i  = " << i;
+
+    // ensure that keys 1 and 2 aren't dropped
+    if (i == 10) {
+      ASSERT_NE(mock_data_manager.keys.find(1), mock_data_manager.keys.end());
+      ASSERT_NE(mock_data_manager.keys.find(2), mock_data_manager.keys.end());
+      ASSERT_NE(mock_data_manager.keys.find(3), mock_data_manager.keys.end());
+    }
+
     i++;
   }
   ASSERT_FALSE(cache_replacement.hit_key(10, 1000001));

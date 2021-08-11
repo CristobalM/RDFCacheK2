@@ -3,6 +3,7 @@
 //
 
 #include "CacheReplacement.hpp"
+#include "FrequencyReplacementStrategy.hpp"
 #include "LRUReplacementStrategy.hpp"
 #include <iostream>
 #include <stdexcept>
@@ -42,10 +43,11 @@ bool CacheReplacement<CRStrategy>::hit_key(unsigned long key,
             << ", predicates in use " << in_use_sz
             << ", next_size: " << next_size
             << ", max_size_allowed: " << max_size_allowed << std::endl;
-
+  size_t size_erased = 0;
   while (next_size > max_size_allowed) {
     if (it == priority_set.end()) {
       std::cerr << "reached end, cant free more space for now" << std::endl;
+      size_used -= size_erased;
       return false;
     }
 
@@ -59,9 +61,12 @@ bool CacheReplacement<CRStrategy>::hit_key(unsigned long key,
 
     auto next_it = std::next(it);
 
-    std::cerr << "going to drop " << current_key << std::endl;
+    auto erasing_sz = space_map[current_key];
+    std::cerr << "going to drop " << current_key << " with size " << erasing_sz
+              << std::endl;
 
-    next_size -= space_map[current_key];
+    size_erased += erasing_sz;
+    next_size -= erasing_sz;
     space_map.erase(current_key);
 
     priority_set.erase(it);
@@ -108,3 +113,4 @@ std::mutex &CacheReplacement<CRStrategy>::get_replacement_mutex() {
 }
 
 template class CacheReplacement<LRUReplacementStrategy>;
+template class CacheReplacement<FrequencyReplacementStrategy>;

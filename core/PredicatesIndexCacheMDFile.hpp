@@ -37,7 +37,7 @@ public:
 
 private:
   static std::unique_ptr<std::istream> load_file(const std::string &fname,
-                                          buf_t &buffer);
+                                                 buf_t &buffer);
 };
 
 #endif /* _PREDICATES_INDEX_CACHE_MD_FILE_HPP_  */
