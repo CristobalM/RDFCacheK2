@@ -17,10 +17,8 @@
 template <class CRStrategy> class CacheReplacement : public I_CacheReplacement {
   struct StrategyWrapper {
     CRStrategy &strategy;
-    explicit StrategyWrapper(CRStrategy &strategy) : strategy(strategy) {}
-    bool operator()(unsigned long lhs, unsigned long rhs) const {
-      return strategy.operator()(lhs, rhs);
-    }
+    explicit StrategyWrapper(CRStrategy &strategy);
+    bool operator()(unsigned long lhs, unsigned long rhs) const;
   };
 
   CRStrategy strategy;

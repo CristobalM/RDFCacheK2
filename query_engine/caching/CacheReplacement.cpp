@@ -112,5 +112,20 @@ std::mutex &CacheReplacement<CRStrategy>::get_replacement_mutex() {
   return m;
 }
 
+template <class CRStrategy>
+bool CacheReplacement<CRStrategy>::StrategyWrapper::operator()(
+    unsigned long lhs, unsigned long rhs) const {
+  // return strategy.operator()(lhs, rhs);
+  auto left = strategy.cost_function(lhs);
+  auto right = strategy.cost_function(rhs);
+  if (left == right)
+    return lhs < rhs;
+  return left < right;
+}
+template <class CRStrategy>
+CacheReplacement<CRStrategy>::StrategyWrapper::StrategyWrapper(
+    CRStrategy &strategy)
+    : strategy(strategy) {}
+
 template class CacheReplacement<LRUReplacementStrategy>;
 template class CacheReplacement<FrequencyReplacementStrategy>;

@@ -3,30 +3,7 @@
 //
 
 #include "LRUReplacementStrategy.hpp"
-bool LRUReplacementStrategy::operator()(unsigned long lhs,
-                                        unsigned long rhs) const {
-  auto left_it = key_mapping_to_lru_value.find(lhs);
-  auto right_it = key_mapping_to_lru_value.find(rhs);
-  long left;
-  long right;
-  if (left_it == key_mapping_to_lru_value.end())
-    left = high;
-  else
-    left = left_it->second;
 
-  if (right_it == key_mapping_to_lru_value.end())
-    right = high;
-  else
-    right = right_it->second;
-
-  auto priority_value_left = left - low;
-  auto priority_value_right = right - low;
-  return priority_value_left <
-         priority_value_right; // protection against overflow
-  // priority queue must be in ascending order, new values will take higher
-  // values, so to comply with lru retrieve for deletion lower values.
-  // In practice this should never happen though, as 2^63 is extremely large.
-}
 LRUReplacementStrategy::LRUReplacementStrategy() : low(0), high(0) {}
 void LRUReplacementStrategy::hit_key(unsigned long key) {
   auto next_key_value = high++;
@@ -48,4 +25,16 @@ void LRUReplacementStrategy::remove_key(unsigned long key) {
     }
   }
   key_mapping_to_lru_value.erase(it);
+}
+long LRUReplacementStrategy::cost_function(unsigned long key) const {
+  auto it = key_mapping_to_lru_value.find(key);
+  long value;
+  if (it == key_mapping_to_lru_value.end()) {
+    value = high;
+  } else {
+    value = it->second;
+  }
+  return value - low; // protection against overflow
+  // In practice this should never be a problem though, as 2^63 (longs) is
+  // extremely large.
 }

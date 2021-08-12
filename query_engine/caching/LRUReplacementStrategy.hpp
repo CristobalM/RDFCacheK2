@@ -18,7 +18,7 @@ public:
   LRUReplacementStrategy(LRUReplacementStrategy &other) = delete;
   LRUReplacementStrategy &operator=(LRUReplacementStrategy &other) = delete;
 
-  bool operator()(unsigned long lhs, unsigned long rhs) const;
+  long cost_function(unsigned long key) const;
 
   void hit_key(unsigned long key);
   void remove_key(unsigned long key);

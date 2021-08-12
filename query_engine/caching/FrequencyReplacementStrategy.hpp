@@ -18,11 +18,10 @@ public:
   FrequencyReplacementStrategy &
   operator=(FrequencyReplacementStrategy &other) = delete;
 
-  bool operator()(unsigned long lhs, unsigned long rhs) const;
+  long cost_function(unsigned long key) const;
 
   void hit_key(unsigned long key);
   void remove_key(unsigned long key);
-  long get_frequency(unsigned long key) const;
 };
 
 #endif // RDFCACHEK2_FREQUENCYREPLACEMENTSTRATEGY_HPP
