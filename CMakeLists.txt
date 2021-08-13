@@ -55,7 +55,9 @@ set(CORE_SOURCE_FILES
         core/K2QStateWrapper.cpp
         core/K2QStateWrapper.hpp
         core/K2TreeBulkOp.cpp
-        core/K2TreeBulkOp.hpp)
+        core/K2TreeBulkOp.hpp
+        core/I_DataManager.hpp
+        )
 
 set(PROC_SOURCE_FILES
         proc/SDFeed.cpp
@@ -64,10 +66,6 @@ set(PROC_SOURCE_FILES
 
 set(GRAPH_RESULT_CACHING_FILE
         query_engine/Cache.cpp
-        query_engine/CacheReplacementFactory.cpp
-        query_engine/LRU/LRUQueue.cpp
-        query_engine/LRUCacheReplacement.cpp
-        query_engine/LRUCacheReplacement.hpp
         query_engine/QueryError.cpp
         query_engine/QueryError.hpp
         query_engine/TimeControl.cpp
@@ -251,7 +249,12 @@ set(GRAPH_RESULT_CACHING_FILE
         query_engine/query_processing/utility/StringHandlingUtil.cpp
         query_engine/query_processing/utility/UuidGenerator.cpp
         query_engine/query_processing/utility/UuidGenerator.hpp
-        )
+        query_engine/caching/CacheReplacement.cpp
+        query_engine/caching/CacheReplacement.hpp
+        query_engine/caching/I_CacheReplacement.hpp
+        query_engine/caching/LRUReplacementStrategy.cpp
+        query_engine/caching/LRUReplacementStrategy.hpp
+        query_engine/caching/CacheReplacementFactory.cpp query_engine/caching/CacheReplacementFactory.hpp query_engine/caching/NoCachingReplacement.cpp query_engine/caching/NoCachingReplacement.hpp query_engine/caching/FrequencyReplacementStrategy.cpp query_engine/caching/FrequencyReplacementStrategy.hpp)
 
 
 set(NETWORK_SOURCE_FILES
@@ -261,7 +264,7 @@ set(NETWORK_SOURCE_FILES
         network/CacheServerTaskProcessor.cpp
         network/ServerWorker.cpp
         network/Message.cpp
-        network/QueryResultPartStreamer.cpp network/QueryResultPartStreamer.hpp network/I_QRStreamer.hpp)
+        network/QueryResultPartStreamer.cpp network/QueryResultPartStreamer.hpp network/I_QRStreamer.hpp network/ReplacementTaskProcessor.cpp network/ReplacementTaskProcessor.hpp network/ReplacementTask.cpp network/ReplacementTask.hpp)
 
 
 set(PROTO_MESSAGES
@@ -520,9 +523,6 @@ if (GTest_FOUND)
     add_executable(test_sd_builder test/test_sd_builder.cpp)
     target_link_libraries(test_sd_builder ${PROC_LIBS} ${GTEST_BOTH_LIBRARIES} pthread)
 
-    add_executable(cache_replacement_test test/cache_replacement_test.cpp)
-    target_link_libraries(cache_replacement_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} pthread)
-
     add_executable(test_external_sort test/test_external_sort.cpp)
     target_link_libraries(test_external_sort ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} pthread)
 
@@ -538,6 +538,9 @@ if (GTest_FOUND)
     add_executable(query_proc_tests2 test/query_proc_tests2.cpp test/cache_test_util.cpp)
     target_link_libraries(query_proc_tests2 ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES})
 
+    add_executable(cache_replacement_test test/cache_replacement_test.cpp test/cache_test_util.cpp)
+    target_link_libraries(cache_replacement_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES})
+
 
     add_test(NAME serialization_test COMMAND ./serialization_test)
     add_test(NAME k2tree_serialization_test COMMAND ./k2tree_serialization_test)
@@ -547,11 +550,11 @@ if (GTest_FOUND)
     add_test(NAME k2tree_mixed_test COMMAND ./k2tree_mixed_test)
     add_test(NAME query_proc_tests COMMAND ./query_proc_tests)
     add_test(NAME test_sd_builder COMMAND ./test_sd_builder)
-    add_test(NAME cache_replacement_test COMMAND ./cache_replacement_test)
     add_test(NAME test_external_sort COMMAND ./test_external_sort)
     add_test(NAME predicates_metadata_serialization_test COMMAND ./predicates_metadata_serialization_test)
     add_test(NAME query_filters_test COMMAND ./query_filters_test)
     add_test(NAME query_proc_tests2 COMMAND ./query_proc_tests2)
+    add_test(NAME cache_replacement_test COMMAND ./cache_replacement_test)
 
 endif ()
 

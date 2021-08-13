@@ -116,15 +116,6 @@ void PredicatesCacheManager::replace_index_cache(
   this->predicates_index = std::move(predicates_index_input);
 }
 
-PredicateFetchResult PredicatesCacheManager::get_tree_by_predicate_name(
-    const std::string &predicate_name) const {
-  RDFResource resource(predicate_name, RDF_TYPE_IRI);
-  auto index = get_resource_index(resource);
-  if (index == NORESULT)
-    return PredicateFetchResult(false, nullptr);
-  return predicates_index->fetch_k2tree(index);
-}
-
 PredicateFetchResult
 PredicatesCacheManager::get_tree_by_predicate_index(unsigned long index) const {
   return predicates_index->fetch_k2tree(index);
@@ -225,4 +216,16 @@ void PredicatesCacheManager::load_all_predicates() {
   for (auto predicate_id : metadata.get_ids_vector()) {
     predicates_index->fetch_k2tree(predicate_id);
   }
+}
+size_t PredicatesCacheManager::get_predicate_size(unsigned long predicate_id) {
+  auto &metadata_map = predicates_index->get_metadata().get_map();
+  if (metadata_map.find(predicate_id) == metadata_map.end())
+    return 0;
+  return metadata_map.at(predicate_id).tree_size_in_memory;
+}
+void PredicatesCacheManager::remove_key(unsigned long key) {
+  predicates_index->discard_in_memory_predicate(key);
+}
+void PredicatesCacheManager::retrieve_key(unsigned long key) {
+  predicates_index->load_single_predicate(key);
 }

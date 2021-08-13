@@ -5,6 +5,7 @@ void PredicateMetadata::write_to_ostream(std::ostream &os) {
   write_u64(os, predicate_id);
   write_u64(os, tree_offset);
   write_u64(os, tree_size);
+  write_u64(os, tree_size_in_memory);
   write_u32(os, priority);
   os.write(k2tree_hash.data(), k2tree_hash.size());
 }
@@ -14,6 +15,7 @@ PredicateMetadata PredicateMetadata::read_from_istream(std::istream &is) {
   result.predicate_id = read_u64(is);
   result.tree_offset = read_u64(is);
   result.tree_size = read_u64(is);
+  result.tree_size_in_memory = read_u64(is);
   result.priority = read_u32(is);
   is.read(result.k2tree_hash.data(), result.k2tree_hash.size());
   return result;

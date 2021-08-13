@@ -1,52 +1,128 @@
+//
+// Created by cristobal on 04-08-21.
+//
+
+#include <I_DataManager.hpp>
+#include <caching/CacheReplacement.hpp>
+#include <caching/FrequencyReplacementStrategy.hpp>
+#include <caching/LRUReplacementStrategy.hpp>
 #include <gtest/gtest.h>
 
-#include <unordered_set>
-
-#include <LRU/LRUController.hpp>
-#include <LRU/LRUQueue.hpp>
-#include <google/protobuf/message_lite.h>
-
-class DummyLRUController : public LRUController {
-  unsigned long max_size_bytes;
-  std::unordered_set<unsigned long> data;
-
-public:
-  explicit DummyLRUController(unsigned long max_size_bytes)
-      : max_size_bytes(max_size_bytes){};
-  void retrieve_element(unsigned long element_id) override {
-    data.insert(element_id);
-  };
-  void discard_element(unsigned long element_id) override {
-    data.erase(element_id);
-  };
-  unsigned long get_max_size_bytes() override { return max_size_bytes; };
-
-  unsigned long size() { return data.size(); }
+struct MockDataManager : public I_DataManager {
+  std::set<unsigned long> keys;
+  void remove_key(unsigned long key) override { keys.erase(key); }
+  void retrieve_key(unsigned long key) override { keys.insert(key); }
 };
 
-TEST(CacheReplacementSuite, LRUReplacementTest_1) {
-  const unsigned long max_elements = 10;
-  const unsigned long max_size_bytes = sizeof(unsigned long) * max_elements;
-  DummyLRUController dummy_lru_controller(max_size_bytes);
-  LRUQueue queue(dummy_lru_controller);
-
-  for (unsigned long i = 0; i < 11; i++) {
-    queue.hit_element(i, sizeof(unsigned long));
+TEST(cache_replacement_test, can_do_simple_lru_replacement_1_test) {
+  MockDataManager mock_data_manager;
+  CacheReplacement<LRUReplacementStrategy> cache_replacement(
+      1'000'000, &mock_data_manager);
+  std::vector<std::pair<unsigned long, size_t>> keys_with_sizes = {
+      {1, 100'000}, {2, 100'000}, {3, 100'000}, {4, 100'000}, {5, 700'000},
+      {6, 700'000}, {7, 700'000}, {8, 700'000}, {9, 300'000},
+  };
+  int i = 0;
+  std::vector<size_t> expected_sizes = {1, 2, 3, 4, 4, 1, 1, 1, 2};
+  for (auto &pair : keys_with_sizes) {
+    auto can_be_retrieved = cache_replacement.hit_key(pair.first, pair.second);
+    ASSERT_TRUE(can_be_retrieved);
+    ASSERT_EQ(mock_data_manager.keys.size(), expected_sizes[i])
+        << "failed at i  = " << i;
+    i++;
   }
-
-  ASSERT_EQ(queue.get_stats_erase_count(), 1);
-  ASSERT_EQ(queue.get_stats_retrieval_count(), 11);
-  for (unsigned long i = 1; i < 11; i++) {
-    queue.hit_element(i, sizeof(unsigned long));
-
-    ASSERT_EQ(queue.get_stats_erase_count(), 1);
-    ASSERT_EQ(queue.get_stats_retrieval_count(), 11);
-  }
+  ASSERT_FALSE(cache_replacement.hit_key(10, 1000001));
 }
 
-int main(int argc, char **argv) {
-  ::testing::InitGoogleTest(&argc, argv);
-  int result = RUN_ALL_TESTS();
-  google::protobuf::ShutdownProtobufLibrary();
-  return result;
+TEST(cache_replacement_test, can_do_simple_frequency_replacement_1_test) {
+  MockDataManager mock_data_manager;
+  CacheReplacement<FrequencyReplacementStrategy> cache_replacement(
+      1'000'000, &mock_data_manager);
+  std::vector<std::pair<unsigned long, size_t>> keys_with_sizes = {
+      {1, 100'000},  {1, 100'000},  {1, 100'000},  {1, 100'000},
+
+      {2, 100'000},  {2, 100'000},  {2, 100'000},
+
+      {3, 100'000},  {3, 100'000},
+
+      {4, 100'000},
+
+      {5, 700'000},  {6, 700'000},  {7, 700'000},  {8, 700'000},
+      {9, 300'000},  {10, 700'000}, {10, 700'000}, {10, 700'000},
+      {10, 700'000}, {10, 700'000}, {11, 100'000}, {12, 900'000},
+
+  };
+  int i = 0;
+  std::vector<size_t> expected_sizes = {1, 1, 1, 1, 2, 2, 2, 3, 3, 4, 4,
+                                        4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 1};
+  std::cout << "expected sizes length: " << expected_sizes.size() << std::endl;
+  int debug;
+  for (auto &pair : keys_with_sizes) {
+    std::cout << "hitting key " << pair.first << " with size " << pair.second
+              << std::endl;
+    if (pair.first == 10) {
+      debug = 1;
+    }
+    auto can_be_retrieved = cache_replacement.hit_key(pair.first, pair.second);
+    ASSERT_TRUE(can_be_retrieved) << "failed at i = " << i;
+    ASSERT_EQ(mock_data_manager.keys.size(), expected_sizes[i])
+        << "failed at i  = " << i;
+
+    // ensure that keys 1 and 2 aren't dropped
+    if (i == 10) {
+      ASSERT_NE(mock_data_manager.keys.find(1), mock_data_manager.keys.end());
+      ASSERT_NE(mock_data_manager.keys.find(2), mock_data_manager.keys.end());
+      ASSERT_NE(mock_data_manager.keys.find(3), mock_data_manager.keys.end());
+    }
+
+    i++;
+  }
+  ASSERT_FALSE(cache_replacement.hit_key(10, 1000001));
+}
+
+TEST(cache_replacement_test, map_mutable_1) {
+  std::map<unsigned long, long> in_use;
+
+  auto mark_using = [&](unsigned long key) {
+    auto it = in_use.find(key);
+    if (it == in_use.end()) {
+      in_use[key] = 1;
+      return;
+    }
+    it->second++;
+  };
+  auto mark_ready = [&](unsigned long key) {
+    auto it = in_use.find(key);
+    if (it == in_use.end()) {
+      return;
+    }
+    it->second--;
+    if (it->second <= 0) {
+      in_use.erase(it);
+    }
+  };
+
+  for (unsigned long i = 0; i < 100; i++) {
+    mark_using(i);
+    mark_using(i);
+  }
+  for (unsigned long i = 0; i < 100; i++) {
+    ASSERT_EQ(in_use[i], 2);
+  }
+
+  for (unsigned long i = 0; i < 100; i++) {
+    mark_ready(i);
+  }
+  for (unsigned long i = 0; i < 100; i++) {
+    ASSERT_EQ(in_use[i], 1);
+  }
+
+  for (unsigned long i = 0; i < 100; i++) {
+    mark_ready(i);
+  }
+
+  for (unsigned long i = 0; i < 100; i++) {
+    ASSERT_EQ(in_use.find(i), in_use.end());
+  }
+  ASSERT_EQ(in_use.size(), 0);
 }

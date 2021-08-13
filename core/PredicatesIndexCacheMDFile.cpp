@@ -6,16 +6,20 @@
 
 namespace fs = std::filesystem;
 
-static std::unique_ptr<std::istream> load_file(const std::string &fname) {
+std::unique_ptr<std::istream>
+PredicatesIndexCacheMDFile::load_file(const std::string &fname, buf_t &buffer) {
   if (!fs::exists(fs::path(fname))) {
     throw std::runtime_error("File " + fname + " doesn't exist");
   }
-  return std::make_unique<std::ifstream>(fname,
-                                         std::ios::in | std::ios::binary);
+  auto file_result =
+      std::make_unique<std::ifstream>(fname, std::ios::in | std::ios::binary);
+
+  file_result->rdbuf()->pubsetbuf(buffer.data(), buffer.size());
+  return file_result;
 }
 
 PredicatesIndexCacheMDFile::PredicatesIndexCacheMDFile(const std::string &fname)
-    : PredicatesIndexCacheMD(load_file(fname)), fname(fname) {}
+    : PredicatesIndexCacheMD(load_file(fname, buffer)), fname(fname) {}
 
 PredicatesIndexCacheMDFile::PredicatesIndexCacheMDFile(
     PredicatesIndexCacheMDFile &&other) noexcept

@@ -33,6 +33,31 @@ static std::pair<PredicatesIndexCacheMD, unsigned long> build_picmd() {
 
   return {PredicatesIndexCacheMD(std::move(out)), sz};
 }
+static std::pair<PredicatesIndexCacheMD, unsigned long>
+build_picmd_single_predicate(unsigned long predicate_id) {
+
+  K2TreeConfig config;
+  config.cut_depth = 10;
+  config.max_node_count = 256;
+  config.treedepth = 32;
+
+  std::stringstream ss;
+  auto out = std::make_unique<std::stringstream>();
+  std::stringstream tmp;
+  unsigned long sz = 10000;
+  write_u64(ss, 3 * sz);
+  for (unsigned long i = 1; i <= sz; i++) {
+    TripleValue(i, predicate_id, i).write_to_file(ss);
+    TripleValue(i + 1, predicate_id, i + 1).write_to_file(ss);
+    TripleValue(i + 2, predicate_id, i + 2).write_to_file(ss);
+  }
+  ss.seekg(0);
+  out->seekp(0);
+
+  PredicatesIndexFileBuilder::build(ss, *out, tmp, config);
+
+  return {PredicatesIndexCacheMD(std::move(out)), sz};
+}
 
 static std::pair<PredicatesIndexCacheMD, unsigned long>
 build_picmd_2(unsigned long predicate_id) {
@@ -168,6 +193,19 @@ TEST(predicates_metadata_serialization, can_sync_with_external) {
     ASSERT_FALSE(bulk_op.has(i, i + 1));
     ASSERT_TRUE(k2tree.has_valid_structure(bulk_op.get_stw()));
   }
+}
+
+TEST(predicates_metadata_serialization, can_store_predicate_size_in_memory) {
+  unsigned long predicate_id = 12345;
+  auto [pc, sz] = build_picmd_single_predicate(predicate_id);
+  auto fetched = pc.fetch_k2tree(predicate_id);
+  auto &k2tree = fetched.get_mutable();
+
+  auto k2tree_stats = k2tree.k2tree_stats();
+  const auto &metadata = pc.get_metadata().get_map().at(predicate_id);
+  auto stored_in_memory_size = metadata.tree_size_in_memory;
+  auto calculated_in_memory_size = k2tree_stats.total_bytes;
+  ASSERT_EQ(stored_in_memory_size, calculated_in_memory_size);
 }
 
 int main(int argc, char **argv) {

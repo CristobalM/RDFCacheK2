@@ -17,13 +17,16 @@ PredicatesIndexCacheMD::PredicatesIndexCacheMD(
       k2tree_config(other.k2tree_config) {}
 
 bool PredicatesIndexCacheMD::load_single_predicate(uint64_t predicate_index) {
-  if (metadata.get_map().find(predicate_index) == metadata.get_map().end()) {
+  if (!has_predicate_stored(predicate_index))
     return false;
-  }
 
-  const auto &metadata_map = metadata.get_map();
+  std::lock_guard lg(retrieval_mutex);
 
-  auto predicate_metadata = metadata_map.at(predicate_index);
+  std::cerr << "retrieving predicate " << predicate_index << " from memory"
+            << std::endl;
+
+  const auto &predicate_metadata = get_metadata_with_id(predicate_index);
+
   auto pos = is->tellg();
   is->seekg(predicate_metadata.tree_offset);
 
@@ -42,11 +45,11 @@ bool PredicatesIndexCacheMD::load_single_predicate(uint64_t predicate_index) {
     end_pos = is->tellg();
     is->seekg(curr);
   } else {
-    if (metadata_map.find(*pos_it) == metadata_map.end()) {
+
+    if (!has_predicate_stored(*pos_it))
       throw std::runtime_error("predicate id " + std::to_string(*pos_it) +
                                " in list but not on metadata map");
-    }
-    auto &md = metadata_map.at(*pos_it);
+    const auto &md = get_metadata_with_id(*pos_it);
     end_pos = md.tree_offset;
   }
 
@@ -97,6 +100,7 @@ bool PredicatesIndexCacheMD::has_predicate_active(uint64_t predicate_index) {
 }
 
 bool PredicatesIndexCacheMD::has_predicate_stored(uint64_t predicate_index) {
+  std::lock_guard lg(map_mutex);
   return metadata.get_map().find(predicate_index) != metadata.get_map().end();
 }
 
@@ -127,6 +131,9 @@ void PredicatesIndexCacheMD::insert_point(uint64_t subject_index,
 // Dont use the same stream as the stored, create a new one and then replace it
 // with this
 void PredicatesIndexCacheMD::sync_to_stream(std::ostream &os) {
+
+  std::lock_guard lg(retrieval_mutex);
+
   std::vector<uint64_t> all_predicates(new_predicates.begin(),
                                        new_predicates.end());
   for (auto &it : metadata.get_map()) {
@@ -191,6 +198,9 @@ void PredicatesIndexCacheMD::replace_istream(
 
 void PredicatesIndexCacheMD::discard_in_memory_predicate(
     uint64_t predicate_index) {
+  std::lock_guard lg(retrieval_mutex);
+  std::cerr << "removing predicate " << predicate_index << " from memory"
+            << std::endl;
   predicates.erase(predicate_index);
 }
 
@@ -202,4 +212,10 @@ const std::vector<uint64_t> &PredicatesIndexCacheMD::get_predicates_ids() {
 
 const PredicatesCacheMetadata &PredicatesIndexCacheMD::get_metadata() {
   return metadata;
+}
+const PredicateMetadata &
+PredicatesIndexCacheMD::get_metadata_with_id(uint64_t predicate_id) {
+  std::lock_guard lg(map_mutex);
+  const auto &metadata_map = metadata.get_map();
+  return metadata_map.at(predicate_id);
 }
