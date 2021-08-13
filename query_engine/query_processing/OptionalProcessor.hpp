@@ -21,7 +21,7 @@ public:
                     QProc *query_processor,
                     std::shared_ptr<VarBindingQProc> var_binding_qproc,
                     TimeControl &time_control);
-  std::shared_ptr<ResultTableIterator> execute_it();
+  std::shared_ptr<QueryIterator> execute_it();
   std::set<unsigned long> get_right_table_vars_set();
 };
 

@@ -5,16 +5,16 @@
 #ifndef RDFCACHEK2_BGPPROCESSOR_HPP
 #define RDFCACHEK2_BGPPROCESSOR_HPP
 
-#include "BGPOp.hpp"
-#include "ResultTableIteratorBGP.hpp"
 #include "Triple.hpp"
 #include "VarBindingQProc.hpp"
 #include "VarIndexManager.hpp"
+#include "iterators/bgpops/BGPOp.hpp"
 #include <PredicatesCacheManager.hpp>
 #include <ResultTable.hpp>
 #include <sparql_tree.pb.h>
 
 #include <TimeControl.hpp>
+#include <query_processing/iterators/QueryIterator.hpp>
 #include <set>
 #include <vector>
 
@@ -43,7 +43,7 @@ public:
                TimeControl &time_control,
                std::shared_ptr<VarBindingQProc> var_binding_qproc);
 
-  std::shared_ptr<ResultTableIterator> execute_it();
+  std::shared_ptr<QueryIterator> execute_it();
 
 private:
   void set_triples_from_proto();

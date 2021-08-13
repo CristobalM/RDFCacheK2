@@ -13,7 +13,7 @@
 #include <TimeControl.hpp>
 #include <caching/I_CacheReplacement.hpp>
 #include <query_processing/ParsingUtils.hpp>
-#include <query_processing/QueryResultIterator.hpp>
+#include <query_processing/QueryResultIteratorHolder.hpp>
 #include <request_msg.pb.h>
 
 #include "query_processing/QueryResult.hpp"
@@ -46,7 +46,7 @@ public:
         unsigned long timeout_ms,
         I_CacheReplacement::REPLACEMENT_STRATEGY replacement_strategy);
 
-  std::shared_ptr<QueryResultIterator>
+  std::shared_ptr<QueryResultIteratorHolder>
   run_query(const proto_msg::SparqlTree &query_tree, TimeControl &time_control);
   RDFResource extract_resource(unsigned long index) const;
 

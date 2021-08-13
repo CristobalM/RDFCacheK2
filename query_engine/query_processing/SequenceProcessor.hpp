@@ -6,13 +6,13 @@
 #define RDFCACHEK2_SEQUENCEPROCESSOR_HPP
 
 #include "QProc.hpp"
-#include "ResultTableIterator.hpp"
 #include "VarBindingQProc.hpp"
 #include "VarDependencyGraph.hpp"
 #include "VarIndexManager.hpp"
 #include "VarsCollection.hpp"
 #include <sparql_tree.pb.h>
 
+#include <query_processing/iterators/QueryIterator.hpp>
 #include <set>
 #include <vector>
 
@@ -32,7 +32,7 @@ public:
   SequenceProcessor(const proto_msg::SequenceNode &sequence_node,
                     QProc *query_processor, TimeControl &time_control,
                     std::shared_ptr<VarBindingQProc> var_binding_qproc);
-  std::shared_ptr<ResultTableIterator> execute_it();
+  std::shared_ptr<QueryIterator> execute_it();
 
 private:
   std::vector<VarsCollection> get_vars_sequence();

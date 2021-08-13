@@ -3,14 +3,14 @@
 //
 
 #include "SequenceProcessor.hpp"
-#include "ResultTableIteratorCrossProduct.hpp"
-#include "ResultTableIteratorEmpty.hpp"
-#include "ResultTableIteratorJoinSeqBinding.hpp"
 #include "VarBindingQProc.hpp"
+#include <query_processing/iterators/CrossProductIterator.hpp>
+#include <query_processing/iterators/EmptyIterator.hpp>
+#include <query_processing/iterators/InnerJoinIterator.hpp>
 #include <query_processing/utility/ProtoGatherVars.hpp>
 
-std::shared_ptr<ResultTableIterator> SequenceProcessor::execute_it() {
-  std::vector<std::shared_ptr<ResultTableIterator>> to_cross_product_iterators;
+std::shared_ptr<QueryIterator> SequenceProcessor::execute_it() {
+  std::vector<std::shared_ptr<QueryIterator>> to_cross_product_iterators;
   for (size_t cc_i = 0; cc_i < cc_positions.size(); cc_i++) {
     auto &cc_pos = cc_positions[cc_i];
     auto &current_sets = cc_sets[cc_i];
@@ -26,29 +26,28 @@ std::shared_ptr<ResultTableIterator> SequenceProcessor::execute_it() {
       int pos = cc_pos[i];
       const auto &curr_proto_node = sequence_node.nodes(pos);
 
-      result_it = std::make_shared<ResultTableIteratorJoinSeqBinding>(
+      result_it = std::make_shared<InnerJoinIterator>(
           result_it, curr_proto_node, var_binding_qproc, current_sets[i],
           time_control, query_processor->get_cache_manager(),
           query_processor->get_vim_ptr(),
           query_processor->get_extra_str_dict_ptr(),
           query_processor->get_temp_files_dir());
       if (!time_control.tick())
-        return std::make_shared<ResultTableIteratorEmpty>(time_control);
+        return std::make_shared<EmptyIterator>(time_control);
     }
     to_cross_product_iterators.push_back(std::move(result_it));
   }
   if (to_cross_product_iterators.empty()) {
-    return std::make_shared<ResultTableIteratorEmpty>(resulting_headers,
-                                                      time_control);
+    return std::make_shared<EmptyIterator>(resulting_headers, time_control);
   }
 
   auto result_it = to_cross_product_iterators[0];
   for (size_t i = 1; i < to_cross_product_iterators.size(); i++) {
     auto curr_it = to_cross_product_iterators[i];
-    result_it = std::make_shared<ResultTableIteratorCrossProduct>(
+    result_it = std::make_shared<CrossProductIterator>(
         result_it, std::move(curr_it), time_control);
     if (!time_control.tick())
-      return std::make_shared<ResultTableIteratorEmpty>(time_control);
+      return std::make_shared<EmptyIterator>(time_control);
   }
   return result_it;
 }

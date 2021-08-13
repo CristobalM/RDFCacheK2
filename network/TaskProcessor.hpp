@@ -8,7 +8,7 @@
 #include "I_QRStreamer.hpp"
 #include "TimeControl.hpp"
 #include <cstdint>
-#include <query_processing/QueryResultIterator.hpp>
+#include <query_processing/QueryResultIteratorHolder.hpp>
 #include <set>
 #include <utility>
 
@@ -18,7 +18,7 @@ public:
   virtual ~TaskProcessor() = default;
   virtual bool has_streamer(int id) = 0;
   virtual I_QRStreamer &create_streamer(
-      std::shared_ptr<QueryResultIterator> query_result_iterator,
+      std::shared_ptr<QueryResultIteratorHolder> query_result_iterator,
       std::unique_ptr<TimeControl> &&time_control,
       std::shared_ptr<const std::vector<unsigned long>> predicates_in_use) = 0;
   virtual void clean_streamer(int id) = 0;

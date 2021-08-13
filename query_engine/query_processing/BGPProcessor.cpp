@@ -3,10 +3,11 @@
 //
 
 #include "BGPProcessor.hpp"
-#include "BGPOpsFactory.hpp"
-#include "ResultTableIteratorEmpty.hpp"
 #include "VarBindingQProc.hpp"
 #include <TimeControl.hpp>
+#include <query_processing/iterators/BGPIterator.hpp>
+#include <query_processing/iterators/EmptyIterator.hpp>
+#include <query_processing/iterators/bgpops/BGPOpsFactory.hpp>
 BGPProcessor::BGPProcessor(const proto_msg::BGPNode &bgp_node,
                            const PredicatesCacheManager &cm,
                            VarIndexManager &vim, TimeControl &time_control,
@@ -23,16 +24,15 @@ void BGPProcessor::set_triples_from_proto() {
   }
 }
 
-std::shared_ptr<ResultTableIterator> BGPProcessor::execute_it() {
+std::shared_ptr<QueryIterator> BGPProcessor::execute_it() {
   find_headers();
   if (!do_all_predicates_have_trees()) {
-    return std::make_shared<ResultTableIteratorEmpty>(std::move(header_vec),
-                                                      time_control);
+    return std::make_shared<EmptyIterator>(std::move(header_vec), time_control);
   }
   auto scanners = build_scanners();
   auto ops = build_bgp_ops(std::move(scanners));
-  return std::make_shared<ResultTableIteratorBGP>(std::move(ops), header_vec,
-                                                  time_control);
+  return std::make_shared<BGPIterator>(std::move(ops), header_vec,
+                                       time_control);
 }
 void BGPProcessor::find_headers() {
   for (auto &triple : triples) {

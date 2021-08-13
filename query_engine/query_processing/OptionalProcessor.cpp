@@ -3,9 +3,9 @@
 //
 
 #include "OptionalProcessor.hpp"
-#include "ResultTableIteratorEmpty.hpp"
-#include "ResultTableIteratorLeftOuterJoin.hpp"
 #include <memory>
+#include <query_processing/iterators/EmptyIterator.hpp>
+#include <query_processing/iterators/LeftOuterJoinIterator.hpp>
 #include <query_processing/utility/ProtoGatherVars.hpp>
 OptionalProcessor::OptionalProcessor(
     const proto_msg::SparqlNode &left_node,
@@ -16,12 +16,12 @@ OptionalProcessor::OptionalProcessor(
       query_processor(query_processor),
       var_binding_qproc(std::move(var_binding_qproc)),
       time_control(time_control) {}
-std::shared_ptr<ResultTableIterator> OptionalProcessor::execute_it() {
+std::shared_ptr<QueryIterator> OptionalProcessor::execute_it() {
   auto left_it = query_processor->process_node(left_node, var_binding_qproc);
   if (!time_control.tick())
-    return std::make_shared<ResultTableIteratorEmpty>(time_control);
+    return std::make_shared<EmptyIterator>(time_control);
   auto right_table_vars = get_right_table_vars_set();
-  return std::make_shared<ResultTableIteratorLeftOuterJoin>(
+  return std::make_shared<LeftOuterJoinIterator>(
       std::move(left_it), right_node, var_binding_qproc, right_table_vars,
       time_control, query_processor->get_cache_manager(),
       query_processor->get_vim_ptr(), query_processor->get_extra_str_dict_ptr(),

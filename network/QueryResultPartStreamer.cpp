@@ -5,7 +5,7 @@
 #include "CacheServerTaskProcessor.hpp"
 #include <map>
 QueryResultPartStreamer::QueryResultPartStreamer(
-    int id, std::shared_ptr<QueryResultIterator> query_result_iterator,
+    int id, std::shared_ptr<QueryResultIteratorHolder> query_result_iterator,
     std::unique_ptr<TimeControl> &&time_control, size_t threshold_part_size,
     std::shared_ptr<const std::vector<unsigned long>> predicates_in_use,
     TaskProcessor *task_processor)

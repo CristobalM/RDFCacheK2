@@ -5,14 +5,14 @@
 #ifndef RDFCACHEK2_QPROC_HPP
 #define RDFCACHEK2_QPROC_HPP
 
-#include "ResultTableIterator.hpp"
 #include "VarBindingQProc.hpp"
 #include "VarIndexManager.hpp"
+#include "iterators/QueryIterator.hpp"
 #include <PredicatesCacheManager.hpp>
 #include <sparql_tree.pb.h>
 class QProc {
 public:
-  virtual std::shared_ptr<ResultTableIterator>
+  virtual std::shared_ptr<QueryIterator>
   process_node(const proto_msg::SparqlNode &node,
                std::shared_ptr<VarBindingQProc> var_binding_qproc) = 0;
   virtual VarIndexManager &get_vim() = 0;

@@ -64,7 +64,7 @@ bool CacheServerTaskProcessor::has_streamer(int id) {
 }
 
 I_QRStreamer &CacheServerTaskProcessor::create_streamer(
-    std::shared_ptr<QueryResultIterator> query_result_iterator,
+    std::shared_ptr<QueryResultIteratorHolder> query_result_iterator,
     std::unique_ptr<TimeControl> &&time_control,
     std::shared_ptr<const std::vector<unsigned long>> predicates_in_use) {
   std::lock_guard lg(mutex);

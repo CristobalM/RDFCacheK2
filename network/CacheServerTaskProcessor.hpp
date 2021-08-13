@@ -16,7 +16,7 @@
 #include "ServerWorker.hpp"
 #include "TCPServerConnection.hpp"
 #include "TaskProcessor.hpp"
-#include <query_processing/QueryResultIterator.hpp>
+#include <query_processing/QueryResultIteratorHolder.hpp>
 
 class CacheServerTaskProcessor : public TaskProcessor {
   using worker_t = ServerWorker<CacheServerTaskProcessor>;
@@ -51,11 +51,11 @@ public:
   void notify_workers();
   I_QRStreamer &get_streamer(int id) override;
   bool has_streamer(int id) override;
-  I_QRStreamer &
-  create_streamer(std::shared_ptr<QueryResultIterator> query_result_iterator,
-                  std::unique_ptr<TimeControl> &&time_control,
-                  std::shared_ptr<const std::vector<unsigned long>>
-                      predicates_in_use) override;
+  I_QRStreamer &create_streamer(
+      std::shared_ptr<QueryResultIteratorHolder> query_result_iterator,
+      std::unique_ptr<TimeControl> &&time_control,
+      std::shared_ptr<const std::vector<unsigned long>> predicates_in_use)
+      override;
   void clean_streamer(int id) override;
   void process_missed_predicates(
       std::shared_ptr<const std::vector<unsigned long>> predicates) override;

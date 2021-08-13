@@ -20,12 +20,12 @@ Cache::Cache(std::shared_ptr<PredicatesCacheManager> &cache_manager,
       cache_replacement(CacheReplacementFactory::create_cache_replacement(
           max_size_bytes, cache_manager.get(), replacement_strategy)) {}
 
-std::shared_ptr<QueryResultIterator>
+std::shared_ptr<QueryResultIteratorHolder>
 Cache::run_query(const proto_msg::SparqlTree &query_tree,
                  TimeControl &time_control) {
   ensure_available_predicates(query_tree.root());
   time_control.start_timer();
-  return std::make_shared<QueryResultIterator>(
+  return std::make_shared<QueryResultIteratorHolder>(
       QueryProcessor(cache_manager, time_control, temp_files_dir)
           .run_query(query_tree.root()));
 }

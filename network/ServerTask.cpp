@@ -20,7 +20,7 @@
 
 #include <condition_variable>
 #include <hashing.hpp>
-#include <query_processing/QueryResultIterator.hpp>
+#include <query_processing/QueryResultIteratorHolder.hpp>
 #include <serialization_util.hpp>
 
 using namespace std::chrono_literals;
@@ -193,7 +193,7 @@ void ServerTask::process_receive_remaining_result(Message &message) {
   send_response(next_response);
 }
 void ServerTask::begin_streaming_results(
-    std::shared_ptr<QueryResultIterator> query_result_iterator,
+    std::shared_ptr<QueryResultIteratorHolder> query_result_iterator,
     std::unique_ptr<TimeControl> &&time_control,
     std::shared_ptr<const std::vector<unsigned long>> predicates_in_use) {
   auto &streamer = task_processor.create_streamer(

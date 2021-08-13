@@ -64,96 +64,78 @@ set(PROC_SOURCE_FILES
         proc/SDBuilder.cpp
         )
 
-set(GRAPH_RESULT_CACHING_FILE
-        query_engine/Cache.cpp
-        query_engine/QueryError.cpp
-        query_engine/QueryError.hpp
-        query_engine/TimeControl.cpp
-        query_engine/TimeControl.hpp
-        query_engine/query_processing/BGPOp.hpp
-        query_engine/query_processing/BGPOpsFactory.cpp
-        query_engine/query_processing/BGPOpsFactory.hpp
-        query_engine/query_processing/BGPProcessor.cpp
-        query_engine/query_processing/BGPProcessor.hpp
-        query_engine/query_processing/DateInfo.cpp
-        query_engine/query_processing/DateInfo.hpp
-        query_engine/query_processing/DateInfo.hpp
-        query_engine/query_processing/ExprProcessor.cpp
-        query_engine/query_processing/ExternalSortedFileHandler.cpp
-        query_engine/query_processing/ExternalSortedFileHandler.hpp
-        query_engine/query_processing/MinusProcessor.cpp
-        query_engine/query_processing/MinusProcessor.hpp
-        query_engine/query_processing/OneVarCPBGPOp.cpp
-        query_engine/query_processing/OneVarCPBGPOp.hpp
-        query_engine/query_processing/OneVarIntersectBGPOp.cpp
-        query_engine/query_processing/OneVarIntersectBGPOp.hpp
-        query_engine/query_processing/OneVarJoinBGPOp.cpp
-        query_engine/query_processing/OneVarJoinBGPOp.hpp
-        query_engine/query_processing/OptionalProcessor.cpp
-        query_engine/query_processing/OptionalProcessor.hpp
-        query_engine/query_processing/ParsingUtils.cpp
-        query_engine/query_processing/QProc.hpp
-        query_engine/query_processing/QueryProcHashing.cpp
-        query_engine/query_processing/QueryProcHashing.hpp
-        query_engine/query_processing/QueryProcessor.cpp
-        query_engine/query_processing/QueryResult.cpp
-        query_engine/query_processing/QueryResultIterator.cpp
-        query_engine/query_processing/QueryResultIterator.hpp
-        query_engine/query_processing/ResultTableFilterIterator.cpp
-        query_engine/query_processing/ResultTableFilterIterator.hpp
-        query_engine/query_processing/ResultTableIterator.cpp
-        query_engine/query_processing/ResultTableIterator.hpp
-        query_engine/query_processing/ResultTableIteratorBGP.cpp
-        query_engine/query_processing/ResultTableIteratorBGP.hpp
-        query_engine/query_processing/ResultTableIteratorCrossProduct.cpp
-        query_engine/query_processing/ResultTableIteratorCrossProduct.hpp
-        query_engine/query_processing/ResultTableIteratorEmpty.cpp
-        query_engine/query_processing/ResultTableIteratorEmpty.hpp
-        query_engine/query_processing/ResultTableIteratorExtend.cpp
-        query_engine/query_processing/ResultTableIteratorExtend.hpp
-        query_engine/query_processing/ResultTableIteratorFromMaterialized.cpp
-        query_engine/query_processing/ResultTableIteratorFromMaterialized.hpp
-        query_engine/query_processing/ResultTableIteratorJoinSeqBinding.cpp
-        query_engine/query_processing/ResultTableIteratorJoinSeqBinding.hpp
-        query_engine/query_processing/ResultTableIteratorLeftOuterJoin.cpp
-        query_engine/query_processing/ResultTableIteratorLeftOuterJoin.hpp
-        query_engine/query_processing/ResultTableIteratorMinus.cpp
-        query_engine/query_processing/ResultTableIteratorMinus.hpp
-        query_engine/query_processing/ResultTableIteratorOrder.cpp
-        query_engine/query_processing/ResultTableIteratorOrder.hpp
-        query_engine/query_processing/ResultTableIteratorProject.cpp
-        query_engine/query_processing/ResultTableIteratorProject.hpp
-        query_engine/query_processing/ResultTableIteratorSlice.cpp
-        query_engine/query_processing/ResultTableIteratorSlice.hpp
-        query_engine/query_processing/ResultTableIteratorUnion.cpp
-        query_engine/query_processing/ResultTableIteratorUnion.hpp
-        query_engine/query_processing/ResultTableVector.cpp
-        query_engine/query_processing/ResultTableVector.hpp
-        query_engine/query_processing/RowSortConnector.cpp
-        query_engine/query_processing/RowSortConnector.hpp
-        query_engine/query_processing/SequenceProcessor.cpp
-        query_engine/query_processing/SequenceProcessor.hpp
-        query_engine/query_processing/Triple.cpp
-        query_engine/query_processing/TripleExistenceBGPOP.cpp
-        query_engine/query_processing/TripleExistenceBGPOP.hpp
-        query_engine/query_processing/TwoVarCProductBGPOp.cpp
-        query_engine/query_processing/TwoVarCProductBGPOp.hpp
-        query_engine/query_processing/TwoVarIntersectionBGPOp.cpp
-        query_engine/query_processing/TwoVarIntersectionBGPOp.hpp
-        query_engine/query_processing/TwoVarJoinOneBGPOp.cpp
-        query_engine/query_processing/TwoVarJoinOneBGPOp.hpp
-        query_engine/query_processing/UnionProcessor.cpp
-        query_engine/query_processing/VDGNode.cpp
-        query_engine/query_processing/VDGNode.hpp
-        query_engine/query_processing/VarBindingQProc.cpp
-        query_engine/query_processing/VarBindingQProc.hpp
-        query_engine/query_processing/VarDependencyGraph.cpp
-        query_engine/query_processing/VarDependencyGraph.hpp
-        query_engine/query_processing/VarIndexManager.cpp
-        query_engine/query_processing/VarLazyBinding.cpp
-        query_engine/query_processing/VarLazyBinding.hpp
-        query_engine/query_processing/VarsCollection.cpp
-        query_engine/query_processing/VarsCollection.hpp
+set(QUERY_ITERATORS
+        query_engine/query_processing/iterators/FilterIterator.cpp
+        query_engine/query_processing/iterators/FilterIterator.hpp
+        query_engine/query_processing/iterators/QueryIterator.cpp
+        query_engine/query_processing/iterators/QueryIterator.hpp
+        query_engine/query_processing/iterators/BGPIterator.cpp
+        query_engine/query_processing/iterators/BGPIterator.hpp
+        query_engine/query_processing/iterators/CrossProductIterator.hpp
+        query_engine/query_processing/iterators/CrossProductIterator.cpp
+        query_engine/query_processing/iterators/EmptyIterator.cpp
+        query_engine/query_processing/iterators/EmptyIterator.hpp
+        query_engine/query_processing/iterators/ExtendIterator.cpp
+        query_engine/query_processing/iterators/ExtendIterator.hpp
+        query_engine/query_processing/iterators/FromMaterializedIterator.cpp
+        query_engine/query_processing/iterators/FromMaterializedIterator.hpp
+        query_engine/query_processing/iterators/InnerJoinIterator.cpp
+        query_engine/query_processing/iterators/InnerJoinIterator.hpp
+        query_engine/query_processing/iterators/LeftOuterJoinIterator.cpp
+        query_engine/query_processing/iterators/LeftOuterJoinIterator.hpp
+        query_engine/query_processing/iterators/MinusIterator.cpp
+        query_engine/query_processing/iterators/MinusIterator.hpp
+        query_engine/query_processing/iterators/OrderIterator.cpp
+        query_engine/query_processing/iterators/OrderIterator.hpp
+        query_engine/query_processing/iterators/ProjectIterator.cpp
+        query_engine/query_processing/iterators/ProjectIterator.hpp
+        query_engine/query_processing/iterators/SliceIterator.cpp
+        query_engine/query_processing/iterators/SliceIterator.hpp
+        query_engine/query_processing/iterators/UnionIterator.cpp
+        query_engine/query_processing/iterators/UnionIterator.hpp
+
+        query_engine/query_processing/iterators/ExternalSortedFileHandler.cpp
+        query_engine/query_processing/iterators/ExternalSortedFileHandler.hpp
+
+        query_engine/query_processing/iterators/RowSortConnector.cpp
+        query_engine/query_processing/iterators/RowSortConnector.hpp
+        )
+
+set(BGPOPS
+        query_engine/query_processing/iterators/bgpops/BGPOp.hpp
+        query_engine/query_processing/iterators/bgpops/BGPOpsFactory.cpp
+        query_engine/query_processing/iterators/bgpops/BGPOpsFactory.hpp
+        query_engine/query_processing/iterators/bgpops/OneVarCPBGPOp.cpp
+        query_engine/query_processing/iterators/bgpops/OneVarCPBGPOp.hpp
+        query_engine/query_processing/iterators/bgpops/OneVarIntersectBGPOp.cpp
+        query_engine/query_processing/iterators/bgpops/OneVarIntersectBGPOp.hpp
+        query_engine/query_processing/iterators/bgpops/OneVarJoinBGPOp.cpp
+        query_engine/query_processing/iterators/bgpops/OneVarJoinBGPOp.hpp
+        query_engine/query_processing/iterators/bgpops/TripleExistenceBGPOP.cpp
+        query_engine/query_processing/iterators/bgpops/TripleExistenceBGPOP.hpp
+        query_engine/query_processing/iterators/bgpops/TwoVarCProductBGPOp.cpp
+        query_engine/query_processing/iterators/bgpops/TwoVarCProductBGPOp.hpp
+        query_engine/query_processing/iterators/bgpops/TwoVarIntersectionBGPOp.cpp
+        query_engine/query_processing/iterators/bgpops/TwoVarIntersectionBGPOp.hpp
+        query_engine/query_processing/iterators/bgpops/TwoVarJoinOneBGPOp.cpp
+        query_engine/query_processing/iterators/bgpops/TwoVarJoinOneBGPOp.hpp
+        )
+
+set(CACHING_FILES
+        query_engine/caching/CacheReplacement.cpp
+        query_engine/caching/CacheReplacement.hpp
+        query_engine/caching/CacheReplacementFactory.cpp
+        query_engine/caching/CacheReplacementFactory.hpp
+        query_engine/caching/FrequencyReplacementStrategy.cpp
+        query_engine/caching/FrequencyReplacementStrategy.hpp
+        query_engine/caching/I_CacheReplacement.hpp
+        query_engine/caching/LRUReplacementStrategy.cpp
+        query_engine/caching/LRUReplacementStrategy.hpp
+        query_engine/caching/NoCachingReplacement.cpp
+        query_engine/caching/NoCachingReplacement.hpp
+        )
+
+set(SPARQL_EXPRESSIONS_FILES
         query_engine/query_processing/expr/AddEval.cpp
         query_engine/query_processing/expr/BNodeEval.cpp
         query_engine/query_processing/expr/BoundEval.cpp
@@ -229,6 +211,49 @@ set(GRAPH_RESULT_CACHING_FILE
         query_engine/query_processing/expr/TermEval.cpp
         query_engine/query_processing/expr/UnaryMinusEval.cpp
         query_engine/query_processing/expr/UnaryPlusEval.cpp
+        )
+
+set(QUERY_PROCESSING_FILES
+
+        query_engine/query_processing/BGPProcessor.cpp
+        query_engine/query_processing/BGPProcessor.hpp
+        query_engine/query_processing/DateInfo.cpp
+        query_engine/query_processing/DateInfo.hpp
+        query_engine/query_processing/DateInfo.hpp
+        query_engine/query_processing/ExprProcessor.cpp
+        query_engine/query_processing/MinusProcessor.cpp
+        query_engine/query_processing/MinusProcessor.hpp
+        query_engine/query_processing/OptionalProcessor.cpp
+        query_engine/query_processing/OptionalProcessor.hpp
+        query_engine/query_processing/ParsingUtils.cpp
+        query_engine/query_processing/QProc.hpp
+        query_engine/query_processing/QueryProcHashing.cpp
+        query_engine/query_processing/QueryProcHashing.hpp
+        query_engine/query_processing/QueryProcessor.cpp
+        query_engine/query_processing/QueryResult.cpp
+        query_engine/query_processing/QueryResultIteratorHolder.cpp
+        query_engine/query_processing/QueryResultIteratorHolder.hpp
+        query_engine/query_processing/ResultTableVector.cpp
+        query_engine/query_processing/ResultTableVector.hpp
+        query_engine/query_processing/SequenceProcessor.cpp
+        query_engine/query_processing/SequenceProcessor.hpp
+        query_engine/query_processing/Triple.cpp
+        query_engine/query_processing/UnionProcessor.cpp
+        query_engine/query_processing/VDGNode.cpp
+        query_engine/query_processing/VDGNode.hpp
+        query_engine/query_processing/VarBindingQProc.cpp
+        query_engine/query_processing/VarBindingQProc.hpp
+        query_engine/query_processing/VarDependencyGraph.cpp
+        query_engine/query_processing/VarDependencyGraph.hpp
+        query_engine/query_processing/VarIndexManager.cpp
+        query_engine/query_processing/VarLazyBinding.cpp
+        query_engine/query_processing/VarLazyBinding.hpp
+        query_engine/query_processing/VarsCollection.cpp
+        query_engine/query_processing/VarsCollection.hpp
+        )
+
+set(QENGINE_RESOURCES_FILES
+
         query_engine/query_processing/resources/BooleanResource.cpp
         query_engine/query_processing/resources/ConcreteRDFResource.cpp
         query_engine/query_processing/resources/DataTypeResource.cpp
@@ -242,6 +267,9 @@ set(GRAPH_RESULT_CACHING_FILE
         query_engine/query_processing/resources/StringLiteralLangResource.cpp
         query_engine/query_processing/resources/StringLiteralResource.cpp
         query_engine/query_processing/resources/TermResource.cpp
+        )
+
+set(QENGINE_UTILITY_FILES
         query_engine/query_processing/utility/GatheredVars.cpp
         query_engine/query_processing/utility/GatheredVars.hpp
         query_engine/query_processing/utility/ProtoGatherVars.cpp
@@ -249,12 +277,23 @@ set(GRAPH_RESULT_CACHING_FILE
         query_engine/query_processing/utility/StringHandlingUtil.cpp
         query_engine/query_processing/utility/UuidGenerator.cpp
         query_engine/query_processing/utility/UuidGenerator.hpp
-        query_engine/caching/CacheReplacement.cpp
-        query_engine/caching/CacheReplacement.hpp
-        query_engine/caching/I_CacheReplacement.hpp
-        query_engine/caching/LRUReplacementStrategy.cpp
-        query_engine/caching/LRUReplacementStrategy.hpp
-        query_engine/caching/CacheReplacementFactory.cpp query_engine/caching/CacheReplacementFactory.hpp query_engine/caching/NoCachingReplacement.cpp query_engine/caching/NoCachingReplacement.hpp query_engine/caching/FrequencyReplacementStrategy.cpp query_engine/caching/FrequencyReplacementStrategy.hpp)
+        )
+set(QUERY_ENGINE_FILES
+
+        query_engine/Cache.cpp
+        query_engine/QueryError.cpp
+        query_engine/QueryError.hpp
+        query_engine/TimeControl.cpp
+        query_engine/TimeControl.hpp
+
+        ${QENGINE_UTILITY_FILES}
+        ${QENGINE_RESOURCES_FILES}
+        ${QUERY_PROCESSING_FILES}
+        ${SPARQL_EXPRESSIONS_FILES}
+        ${CACHING_FILES}
+        ${QUERY_ITERATORS}
+        ${BGPOPS}
+        )
 
 
 set(NETWORK_SOURCE_FILES
@@ -264,7 +303,13 @@ set(NETWORK_SOURCE_FILES
         network/CacheServerTaskProcessor.cpp
         network/ServerWorker.cpp
         network/Message.cpp
-        network/QueryResultPartStreamer.cpp network/QueryResultPartStreamer.hpp network/I_QRStreamer.hpp network/ReplacementTaskProcessor.cpp network/ReplacementTaskProcessor.hpp network/ReplacementTask.cpp network/ReplacementTask.hpp)
+        network/QueryResultPartStreamer.cpp
+        network/QueryResultPartStreamer.hpp
+        network/I_QRStreamer.hpp
+        network/ReplacementTaskProcessor.cpp
+        network/ReplacementTaskProcessor.hpp
+        network/ReplacementTask.cpp
+        network/ReplacementTask.hpp)
 
 
 set(PROTO_MESSAGES
@@ -328,9 +373,9 @@ include_directories(
 link_directories(${LINK_LIBS})
 
 
-add_library(RDFCacheK2 STATIC ${CORE_SOURCE_FILES} ${GRAPH_RESULT_CACHING_FILE})
+add_library(RDFCacheK2 STATIC ${CORE_SOURCE_FILES} ${QUERY_ENGINE_FILES})
 add_library(RDFCacheK2_Network STATIC ${NETWORK_SOURCE_FILES})
-#add_library(RDFCacheK2_GR STATIC ${GRAPH_RESULT_CACHING_FILE})
+#add_library(RDFCacheK2_GR STATIC ${QUERY_ENGINE_FILES})
 
 add_library(ProtoMessages STATIC ${PROTO_MESSAGES})
 
@@ -482,8 +527,6 @@ target_link_libraries(convert_triples_to_binary ${DEFAULT_LIBS})
 add_executable(traverse_k2tree_band scripts/traverse_k2tree_band.cpp)
 target_include_directories(traverse_k2tree_band PUBLIC ${INCLUDES})
 target_link_libraries(traverse_k2tree_band ${DEFAULT_LIBS})
-
-
 
 
 add_executable(k2tree_example example/k2tree_example.cpp)

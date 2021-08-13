@@ -33,7 +33,7 @@ public:
 
   void process_receive_remaining_result(Message &message);
   void begin_streaming_results(
-      std::shared_ptr<QueryResultIterator> query_result_iterator,
+      std::shared_ptr<QueryResultIteratorHolder> query_result_iterator,
       std::unique_ptr<TimeControl> &&time_control,
       std::shared_ptr<const std::vector<unsigned long>> predicates_in_use);
   std::shared_ptr<const std::vector<unsigned long>>

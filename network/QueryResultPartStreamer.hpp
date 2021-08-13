@@ -9,10 +9,10 @@
 #include "I_QRStreamer.hpp"
 #include <TimeControl.hpp>
 #include <memory>
-#include <query_processing/QueryResultIterator.hpp>
+#include <query_processing/QueryResultIteratorHolder.hpp>
 class QueryResultPartStreamer : public I_QRStreamer {
   const int id;
-  std::shared_ptr<QueryResultIterator> query_result_iterator;
+  std::shared_ptr<QueryResultIteratorHolder> query_result_iterator;
   std::unique_ptr<TimeControl> time_control;
   std::shared_ptr<const std::vector<unsigned long>> predicates_in_use;
 
@@ -24,7 +24,7 @@ class QueryResultPartStreamer : public I_QRStreamer {
 
 public:
   QueryResultPartStreamer(
-      int id, std::shared_ptr<QueryResultIterator> query_result_iterator,
+      int id, std::shared_ptr<QueryResultIteratorHolder> query_result_iterator,
       std::unique_ptr<TimeControl> &&time_control, size_t threshold_part_size,
       std::shared_ptr<const std::vector<unsigned long>> predicates_in_use,
       TaskProcessor *task_processor);
