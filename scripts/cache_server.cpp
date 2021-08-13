@@ -165,6 +165,9 @@ parsed_options parse_cmline(int argc, char **argv) {
       if (replacement_strategy_str == "lru") {
         out.replacement_strategy =
             I_CacheReplacement::REPLACEMENT_STRATEGY::LRU;
+      } else if (replacement_strategy_str == "frequency") {
+        out.replacement_strategy =
+            I_CacheReplacement::REPLACEMENT_STRATEGY::FREQUENCY;
       } else {
         out.replacement_strategy =
             I_CacheReplacement::REPLACEMENT_STRATEGY::NO_CACHING;

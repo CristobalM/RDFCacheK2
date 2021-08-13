@@ -9,10 +9,7 @@
 #include <mutex>
 class I_CacheReplacement {
 public:
-  enum REPLACEMENT_STRATEGY {
-    NO_CACHING = 0,
-    LRU,
-  };
+  enum REPLACEMENT_STRATEGY { NO_CACHING = 0, LRU, FREQUENCY };
 
   virtual ~I_CacheReplacement() = default;
   virtual bool hit_key(unsigned long key, size_t space_required) = 0;
