@@ -5,6 +5,7 @@
 #ifndef RDFCACHEK2_LRUREPLACEMENTSTRATEGY_HPP
 #define RDFCACHEK2_LRUREPLACEMENTSTRATEGY_HPP
 
+#include "I_ReplacementPriorityQueue.hpp"
 #include <map>
 #include <unordered_map>
 class LRUReplacementStrategy {
@@ -22,6 +23,10 @@ public:
 
   void hit_key(unsigned long key);
   void remove_key(unsigned long key);
+  bool should_discard_others_for_key(unsigned long key,
+                                     I_ReplacementPriorityQueue &pq);
+  bool should_hit_without_retrieval(unsigned long key,
+                                    I_ReplacementPriorityQueue &pq);
 };
 
 #endif // RDFCACHEK2_LRUREPLACEMENTSTRATEGY_HPP

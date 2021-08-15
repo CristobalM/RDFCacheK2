@@ -6,12 +6,14 @@
 #include "FrequencyReplacementStrategy.hpp"
 #include "LRUReplacementStrategy.hpp"
 #include <iostream>
+#include <memory>
 #include <stdexcept>
 
 template <class CRStrategy>
 CacheReplacement<CRStrategy>::CacheReplacement(size_t max_size_allowed,
                                                I_DataManager *data_manager)
     : priority_set(StrategyWrapper(strategy)),
+      cr_priority_queue(priority_set, space_map),
       max_size_allowed(max_size_allowed), size_used(0),
       data_manager(data_manager) {}
 template <class CRStrategy>
@@ -44,6 +46,16 @@ bool CacheReplacement<CRStrategy>::hit_key(unsigned long key,
             << ", next_size: " << next_size
             << ", max_size_allowed: " << max_size_allowed << std::endl;
   size_t size_erased = 0;
+
+  if (next_size > max_size_allowed &&
+      !strategy.should_discard_others_for_key(key, cr_priority_queue)) {
+
+    if (strategy.should_hit_without_retrieval(key, cr_priority_queue))
+      strategy.hit_key(key);
+
+    return false;
+  }
+
   while (next_size > max_size_allowed) {
     if (it == priority_set.end()) {
       std::cerr << "reached end, cant free more space for now" << std::endl;
@@ -126,6 +138,41 @@ template <class CRStrategy>
 CacheReplacement<CRStrategy>::StrategyWrapper::StrategyWrapper(
     CRStrategy &strategy)
     : strategy(strategy) {}
+
+template <class CRStrategy>
+CacheReplacement<CRStrategy>::CRPriorityQueue::CRPriorityQueue(
+    CacheReplacement::pq_t &priority_queue,
+    CacheReplacement::space_map_t &space_map)
+    : priority_queue(priority_queue), space_map(space_map) {}
+template <class CRStrategy>
+bool CacheReplacement<CRStrategy>::CRPriorityQueue::empty() {
+  return priority_queue.empty();
+}
+template <class CRStrategy>
+std::unique_ptr<I_PQTraverse>
+CacheReplacement<CRStrategy>::CRPriorityQueue::pq_traverse() {
+  return std::make_unique<CRPQTraverse>(priority_queue);
+}
+template <class CRStrategy>
+size_t
+CacheReplacement<CRStrategy>::CRPriorityQueue::get_key_size(unsigned long key) {
+  return space_map[key];
+}
+
+template <class CRStrategy>
+bool CacheReplacement<CRStrategy>::CRPQTraverse::has_next() {
+  return it != pq.end();
+}
+template <class CRStrategy>
+unsigned long CacheReplacement<CRStrategy>::CRPQTraverse::next_key() {
+  auto result = *it;
+  it++;
+  return result;
+}
+template <class CRStrategy>
+CacheReplacement<CRStrategy>::CRPQTraverse::CRPQTraverse(
+    CacheReplacement::pq_t &pq)
+    : pq(pq), it(pq.begin()) {}
 
 template class CacheReplacement<LRUReplacementStrategy>;
 template class CacheReplacement<FrequencyReplacementStrategy>;

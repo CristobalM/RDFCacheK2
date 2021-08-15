@@ -31,12 +31,12 @@ class CacheServerTaskProcessor : public TaskProcessor {
 
   int current_id;
 
-  static constexpr size_t DEFAULT_THRESHOLD_PART_SZ = 100'000'000; // 100 MB
+  //static constexpr size_t DEFAULT_THRESHOLD_PART_SZ = 100'000'000; // 100 MB
+  static constexpr size_t DEFAULT_THRESHOLD_PART_SZ = 10'000'000; // 10 MB
   // static constexpr size_t DEFAULT_THRESHOLD_PART_SZ = 1'024;
 
   ReplacementTaskProcessor replacement_task_processor;
   // std::unique_ptr<ServerWorker<ReplacementTaskProcessor>> replacement_worker;
-  std::mutex replacement_mutex;
 
 public:
   explicit CacheServerTaskProcessor(Cache &cache, uint8_t workers_count);

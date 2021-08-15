@@ -129,6 +129,7 @@ set(CACHING_FILES
         query_engine/caching/FrequencyReplacementStrategy.cpp
         query_engine/caching/FrequencyReplacementStrategy.hpp
         query_engine/caching/I_CacheReplacement.hpp
+        query_engine/caching/I_ReplacementPriorityQueue.hpp
         query_engine/caching/LRUReplacementStrategy.cpp
         query_engine/caching/LRUReplacementStrategy.hpp
         query_engine/caching/NoCachingReplacement.cpp
@@ -293,7 +294,7 @@ set(QUERY_ENGINE_FILES
         ${CACHING_FILES}
         ${QUERY_ITERATORS}
         ${BGPOPS}
-        )
+        query_engine/caching/I_PQTraverse.hpp)
 
 
 set(NETWORK_SOURCE_FILES

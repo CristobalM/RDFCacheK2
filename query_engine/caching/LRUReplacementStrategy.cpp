@@ -35,6 +35,14 @@ long LRUReplacementStrategy::cost_function(unsigned long key) const {
     value = it->second;
   }
   return value - low; // protection against overflow
-  // In practice this should never be a problem though, as 2^63 (longs) is
+  // In practice this should never be a problem though, as 2^63 (long) is
   // extremely large.
+}
+bool LRUReplacementStrategy::should_discard_others_for_key(
+    unsigned long, I_ReplacementPriorityQueue &) {
+  return true;
+}
+bool LRUReplacementStrategy::should_hit_without_retrieval(
+    unsigned long, I_ReplacementPriorityQueue &) {
+  return false;
 }

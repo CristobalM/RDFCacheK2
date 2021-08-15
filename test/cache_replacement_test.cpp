@@ -54,17 +54,20 @@ TEST(cache_replacement_test, can_do_simple_frequency_replacement_1_test) {
   };
   int i = 0;
   std::vector<size_t> expected_sizes = {1, 1, 1, 1, 2, 2, 2, 3, 3, 4, 4,
-                                        4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 1};
+                                        4, 4, 4, 5, 5, 4, 4, 4, 4, 4, 4};
+
+  std::vector<bool> can_be_retrieved_values = {
+      true,  true,  true,  true, true,  true, true, true, true, true,  false,
+      false, false, false, true, false, true, true, true, true, false, false};
   std::cout << "expected sizes length: " << expected_sizes.size() << std::endl;
-  int debug;
   for (auto &pair : keys_with_sizes) {
     std::cout << "hitting key " << pair.first << " with size " << pair.second
               << std::endl;
-    if (pair.first == 10) {
-      debug = 1;
-    }
+
     auto can_be_retrieved = cache_replacement.hit_key(pair.first, pair.second);
-    ASSERT_TRUE(can_be_retrieved) << "failed at i = " << i;
+
+    ASSERT_EQ(can_be_retrieved, can_be_retrieved_values[i])
+        << "failed at i = " << i;
     ASSERT_EQ(mock_data_manager.keys.size(), expected_sizes[i])
         << "failed at i  = " << i;
 
