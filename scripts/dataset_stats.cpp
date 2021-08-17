@@ -1,7 +1,7 @@
 //
 // Created by Cristobal Miranda, 2020
 //
-#include <fstream>
+#include <chrono>
 #include <getopt.h>
 #include <iostream>
 #include <memory>
@@ -11,9 +11,7 @@
 #include <SDEntitiesMapping.hpp>
 #include <StringDictionaryHASHRPDAC.h>
 #include <StringDictionaryHASHRPDACBlocks.h>
-#include <StringDictionaryHTFC.h>
 #include <StringDictionaryPFC.h>
-#include <StringDictionaryRPDAC.h>
 
 #include <exception>
 
@@ -58,18 +56,35 @@ int main(int argc, char **argv) {
       << "points,"
       << "total_block_nodes,"
       << "bytes_topology,"
-      << "total_bytes"
+      << "total_bytes,"
+      << "serialized_bytes,"
+      << "retrieval_time_microsecs"
       << "\n";
   for (auto predicate_id : predicates_ids) {
+    auto start = std::chrono::high_resolution_clock::now();
     auto fetch_result = predicates_index.fetch_k2tree(predicate_id);
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration_ms =
+        std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+
     const auto &k2tree = fetch_result.get();
     auto stats = k2tree.k2tree_stats();
     size_t tree_number_of_points = k2tree.size();
     total_points += tree_number_of_points;
     auto pred_resource = pcm.get_isd_manager()->get_resource(predicate_id);
+
+    size_t serialized_bytes;
+    {
+      std::stringstream ss;
+      k2tree.write_to_ostream(ss);
+      ss.seekg(0, std::ios::end);
+      serialized_bytes = ss.tellg();
+    }
+
     ofs << predicate_id << "," << pred_resource.value << ","
         << tree_number_of_points << "," << stats.total_blocks << ","
-        << stats.bytes_topology << "," << stats.total_bytes << "\n";
+        << stats.bytes_topology << "," << stats.total_bytes << ","
+        << serialized_bytes << "," << duration_ms.count() << "\n";
 
     predicates_index.discard_in_memory_predicate(predicate_id);
   }
