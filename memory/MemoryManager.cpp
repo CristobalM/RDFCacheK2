@@ -12,15 +12,15 @@ extern "C" {
 #include "MemoryManager.hpp"
 #include "MemoryPool.hpp"
 
-const size_t default_pool_block_sz = 512;
+// const size_t default_pool_block_sz = 65536;
 
 MemoryManager::MemoryManager()
-    : current_index(0), blocks(649880), containers_32(1299760),
-      containers_64(default_pool_block_sz),
-      containers_128(default_pool_block_sz),
-      containers_256(default_pool_block_sz),
-      containers_512(default_pool_block_sz),
-      containers_1024(default_pool_block_sz) {}
+: current_index(0), blocks(1299760), containers_32(12997600),
+containers_64(195312),
+containers_128(97656),
+containers_256(48828),
+containers_512(24414),
+containers_1024(12207) {}
 
 MemoryManager &MemoryManager::instance() { return _instance; }
 
