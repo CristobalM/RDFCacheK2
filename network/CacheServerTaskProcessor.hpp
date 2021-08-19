@@ -31,7 +31,7 @@ class CacheServerTaskProcessor : public TaskProcessor {
 
   int current_id;
 
-  //static constexpr size_t DEFAULT_THRESHOLD_PART_SZ = 100'000'000; // 100 MB
+  // static constexpr size_t DEFAULT_THRESHOLD_PART_SZ = 100'000'000; // 100 MB
   static constexpr size_t DEFAULT_THRESHOLD_PART_SZ = 10'000'000; // 10 MB
   // static constexpr size_t DEFAULT_THRESHOLD_PART_SZ = 1'024;
 

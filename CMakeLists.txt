@@ -320,6 +320,31 @@ set(PROTO_MESSAGES
         proto/generated/sparql_tree.pb.cc
         )
 
+set(MEMORY_SOURCES
+        memory/MemoryManager.hpp
+        memory/MemoryManager.cpp
+        memory/MemoryPool.hpp
+        )
+
+
+set(K2TREE_PATH ${CMAKE_SOURCE_DIR}/lib/c-k2tree-dyn)
+
+
+set(K2TREE_SOURCES
+        ${K2TREE_PATH}/src/bitvector.c
+        ${K2TREE_PATH}/src/block.c
+        ${K2TREE_PATH}/src/block_frontier.c
+        ${K2TREE_PATH}/src/block_topology.c
+        ${K2TREE_PATH}/src/custom_bv_handling.c
+        ${K2TREE_PATH}/src/k2node.c
+        ${K2TREE_PATH}/src/morton_code.c
+        ${K2TREE_PATH}/src/queries_state.c
+        ${K2TREE_PATH}/src/stacks.c
+        ${K2TREE_PATH}/src/vectors.c
+        )
+
+add_library(k2dyn_custom_mem ${K2TREE_SOURCES})
+
 set(PROTO_MESSAGES_PATH ${CMAKE_SOURCE_DIR}/proto/generated)
 
 set(INCLUDES
@@ -329,10 +354,10 @@ set(INCLUDES
         algorithms
         utils
         query_engine
+        memory
         ${PROTO_MESSAGES_PATH}
         )
 
-set(K2TREE_PATH ${CMAKE_SOURCE_DIR}/lib/c-k2tree-dyn)
 
 set(LIB_CPPBASE64_PATH lib/cpp-base64)
 set(LIB_EXTERNAL_SORT_PATH lib/external-sort)
@@ -359,7 +384,7 @@ set(LIB_NTPARSER_INCLUDES
 
 
 add_subdirectory(${LIB_NTPARSER})
-add_subdirectory(${K2TREE_PATH})
+# add_subdirectory(${K2TREE_PATH})
 
 
 include_directories(
@@ -372,6 +397,7 @@ include_directories(
 
 add_library(RDFCacheK2 STATIC ${CORE_SOURCE_FILES} ${QUERY_ENGINE_FILES})
 add_library(RDFCacheK2_Network STATIC ${NETWORK_SOURCE_FILES})
+add_library(RDFCacheK2_Memory STATIC ${MEMORY_SOURCES})
 #add_library(RDFCacheK2_GR STATIC ${QUERY_ENGINE_FILES})
 
 add_library(ProtoMessages STATIC ${PROTO_MESSAGES})
@@ -386,7 +412,8 @@ add_library(Utils utils/serialization_util.cpp utils/hashing.cpp)
 add_dependencies(Proc CppBase64)
 
 # add_dependencies(RDFCacheK2 _k2tree_merged_noalloc)
-add_dependencies(RDFCacheK2 k2dyn Utils)
+#add_dependencies(RDFCacheK2 k2dyn Utils)
+add_dependencies(RDFCacheK2 k2dyn_custom_mem Utils)
 add_dependencies(RDFCacheK2_Network RDFCacheK2)
 
 #add_dependencies(RDFCacheK2_GR RDFCacheK2)
@@ -406,7 +433,8 @@ include_directories(${CURL_INCLUDE_DIR})
 
 set(BASE_LIBS
         RDFCacheK2
-        k2dyn
+        #k2dyn
+        k2dyn_custom_mem
         ProtoMessages
         ${Protobuf_LIBRARIES}
         CSD
@@ -416,6 +444,7 @@ set(BASE_LIBS
         stdc++fs
         pcrecpp
         ${CURL_LIBRARIES}
+        RDFCacheK2_Memory
         )
 
 set(PROC_LIBS
@@ -430,8 +459,8 @@ set(PROC_LIBS
 set(DEFAULT_LIBS
         RDFCacheK2
         RDFCacheK2_Network
-        k2dyn
-
+        #k2dyn
+        k2dyn_custom_mem
         ProtoMessages
         ${Protobuf_LIBRARIES}
         CSD
@@ -442,6 +471,7 @@ set(DEFAULT_LIBS
         pcrecpp
         ${CURL_LIBRARIES}
         pthread
+        RDFCacheK2_Memory
         )
 
 
@@ -595,6 +625,44 @@ if (GTest_FOUND)
     add_test(NAME query_filters_test COMMAND ./query_filters_test)
     add_test(NAME query_proc_tests2 COMMAND ./query_proc_tests2)
     add_test(NAME cache_replacement_test COMMAND ./cache_replacement_test)
+    
+    # K2 Tree Tests
+
+
+    add_executable(block_test ${K2TREE_PATH}/test/block_test.cpp ${K2TREE_PATH}/test/block_wrapper.hpp)
+    add_executable(block_leak_test ${K2TREE_PATH}/test/block_leak_test.cpp ${K2TREE_PATH}/test/block_wrapper.hpp)
+    add_executable(morton_code_test ${K2TREE_PATH}/test/morton_code_test.cpp)
+    add_executable(block_usages_test ${K2TREE_PATH}/test/block_usages_test.cpp)
+    add_executable(debug_insertion_out_of_bounds_1_test ${K2TREE_PATH}/test/debug_insertion_out_of_bounds_1_test.cpp)
+    add_executable(interactive_report_test ${K2TREE_PATH}/test/interactive_report_test.cpp)
+    add_executable(bitvector_test ${K2TREE_PATH}/test/bitvector_test.cpp)
+    add_executable(k2node_test ${K2TREE_PATH}/test/k2node_test.cpp)
+    add_executable(sip_join_test ${K2TREE_PATH}/test/sip_join_test.cpp)
+    add_executable(k2node_sip_join_test ${K2TREE_PATH}/test/k2node_sip_join_test.cpp)
+    add_executable(lazy_scan_test ${K2TREE_PATH}/test/lazy_scan_test.cpp)
+
+    target_link_libraries(block_test  ${GTEST_BOTH_LIBRARIES} pthread k2dyn_custom_mem RDFCacheK2_Memory)
+    target_link_libraries(block_leak_test  ${GTEST_BOTH_LIBRARIES} pthread k2dyn_custom_mem RDFCacheK2_Memory)
+    target_link_libraries(morton_code_test  ${GTEST_BOTH_LIBRARIES} pthread k2dyn_custom_mem RDFCacheK2_Memory)
+    target_link_libraries(block_usages_test   ${GTEST_BOTH_LIBRARIES} pthread k2dyn_custom_mem RDFCacheK2_Memory)
+    target_link_libraries(debug_insertion_out_of_bounds_1_test   k2dyn_custom_mem  ${GTEST_BOTH_LIBRARIES} pthread RDFCacheK2_Memory)
+    target_link_libraries(interactive_report_test   k2dyn_custom_mem ${GTEST_BOTH_LIBRARIES} pthread RDFCacheK2_Memory)
+    target_link_libraries(bitvector_test   k2dyn_custom_mem ${GTEST_BOTH_LIBRARIES} pthread RDFCacheK2_Memory)
+    target_link_libraries(k2node_test   k2dyn_custom_mem ${GTEST_BOTH_LIBRARIES} pthread RDFCacheK2_Memory)
+    target_link_libraries(sip_join_test   k2dyn_custom_mem ${GTEST_BOTH_LIBRARIES} pthread RDFCacheK2_Memory)
+    target_link_libraries(k2node_sip_join_test   k2dyn_custom_mem ${GTEST_BOTH_LIBRARIES} pthread RDFCacheK2_Memory)
+    target_link_libraries(lazy_scan_test   k2dyn_custom_mem ${GTEST_BOTH_LIBRARIES} pthread RDFCacheK2_Memory)
+
+
+    add_test(NAME block_test COMMAND ./block_test)
+    add_test(NAME block_leak_test COMMAND ./block_leak_test)
+    add_test(NAME morton_code_test COMMAND ./morton_code_test)
+    add_test(NAME block_usages_test COMMAND ./block_usages_test)
+    add_test(NAME interactive_report_test COMMAND ./interactive_report_test)
+    add_test(NAME k2node_test COMMAND ./k2node_test)
+    add_test(NAME sip_join_test COMMAND ./sip_join_test)
+    add_test(NAME k2node_sip_join_test COMMAND ./k2node_sip_join_test)
+    add_test(NAME lazy_scan_test COMMAND ./lazy_scan_test)
 
 endif ()
 
