@@ -349,9 +349,6 @@ set(LIB_CSD_INCLUDES
         ${LIB_CSD_BPATH}/libcds/includes
         )
 
-
-set(LINK_LIBS ${K2TREE_PATH}/bin)
-
 add_subdirectory(${LIB_CSD_BPATH})
 
 set(LIB_NTPARSER lib/ntparser)
@@ -371,7 +368,6 @@ include_directories(
         ${LIB_CSD_INCLUDES}
         ${LIB_NTPARSER_INCLUDES}
 )
-link_directories(${LINK_LIBS})
 
 
 add_library(RDFCacheK2 STATIC ${CORE_SOURCE_FILES} ${QUERY_ENGINE_FILES})
