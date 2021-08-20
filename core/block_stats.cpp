@@ -13,9 +13,9 @@ void block_rec_occup_ratio_count(struct block *b, K2TreeStats &k2tree_stats) {
   k2tree_stats.blocks_data += b->children * sizeof(struct block *);
   k2tree_stats.blocks_counted += 1;
 
-  struct block **children = b->children_blocks;
+  struct block *children = b->children_blocks;
   for (int i = 0; i < b->children; i++) {
-    struct block *child_block = children[i];
+    struct block *child_block = &children[i];
     block_rec_occup_ratio_count(child_block, k2tree_stats);
   }
 }

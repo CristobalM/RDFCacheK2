@@ -17,8 +17,8 @@ k2tree_data read_tree_from_istream(std::istream &is) {
         "K2Tree::read_from_istream: input stream has zero blocks");
   }
 
-  std::list<struct block *> blocks_to_adjust;
-  struct block *current_block = nullptr;
+  std::list<struct block> blocks_to_adjust;
+  struct block current_block;
 
   for (uint32_t i = 0; i < blocks_count; i++) {
     current_block = read_block_from_istream(is);
@@ -33,33 +33,34 @@ k2tree_data read_tree_from_istream(std::istream &is) {
   return out;
 }
 
-struct block *read_block_from_istream(std::istream &is) {
+struct block read_block_from_istream(std::istream &is) {
   uint16_t nodes_count = read_u16(is);
   uint16_t children = read_u16(is);
   uint16_t container_size = read_u16(is);
 
-  struct block *new_block = create_block();
+  // struct block *new_block = create_block();
+  struct block new_block;
 
   if (children > 0)
-    init_block_frontier_with_capacity(new_block, children);
+    init_block_frontier_with_capacity(&new_block, children);
   else
-    init_block_frontier(new_block);
+    init_block_frontier(&new_block);
 
-  new_block->children = children;
+  new_block.children = children;
 
   for (uint32_t j = 0; j < children; j++) {
     uint16_t frontier_element = read_u16(is);
-    new_block->preorders[j] = frontier_element;
+    new_block.preorders[j] = frontier_element;
   }
 
-  new_block->container_size = container_size;
+  new_block.container_size = container_size;
 
-  uint32_t *container = k2tree_alloc_u32array((int)new_block->container_size);
-  new_block->container = container;
+  uint32_t *container = k2tree_alloc_u32array((int)new_block.container_size);
+  new_block.container = container;
   for (uint32_t sub_block_i = 0; sub_block_i < container_size; sub_block_i++) {
-    new_block->container[sub_block_i] = read_u32(is);
+    new_block.container[sub_block_i] = read_u32(is);
   }
-  new_block->nodes_count = nodes_count;
+  new_block.nodes_count = nodes_count;
 
   return new_block;
 }
@@ -102,7 +103,7 @@ unsigned long write_tree_to_ostream(k2tree_data data, std::ostream &os) {
   unsigned long bytes_written = sizeof(uint16_t) * 2 + sizeof(uint32_t);
 
   uint32_t blocks_count =
-      traverse_tree_write_to_ostream(data.root, os, bytes_written);
+      traverse_tree_write_to_ostream(&data.root, os, bytes_written);
   auto curr_pos = os.tellp();
   os.seekp(start_pos);
   write_u32(os, blocks_count);
@@ -112,12 +113,12 @@ unsigned long write_tree_to_ostream(k2tree_data data, std::ostream &os) {
 
 uint32_t traverse_tree_write_to_ostream(struct block *b, std::ostream &os,
                                         unsigned long &bytes_written) {
-  struct block **child_blocks = b->children_blocks;
+  struct block *child_blocks = b->children_blocks;
 
   uint32_t blocks_counted = 1;
 
   for (int i = 0; i < b->children; i++) {
-    struct block *current_child_block = child_blocks[i];
+    struct block *current_child_block = &child_blocks[i];
     blocks_counted +=
         traverse_tree_write_to_ostream(current_child_block, os, bytes_written);
   }
@@ -126,14 +127,14 @@ uint32_t traverse_tree_write_to_ostream(struct block *b, std::ostream &os,
   return blocks_counted;
 }
 
-void adjust_blocks(std::list<struct block *> &blocks) {
+void adjust_blocks(std::list<struct block> &blocks) {
   auto pointer = blocks.rbegin();
-  struct block *current_block = *pointer;
+  struct block current_block = *pointer;
   pointer++;
-  int frontier_sz = current_block->children;
+  int frontier_sz = current_block.children;
   for (int i = frontier_sz - 1; i >= 0; i--) {
-    struct block *current_child = *pointer;
-    current_block->children_blocks[i] = current_child;
+    struct block current_child = *pointer;
+    current_block.children_blocks[i] = current_child;
     blocks.erase(--(pointer.base()));
   }
 }
@@ -175,7 +176,7 @@ bool same_block_frontiers(const struct block *lhs, const struct block *rhs) {
   }
 
   for (int i = 0; i < lhs->children; i++) {
-    if (!same_blocks(lhs->children_blocks[i], rhs->children_blocks[i])) {
+    if (!same_blocks(&lhs->children_blocks[i], &rhs->children_blocks[i])) {
       return false;
     }
   }

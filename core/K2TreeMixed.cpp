@@ -217,7 +217,7 @@ unsigned long write_blocks_from_k2nodes(struct k2node *node,
     }
   } else {
     k2tree_data serialization_data;
-    serialization_data.root = node->k2subtree.block_child;
+    serialization_data.root = *node->k2subtree.block_child;
     serialization_data.max_node_count = max_nodes_count;
     serialization_data.treedepth = tree_depth;
     bytes_written += write_tree_to_ostream(serialization_data, os);
@@ -274,7 +274,8 @@ struct k2node *deserialize_k2node_tree(std::istream &is,
     }
   } else {
     k2tree_data subtree_deserialized = read_tree_from_istream(is);
-    node->k2subtree.block_child = subtree_deserialized.root;
+    node->k2subtree.block_child = create_block();
+    *node->k2subtree.block_child = subtree_deserialized.root;
   }
 
   return node;

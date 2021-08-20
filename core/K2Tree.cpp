@@ -154,7 +154,7 @@ void K2Tree::traverse_column(unsigned long column,
 
 void K2Tree::write_to_ostream(std::ostream &os) {
   k2tree_data data{};
-  data.root = root;
+  data.root = *root;
   data.max_node_count = qs->max_nodes_count;
   data.treedepth = qs->treedepth;
   write_tree_to_ostream(data, os);
@@ -162,7 +162,9 @@ void K2Tree::write_to_ostream(std::ostream &os) {
 
 K2Tree K2Tree::read_from_istream(std::istream &is) {
   auto data = read_tree_from_istream(is);
-  return K2Tree(data.root, data.treedepth, data.max_node_count);
+  struct block *new_root = create_block();
+  *new_root = data.root;
+  return K2Tree(new_root, data.treedepth, data.max_node_count);
 }
 
 K2TreeStats K2Tree::k2tree_stats() {
