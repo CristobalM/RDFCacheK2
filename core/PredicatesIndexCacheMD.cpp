@@ -6,7 +6,6 @@
 
 #include <MemoryManager.hpp>
 #include <hashing.hpp>
-#include <iostream>
 
 PredicatesIndexCacheMD::PredicatesIndexCacheMD(
     std::unique_ptr<std::istream> &&is)
@@ -26,65 +25,18 @@ bool PredicatesIndexCacheMD::load_single_predicate(uint64_t predicate_index) {
 
   std::lock_guard lg(retrieval_mutex);
 
-  std::cerr << "retrieving predicate " << predicate_index << " from memory"
-            << std::endl;
-
   const auto &predicate_metadata = get_metadata_with_id(predicate_index);
 
   auto pos = is->tellg();
   is->seekg(predicate_metadata.tree_offset);
-
-  const auto &predicates_v = metadata.get_ids_vector();
-  auto pos_it =
-      std::find(predicates_v.begin(), predicates_v.end(), predicate_index);
-  if (pos_it == predicates_v.end())
-    throw std::runtime_error("predicate " + std::to_string(predicate_index) +
-                             " is not within the list");
-  pos_it++;
-
-  size_t end_pos;
-  if (pos_it == predicates_v.end()) {
-    auto curr = is->tellg();
-    is->seekg(0, std::ios::end);
-    end_pos = is->tellg();
-    is->seekg(curr);
-  } else {
-
-    if (!has_predicate_stored(*pos_it))
-      throw std::runtime_error("predicate id " + std::to_string(*pos_it) +
-                               " in list but not on metadata map");
-    const auto &md = get_metadata_with_id(*pos_it);
-    end_pos = md.tree_offset;
-  }
-
-  auto raw_k2tree_sz = end_pos - predicate_metadata.tree_offset;
-  std::vector<char> raw_k2tree(raw_k2tree_sz, 0);
-
-  is->read(raw_k2tree.data(), static_cast<std::streamsize>(raw_k2tree.size()));
-
-  auto md5_calc = md5calc(raw_k2tree);
-
-  if (md5_calc != predicate_metadata.k2tree_hash) {
-    throw std::runtime_error("Calc hash differs from stored for predicate " +
-                             std::to_string(predicate_metadata.predicate_id));
-  }
-
-  std::stringstream ss(
-      std::string(raw_k2tree.begin(),
-                  raw_k2tree.end())); // TODO: optimization using a custom
-                                      // stream to avoid copying the data
-
-  std::cout << "Loading predicate " << predicate_metadata.predicate_id << " ..."
-            << std::endl;
 
   auto *memory_segment = MemoryManager::instance().new_memory_segment(
       predicate_metadata.tree_size_in_memory);
   memory_segments_map[predicate_metadata.predicate_id] = memory_segment;
 
   predicates[predicate_metadata.predicate_id] = std::make_unique<K2TreeMixed>(
-      K2TreeMixed::read_from_istream(ss, memory_segment));
+      K2TreeMixed::read_from_istream(*is, memory_segment));
   is->seekg(pos);
-  std::cout << "Loaded " << predicate_metadata.predicate_id << std::endl;
 
   return true;
 }
@@ -211,8 +163,6 @@ void PredicatesIndexCacheMD::replace_istream(
 void PredicatesIndexCacheMD::discard_in_memory_predicate(
     uint64_t predicate_index) {
   std::lock_guard lg(retrieval_mutex);
-  std::cerr << "removing predicate " << predicate_index << " from memory"
-            << std::endl;
   predicates.erase(predicate_index);
   auto it = memory_segments_map.find(predicate_index);
   if (it != memory_segments_map.end()) {
@@ -253,6 +203,7 @@ void PredicatesIndexCacheMD::load_all_predicates() {
   is->seekg(first_offset);
 
   for (auto it = all_predicates.begin(); it != all_predicates.end(); it++) {
+    /*
     size_t end_pos;
     auto next_it = std::next(it);
     if (next_it == all_predicates.end()) {
@@ -284,8 +235,8 @@ void PredicatesIndexCacheMD::load_all_predicates() {
     std::stringstream ss(std::string(raw_k2tree.begin(), raw_k2tree.end()));
 
     raw_k2tree.clear();
-
+*/
     predicates[*it] = std::make_unique<K2TreeMixed>(
-        K2TreeMixed::read_from_istream(ss, mem_segment));
+        K2TreeMixed::read_from_istream(*is, mem_segment));
   }
 }

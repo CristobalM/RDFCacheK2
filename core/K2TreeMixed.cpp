@@ -437,7 +437,8 @@ k2node *deserialize_k2node_tree(std::istream &is,
                                 uint32_t current_depth, uint32_t cut_depth,
                                 uint32_t &current_node_location,
                                 MemorySegment *memory_segment) {
-  struct k2node *node = create_k2node();
+  auto *node_mem_space = memory_segment->require_bytes(sizeof(struct k2node));
+  struct k2node *node = new (node_mem_space) struct k2node();
   if (current_depth < cut_depth) {
     int container_pos = 4 * static_cast<int>(current_node_location) / 32;
     int subpos_bits_start = (4 * static_cast<int>(current_node_location)) % 32;
@@ -453,7 +454,8 @@ k2node *deserialize_k2node_tree(std::istream &is,
   } else {
     k2tree_data subtree_deserialized =
         read_tree_from_istream(is, memory_segment);
-    node->k2subtree.block_child = create_block();
+    auto *block_mem_space = memory_segment->require_bytes(sizeof(struct block));
+    node->k2subtree.block_child = new (block_mem_space) struct block();
     *node->k2subtree.block_child = subtree_deserialized.root;
   }
 

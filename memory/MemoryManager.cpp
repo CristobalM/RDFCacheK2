@@ -5,6 +5,7 @@
 extern "C" {
 #include "block.h"
 #include "definitions.h"
+#include "k2node.h"
 #include "memalloc.h"
 }
 
@@ -97,6 +98,18 @@ void k2tree_free_blocks_array(struct block *blocks_array) {
     segment->free_memory((void *)blocks_array);
   else
     delete[] blocks_array;
+}
+
+struct k2node *k2tree_allocate_k2node(void) {
+  return new struct k2node();
+}
+
+void k2tree_free_k2node(struct k2node *node) {
+  auto *segment = MemoryManager::instance().find_segment((void *)node);
+  if (segment)
+    segment->free_memory((void *)node);
+  else
+    delete node;
 }
 
 MemoryManager MemoryManager::_instance;
