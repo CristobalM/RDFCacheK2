@@ -324,7 +324,7 @@ set(MEMORY_SOURCES
         memory/MemoryManager.hpp
         memory/MemoryManager.cpp
         memory/MemoryPool.hpp
-        )
+        memory/MemorySegment.cpp memory/MemorySegment.hpp)
 
 
 set(K2TREE_PATH ${CMAKE_SOURCE_DIR}/lib/c-k2tree-dyn)
@@ -612,6 +612,10 @@ if (GTest_FOUND)
     target_link_libraries(cache_replacement_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES})
 
 
+    add_executable(memory_segment_test test/memory_segment_test.cpp test/memory_segment_test.cpp)
+    target_link_libraries(memory_segment_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES})
+
+
     add_test(NAME serialization_test COMMAND ./serialization_test)
     add_test(NAME k2tree_serialization_test COMMAND ./k2tree_serialization_test)
     add_test(NAME predicates_cache_manager_test COMMAND ./predicates_cache_manager_test)
@@ -625,7 +629,8 @@ if (GTest_FOUND)
     add_test(NAME query_filters_test COMMAND ./query_filters_test)
     add_test(NAME query_proc_tests2 COMMAND ./query_proc_tests2)
     add_test(NAME cache_replacement_test COMMAND ./cache_replacement_test)
-    
+    add_test(NAME memory_segment_test COMMAND ./memory_segment_test)
+
     # K2 Tree Tests
 
 

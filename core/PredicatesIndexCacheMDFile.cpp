@@ -91,3 +91,6 @@ const std::vector<uint64_t> &PredicatesIndexCacheMDFile::get_predicates_ids() {
 const PredicatesCacheMetadata &PredicatesIndexCacheMDFile::get_metadata() {
   return PredicatesIndexCacheMD::get_metadata();
 }
+void PredicatesIndexCacheMDFile::load_all_predicates() {
+  PredicatesIndexCacheMD::load_all_predicates();
+}

@@ -14,42 +14,44 @@ extern "C" {
 #include <definitions.h>
 }
 
+#include <list>
 #include <vector>
 
-#include "MemoryPool.hpp"
-
+#include "MemorySegment.hpp"
 #include <map>
+#include <memory>
 #include <mutex>
 #include <set>
 #include <string>
 
 class MemoryManager {
 
-  uint64_t current_index;
-
-  std::mutex m;
+  std::unique_ptr<std::mutex> m;
 
 protected:
   MemoryManager();
 
+  MemoryManager(MemoryManager &&other) noexcept;
+  MemoryManager &operator=(MemoryManager &&other) noexcept;
+
   static MemoryManager _instance;
 
+  struct Comp {
+    bool operator()(void *lhs, void *rhs) const { return lhs > rhs; }
+  };
+
+  std::map<void *, std::unique_ptr<MemorySegment>, Comp> memory_segments;
+  std::map<MemorySegment *, void *> reverse_mem_segments_map;
+
 public:
-  MemoryPool<struct block> blocks;
-  MemoryPool<uint32_t[32]> containers_32;
-  MemoryPool<uint32_t[64]> containers_64;
-  MemoryPool<uint32_t[128]> containers_128;
-  MemoryPool<uint32_t[256]> containers_256;
-  MemoryPool<uint32_t[512]> containers_512;
-  MemoryPool<uint32_t[1024]> containers_1024;
-
-  std::map<uint32_t *, std::unique_ptr<uint32_t[]>> other_containers;
-
-  uint64_t new_block_index();
-
   static MemoryManager &instance();
 
-  std::string memory_usage();
+  MemorySegment *new_memory_segment(size_t size);
+
+  bool exists(void *ptr);
+  MemorySegment *find_segment(void *ptr);
+
+  void free_segment(MemorySegment *memory_segment);
 };
 
 #endif // RDFCACHEK2_MEMORYMANAGER_HPP

@@ -355,6 +355,11 @@ struct k2node *K2TreeMixed::get_root_k2node() {
   return root;
 }
 
+k2node *deserialize_k2node_tree(std::istream &is,
+                                std::vector<uint32_t> &containers,
+                                uint32_t current_depth, uint32_t cut_depth,
+                                uint32_t &current_node_location,
+                                MemorySegment *memory_segment);
 bool K2TreeMixed::has_valid_structure(K2QStateWrapper &stw) const {
 
   int result = debug_validate_k2node_rec(root, stw.get_ptr(), 0);
@@ -409,4 +414,48 @@ void K2TreeMixed::traverse_column(unsigned long column,
                                   void *report_state) const {
   auto stw = create_k2qw();
   return traverse_column(column, fun_reporter, report_state, stw);
+}
+K2TreeMixed K2TreeMixed::read_from_istream(std::istream &is,
+                                           MemorySegment *memory_segment) {
+  uint64_t points_count = read_u64(is);
+  uint32_t k2tree_depth = read_u32(is);
+  uint32_t cut_depth = read_u32(is);
+  uint32_t max_nodes_count = read_u32(is);
+  uint32_t containers_count = read_u32(is);
+  std::vector<uint32_t> containers(containers_count, 0);
+  for (uint32_t i = 0; i < containers_count; i++) {
+    containers[i] = read_u32(is);
+  }
+  uint32_t current_node_location = 0;
+  struct k2node *root = deserialize_k2node_tree(
+      is, containers, 0, cut_depth, current_node_location, memory_segment);
+  return K2TreeMixed(root, k2tree_depth, max_nodes_count, cut_depth,
+                     points_count);
+}
+k2node *deserialize_k2node_tree(std::istream &is,
+                                std::vector<uint32_t> &containers,
+                                uint32_t current_depth, uint32_t cut_depth,
+                                uint32_t &current_node_location,
+                                MemorySegment *memory_segment) {
+  struct k2node *node = create_k2node();
+  if (current_depth < cut_depth) {
+    int container_pos = 4 * static_cast<int>(current_node_location) / 32;
+    int subpos_bits_start = (4 * static_cast<int>(current_node_location)) % 32;
+    uint32_t container = containers[container_pos];
+    current_node_location++;
+    for (int i = 0; i < 4; i++) {
+      if (container & (1U << (31 - (subpos_bits_start + i)))) {
+        node->k2subtree.children[i] = deserialize_k2node_tree(
+            is, containers, current_depth + 1, cut_depth, current_node_location,
+            memory_segment);
+      }
+    }
+  } else {
+    k2tree_data subtree_deserialized =
+        read_tree_from_istream(is, memory_segment);
+    node->k2subtree.block_child = create_block();
+    *node->k2subtree.block_child = subtree_deserialized.root;
+  }
+
+  return node;
 }

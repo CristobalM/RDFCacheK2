@@ -65,6 +65,8 @@ struct block read_block_from_istream(std::istream &is) {
   return new_block;
 }
 
+struct block read_block_from_istream(std::istream &is,
+                                     MemorySegment *memory_segment);
 unsigned long write_block_to_ostream(struct block *b, std::ostream &os) {
   uint16_t nodes_count = b->nodes_count;
   uint16_t children = b->children;
@@ -92,6 +94,46 @@ unsigned long write_block_to_ostream(struct block *b, std::ostream &os) {
   }
 
   return bytes_written;
+}
+struct block read_block_from_istream(std::istream &is,
+                                     MemorySegment *memory_segment) {
+  uint16_t nodes_count = read_u16(is);
+  uint16_t children = read_u16(is);
+  uint16_t container_size = read_u16(is);
+
+  struct block new_block;
+
+  // begin block frontier init
+  new_block.preorders = (NODES_BV_T *)memory_segment->require_bytes(
+      sizeof(NODES_BV_T) * children);
+  new_block.children_blocks = (struct block *)memory_segment->require_bytes(
+      sizeof(struct block) * children);
+  if (children > 0 && !new_block.preorders)
+    throw std::runtime_error("Couldn't allocate preorders");
+  if (children > 0 && !new_block.children_blocks)
+    throw std::runtime_error("Couldn't allocate children blocks");
+
+  new_block.children = children;
+  // end block frontier init
+  new_block.nodes_count = nodes_count;
+
+  for (uint32_t j = 0; j < children; j++) {
+    uint16_t frontier_element = read_u16(is);
+    new_block.preorders[j] = frontier_element;
+  }
+
+  new_block.container_size = container_size;
+
+  // uint32_t *container = k2tree_alloc_u32array((int)new_block.container_size);
+  new_block.container = (BVCTYPE *)memory_segment->require_bytes(
+      container_size * sizeof(BVCTYPE));
+  if (container_size > 0 && !new_block.container)
+    throw std::runtime_error("Couldn't allocate container");
+  for (uint32_t sub_block_i = 0; sub_block_i < container_size; sub_block_i++) {
+    new_block.container[sub_block_i] = read_u32(is);
+  }
+
+  return new_block;
 }
 
 unsigned long write_tree_to_ostream(k2tree_data data, std::ostream &os) {
@@ -182,4 +224,31 @@ bool same_block_frontiers(const struct block *lhs, const struct block *rhs) {
   }
 
   return true;
+}
+
+k2tree_data read_tree_from_istream(std::istream &is,
+                                   MemorySegment *memory_segment) {
+  uint16_t max_node_count = read_u16(is);
+  uint16_t treedepth = read_u16(is);
+  uint32_t blocks_count = read_u32(is);
+
+  if (blocks_count == 0) {
+    throw std::runtime_error(
+        "K2Tree::read_from_istream: input stream has zero blocks");
+  }
+
+  std::list<struct block> blocks_to_adjust;
+  struct block current_block;
+
+  for (uint32_t i = 0; i < blocks_count; i++) {
+    current_block = read_block_from_istream(is, memory_segment);
+    blocks_to_adjust.push_back(current_block);
+    adjust_blocks(blocks_to_adjust);
+  }
+  // root is always the last block in the serialization
+  k2tree_data out{};
+  out.max_node_count = max_node_count;
+  out.root = current_block;
+  out.treedepth = treedepth;
+  return out;
 }

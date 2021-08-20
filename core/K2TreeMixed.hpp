@@ -11,6 +11,7 @@
 #include "ResultTable.hpp"
 #include "k2tree_stats.hpp"
 
+#include <MemorySegment.hpp>
 #include <TimeControl.hpp>
 #include <serialization_util.hpp>
 
@@ -119,6 +120,9 @@ public:
   std::unique_ptr<K2TreeScanner> create_empty_scanner();
 
   K2QStateWrapper create_k2qw() const;
+
+  static K2TreeMixed read_from_istream(std::istream &istream,
+                                       MemorySegment *memory_segment);
 
 private:
   void clean_up();
