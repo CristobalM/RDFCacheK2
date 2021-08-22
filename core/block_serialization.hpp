@@ -1,6 +1,7 @@
 #ifndef RDFCACHEK2_BLOCK_SERIALIZATION_HPP_
 #define RDFCACHEK2_BLOCK_SERIALIZATION_HPP_
 
+#include <MemorySegment.hpp>
 #include <cstdint>
 #include <istream>
 #include <list>
@@ -28,4 +29,6 @@ bool same_block_topologies(const struct block *lhs, const struct block *rhs);
 bool same_bvs(const struct block *lhs, const struct block *rhs);
 bool same_block_frontiers(const struct block *lhs, const struct block *rhs);
 
+k2tree_data read_tree_from_istream(std::istream &is,
+                                   MemorySegment *memory_segment);
 #endif

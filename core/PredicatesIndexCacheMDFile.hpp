@@ -35,6 +35,8 @@ public:
   const std::vector<uint64_t> &get_predicates_ids();
   const PredicatesCacheMetadata &get_metadata();
 
+  void load_all_predicates();
+
 private:
   static std::unique_ptr<std::istream> load_file(const std::string &fname,
                                                  buf_t &buffer);

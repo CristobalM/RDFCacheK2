@@ -2,6 +2,7 @@
 #define _PREDICATES_INDEX_CACHE_MD_HPP_
 
 #include <istream>
+#include <map>
 #include <memory>
 #include <mutex>
 #include <set>
@@ -30,6 +31,10 @@ private:
 
   K2TreeConfig k2tree_config;
 
+  std::map<unsigned long, MemorySegment *> memory_segments_map;
+
+  MemorySegment *full_memory_segment;
+
 public:
   PredicatesIndexCacheMD(std::unique_ptr<std::istream> &&is);
 
@@ -54,6 +59,7 @@ public:
 
   const PredicatesCacheMetadata &get_metadata();
   const PredicateMetadata &get_metadata_with_id(uint64_t predicate_id);
+  void load_all_predicates();
 };
 
 #endif /* _PREDICATES_INDEX_CACHE_MD_HPP_ */

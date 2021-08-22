@@ -212,10 +212,13 @@ void PredicatesCacheManager::ensure_available_predicate(
   }
 }
 void PredicatesCacheManager::load_all_predicates() {
+  predicates_index->load_all_predicates();
+  /*
   auto &metadata = predicates_index->get_metadata();
   for (auto predicate_id : metadata.get_ids_vector()) {
     predicates_index->fetch_k2tree(predicate_id);
   }
+   */
 }
 size_t PredicatesCacheManager::get_predicate_size(unsigned long predicate_id) {
   auto &metadata_map = predicates_index->get_metadata().get_map();
