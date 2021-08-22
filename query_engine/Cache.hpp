@@ -38,6 +38,8 @@ class Cache {
 
   std::unique_ptr<I_CacheReplacement> cache_replacement;
 
+  I_CacheReplacement::REPLACEMENT_STRATEGY strategy_id;
+
 public:
   using cm_t = std::shared_ptr<PredicatesCacheManager>;
   using pcm_t = PredicatesCacheManager;
@@ -63,6 +65,7 @@ public:
   unsigned long get_timeout_ms();
   bool has_all_predicates_loaded(const std::vector<unsigned long> &predicates);
   I_CacheReplacement &get_replacement();
+  I_CacheReplacement::REPLACEMENT_STRATEGY get_strategy_id();
 };
 
 #endif // RDFCACHEK2_CACHE_HPP

@@ -127,7 +127,8 @@ void ServerTask::process_cache_query(Message &message) {
 
   auto predicates_in_query = get_predicates_in_query(tree.root());
 
-  {
+  if (cache.get_strategy_id() !=
+      I_CacheReplacement::REPLACEMENT_STRATEGY::NO_CACHING) {
     auto &replacement_mutex = cache.get_replacement().get_replacement_mutex();
     // auto &replacement_mutex = task_processor.get_replacement_mutex();
     std::lock_guard lg(replacement_mutex);
