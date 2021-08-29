@@ -1,11 +1,11 @@
 #include <filesystem>
-#include <fstream>
 #include <getopt.h>
 #include <stdexcept>
 #include <string>
 
 #include <K2TreeMixed.hpp>
 #include <PredicatesIndexCacheMDFile.hpp>
+#include <iostream>
 #include <triple_external_sort.hpp>
 
 namespace fs = std::filesystem;
@@ -31,9 +31,9 @@ int main(int argc, char **argv) {
     throw std::runtime_error("Not found file " + parsed.input_file);
   }
 
-  PredicatesIndexCacheMDFile pc(parsed.input_file);
+  auto pc = std::make_unique<PredicatesIndexCacheMDFile>(parsed.input_file);
 
-  auto predicates_ids = pc.get_predicates_ids();
+  auto predicates_ids = pc->get_predicates_ids();
 
   std::ofstream ofs(parsed.output_file,
                     std::ios::out | std::ios::binary | std::ios::trunc);
@@ -41,7 +41,7 @@ int main(int argc, char **argv) {
   auto start = ofs.tellp();
   write_u64(ofs, total_triples);
   for (auto predicate_id : predicates_ids) {
-    auto fetch_result = pc.fetch_k2tree(predicate_id);
+    auto fetch_result = pc->fetch_k2tree(predicate_id);
     DataHolder data_holder(ofs, predicate_id, total_triples);
     fetch_result.get().scan_points(
         [](unsigned long col, unsigned long row, void *st) {
@@ -51,7 +51,7 @@ int main(int argc, char **argv) {
           dh.total_triples++;
         },
         &data_holder);
-    pc.discard_in_memory_predicate(predicate_id);
+    pc->discard_in_memory_predicate(predicate_id);
   }
   ofs.seekp(start);
   write_u64(ofs, total_triples);
