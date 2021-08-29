@@ -564,6 +564,10 @@ add_executable(count_nt_predicates scripts/count_nt_predicates.cpp)
 target_link_libraries(count_nt_predicates ${PROC_LIBS} ntparser)
 
 
+add_executable(measure_serialization_time scripts/measure_serialization_time.cpp)
+target_include_directories(measure_serialization_time PUBLIC ${INCLUDES})
+target_link_libraries(measure_serialization_time ${DEFAULT_LIBS})
+
 # Only create test executables if google test is found
 find_package(GTest QUIET)
 if (GTest_FOUND)
@@ -645,6 +649,8 @@ if (GTest_FOUND)
     add_executable(sip_join_test ${K2TREE_PATH}/test/sip_join_test.cpp)
     add_executable(k2node_sip_join_test ${K2TREE_PATH}/test/k2node_sip_join_test.cpp)
     add_executable(lazy_scan_test ${K2TREE_PATH}/test/lazy_scan_test.cpp)
+    add_executable(block_delete_test ${K2TREE_PATH}/test/block_delete_test.cpp)
+    add_executable(k2node_delete_test ${K2TREE_PATH}/test/k2node_delete_test.cpp)
 
     target_link_libraries(block_test  ${GTEST_BOTH_LIBRARIES} pthread k2dyn_custom_mem RDFCacheK2_Memory)
     target_link_libraries(block_leak_test  ${GTEST_BOTH_LIBRARIES} pthread k2dyn_custom_mem RDFCacheK2_Memory)
@@ -657,7 +663,8 @@ if (GTest_FOUND)
     target_link_libraries(sip_join_test   k2dyn_custom_mem ${GTEST_BOTH_LIBRARIES} pthread RDFCacheK2_Memory)
     target_link_libraries(k2node_sip_join_test   k2dyn_custom_mem ${GTEST_BOTH_LIBRARIES} pthread RDFCacheK2_Memory)
     target_link_libraries(lazy_scan_test   k2dyn_custom_mem ${GTEST_BOTH_LIBRARIES} pthread RDFCacheK2_Memory)
-
+    target_link_libraries(block_delete_test   k2dyn_custom_mem ${GTEST_BOTH_LIBRARIES} pthread RDFCacheK2_Memory)
+    target_link_libraries(k2node_delete_test   k2dyn_custom_mem ${GTEST_BOTH_LIBRARIES} pthread RDFCacheK2_Memory)
 
     add_test(NAME block_test COMMAND ./block_test)
     add_test(NAME block_leak_test COMMAND ./block_leak_test)
@@ -668,6 +675,8 @@ if (GTest_FOUND)
     add_test(NAME sip_join_test COMMAND ./sip_join_test)
     add_test(NAME k2node_sip_join_test COMMAND ./k2node_sip_join_test)
     add_test(NAME lazy_scan_test COMMAND ./lazy_scan_test)
+    add_test(NAME block_delete_test COMMAND ./block_delete_test)
+    add_test(NAME k2node_delete_test COMMAND ./k2node_delete_test)
 
 endif ()
 
