@@ -65,7 +65,7 @@ int main(int argc, char **argv) {
     auto start = std::chrono::high_resolution_clock::now();
     k2tree.write_to_ostream(ofs_tmp);
     auto end = std::chrono::high_resolution_clock::now();
-    ofs.seekp(0);
+    ofs_tmp.seekp(0);
     predicates_index.discard_in_memory_predicate(predicate_id);
     auto duration_ms =
         std::chrono::duration_cast<std::chrono::microseconds>(end - start);
