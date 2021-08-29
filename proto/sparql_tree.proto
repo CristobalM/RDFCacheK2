@@ -4,6 +4,15 @@ package proto_msg;
 option java_package = "com.github.cristobalm.RDFEWK2C.proto";
 option java_outer_classname = "SparqlTreeMessage";
 
+message UpdateSparqlNode{
+  BGPUpdateAction delete_action = 1;
+  BGPUpdateAction insert_action = 2;
+  SparqlNode matching_pattern = 3;
+}
+
+message BGPUpdateAction{
+}
+
 message SparqlTree {SparqlNode root = 1;}
 
 message SparqlNode {
