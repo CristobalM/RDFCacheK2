@@ -337,13 +337,16 @@ void ServerTask::process_predicates_lock_for_triple_stream(Message &message) {
       std::set<unsigned long> difference;
 
       std::set_difference(requested_set.begin(), requested_set.end(),
-                          loaded_predicates.begin(), loaded_predicates.end(),
+                          loaded_set.begin(), loaded_set.end(),
                           std::inserter(difference, difference.begin()));
 
       task_processor.process_missed_predicates(
           std::make_shared<const std::vector<unsigned long>>(difference.begin(),
                                                              difference.end()));
     }
+  }
+  else{
+    loaded_predicates = std::move(predicates_requested);
   }
 
   auto time_control = std::make_unique<TimeControl>(
