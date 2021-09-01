@@ -90,8 +90,6 @@ void ServerTask::process() {
               << std::endl;
 
     switch (message.request_type()) {
-    case proto_msg::MessageType::UNKNOWN:
-      break;
     case proto_msg::MessageType::RUN_QUERY:
       std::cout << "Request of type RUN_QUERY" << std::endl;
       process_cache_query(message);
@@ -361,7 +359,34 @@ void ServerTask::process_predicates_lock_for_triple_stream(Message &message) {
 
 }
 void ServerTask::process_stream_request_triple_pattern(Message &message) {
-  
+  auto &s_req = message.get_cache_request().stream_request_triple_pattern();
+  auto channel_id = s_req.channel_id();
+  auto &triples_streamer = task_processor.get_triple_streamer(channel_id);
+  auto &triple_pattern_streamer = triples_streamer.start_streaming_matching_triples(s_req.triple_node());
+  auto cache_response = triple_pattern_streamer.get_next_response();
+  send_response(cache_response);
+  if(triple_pattern_streamer.all_sent()){
+    triples_streamer.clean_pattern_streamer(triple_pattern_streamer.get_pattern_channel_id());
+  }
 }
-void ServerTask::process_stream_continue_triple_pattern(Message &message) {}
-void ServerTask::process_done_with_predicates_notify(Message &message) {}
+void ServerTask::process_stream_continue_triple_pattern(Message &message) {
+  auto &cs_req = message.get_cache_request().stream_continue_triple_pattern();
+  auto channel_id = cs_req.channel_id();
+  auto pattern_channel_id = cs_req.pattern_channel_id();
+  auto &triples_streamer = task_processor.get_triple_streamer(channel_id);
+  auto &triple_pattern_streamer = triples_streamer.get_triple_pattern_streamer(pattern_channel_id);
+  auto cache_response = triple_pattern_streamer.get_next_response();
+  send_response(cache_response);
+  if(triple_pattern_streamer.all_sent()){
+    triples_streamer.clean_pattern_streamer(pattern_channel_id);
+  }
+}
+void ServerTask::process_done_with_predicates_notify(Message &message) {
+  auto &done_req = message.get_cache_request().done_with_predicates_notify();
+  auto channel_id = done_req.channel_id();
+  task_processor.clean_triple_streamer(channel_id);
+  proto_msg::CacheResponse cache_response;
+  cache_response.set_response_type(proto_msg::MessageType::ACK_WITH_DONE_TRIPLES_STREAM);
+  cache_response.mutable_ack_done_with_channel();
+  send_response(cache_response);
+}

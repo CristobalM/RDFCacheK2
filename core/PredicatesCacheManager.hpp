@@ -59,6 +59,8 @@ public:
   void remove_key(unsigned long key) override;
   void retrieve_key(unsigned long key) override;
 
+  std::unique_ptr<K2TreeScanner> create_null_k2tree_scanner();
+
 private:
   void handle_not_found(unsigned long &resource_id, RDFResource &resource);
   uint64_t get_resource_index_notfound_zero(const RDFResource &resource) const;

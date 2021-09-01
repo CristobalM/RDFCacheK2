@@ -31,7 +31,7 @@ message StreamRequestTriplePattern{
 }
 
 message DoneWithPredicatesNotify{
-    repeated RDFTerm predicates = 1;
+    int32 channel_id = 1;
 }
 
 message CacheRequestSeparatePredicates{

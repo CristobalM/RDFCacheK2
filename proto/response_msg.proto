@@ -18,8 +18,10 @@ message CacheResponse{
         ErrorResponse error_response = 5;
         ExtractSeparatePredicatesResponse extract_separate_predicates_response = 6;
         StreamOfTriplesMatchingPatternResponse stream_of_triples_matching_pattern_response = 7;
+        AckDoneWithChannel ack_done_with_channel = 8;
     }
 }
+message AckDoneWithChannel {}
 
 message StreamOfTriplesMatchingPatternResponse{
     int32 channel_id = 1;

@@ -5,6 +5,7 @@
 #ifndef RDFCACHEK2_TRIPLEMATCHESPARTSTREAMER_HPP
 #define RDFCACHEK2_TRIPLEMATCHESPARTSTREAMER_HPP
 
+#include <mutex>
 #include "I_TRStreamer.hpp"
 #include "TaskProcessor.hpp"
 #include <Cache.hpp>
@@ -18,13 +19,13 @@ class TripleMatchesPartStreamer : public I_TRStreamer {
   Cache *cache;
   TaskProcessor *task_processor;
 
-  bool first;
-  bool second;
-  bool done;
-
   int current_pattern_channel_id;
 
   std::map<int, std::unique_ptr<I_TRMatchingStreamer>> triples_streamers_map;
+
+  bool done;
+
+  std::mutex mutex;
 
 public:
   TripleMatchesPartStreamer(int channel_id,
@@ -40,6 +41,10 @@ public:
   ~TripleMatchesPartStreamer() override;
   I_TRMatchingStreamer &start_streaming_matching_triples(
       const proto_msg::TripleNode &triple_pattern) override;
+  void clean_pattern_streamer(int pattern_channel_id) override;
+  bool is_done() override;
+  I_TRMatchingStreamer &
+  get_triple_pattern_streamer(int pattern_channel_id) override;
 
 private:
   proto_msg::CacheResponse time_control_finished_error();

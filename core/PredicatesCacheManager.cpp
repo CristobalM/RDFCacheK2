@@ -4,6 +4,7 @@
 
 #include "PredicatesCacheManager.hpp"
 #include "K2TreeBulkOp.hpp"
+#include "NullScanner.hpp"
 #include <StringDictionary.h>
 #include <chrono>
 #include <filesystem>
@@ -231,4 +232,8 @@ void PredicatesCacheManager::remove_key(unsigned long key) {
 }
 void PredicatesCacheManager::retrieve_key(unsigned long key) {
   predicates_index->load_single_predicate(key);
+}
+std::unique_ptr<K2TreeScanner>
+PredicatesCacheManager::create_null_k2tree_scanner() {
+  return std::make_unique<NullScanner>();
 }

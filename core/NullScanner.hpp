@@ -7,6 +7,7 @@
 
 #include "K2QStateWrapper.hpp"
 #include "K2TreeScanner.hpp"
+#include "K2TreeMixed.hpp"
 class NullScanner : public K2TreeScanner {
 public:
   bool has_next() override;
@@ -15,6 +16,7 @@ public:
   unsigned long get_band_value() override;
   K2TreeMixed &get_tree() override;
   K2QStateWrapper &get_k2qw() override;
+  ~NullScanner() override;
 };
 
 #endif // RDFCACHEK2_NULLSCANNER_HPP

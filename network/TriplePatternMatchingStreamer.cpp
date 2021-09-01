@@ -3,24 +3,22 @@
 //
 
 #include "TriplePatternMatchingStreamer.hpp"
-#include <NullScanner.hpp>
 
 
 TriplePatternMatchingStreamer::TriplePatternMatchingStreamer(
     int channel_id, int pattern_channel_id,
-    const proto_msg::TripleNode triple_pattern_node, Cache *cache,
-    TaskProcessor *task_processor, TimeControl *time_control,
+    const proto_msg::TripleNode triple_pattern_node, Cache *cache, TimeControl *time_control,
     unsigned long threshold_part_size)
     : channel_id(channel_id), pattern_channel_id(pattern_channel_id),
     triple_pattern_node(std::move(triple_pattern_node)), cache(cache),
-    task_processor(task_processor), time_control(time_control),
+     time_control(time_control),
     threshold_part_size(threshold_part_size), first(true), finished(false) {
   initialize_scanner();
 }
 
 proto_msg::CacheResponse TriplePatternMatchingStreamer::get_next_response() {
   proto_msg::CacheResponse cache_response;
-
+  cache_response.set_response_type(proto_msg::MessageType::STREAM_OF_TRIPLES_MATCHING_PATTERN_RESPONSE);
   auto *stream_response =
       cache_response.mutable_stream_of_triples_matching_pattern_response();
   unsigned long acc_size = 0;
@@ -43,6 +41,9 @@ proto_msg::CacheResponse TriplePatternMatchingStreamer::get_next_response() {
 
 
   while (k2tree_scanner->has_next()) {
+    if(!time_control->tick()){
+      return timeout_proto_response();
+    }
     auto matching_pair_so = k2tree_scanner->next();
     auto *matching_values = stream_response->mutable_matching_values()->Add();
     if (subject_variable) {
@@ -91,7 +92,7 @@ void TriplePatternMatchingStreamer::initialize_scanner() {
   auto fetch_result =
       cache->get_pcm().get_predicates_index_cache().fetch_k2tree(predicate_id);
   if (!fetch_result.exists()) {
-    k2tree_scanner = std::make_unique<NullScanner>();
+    k2tree_scanner = cache->get_pcm().create_null_k2tree_scanner();
     return;
   }
 
@@ -120,4 +121,12 @@ TriplePatternMatchingStreamer::resource_to_term(RDFResource &&resource) {
 }
 void TriplePatternMatchingStreamer::set_finished() {
   finished = true;
+}
+proto_msg::CacheResponse
+TriplePatternMatchingStreamer::timeout_proto_response() {
+  set_finished();
+  proto_msg::CacheResponse result;
+  result.set_response_type(proto_msg::TIMED_OUT_RESPONSE);
+  result.mutable_error_response();
+  return result;
 }
