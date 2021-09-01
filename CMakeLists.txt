@@ -57,7 +57,7 @@ set(CORE_SOURCE_FILES
         core/K2TreeBulkOp.cpp
         core/K2TreeBulkOp.hpp
         core/I_DataManager.hpp
-        )
+        core/NullScanner.cpp core/NullScanner.hpp)
 
 set(PROC_SOURCE_FILES
         proc/SDFeed.cpp
@@ -310,7 +310,7 @@ set(NETWORK_SOURCE_FILES
         network/ReplacementTaskProcessor.cpp
         network/ReplacementTaskProcessor.hpp
         network/ReplacementTask.cpp
-        network/ReplacementTask.hpp)
+        network/ReplacementTask.hpp network/TripleMatchesPartStreamer.cpp network/TripleMatchesPartStreamer.hpp network/I_TRStreamer.hpp network/I_TRMatchingStreamer.hpp network/TriplePatternMatchingStreamer.cpp network/TriplePatternMatchingStreamer.hpp)
 
 
 set(PROTO_MESSAGES

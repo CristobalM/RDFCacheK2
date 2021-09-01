@@ -10,6 +10,8 @@
 #include <mutex>
 #include <queue>
 
+#include "I_TRStreamer.hpp"
+#include "I_QRStreamer.hpp"
 #include "Message.hpp"
 #include "ReplacementTaskProcessor.hpp"
 #include "ServerTask.hpp"
@@ -38,6 +40,10 @@ class CacheServerTaskProcessor : public TaskProcessor {
   ReplacementTaskProcessor replacement_task_processor;
   // std::unique_ptr<ServerWorker<ReplacementTaskProcessor>> replacement_worker;
 
+  int current_triples_streamers_channel_id;
+  std::unordered_map<int, std::unique_ptr<I_TRStreamer>> triples_streamer_map;
+
+
 public:
   explicit CacheServerTaskProcessor(Cache &cache, uint8_t workers_count);
 
@@ -61,6 +67,12 @@ public:
       std::shared_ptr<const std::vector<unsigned long>> predicates) override;
   void mark_using(const std::vector<unsigned long> &predicates) override;
   void mark_ready(const std::vector<unsigned long> &predicates_in_use) override;
+  I_TRStreamer &
+  create_triples_streamer(std::vector<unsigned long> &&loaded_predicates,
+                          std::unique_ptr<TimeControl> &&time_control) override;
+  I_TRStreamer &get_triple_streamer(int channel_id) override;
+  bool has_triple_streamer(int channel_id) override;
+  void clean_triple_streamer(int channel_id) override;
 };
 
 #endif // RDFCACHEK2_CACHESERVERTASKPROCESSOR_HPP

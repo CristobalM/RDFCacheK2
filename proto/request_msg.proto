@@ -14,8 +14,30 @@ message CacheRequest{
         ConnectionEndRequest connection_end_request = 2;
         CacheRunQueryAlgebra cache_run_query_algebra = 3;
         ReceiveRemainingResult receive_remaining_result = 4;
+        CacheRequestSeparatePredicates cache_request_separate_predicates = 5;
+        DoneWithPredicatesNotify done_with_predicates_notify = 6;
+        StreamRequestTriplePattern stream_request_triple_pattern = 7;
+        StreamContinueTriplePattern stream_continue_triple_pattern = 8;
     }
 }
+message StreamContinueTriplePattern{
+    int32 channel_id = 1;
+    int32 pattern_channel_id = 2;
+}
+
+message StreamRequestTriplePattern{
+    int32 channel_id = 1;
+    TripleNode triple_node = 2;
+}
+
+message DoneWithPredicatesNotify{
+    repeated RDFTerm predicates = 1;
+}
+
+message CacheRequestSeparatePredicates{
+    repeated RDFTerm predicates = 1;
+}
+
 
 message ReceiveRemainingResult{
     int32 id = 1;

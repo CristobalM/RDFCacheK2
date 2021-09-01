@@ -66,6 +66,8 @@ public:
   bool has_all_predicates_loaded(const std::vector<unsigned long> &predicates);
   I_CacheReplacement &get_replacement();
   I_CacheReplacement::REPLACEMENT_STRATEGY get_strategy_id();
+  std::vector<unsigned long> extract_loaded_predicates_from_sequence(
+      const std::vector<unsigned long> &input_predicates_ids);
 };
 
 #endif // RDFCACHEK2_CACHE_HPP

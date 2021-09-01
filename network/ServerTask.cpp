@@ -104,6 +104,26 @@ void ServerTask::process() {
       std::cout << "Request of type RECEIVE_REMAINING_RESULT" << std::endl;
       process_receive_remaining_result(message);
       break;
+    case proto_msg::MessageType::CACHE_REQUEST_SEPARATE_PREDICATES:
+      std::cout << "Request of type CACHE_REQUEST_SEPARATE_PREDICATES"
+                << std::endl;
+      process_predicates_lock_for_triple_stream(message);
+      break;
+      case proto_msg::MessageType::STREAM_REQUEST_TRIPLE_PATTERN:
+        std::cout << "Request of type STREAM_REQUEST_TRIPLE_PATTERN"
+                << std::endl;
+      process_stream_request_triple_pattern(message);
+      break;
+      case proto_msg::MessageType::STREAM_CONTINUE_TRIPLE_PATTERN:
+        std::cout << "Request of type STREAM_CONTINUE_TRIPLE_PATTERN"
+                << std::endl;
+      process_stream_continue_triple_pattern(message);
+      break;
+      case proto_msg::MessageType::DONE_WITH_PREDICATES_NOTIFY:
+        std::cout << "Request of type DONE_WITH_PREDICATES_NOTIFY"
+                << std::endl;
+      process_done_with_predicates_notify(message);
+      break;
     default:
       std::cout << "received unknown message... ignoring " << std::endl;
       break;
@@ -284,3 +304,64 @@ void ServerTask::get_predicates_in_query_bgp(
       result_set.insert(predicate_id);
   }
 }
+void ServerTask::process_predicates_lock_for_triple_stream(Message &message) {
+  const auto &sep_pred =
+      message.get_cache_request().cache_request_separate_predicates();
+
+  std::vector<unsigned long> predicates_requested;
+  for (int i = 0; i < sep_pred.predicates_size(); i++) {
+    const auto &pred_term = sep_pred.predicates(i);
+    auto resource_id =
+        cache.get_pcm().get_resource_index(RDFResource(pred_term));
+    if (resource_id > 0)
+      predicates_requested.push_back(resource_id);
+  }
+
+  std::vector<unsigned long> loaded_predicates;
+
+  if (cache.get_strategy_id() !=
+      I_CacheReplacement::REPLACEMENT_STRATEGY::NO_CACHING) {
+    auto &replacement_mutex = cache.get_replacement().get_replacement_mutex();
+    std::lock_guard lg(replacement_mutex);
+
+    loaded_predicates =
+        cache.extract_loaded_predicates_from_sequence(predicates_requested);
+
+    if (!loaded_predicates.empty())
+      task_processor.mark_using(loaded_predicates);
+
+    if (loaded_predicates.size() < predicates_requested.size()) {
+
+      std::set<unsigned long> requested_set(predicates_requested.begin(),
+                                            predicates_requested.end());
+      std::set<unsigned long> loaded_set(loaded_predicates.begin(),
+                                         loaded_predicates.end());
+      std::set<unsigned long> difference;
+
+      std::set_difference(requested_set.begin(), requested_set.end(),
+                          loaded_predicates.begin(), loaded_predicates.end(),
+                          std::inserter(difference, difference.begin()));
+
+      task_processor.process_missed_predicates(
+          std::make_shared<const std::vector<unsigned long>>(difference.begin(),
+                                                             difference.end()));
+    }
+  }
+
+  auto time_control = std::make_unique<TimeControl>(
+      1'000, std::chrono::milliseconds(cache.get_timeout_ms()));
+
+
+  auto &triples_streamer = task_processor.create_triples_streamer(
+      std::move(loaded_predicates), std::move(time_control));
+
+  auto response = triples_streamer.get_loaded_predicates_response();
+  send_response(response);
+
+
+}
+void ServerTask::process_stream_request_triple_pattern(Message &message) {
+  
+}
+void ServerTask::process_stream_continue_triple_pattern(Message &message) {}
+void ServerTask::process_done_with_predicates_notify(Message &message) {}
