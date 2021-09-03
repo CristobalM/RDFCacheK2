@@ -6,8 +6,8 @@
 #define RDFCACHEK2_NULLSCANNER_HPP
 
 #include "K2QStateWrapper.hpp"
-#include "K2TreeScanner.hpp"
 #include "K2TreeMixed.hpp"
+#include "K2TreeScanner.hpp"
 class NullScanner : public K2TreeScanner {
 public:
   bool has_next() override;

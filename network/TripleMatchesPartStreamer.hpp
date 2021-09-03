@@ -5,12 +5,12 @@
 #ifndef RDFCACHEK2_TRIPLEMATCHESPARTSTREAMER_HPP
 #define RDFCACHEK2_TRIPLEMATCHESPARTSTREAMER_HPP
 
-#include <mutex>
 #include "I_TRStreamer.hpp"
 #include "TaskProcessor.hpp"
 #include <Cache.hpp>
 #include <K2TreeScanner.hpp>
 #include <TimeControl.hpp>
+#include <mutex>
 class TripleMatchesPartStreamer : public I_TRStreamer {
   int channel_id;
   std::vector<unsigned long> loaded_predicates;

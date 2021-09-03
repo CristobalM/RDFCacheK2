@@ -10,8 +10,8 @@
 #include <mutex>
 #include <queue>
 
-#include "I_TRStreamer.hpp"
 #include "I_QRStreamer.hpp"
+#include "I_TRStreamer.hpp"
 #include "Message.hpp"
 #include "ReplacementTaskProcessor.hpp"
 #include "ServerTask.hpp"
@@ -42,7 +42,6 @@ class CacheServerTaskProcessor : public TaskProcessor {
 
   int current_triples_streamers_channel_id;
   std::unordered_map<int, std::unique_ptr<I_TRStreamer>> triples_streamer_map;
-
 
 public:
   explicit CacheServerTaskProcessor(Cache &cache, uint8_t workers_count);

@@ -31,7 +31,8 @@ std::unique_ptr<ServerTask> CacheServerTaskProcessor::get_server_task() {
 CacheServerTaskProcessor::CacheServerTaskProcessor(Cache &cache,
                                                    uint8_t workers_count)
     : cache(cache), workers_count(workers_count), current_id(0),
-    replacement_task_processor(cache), current_triples_streamers_channel_id(0) {}
+      replacement_task_processor(cache),
+      current_triples_streamers_channel_id(0) {}
 
 void CacheServerTaskProcessor::start_workers(
     TCPServerConnection<CacheServerTaskProcessor> &connection) {
@@ -104,16 +105,12 @@ I_TRStreamer &CacheServerTaskProcessor::create_triples_streamer(
     std::unique_ptr<TimeControl> &&time_control) {
   std::lock_guard lg(mutex);
 
-  auto streamer =
-      std::make_unique<TripleMatchesPartStreamer>(
-          current_triples_streamers_channel_id,
-          std::move(loaded_predicates),
-          DEFAULT_THRESHOLD_PART_SZ,
-          std::move(time_control),
-          this,
-          &cache);
+  auto streamer = std::make_unique<TripleMatchesPartStreamer>(
+      current_triples_streamers_channel_id, std::move(loaded_predicates),
+      DEFAULT_THRESHOLD_PART_SZ, std::move(time_control), this, &cache);
   auto *ptr = streamer.get();
-  triples_streamer_map[current_triples_streamers_channel_id] = std::move(streamer);
+  triples_streamer_map[current_triples_streamers_channel_id] =
+      std::move(streamer);
 
   current_triples_streamers_channel_id++;
   return *ptr;

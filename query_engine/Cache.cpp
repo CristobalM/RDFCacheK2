@@ -216,8 +216,8 @@ std::vector<unsigned long> Cache::extract_loaded_predicates_from_sequence(
   std::vector<unsigned long> result;
   auto &predicates_index_cache = cache_manager->get_predicates_index_cache();
 
-  for(auto current_predicate_id: input_predicates_ids){
-    if(predicates_index_cache.has_predicate_active(current_predicate_id))
+  for (auto current_predicate_id : input_predicates_ids) {
+    if (predicates_index_cache.has_predicate_active(current_predicate_id))
       result.push_back(current_predicate_id);
   }
 

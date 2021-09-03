@@ -15,8 +15,8 @@ TripleMatchesPartStreamer::TripleMatchesPartStreamer(
     : channel_id(channel_id), loaded_predicates(std::move(loaded_predicates)),
       threshold_part_size(threshold_part_size),
       time_control(std::move(time_control)), cache(cache),
-      task_processor(task_processor),
-      current_pattern_channel_id(0), done(false) {}
+      task_processor(task_processor), current_pattern_channel_id(0),
+      done(false) {}
 
 int TripleMatchesPartStreamer::get_id() { return channel_id; }
 proto_msg::CacheResponse TripleMatchesPartStreamer::timeout_proto() {
@@ -54,7 +54,8 @@ TripleMatchesPartStreamer::~TripleMatchesPartStreamer() {
 proto_msg::CacheResponse
 TripleMatchesPartStreamer::get_loaded_predicates_response() {
   proto_msg::CacheResponse cache_response;
-  cache_response.set_response_type(proto_msg::MessageType::EXTRACT_SEPARATE_PREDICATES_RESPONSE);
+  cache_response.set_response_type(
+      proto_msg::MessageType::EXTRACT_SEPARATE_PREDICATES_RESPONSE);
   auto *sep_resp =
       cache_response.mutable_extract_separate_predicates_response();
   sep_resp->set_id(channel_id);
@@ -74,20 +75,17 @@ TripleMatchesPartStreamer::start_streaming_matching_triples(
     const proto_msg::TripleNode &triple_pattern) {
 
   auto streamer = std::make_unique<TriplePatternMatchingStreamer>(
-      channel_id, current_pattern_channel_id,
-      triple_pattern,
-      cache,
-      time_control.get(),
-      threshold_part_size);
+      channel_id, current_pattern_channel_id, triple_pattern, cache,
+      time_control.get(), threshold_part_size);
   auto *ptr = streamer.get();
   triples_streamers_map[current_pattern_channel_id] = std::move(streamer);
   current_pattern_channel_id++;
   return *ptr;
 }
 void TripleMatchesPartStreamer::clean_pattern_streamer(int pattern_channel_id) {
-    std::lock_guard lg(mutex);
-    triples_streamers_map[pattern_channel_id] = nullptr;
-    triples_streamers_map.erase(pattern_channel_id);
+  std::lock_guard lg(mutex);
+  triples_streamers_map[pattern_channel_id] = nullptr;
+  triples_streamers_map.erase(pattern_channel_id);
 }
 bool TripleMatchesPartStreamer::is_done() { return done; }
 I_TRMatchingStreamer &

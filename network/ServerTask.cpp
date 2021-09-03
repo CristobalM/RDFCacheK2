@@ -101,15 +101,14 @@ void ServerTask::process() {
                 << std::endl;
       process_predicates_lock_for_triple_stream(message);
       break;
-      case proto_msg::MessageType::STREAM_REQUEST_TRIPLE_PATTERN:
+    case proto_msg::MessageType::STREAM_REQUEST_TRIPLE_PATTERN:
       process_stream_request_triple_pattern(message);
       break;
-      case proto_msg::MessageType::STREAM_CONTINUE_TRIPLE_PATTERN:
+    case proto_msg::MessageType::STREAM_CONTINUE_TRIPLE_PATTERN:
       process_stream_continue_triple_pattern(message);
       break;
-      case proto_msg::MessageType::DONE_WITH_PREDICATES_NOTIFY:
-        std::cout << "Request of type DONE_WITH_PREDICATES_NOTIFY"
-                << std::endl;
+    case proto_msg::MessageType::DONE_WITH_PREDICATES_NOTIFY:
+      std::cout << "Request of type DONE_WITH_PREDICATES_NOTIFY" << std::endl;
       process_done_with_predicates_notify(message);
       break;
     default:
@@ -172,8 +171,9 @@ void ServerTask::send_response(proto_msg::CacheResponse &cache_response) {
   std::string serialized = cache_response.SerializeAsString();
   auto serialized_hash = md5calc(serialized);
   std::stringstream ss;
-//  std::cout << "Sending message of size " << serialized.size() << " with hash '"
-//            << md5_human_readable(serialized_hash) << "'" << std::endl;
+  //  std::cout << "Sending message of size " << serialized.size() << " with
+  //  hash '"
+  //            << md5_human_readable(serialized_hash) << "'" << std::endl;
   write_u64(ss, serialized.size());
   ss.write(serialized_hash.data(), sizeof(char) * serialized_hash.size());
   ss.write(serialized.data(), sizeof(char) * serialized.size());
@@ -334,8 +334,7 @@ void ServerTask::process_predicates_lock_for_triple_stream(Message &message) {
           std::make_shared<const std::vector<unsigned long>>(difference.begin(),
                                                              difference.end()));
     }
-  }
-  else{
+  } else {
     loaded_predicates = std::move(predicates_requested);
   }
 
@@ -347,19 +346,20 @@ void ServerTask::process_predicates_lock_for_triple_stream(Message &message) {
 
   auto response = triples_streamer.get_loaded_predicates_response();
   send_response(response);
-
-
 }
 void ServerTask::process_stream_request_triple_pattern(Message &message) {
   auto &s_req = message.get_cache_request().stream_request_triple_pattern();
   auto channel_id = s_req.channel_id();
   auto &triples_streamer = task_processor.get_triple_streamer(channel_id);
-  auto &triple_pattern_streamer = triples_streamer.start_streaming_matching_triples(s_req.triple_node());
+  auto &triple_pattern_streamer =
+      triples_streamer.start_streaming_matching_triples(s_req.triple_node());
   auto cache_response = triple_pattern_streamer.get_next_response();
-  // std::cout << "sending response for stream req: " << cache_response.DebugString() << std::endl;
+  // std::cout << "sending response for stream req: " <<
+  // cache_response.DebugString() << std::endl;
   send_response(cache_response);
-  if(triple_pattern_streamer.all_sent()){
-    triples_streamer.clean_pattern_streamer(triple_pattern_streamer.get_pattern_channel_id());
+  if (triple_pattern_streamer.all_sent()) {
+    triples_streamer.clean_pattern_streamer(
+        triple_pattern_streamer.get_pattern_channel_id());
   }
 }
 void ServerTask::process_stream_continue_triple_pattern(Message &message) {
@@ -367,10 +367,11 @@ void ServerTask::process_stream_continue_triple_pattern(Message &message) {
   auto channel_id = cs_req.channel_id();
   auto pattern_channel_id = cs_req.pattern_channel_id();
   auto &triples_streamer = task_processor.get_triple_streamer(channel_id);
-  auto &triple_pattern_streamer = triples_streamer.get_triple_pattern_streamer(pattern_channel_id);
+  auto &triple_pattern_streamer =
+      triples_streamer.get_triple_pattern_streamer(pattern_channel_id);
   auto cache_response = triple_pattern_streamer.get_next_response();
   send_response(cache_response);
-  if(triple_pattern_streamer.all_sent()){
+  if (triple_pattern_streamer.all_sent()) {
     triples_streamer.clean_pattern_streamer(pattern_channel_id);
   }
 }
@@ -379,7 +380,8 @@ void ServerTask::process_done_with_predicates_notify(Message &message) {
   auto channel_id = done_req.channel_id();
   task_processor.clean_triple_streamer(channel_id);
   proto_msg::CacheResponse cache_response;
-  cache_response.set_response_type(proto_msg::MessageType::ACK_WITH_DONE_TRIPLES_STREAM);
+  cache_response.set_response_type(
+      proto_msg::MessageType::ACK_WITH_DONE_TRIPLES_STREAM);
   cache_response.mutable_ack_done_with_channel();
   send_response(cache_response);
 }

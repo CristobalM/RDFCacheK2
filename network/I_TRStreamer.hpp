@@ -18,7 +18,8 @@ public:
 
   virtual ~I_TRStreamer() = default;
   virtual void clean_pattern_streamer(int pattern_channel_id) = 0;
-  virtual I_TRMatchingStreamer &get_triple_pattern_streamer(int pattern_channel_id) = 0;
+  virtual I_TRMatchingStreamer &
+  get_triple_pattern_streamer(int pattern_channel_id) = 0;
 };
 
 #endif // RDFCACHEK2_I_TRSTREAMER_HPP

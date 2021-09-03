@@ -123,13 +123,13 @@ TriplePatternMatchingStreamer::resource_to_term(RDFResource &&resource) {
   auto lang_tag = ParsingUtils::extract_language_tag(resource.value);
   auto content =
       ParsingUtils::extract_literal_content_from_string(resource.value);
-  if (!lang_tag.empty()){
+  if (!lang_tag.empty()) {
     rdf_term.set_lang_tag(lang_tag);
 
-  }
-  else {
-    auto data_type = ParsingUtils::extract_data_type_from_string(resource.value);
-    if(data_type != EDT_UNKNOWN)
+  } else {
+    auto data_type =
+        ParsingUtils::extract_data_type_from_string(resource.value);
+    if (data_type != EDT_UNKNOWN)
       rdf_term.set_basic_type(basic_type_from_data_type(data_type));
   }
 
