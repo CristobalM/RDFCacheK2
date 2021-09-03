@@ -27,13 +27,17 @@ struct StringLiteralData {
       return "float";
     case EDT_DOUBLE:
       return "double";
-    case EDT_UNKNOWN:
-    case EDT_STRING:
-      return "string";
     case EDT_BOOLEAN:
       return "boolean";
     case EDT_DATETIME:
       return "dateTime";
+    case EDT_UNKNOWN:
+    case EDT_STRING:
+      return "string";
+    case EDT_WKT_LITERAL:
+      return "wktLiteral";
+    case EDT_GML_LITERAL:
+      return "gmlLiteral";
     }
     return "string";
   }

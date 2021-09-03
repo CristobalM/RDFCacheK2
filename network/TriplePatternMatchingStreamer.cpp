@@ -148,7 +148,6 @@ TriplePatternMatchingStreamer::timeout_proto_response() {
 proto_msg::BasicType
 TriplePatternMatchingStreamer::basic_type_from_data_type(ExprDataType type) {
   switch (type) {
-
   case EDT_INTEGER:
     return proto_msg::BasicType::INTEGER;
   case EDT_DECIMAL:
@@ -163,6 +162,10 @@ TriplePatternMatchingStreamer::basic_type_from_data_type(ExprDataType type) {
     return proto_msg::BasicType::BOOLEAN;
   case EDT_DATETIME:
     return proto_msg::BasicType::DATETIME;
+  case EDT_WKT_LITERAL:
+    return proto_msg::BasicType::WKT_LITERAL;
+  case EDT_GML_LITERAL:
+    return proto_msg::BasicType::GML_LITERAL;
   case EDT_UNKNOWN:
   default:
     return proto_msg::BasicType::NO_TYPE;

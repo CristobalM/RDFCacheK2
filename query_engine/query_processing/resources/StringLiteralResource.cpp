@@ -91,12 +91,17 @@ RDFResource StringLiteralResource::get_resource_clone() const {
   case EDT_DOUBLE:
     datatype_str = "^^xsd:double";
     break;
-
   case EDT_BOOLEAN:
     datatype_str = "^^xsd:boolean";
     break;
   case EDT_DATETIME:
     datatype_str = "^^xsd:dateTime";
+    break;
+  case EDT_WKT_LITERAL:
+    datatype_str = "^^geo:wktLiteral";
+    break;
+  case EDT_GML_LITERAL:
+    datatype_str = "^^geo:gmlLiteral";
     break;
   }
   ss << "\"" << value << "\"" << datatype_str;

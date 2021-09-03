@@ -252,6 +252,10 @@ enum BasicType {
   DECIMAL = 8;
   DATETIME = 9;
   NO_TYPE = 10;
+
+  // GeoSPARQL
+  WKT_LITERAL = 11;
+  GML_LITERAL = 12;
 }
 
 
