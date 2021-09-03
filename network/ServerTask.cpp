@@ -65,9 +65,6 @@ void ServerTask::process() {
     bool was_read = read_nbytes_from_socket(client_socket_fd,
                                             reinterpret_cast<char *>(&msg_size),
                                             sizeof(msg_size));
-
-    std::cout << "Incoming request..." << std::endl;
-
     if (!was_read) {
       std::cerr << "Error while reading msg_size data from connection"
                 << std::endl;
@@ -85,9 +82,6 @@ void ServerTask::process() {
     }
 
     message.deserialize();
-
-    std::cout << "Incoming message of size: " << message.get_size()
-              << std::endl;
 
     switch (message.request_type()) {
     case proto_msg::MessageType::RUN_QUERY:
@@ -108,13 +102,9 @@ void ServerTask::process() {
       process_predicates_lock_for_triple_stream(message);
       break;
       case proto_msg::MessageType::STREAM_REQUEST_TRIPLE_PATTERN:
-        std::cout << "Request of type STREAM_REQUEST_TRIPLE_PATTERN"
-                << std::endl;
       process_stream_request_triple_pattern(message);
       break;
       case proto_msg::MessageType::STREAM_CONTINUE_TRIPLE_PATTERN:
-        std::cout << "Request of type STREAM_CONTINUE_TRIPLE_PATTERN"
-                << std::endl;
       process_stream_continue_triple_pattern(message);
       break;
       case proto_msg::MessageType::DONE_WITH_PREDICATES_NOTIFY:
@@ -182,8 +172,8 @@ void ServerTask::send_response(proto_msg::CacheResponse &cache_response) {
   std::string serialized = cache_response.SerializeAsString();
   auto serialized_hash = md5calc(serialized);
   std::stringstream ss;
-  std::cout << "Sending message of size " << serialized.size() << " with hash '"
-            << md5_human_readable(serialized_hash) << "'" << std::endl;
+//  std::cout << "Sending message of size " << serialized.size() << " with hash '"
+//            << md5_human_readable(serialized_hash) << "'" << std::endl;
   write_u64(ss, serialized.size());
   ss.write(serialized_hash.data(), sizeof(char) * serialized_hash.size());
   ss.write(serialized.data(), sizeof(char) * serialized.size());
@@ -350,8 +340,7 @@ void ServerTask::process_predicates_lock_for_triple_stream(Message &message) {
   }
 
   auto time_control = std::make_unique<TimeControl>(
-      1'000, std::chrono::milliseconds(cache.get_timeout_ms()));
-
+      100'000, std::chrono::milliseconds(cache.get_timeout_ms()));
 
   auto &triples_streamer = task_processor.create_triples_streamer(
       std::move(loaded_predicates), std::move(time_control));
@@ -367,6 +356,7 @@ void ServerTask::process_stream_request_triple_pattern(Message &message) {
   auto &triples_streamer = task_processor.get_triple_streamer(channel_id);
   auto &triple_pattern_streamer = triples_streamer.start_streaming_matching_triples(s_req.triple_node());
   auto cache_response = triple_pattern_streamer.get_next_response();
+  // std::cout << "sending response for stream req: " << cache_response.DebugString() << std::endl;
   send_response(cache_response);
   if(triple_pattern_streamer.all_sent()){
     triples_streamer.clean_pattern_streamer(triple_pattern_streamer.get_pattern_channel_id());

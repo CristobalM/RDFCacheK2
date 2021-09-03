@@ -6,6 +6,7 @@
 #include "ParsingUtils.hpp"
 
 #include <ctime>
+#include <iostream>
 #include <sstream>
 
 namespace {

@@ -40,6 +40,7 @@ public:
   proto_msg::RDFTerm resource_to_term(RDFResource &&resource);
   void set_finished();
   proto_msg::CacheResponse timeout_proto_response();
+  proto_msg::BasicType basic_type_from_data_type(ExprDataType type);
 };
 
 #endif // RDFCACHEK2_TRIPLEPATTERNMATCHINGSTREAMER_HPP
