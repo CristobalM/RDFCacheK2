@@ -21,7 +21,10 @@ TimeControl::TimeControl(long ticks_until_check,
                          std::chrono::milliseconds time_duration)
     : ticks_until_check(ticks_until_check), time_duration(time_duration),
       current_ticks(0), time_has_passed(false), with_error(false),
-      q_error(nullptr) {}
+      q_error(nullptr) {
+  // can be called again for reset
+  start_timer();
+}
 void TimeControl::start_timer() {
   starting_time = std::chrono::system_clock::now();
 }
