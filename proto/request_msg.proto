@@ -18,8 +18,27 @@ message CacheRequest{
         DoneWithPredicatesNotify done_with_predicates_notify = 6;
         StreamRequestTriplePattern stream_request_triple_pattern = 7;
         StreamContinueTriplePattern stream_continue_triple_pattern = 8;
+        CacheRequestStartUpdateTriples cache_request_start_update_triples = 9;
+        CacheDoneUpdateTriples cache_done_update_triples = 10;
+        TriplesUpdateBatch triples_update_batch = 11;
     }
 }
+
+
+message TriplesUpdateBatch{
+    int32 update_id = 1;
+    repeated TripleNode triples_to_add = 2;
+    repeated TripleNode triples_to_delete = 3;
+}
+
+
+message CacheDoneUpdateTriples{
+    int32 update_id = 1;
+}
+
+message CacheRequestStartUpdateTriples{
+}
+
 message StreamContinueTriplePattern{
     int32 channel_id = 1;
     int32 pattern_channel_id = 2;

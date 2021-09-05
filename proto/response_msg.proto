@@ -19,8 +19,17 @@ message CacheResponse{
         ExtractSeparatePredicatesResponse extract_separate_predicates_response = 6;
         StreamOfTriplesMatchingPatternResponse stream_of_triples_matching_pattern_response = 7;
         AckDoneWithChannel ack_done_with_channel = 8;
+        AcceptUpdateRequest accept_update_request = 9;
+        AckDoneUpdate ack_done_update = 10;
     }
 }
+
+message AckDoneUpdate{}
+
+message AcceptUpdateRequest{
+    int32 update_id = 1;
+}
+
 message AckDoneWithChannel {}
 
 message StreamOfTriplesMatchingPatternResponse{
