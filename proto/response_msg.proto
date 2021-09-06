@@ -21,7 +21,12 @@ message CacheResponse{
         AckDoneWithChannel ack_done_with_channel = 8;
         AcceptUpdateRequest accept_update_request = 9;
         AckDoneUpdate ack_done_update = 10;
+        BatchReceivedResponse batch_received_response = 11;
     }
+}
+
+message  BatchReceivedResponse{
+    int32 update_id = 1;
 }
 
 message AckDoneUpdate{}

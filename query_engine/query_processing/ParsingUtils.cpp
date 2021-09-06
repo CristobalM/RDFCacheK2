@@ -39,13 +39,12 @@ const pcrecpp::RE re_iri(iri_valid);
 
 // extra datatypes
 std::string geo_dtype = "(wktLiteral|gmlLiteral)";
-std::string geo_sparql_data_types_regex = "\\^\\^(?:<http://www.opengis.net/ont/geosparql#" +
-    geo_dtype + ">|geo:" + geo_dtype + ")";
+std::string geo_sparql_data_types_regex =
+    "\\^\\^(?:<http://www.opengis.net/ont/geosparql#" + geo_dtype +
+    ">|geo:" + geo_dtype + ")";
 const pcrecpp::RE re_geo(geo_sparql_data_types_regex);
 
 } // namespace
-
-
 
 ExprDataType
 ParsingUtils::extract_data_type_from_string(const std::string &input_string) {
@@ -77,15 +76,14 @@ ExprDataType ParsingUtils::extract_possible_extra_data_types_from_string(
 
 ExprDataType
 ParsingUtils::select_data_type_geo(const std::string &data_type_geo_string) {
-  if(data_type_geo_string == "wktLiteral"){
+  if (data_type_geo_string == "wktLiteral") {
     return ExprDataType::EDT_WKT_LITERAL;
   }
-  if(data_type_geo_string == "gmlLiteral"){
+  if (data_type_geo_string == "gmlLiteral") {
     return ExprDataType::EDT_GML_LITERAL;
   }
   return ExprDataType::EDT_UNKNOWN;
 }
-
 
 ExprDataType
 ParsingUtils::select_data_type(const std::string &data_type_string) {

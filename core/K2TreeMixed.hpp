@@ -69,8 +69,10 @@ public:
   struct k2node *get_root_k2node();
 
   void insert(unsigned long col, unsigned long row, K2QStateWrapper &stw);
+  void remove(unsigned long col, unsigned long row, K2QStateWrapper &stw);
   bool has(unsigned long col, unsigned long row, K2QStateWrapper &stw) const;
 
+  void remove(unsigned long col, unsigned long row);
   void insert(unsigned long col, unsigned long row);
   bool has(unsigned long col, unsigned long row) const;
 

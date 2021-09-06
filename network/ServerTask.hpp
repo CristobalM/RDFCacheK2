@@ -47,6 +47,9 @@ public:
   void process_stream_request_triple_pattern(Message &message);
   void process_stream_continue_triple_pattern(Message &message);
   void process_done_with_predicates_notify(Message &message);
+  void process_request_start_update_triples(Message &message);
+  void process_done_update_triples(Message &message);
+  void process_update_triples_batch(Message &message);
 };
 
 #endif // RDFCACHEK2_SERVERTASK_HPP

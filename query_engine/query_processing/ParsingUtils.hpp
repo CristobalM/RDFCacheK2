@@ -42,7 +42,8 @@ private:
   static ExprDataType select_data_type(const std::string &data_type_string);
   static ExprDataType extract_possible_extra_data_types_from_string(
       const std::string &input_string);
-  static ExprDataType select_data_type_geo(const std::string &data_type_geo_string);
+  static ExprDataType
+  select_data_type_geo(const std::string &data_type_geo_string);
 };
 
 #endif

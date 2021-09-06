@@ -66,6 +66,18 @@ void K2TreeMixed::insert(unsigned long col, unsigned long row,
     points_count++;
 }
 
+void K2TreeMixed::remove(unsigned long col, unsigned long row,
+                         K2QStateWrapper &stw) {
+  int already_not_exists;
+  k2node_delete_point(root, col, row, stw.get_ptr(), &already_not_exists);
+  if (!already_not_exists)
+    points_count--;
+}
+void K2TreeMixed::remove(unsigned long col, unsigned long row) {
+  auto stw = create_k2qw();
+  remove(col, row, stw);
+}
+
 bool K2TreeMixed::has(unsigned long col, unsigned long row,
                       K2QStateWrapper &stw) const {
   int result;
@@ -432,6 +444,7 @@ K2TreeMixed K2TreeMixed::read_from_istream(std::istream &is,
   return K2TreeMixed(root, k2tree_depth, max_nodes_count, cut_depth,
                      points_count);
 }
+
 k2node *deserialize_k2node_tree(std::istream &is,
                                 std::vector<uint32_t> &containers,
                                 uint32_t current_depth, uint32_t cut_depth,

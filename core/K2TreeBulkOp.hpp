@@ -13,6 +13,7 @@ class K2TreeBulkOp {
 public:
   explicit K2TreeBulkOp(K2TreeMixed &k2tree);
   void insert(unsigned long col, unsigned long row);
+  void remove(unsigned long col, unsigned long row);
   bool has(unsigned long col, unsigned long row);
   K2QStateWrapper &get_stw();
   K2TreeMixed &get_tree();

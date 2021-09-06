@@ -12,6 +12,7 @@
 
 #include "I_QRStreamer.hpp"
 #include "I_TRStreamer.hpp"
+#include "I_Updater.hpp"
 #include "Message.hpp"
 #include "ReplacementTaskProcessor.hpp"
 #include "ServerTask.hpp"
@@ -43,6 +44,9 @@ class CacheServerTaskProcessor : public TaskProcessor {
   int current_triples_streamers_channel_id;
   std::unordered_map<int, std::unique_ptr<I_TRStreamer>> triples_streamer_map;
 
+  std::unordered_map<int, std::unique_ptr<I_Updater>> updaters_sessions;
+  int current_update_session_id;
+
 public:
   explicit CacheServerTaskProcessor(Cache &cache, uint8_t workers_count);
 
@@ -72,6 +76,8 @@ public:
   I_TRStreamer &get_triple_streamer(int channel_id) override;
   bool has_triple_streamer(int channel_id) override;
   void clean_triple_streamer(int channel_id) override;
+  int begin_update_session() override;
+  I_Updater &get_updater(int updater_id) override;
 };
 
 #endif // RDFCACHEK2_CACHESERVERTASKPROCESSOR_HPP

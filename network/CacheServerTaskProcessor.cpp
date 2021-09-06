@@ -5,6 +5,7 @@
 #include "CacheServerTaskProcessor.hpp"
 #include "QueryResultPartStreamer.hpp"
 #include "TripleMatchesPartStreamer.hpp"
+#include "UpdaterSession.hpp"
 
 #include <iostream>
 
@@ -32,7 +33,7 @@ CacheServerTaskProcessor::CacheServerTaskProcessor(Cache &cache,
                                                    uint8_t workers_count)
     : cache(cache), workers_count(workers_count), current_id(0),
       replacement_task_processor(cache),
-      current_triples_streamers_channel_id(0) {}
+      current_triples_streamers_channel_id(0), current_update_session_id(0) {}
 
 void CacheServerTaskProcessor::start_workers(
     TCPServerConnection<CacheServerTaskProcessor> &connection) {
@@ -127,4 +128,16 @@ void CacheServerTaskProcessor::clean_triple_streamer(int channel_id) {
   std::lock_guard lg(mutex);
   triples_streamer_map[channel_id] = nullptr;
   triples_streamer_map.erase(channel_id);
+}
+int CacheServerTaskProcessor::begin_update_session() {
+  std::lock_guard lg(mutex);
+  int update_id = current_update_session_id;
+  updaters_sessions[update_id] =
+      std::make_unique<UpdaterSession>(update_id, this, &cache);
+  current_update_session_id++;
+  return update_id;
+}
+I_Updater &CacheServerTaskProcessor::get_updater(int updater_id) {
+  std::lock_guard lg(mutex);
+  return *updaters_sessions[updater_id];
 }

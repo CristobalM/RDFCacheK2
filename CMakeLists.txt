@@ -317,7 +317,7 @@ set(NETWORK_SOURCE_FILES
         network/I_TRStreamer.hpp
         network/I_TRMatchingStreamer.hpp
         network/TriplePatternMatchingStreamer.cpp
-        network/TriplePatternMatchingStreamer.hpp)
+        network/TriplePatternMatchingStreamer.hpp network/I_Updater.hpp network/UpdaterSession.cpp network/UpdaterSession.hpp)
 
 
 set(PROTO_MESSAGES

@@ -111,6 +111,22 @@ void ServerTask::process() {
       std::cout << "Request of type DONE_WITH_PREDICATES_NOTIFY" << std::endl;
       process_done_with_predicates_notify(message);
       break;
+    case proto_msg::MessageType::CACHE_REQUEST_START_UPDATE_TRIPLES:
+      std::cout << "Request of type CACHE_REQUEST_START_UPDATE_TRIPLES"
+                << std::endl;
+      process_request_start_update_triples(message);
+      break;
+
+    case proto_msg::MessageType::CACHE_DONE_UPDATE_TRIPLES:
+      std::cout << "Request of type CACHE_DONE_UPDATE_TRIPLES" << std::endl;
+      process_done_update_triples(message);
+      break;
+
+    case proto_msg::MessageType::TRIPLES_UPDATE_BATCH:
+      std::cout << "Request of type TRIPLES_UPDATE_BATCH" << std::endl;
+      process_update_triples_batch(message);
+      break;
+
     default:
       std::cout << "received unknown message... ignoring " << std::endl;
       break;
@@ -384,4 +400,31 @@ void ServerTask::process_done_with_predicates_notify(Message &message) {
       proto_msg::MessageType::ACK_WITH_DONE_TRIPLES_STREAM);
   cache_response.mutable_ack_done_with_channel();
   send_response(cache_response);
+}
+
+void ServerTask::process_request_start_update_triples(Message &) {
+  // auto &req =
+  // message.get_cache_request().cache_request_start_update_triples();
+  auto update_id = task_processor.begin_update_session();
+  proto_msg::CacheResponse cache_response;
+  cache_response.set_response_type(
+      proto_msg::MessageType::ACCEPT_UPDATE_REQUEST);
+  cache_response.mutable_accept_update_request()->set_update_id(update_id);
+  send_response(cache_response);
+}
+void ServerTask::process_done_update_triples(Message &) {}
+
+void ServerTask::process_update_triples_batch(Message &message) {
+  auto &req = message.get_cache_request().triples_update_batch();
+  int update_id = req.update_id();
+  auto &updater = task_processor.get_updater(update_id);
+  const auto &triples_to_add = req.triples_to_add();
+  const auto &triples_to_delete = req.triples_to_delete();
+
+  for (const auto &triple_proto : triples_to_add) {
+    updater.add_triple(RDFTripleResource(triple_proto));
+  }
+  for (const auto &triple_proto : triples_to_delete) {
+    updater.delete_triple(RDFTripleResource(triple_proto));
+  }
 }

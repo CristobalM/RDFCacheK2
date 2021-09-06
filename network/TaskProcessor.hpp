@@ -7,6 +7,7 @@
 
 #include "I_QRStreamer.hpp"
 #include "I_TRStreamer.hpp"
+#include "I_Updater.hpp"
 #include "TimeControl.hpp"
 #include <cstdint>
 #include <query_processing/QueryResultIteratorHolder.hpp>
@@ -34,6 +35,8 @@ public:
   virtual I_TRStreamer &
   create_triples_streamer(std::vector<unsigned long> &&loaded_predicates,
                           std::unique_ptr<TimeControl> &&time_control) = 0;
+  virtual int begin_update_session() = 0;
+  virtual I_Updater &get_updater(int updater_id) = 0;
 };
 
 #endif // RDFCACHEK2_TASKPROCESSOR_HPP
