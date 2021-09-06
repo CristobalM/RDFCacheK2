@@ -7,9 +7,11 @@
 
 #include "ISDManager.hpp"
 #include "I_DataManager.hpp"
+#include "K2TreeBulkOp.hpp"
 #include "NaiveDynamicStringDictionary.hpp"
 #include "PredicatesIndexCacheMDFile.hpp"
 #include "RDFTriple.hpp"
+#include <functional>
 #include <istream>
 #include <memory>
 #include <string>
@@ -19,6 +21,7 @@ class PredicatesCacheManager : public I_DataManager {
   std::unique_ptr<PredicatesIndexCacheMDFile> predicates_index;
 
   NaiveDynamicStringDictionary extra_dicts;
+
 
 public:
   double measured_time_sd_lookup;
@@ -61,9 +64,17 @@ public:
 
   std::unique_ptr<K2TreeScanner> create_null_k2tree_scanner();
 
+  void merge_with_extra_dict(NaiveDynamicStringDictionary &input_extra_dict);
+
+  void merge_add_tree(unsigned long predicate_id, K2TreeMixed &k2tree);
+
+  void merge_delete_tree(unsigned long predicate_id, K2TreeMixed &k2tree);
+
 private:
   void handle_not_found(unsigned long &resource_id, RDFResource &resource);
   uint64_t get_resource_index_notfound_zero(const RDFResource &resource) const;
+  void merge_op_tree(unsigned long predicate_id, K2TreeMixed &to_merge_k2tree,
+      const std::function<void(K2TreeBulkOp &, unsigned long, unsigned long)>& op);
 };
 
 #endif // RDFCACHEK2_PREDICATESCACHEMANAGER_HPP

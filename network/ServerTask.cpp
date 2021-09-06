@@ -412,7 +412,16 @@ void ServerTask::process_request_start_update_triples(Message &) {
   cache_response.mutable_accept_update_request()->set_update_id(update_id);
   send_response(cache_response);
 }
-void ServerTask::process_done_update_triples(Message &) {}
+void ServerTask::process_done_update_triples(Message &message) {
+  auto &req = message.get_cache_request().cache_done_update_triples();
+  int update_id = req.update_id();
+  auto &updater = task_processor.get_updater(update_id);
+  updater.commit_updates();
+  proto_msg::CacheResponse cache_response;
+  cache_response.set_response_type(proto_msg::MessageType::ACK_DONE_UPDATE_TRIPLES);
+  cache_response.mutable_ack_done_update();
+  send_response(cache_response);
+}
 
 void ServerTask::process_update_triples_batch(Message &message) {
   auto &req = message.get_cache_request().triples_update_batch();
@@ -427,4 +436,9 @@ void ServerTask::process_update_triples_batch(Message &message) {
   for (const auto &triple_proto : triples_to_delete) {
     updater.delete_triple(RDFTripleResource(triple_proto));
   }
+
+  proto_msg::CacheResponse cache_response;
+  cache_response.set_response_type(proto_msg::BATCH_RECEIVED_RESPONSE);
+  cache_response.mutable_batch_received_response()->set_update_id(update_id);
+  send_response(cache_response);
 }

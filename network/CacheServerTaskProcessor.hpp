@@ -19,6 +19,7 @@
 #include "ServerWorker.hpp"
 #include "TCPServerConnection.hpp"
 #include "TaskProcessor.hpp"
+#include "UpdatesLogger.hpp"
 #include <query_processing/QueryResultIteratorHolder.hpp>
 
 class CacheServerTaskProcessor : public TaskProcessor {
@@ -46,6 +47,8 @@ class CacheServerTaskProcessor : public TaskProcessor {
 
   std::unordered_map<int, std::unique_ptr<I_Updater>> updaters_sessions;
   int current_update_session_id;
+
+  UpdatesLogger updates_logger;
 
 public:
   explicit CacheServerTaskProcessor(Cache &cache, uint8_t workers_count);
@@ -78,6 +81,9 @@ public:
   void clean_triple_streamer(int channel_id) override;
   int begin_update_session() override;
   I_Updater &get_updater(int updater_id) override;
+  void log_updates(NaiveDynamicStringDictionary *added_resources,
+                   std::vector<K2TreeUpdates> &k2trees_updates) override;
+  WriteDataLock acquire_write_lock() override;
 };
 
 #endif // RDFCACHEK2_CACHESERVERTASKPROCESSOR_HPP

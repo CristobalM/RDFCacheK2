@@ -8,7 +8,9 @@
 #include "I_QRStreamer.hpp"
 #include "I_TRStreamer.hpp"
 #include "I_Updater.hpp"
+#include "K2TreeUpdates.hpp"
 #include "TimeControl.hpp"
+#include "WriteDataLock.hpp"
 #include <cstdint>
 #include <query_processing/QueryResultIteratorHolder.hpp>
 #include <set>
@@ -37,6 +39,9 @@ public:
                           std::unique_ptr<TimeControl> &&time_control) = 0;
   virtual int begin_update_session() = 0;
   virtual I_Updater &get_updater(int updater_id) = 0;
+  virtual void log_updates(NaiveDynamicStringDictionary *added_resources,
+                   std::vector<K2TreeUpdates> &k2trees_updates) = 0;
+  virtual WriteDataLock acquire_write_lock() = 0;
 };
 
 #endif // RDFCACHEK2_TASKPROCESSOR_HPP

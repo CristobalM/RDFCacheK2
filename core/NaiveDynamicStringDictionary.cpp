@@ -93,3 +93,45 @@ NaiveDynamicStringDictionary::extract_resource(unsigned long id) const {
 size_t NaiveDynamicStringDictionary::size() const {
   return resources_extra.size();
 }
+void NaiveDynamicStringDictionary::merge_with_extra_dict(
+    NaiveDynamicStringDictionary &other_dict) {
+  resources_extra.reserve(resources_extra.size()+other_dict.resources_extra.size());
+  for(auto &resource : other_dict.resources_extra){
+    add_resource(std::move(resource));
+  }
+}
+void NaiveDynamicStringDictionary::serialize(std::ofstream &ofs) {
+  uint64_t size = 0;
+  for (auto &resource : resources_extra) {
+    size += resource.value.size() + 1 + sizeof(uint16_t);
+  }
+
+  write_u64(ofs, size);
+
+  for (auto &resource : resources_extra) {
+    write_u16(ofs, resource.resource_type);
+    auto &s = resource.value;
+    ofs.write(s.data(), s.size() + 1);
+  }
+}
+
+NaiveDynamicStringDictionary
+NaiveDynamicStringDictionary::deserialize(std::ifstream &ifs) {
+  uint64_t size = read_u64(ifs);
+  std::vector<char> buffer(size, 0);
+  ifs.read(buffer.data(), size);
+  std::vector<RDFResource> resources_vec;
+  uint64_t offset_base = 0;
+  for (uint64_t i = 0; i < buffer.size(); i++) {
+    if (!buffer[i]) {
+      std::string raw_type(buffer.data(), buffer.data() + sizeof(uint16_t));
+      std::stringstream ss(raw_type);
+      auto type = static_cast<RDFResourceType>(read_u16(ss));
+      std::string s(buffer.data() + sizeof(uint16_t) + offset_base);
+      resources_vec.push_back(RDFResource(std::move(s), type));
+      offset_base = i + 1;
+    }
+  }
+  auto reverse_res = create_reverse(resources_vec);
+  return {std::move(resources_vec), std::move(reverse_res)};
+}

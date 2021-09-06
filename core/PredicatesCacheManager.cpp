@@ -237,3 +237,34 @@ std::unique_ptr<K2TreeScanner>
 PredicatesCacheManager::create_null_k2tree_scanner() {
   return std::make_unique<NullScanner>();
 }
+void PredicatesCacheManager::merge_with_extra_dict(
+    NaiveDynamicStringDictionary &input_extra_dict) {
+  extra_dicts.merge_with_extra_dict(input_extra_dict);
+}
+void PredicatesCacheManager::merge_add_tree(unsigned long predicate_id,
+                                            K2TreeMixed &k2tree) {
+  merge_op_tree(predicate_id, k2tree,
+                [](K2TreeBulkOp &bulk_op, unsigned long col,
+                   unsigned long row) { bulk_op.insert(col, row); });
+}
+void PredicatesCacheManager::merge_delete_tree(unsigned long predicate_id,
+                                               K2TreeMixed &k2tree) {
+  merge_op_tree(predicate_id, k2tree,
+                [](K2TreeBulkOp &bulk_op, unsigned long col,
+                   unsigned long row) { bulk_op.remove(col, row); });
+}
+void PredicatesCacheManager::merge_op_tree(
+    unsigned long predicate_id, K2TreeMixed &to_merge_k2tree,
+    const std::function<void(K2TreeBulkOp &, unsigned long, unsigned long)>
+        &op) {
+  if (!predicates_index->has_predicate_active(predicate_id))
+    return;
+  auto fetched = predicates_index->fetch_k2tree(predicate_id);
+  auto &k2tree_active = fetched.get_mutable();
+  K2TreeBulkOp bulk_op(k2tree_active);
+  auto points_scanner = to_merge_k2tree.create_full_scanner();
+  while (points_scanner->has_next()) {
+    auto point = points_scanner->next();
+    op(bulk_op, point.first, point.second);
+  }
+}

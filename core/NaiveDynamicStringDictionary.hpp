@@ -26,6 +26,9 @@ public:
       std::unordered_map<RDFResource, unsigned long, NaiveHash>
           &&reverse_resources_extra);
 
+  void serialize(std::ofstream &ofs);
+  static NaiveDynamicStringDictionary deserialize(std::ifstream &ifs);
+
   static void serialize_dict(std::vector<RDFResource> &resources,
                              const std::string &fname);
   static std::vector<RDFResource> deserialize_dict(const std::string &fname);
@@ -39,6 +42,7 @@ public:
   RDFResource extract_resource(unsigned long id) const;
 
   size_t size() const;
+  void merge_with_extra_dict(NaiveDynamicStringDictionary &other_dict);
 };
 
 #endif /* NAIVE_DYNAMIC_STRING_DICTIONARY_HPP */

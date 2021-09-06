@@ -14,7 +14,7 @@ TriplePatternMatchingStreamer::TriplePatternMatchingStreamer(
       time_control(time_control), threshold_part_size(threshold_part_size),
       first(true), finished(false) {
   initialize_scanner();
-  __UNUSED(time_control);
+  (void)(time_control);
 }
 
 proto_msg::CacheResponse TriplePatternMatchingStreamer::get_next_response() {
@@ -37,7 +37,7 @@ proto_msg::CacheResponse TriplePatternMatchingStreamer::get_next_response() {
     }
     first = false;
   }
-  __UNUSED(time_control);
+  (void)(time_control);
 
   stream_response->set_channel_id(channel_id);
   stream_response->set_pattern_channel_id(pattern_channel_id);
