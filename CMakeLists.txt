@@ -416,7 +416,17 @@ add_library(Proc STATIC ${PROC_SOURCE_FILES})
 
 add_library(CppBase64 ${LIB_CPPBASE64_PATH}/base64.cpp)
 
-add_library(Utils utils/serialization_util.cpp utils/hashing.cpp utils/I_FileRWHandler.hpp utils/FileRWHandler.cpp utils/FileRWHandler.hpp)
+add_library(Utils utils/serialization_util.cpp
+        utils/hashing.cpp
+        utils/I_FileRWHandler.hpp
+        utils/FileRWHandler.cpp
+        utils/FileRWHandler.hpp
+        utils/I_OStream.hpp
+        utils/I_IStream.hpp
+        utils/FileIStream.cpp
+        utils/FileIStream.hpp
+        utils/FileOStream.cpp
+        utils/FileOStream.hpp)
 
 add_dependencies(Proc CppBase64)
 
@@ -647,6 +657,7 @@ if (GTest_FOUND)
     add_test(NAME query_proc_tests2 COMMAND ./query_proc_tests2)
     add_test(NAME cache_replacement_test COMMAND ./cache_replacement_test)
     add_test(NAME memory_segment_test COMMAND ./memory_segment_test)
+    add_test(NAME update_log_test COMMAND ./update_log_test)
 
     # K2 Tree Tests
 

@@ -21,6 +21,7 @@ public:
   void merge_add_tree(unsigned long predicate_id, K2TreeMixed &k2tree) override;
   void merge_delete_tree(unsigned long predicate_id,
                          K2TreeMixed &k2tree) override;
+  void merge_update(std::vector<K2TreeUpdates> &updates) override;
 };
 
 #endif // RDFCACHEK2_PCMMERGER_HPP

@@ -20,7 +20,7 @@ PredicatesIndexCacheMD::PredicatesIndexCacheMD(
       full_memory_segment(other.full_memory_segment), update_logger(nullptr) {}
 
 bool PredicatesIndexCacheMD::load_single_predicate(uint64_t predicate_index) {
-  if (!has_predicate_stored(predicate_index))
+  if (!is_stored_in_main_index(predicate_index))
     return false;
 
   std::lock_guard lg(retrieval_mutex);
@@ -51,6 +51,9 @@ PredicatesIndexCacheMD::fetch_k2tree(uint64_t predicate_index) {
       !load_single_predicate(predicate_index)) {
     return PredicateFetchResult(false, nullptr);
   }
+  if (is_stored_in_updates_log(predicate_index)) {
+    update_logger->recover_predicate(predicate_index);
+  }
   return PredicateFetchResult(true, predicates[predicate_index].get());
 }
 
@@ -66,8 +69,12 @@ bool PredicatesIndexCacheMD::has_predicate_active(uint64_t predicate_index) {
 
 bool PredicatesIndexCacheMD::has_predicate_stored(uint64_t predicate_index) {
   std::lock_guard lg(map_mutex);
+  /*
   return metadata.get_map().find(predicate_index) != metadata.get_map().end() ||
-  new_predicates.find(predicate_index) != new_predicates.end();
+  update_logger->has_predicate_stored(predicate_index);
+   */
+  return is_stored_in_main_index(predicate_index) ||
+         is_stored_in_updates_log(predicate_index);
 }
 
 void PredicatesIndexCacheMD::add_predicate(uint64_t predicate_index) {
@@ -175,6 +182,14 @@ void PredicatesIndexCacheMD::discard_in_memory_predicate(
     MemoryManager::instance().free_segment(it->second);
     memory_segments_map.erase(it);
   }
+  auto it_new_predicates = new_predicates.find(predicate_index);
+  if (it_new_predicates != new_predicates.end()) {
+    new_predicates.erase(it_new_predicates);
+  }
+  auto it_dirty = dirty_predicates.find(predicate_index);
+  if (it_dirty != dirty_predicates.end()) {
+    dirty_predicates.erase(it_dirty);
+  }
 }
 
 K2TreeConfig PredicatesIndexCacheMD::get_config() { return k2tree_config; }
@@ -249,4 +264,13 @@ void PredicatesIndexCacheMD::load_all_predicates() {
 void PredicatesIndexCacheMD::set_update_logger(
     I_UpdateLoggerPCM *input_update_logger) {
   update_logger = input_update_logger;
+}
+bool PredicatesIndexCacheMD::is_stored_in_main_index(uint64_t predicate_id) {
+  return metadata.get_map().find(predicate_id) != metadata.get_map().end();
+}
+bool PredicatesIndexCacheMD::is_stored_in_updates_log(uint64_t predicate_id) {
+  return update_logger && update_logger->has_predicate_stored(predicate_id);
+}
+void PredicatesIndexCacheMD::mark_dirty(uint64_t predicate_id) {
+  dirty_predicates.insert(predicate_id);
 }

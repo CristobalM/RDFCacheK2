@@ -40,7 +40,7 @@ CacheServerTaskProcessor::CacheServerTaskProcessor(Cache &cache,
       pcm_update_logger_wrapper(updates_logger)
 {
   updates_logger.recover_all();
-  cache.get_pcm().set_update_logger(pcm_update_logger_wrapper);
+  cache.get_pcm().set_update_logger(&pcm_update_logger_wrapper);
 }
 
 void CacheServerTaskProcessor::start_workers(

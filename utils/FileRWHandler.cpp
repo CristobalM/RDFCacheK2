@@ -5,24 +5,26 @@
 #include <filesystem>
 #include <fstream>
 
+#include "FileIStream.hpp"
+#include "FileOStream.hpp"
 #include "FileRWHandler.hpp"
 
 namespace fs = std::filesystem;
 
-std::unique_ptr<std::ostream>
+std::unique_ptr<I_OStream>
 FileRWHandler::get_writer(std::ios::openmode openmode) {
-  return std::make_unique<std::ofstream>(filename, std::ios::out | openmode);
+  return std::make_unique<FileOStream>(filename, std::ios::out | openmode);
 }
 FileRWHandler::FileRWHandler(std::string filename)
     : filename(std::move(filename)) {}
-std::unique_ptr<std::istream>
+std::unique_ptr<I_IStream>
 FileRWHandler::get_reader(std::ios::openmode openmode) {
-  return std::make_unique<std::ifstream>(filename, std::ios::in | openmode);
+  return std::make_unique<FileIStream>(filename, std::ios::in | openmode);
 }
 bool FileRWHandler::exists() { return fs::exists(filename); }
-std::unique_ptr<std::ostream>
+std::unique_ptr<I_OStream>
 FileRWHandler::get_writer_temp(std::ios::openmode openmode) {
-  return std::make_unique<std::ofstream>(filename + ".tmp",
+  return std::make_unique<FileOStream>(filename + ".tmp",
                                          std::ios::out | openmode);
 }
 

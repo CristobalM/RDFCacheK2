@@ -120,6 +120,7 @@ void UpdaterSession::log_updates() {
 }
 void UpdaterSession::do_commit_updates() {
   log_updates();
+  /*
   if (added_resources)
     cache->get_pcm().merge_with_extra_dict(*added_resources);
   for (auto &kv : added_triples) {
@@ -128,4 +129,5 @@ void UpdaterSession::do_commit_updates() {
   for (auto &kv : removed_triples) {
     cache->get_pcm().merge_delete_tree(kv.first, *kv.second.first);
   }
+   */
 }

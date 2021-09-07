@@ -22,18 +22,21 @@ void UpdatesLogger::log(NaiveDynamicStringDictionary *added_resources,
     current_file_writer =
         logs_file_handler.get_writer(std::ios::binary | std::ios::app);
   }
+
+  auto &writer_real = current_file_writer->get_stream();
   // to indicate there is a resources dict
-  write_u32(*current_file_writer, added_resources != nullptr);
+  write_u32(writer_real, added_resources != nullptr);
 
   if (added_resources) {
-    added_resources->serialize(*current_file_writer);
+    added_resources->serialize(writer_real);
+    data_merger.merge_with_extra_dict(*added_resources);
   }
 
-  write_u32(*current_file_writer, k2tree_updates.size());
+  write_u32(writer_real, k2tree_updates.size());
   for (auto &update : k2tree_updates) {
-    register_update_offset(update.predicate_id, *current_file_writer);
+    register_update_offset(update.predicate_id, writer_real);
     UPDATE_KIND update_kind;
-    write_u64(*current_file_writer, update.predicate_id);
+    write_u64(writer_real, update.predicate_id);
     if (update.k2tree_del && update.k2tree_add) {
       update_kind = BOTH_UPDATE;
     } else if (update.k2tree_add) {
@@ -41,31 +44,38 @@ void UpdatesLogger::log(NaiveDynamicStringDictionary *added_resources,
     } else {
       update_kind = DELETE_UPDATE;
     }
-    write_u32(*current_file_writer, update_kind);
+    write_u32(writer_real, update_kind);
     switch (update_kind) {
     case INSERT_UPDATE:
-      update.k2tree_add->write_to_ostream(*current_file_writer);
+      update.k2tree_add->write_to_ostream(writer_real);
       break;
     case DELETE_UPDATE:
-      update.k2tree_del->write_to_ostream(*current_file_writer);
+      update.k2tree_del->write_to_ostream(writer_real);
       break;
     case BOTH_UPDATE:
-      update.k2tree_add->write_to_ostream(*current_file_writer);
-      update.k2tree_del->write_to_ostream(*current_file_writer);
+      update.k2tree_add->write_to_ostream(writer_real);
+      update.k2tree_del->write_to_ostream(writer_real);
       break;
     }
   }
   current_file_writer->flush();
   dump_offsets_map();
+  data_merger.merge_update(k2tree_updates);
 }
 
 void UpdatesLogger::recover(const std::vector<unsigned long> &predicates) {
-  current_file_writer = nullptr; // close file if it's open
+  if(current_file_writer){
+    current_file_writer->flush();
+    current_file_writer = nullptr; // close file if it's open
+  }
   recover_data(predicates);
 }
 
 void UpdatesLogger::recover_all() {
-  current_file_writer = nullptr; // close file if it's open
+  if(current_file_writer){
+    current_file_writer->flush();
+    current_file_writer = nullptr; // close file if it's open
+  }
   recover_all_data();
 }
 
@@ -97,13 +107,14 @@ void UpdatesLogger::recover_data(const std::vector<unsigned long> &predicates) {
     }
   }
 }
-void UpdatesLogger::recover_single_update(std::istream &ifs) {
-  bool has_dict = read_u32(ifs);
+void UpdatesLogger::recover_single_update(I_IStream &ifs) {
+  auto &ifs_real = ifs.get_stream();
+  bool has_dict = read_u32(ifs_real);
   if (has_dict) {
-    auto recovered_dict = NaiveDynamicStringDictionary::deserialize(ifs);
+    auto recovered_dict = NaiveDynamicStringDictionary::deserialize(ifs_real);
     data_merger.merge_with_extra_dict(recovered_dict);
   }
-  auto updates_amount = static_cast<size_t>(read_u32(ifs));
+  auto updates_amount = static_cast<size_t>(read_u32(ifs.get_stream()));
   for (size_t i = 0; i < updates_amount; i++) {
     recover_single_predicate_update(ifs);
   }
@@ -112,14 +123,15 @@ void UpdatesLogger::retrieve_offsets_map() {
   if (!predicates_offsets_file_handler.exists())
     return;
   auto ifs = predicates_offsets_file_handler.get_reader(std::ios::binary);
-  auto offsets_map_size = (int)read_u32(*ifs);
+  auto &ifs_real = ifs->get_stream();
+  auto offsets_map_size = (int)read_u32(ifs_real);
   for (int i = 0; i < offsets_map_size; i++) {
-    auto predicate_id = read_u64(*ifs);
-    auto offsets_size = (int)read_u32(*ifs);
+    auto predicate_id = read_u64(ifs_real);
+    auto offsets_size = (int)read_u32(ifs_real);
     std::vector<long> offsets_retrieved;
     offsets_retrieved.reserve(offsets_size);
     for (int offset_i = 0; offset_i < offsets_size; offset_i++) {
-      offsets_retrieved.push_back((long)read_u64(*ifs));
+      offsets_retrieved.push_back((long)read_u64(ifs_real));
     }
     offsets_map[predicate_id] = std::move(offsets_retrieved);
   }
@@ -130,39 +142,41 @@ void UpdatesLogger::dump_offsets_map() {
   {
     auto ofs_temp = predicates_offsets_file_handler.get_writer_temp(
         std::ios::binary | std::ios::trunc);
-    write_u32(*ofs_temp, offsets_map.size());
+    auto &ofs_temp_real = ofs_temp->get_stream();
+    write_u32(ofs_temp_real, offsets_map.size());
     for (const auto &kv : offsets_map) {
       auto predicate_id = kv.first;
       const auto &offsets = kv.second;
-      write_u64(*ofs_temp, predicate_id);
-      write_u32(*ofs_temp, offsets.size());
+      write_u64(ofs_temp_real, predicate_id);
+      write_u32(ofs_temp_real, offsets.size());
       for (auto offset : offsets) {
-        write_u64(*ofs_temp, (unsigned long)offset);
+        write_u64(ofs_temp_real, (unsigned long)offset);
       }
     }
   }
 
   predicates_offsets_file_handler.commit_temp_writer();
 }
-void UpdatesLogger::recover_single_predicate_update(std::istream &ifs) {
-  auto predicate_id = static_cast<unsigned long>(read_u64(ifs));
-  auto update_kind = static_cast<UPDATE_KIND>(read_u32(ifs));
+void UpdatesLogger::recover_single_predicate_update(I_IStream &ifs) {
+  auto &ifs_real = ifs.get_stream();
+  auto predicate_id = static_cast<unsigned long>(read_u64(ifs_real));
+  auto update_kind = static_cast<UPDATE_KIND>(read_u32(ifs_real));
   std::unique_ptr<K2TreeMixed> added_triples{};
   std::unique_ptr<K2TreeMixed> removed_triples{};
   switch (update_kind) {
   case INSERT_UPDATE:
     added_triples =
-        std::make_unique<K2TreeMixed>(K2TreeMixed::read_from_istream(ifs));
+        std::make_unique<K2TreeMixed>(K2TreeMixed::read_from_istream(ifs_real));
     break;
   case DELETE_UPDATE:
     removed_triples =
-        std::make_unique<K2TreeMixed>(K2TreeMixed::read_from_istream(ifs));
+        std::make_unique<K2TreeMixed>(K2TreeMixed::read_from_istream(ifs_real));
     break;
   case BOTH_UPDATE:
     added_triples =
-        std::make_unique<K2TreeMixed>(K2TreeMixed::read_from_istream(ifs));
+        std::make_unique<K2TreeMixed>(K2TreeMixed::read_from_istream(ifs_real));
     removed_triples =
-        std::make_unique<K2TreeMixed>(K2TreeMixed::read_from_istream(ifs));
+        std::make_unique<K2TreeMixed>(K2TreeMixed::read_from_istream(ifs_real));
     break;
   }
   if (added_triples)
@@ -184,8 +198,10 @@ void UpdatesLogger::register_update_offset(unsigned long predicate_id,
 void UpdatesLogger::recover_predicate(unsigned long predicate_id) {
   if (!logs_file_handler.exists())
     return;
-  // auto ifs_logs = logs_file_handler.get_reader(std::ios::binary);
-  current_file_writer = nullptr;
+  if(current_file_writer){
+    current_file_writer->flush();
+    current_file_writer = nullptr;
+  }
   if(!current_file_reader){
     current_file_reader = logs_file_handler.get_reader(std::ios::binary);
   }
@@ -194,4 +210,7 @@ void UpdatesLogger::recover_predicate(unsigned long predicate_id) {
     current_file_reader->seekg(offset, std::ios::beg);
     recover_single_predicate_update(*current_file_reader);
   }
+}
+bool UpdatesLogger::has_predicate_stored(uint64_t predicate_id) {
+  return offsets_map.find(predicate_id) != offsets_map.end();
 }

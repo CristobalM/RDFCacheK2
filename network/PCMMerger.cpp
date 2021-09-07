@@ -18,3 +18,6 @@ void PCMMerger::merge_delete_tree(unsigned long predicate_id,
 PCMMerger::PCMMerger(PredicatesCacheManager &predicates_cache_manager)
 :pcm(predicates_cache_manager)
 {}
+void PCMMerger::merge_update(std::vector<K2TreeUpdates> &updates) {
+  pcm.merge_update(updates);
+}

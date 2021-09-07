@@ -66,6 +66,9 @@ public:
 
   void set_update_logger(I_UpdateLoggerPCM *input_update_logger);
 
+  bool is_stored_in_main_index(uint64_t predicate_id);
+  bool is_stored_in_updates_log(uint64_t predicate_id);
+  void mark_dirty(uint64_t predicate_id);
 };
 
 #endif /* _PREDICATES_INDEX_CACHE_MD_HPP_ */

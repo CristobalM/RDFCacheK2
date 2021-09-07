@@ -5,8 +5,9 @@
 #ifndef RDFCACHEK2_I_DATAMERGER_HPP
 #define RDFCACHEK2_I_DATAMERGER_HPP
 
-#include <NaiveDynamicStringDictionary.hpp>
+#include "K2TreeUpdates.hpp"
 #include <K2TreeMixed.hpp>
+#include <NaiveDynamicStringDictionary.hpp>
 
 class I_DataMerger {
 public:
@@ -18,6 +19,7 @@ public:
                               K2TreeMixed &k2tree) = 0;
   virtual void merge_delete_tree(unsigned long predicate_id,
                                  K2TreeMixed &k2tree) = 0;
+  virtual void merge_update(std::vector<K2TreeUpdates> &updates) = 0;
 };
 
 #endif // RDFCACHEK2_I_DATAMERGER_HPP
