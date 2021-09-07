@@ -8,6 +8,7 @@
 #include <set>
 #include <vector>
 
+#include "I_UpdateLoggerPCM.hpp"
 #include "K2TreeMixed.hpp"
 #include "PredicateFetchResult.hpp"
 #include "PredicatesCacheMetadata.hpp"
@@ -35,6 +36,8 @@ private:
 
   MemorySegment *full_memory_segment;
 
+  I_UpdateLoggerPCM * update_logger;
+
 public:
   PredicatesIndexCacheMD(std::unique_ptr<std::istream> &&is);
 
@@ -60,6 +63,9 @@ public:
   const PredicatesCacheMetadata &get_metadata();
   const PredicateMetadata &get_metadata_with_id(uint64_t predicate_id);
   void load_all_predicates();
+
+  void set_update_logger(I_UpdateLoggerPCM *input_update_logger);
+
 };
 
 #endif /* _PREDICATES_INDEX_CACHE_MD_HPP_ */

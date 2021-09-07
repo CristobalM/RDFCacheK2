@@ -7,6 +7,7 @@
 
 #include "ISDManager.hpp"
 #include "I_DataManager.hpp"
+#include "I_UpdateLoggerPCM.hpp"
 #include "K2TreeBulkOp.hpp"
 #include "NaiveDynamicStringDictionary.hpp"
 #include "PredicatesIndexCacheMDFile.hpp"
@@ -21,7 +22,6 @@ class PredicatesCacheManager : public I_DataManager {
   std::unique_ptr<PredicatesIndexCacheMDFile> predicates_index;
 
   NaiveDynamicStringDictionary extra_dicts;
-
 
 public:
   double measured_time_sd_lookup;
@@ -69,6 +69,8 @@ public:
   void merge_add_tree(unsigned long predicate_id, K2TreeMixed &k2tree);
 
   void merge_delete_tree(unsigned long predicate_id, K2TreeMixed &k2tree);
+
+  void set_update_logger(I_UpdateLoggerPCM *input_update_logger);
 
 private:
   void handle_not_found(unsigned long &resource_id, RDFResource &resource);

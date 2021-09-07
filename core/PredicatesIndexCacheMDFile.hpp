@@ -37,6 +37,8 @@ public:
 
   void load_all_predicates();
 
+  void set_update_logger(I_UpdateLoggerPCM *input_update_logger);
+
 private:
   static std::unique_ptr<std::istream> load_file(const std::string &fname,
                                                  buf_t &buffer);

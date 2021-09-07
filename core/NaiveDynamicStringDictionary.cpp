@@ -100,7 +100,7 @@ void NaiveDynamicStringDictionary::merge_with_extra_dict(
     add_resource(std::move(resource));
   }
 }
-void NaiveDynamicStringDictionary::serialize(std::ofstream &ofs) {
+void NaiveDynamicStringDictionary::serialize(std::ostream &ofs) {
   uint64_t size = 0;
   for (auto &resource : resources_extra) {
     size += resource.value.size() + 1 + sizeof(uint16_t);
@@ -116,7 +116,7 @@ void NaiveDynamicStringDictionary::serialize(std::ofstream &ofs) {
 }
 
 NaiveDynamicStringDictionary
-NaiveDynamicStringDictionary::deserialize(std::ifstream &ifs) {
+NaiveDynamicStringDictionary::deserialize(std::istream &ifs) {
   uint64_t size = read_u64(ifs);
   std::vector<char> buffer(size, 0);
   ifs.read(buffer.data(), size);

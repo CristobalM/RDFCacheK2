@@ -14,6 +14,8 @@
 #include "I_TRStreamer.hpp"
 #include "I_Updater.hpp"
 #include "Message.hpp"
+#include "PCMMerger.hpp"
+#include "PCMUpdateLoggerWrapper.hpp"
 #include "ReplacementTaskProcessor.hpp"
 #include "ServerTask.hpp"
 #include "ServerWorker.hpp"
@@ -48,7 +50,9 @@ class CacheServerTaskProcessor : public TaskProcessor {
   std::unordered_map<int, std::unique_ptr<I_Updater>> updaters_sessions;
   int current_update_session_id;
 
+  PCMMerger pcm_merger;
   UpdatesLogger updates_logger;
+  PCMUpdateLoggerWrapper pcm_update_logger_wrapper;
 
 public:
   explicit CacheServerTaskProcessor(Cache &cache, uint8_t workers_count);

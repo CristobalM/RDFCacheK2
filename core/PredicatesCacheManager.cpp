@@ -16,7 +16,7 @@ PredicatesCacheManager::PredicatesCacheManager(
     std::unique_ptr<ISDManager> &&isd_manager,
     std::unique_ptr<PredicatesIndexCacheMDFile> &&predicates_index)
     : isd_manager(std::move(isd_manager)),
-      predicates_index(std::move(predicates_index)),
+      predicates_index(std::move(predicates_index)), update_logger(nullptr),
       measured_time_sd_lookup(0) {}
 
 PredicatesCacheManager::PredicatesCacheManager(
@@ -267,4 +267,8 @@ void PredicatesCacheManager::merge_op_tree(
     auto point = points_scanner->next();
     op(bulk_op, point.first, point.second);
   }
+}
+void PredicatesCacheManager::set_update_logger(
+    I_UpdateLoggerPCM *input_update_logger) {
+  predicates_index->set_update_logger(input_update_logger);
 }

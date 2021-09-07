@@ -34,7 +34,14 @@ CacheServerTaskProcessor::CacheServerTaskProcessor(Cache &cache,
     : cache(cache), workers_count(workers_count), current_id(0),
       replacement_task_processor(cache),
       current_triples_streamers_channel_id(0), current_update_session_id(0),
-      updates_logger(cache){}
+      pcm_merger(cache.get_pcm()),
+      updates_logger(pcm_merger, cache.get_log_file_handler(),
+                     cache.get_log_offsets_file_handler()),
+      pcm_update_logger_wrapper(updates_logger)
+{
+  updates_logger.recover_all();
+  cache.get_pcm().set_update_logger(pcm_update_logger_wrapper);
+}
 
 void CacheServerTaskProcessor::start_workers(
     TCPServerConnection<CacheServerTaskProcessor> &connection) {

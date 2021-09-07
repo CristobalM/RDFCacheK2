@@ -94,3 +94,7 @@ const PredicatesCacheMetadata &PredicatesIndexCacheMDFile::get_metadata() {
 void PredicatesIndexCacheMDFile::load_all_predicates() {
   PredicatesIndexCacheMD::load_all_predicates();
 }
+void PredicatesIndexCacheMDFile::set_update_logger(
+    I_UpdateLoggerPCM *input_update_logger) {
+  PredicatesIndexCacheMD::set_update_logger(input_update_logger);
+}

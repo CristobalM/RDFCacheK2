@@ -58,7 +58,7 @@ set(CORE_SOURCE_FILES
         core/K2TreeBulkOp.hpp
         core/I_DataManager.hpp
         core/NullScanner.cpp
-        core/NullScanner.hpp)
+        core/NullScanner.hpp core/I_UpdateLoggerPCM.hpp)
 
 set(PROC_SOURCE_FILES
         proc/SDFeed.cpp
@@ -295,7 +295,9 @@ set(QUERY_ENGINE_FILES
         ${CACHING_FILES}
         ${QUERY_ITERATORS}
         ${BGPOPS}
-        query_engine/caching/I_PQTraverse.hpp)
+        query_engine/caching/I_PQTraverse.hpp
+        query_engine/CacheArgs.hpp
+        )
 
 
 set(NETWORK_SOURCE_FILES
@@ -317,7 +319,7 @@ set(NETWORK_SOURCE_FILES
         network/I_TRStreamer.hpp
         network/I_TRMatchingStreamer.hpp
         network/TriplePatternMatchingStreamer.cpp
-        network/TriplePatternMatchingStreamer.hpp network/I_Updater.hpp network/UpdaterSession.cpp network/UpdaterSession.hpp network/K2TreeUpdates.cpp network/K2TreeUpdates.hpp network/WriteDataLock.cpp network/WriteDataLock.hpp network/UpdatesLogger.cpp network/UpdatesLogger.hpp network/I_DataMerger.hpp)
+        network/TriplePatternMatchingStreamer.hpp network/I_Updater.hpp network/UpdaterSession.cpp network/UpdaterSession.hpp network/K2TreeUpdates.cpp network/K2TreeUpdates.hpp network/WriteDataLock.cpp network/WriteDataLock.hpp network/UpdatesLogger.cpp network/UpdatesLogger.hpp network/I_DataMerger.hpp network/PCMMerger.cpp network/PCMMerger.hpp network/PCMUpdateLoggerWrapper.cpp network/PCMUpdateLoggerWrapper.hpp)
 
 
 set(PROTO_MESSAGES
@@ -414,7 +416,7 @@ add_library(Proc STATIC ${PROC_SOURCE_FILES})
 
 add_library(CppBase64 ${LIB_CPPBASE64_PATH}/base64.cpp)
 
-add_library(Utils utils/serialization_util.cpp utils/hashing.cpp)
+add_library(Utils utils/serialization_util.cpp utils/hashing.cpp utils/I_FileRWHandler.hpp utils/FileRWHandler.cpp utils/FileRWHandler.hpp)
 
 add_dependencies(Proc CppBase64)
 
@@ -623,8 +625,12 @@ if (GTest_FOUND)
     target_link_libraries(cache_replacement_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES})
 
 
-    add_executable(memory_segment_test test/memory_segment_test.cpp test/memory_segment_test.cpp)
+    add_executable(memory_segment_test test/memory_segment_test.cpp)
     target_link_libraries(memory_segment_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES})
+
+
+    add_executable(update_log_test test/update_log_test.cpp)
+    target_link_libraries(update_log_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES})
 
 
     add_test(NAME serialization_test COMMAND ./serialization_test)

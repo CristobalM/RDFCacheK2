@@ -5,6 +5,9 @@
 #ifndef RDFCACHEK2_I_DATAMERGER_HPP
 #define RDFCACHEK2_I_DATAMERGER_HPP
 
+#include <NaiveDynamicStringDictionary.hpp>
+#include <K2TreeMixed.hpp>
+
 class I_DataMerger {
 public:
   virtual ~I_DataMerger() = default;

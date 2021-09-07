@@ -10,14 +10,14 @@
 PredicatesIndexCacheMD::PredicatesIndexCacheMD(
     std::unique_ptr<std::istream> &&is)
     : metadata(*is), is(std::move(is)), k2tree_config(metadata.get_config()),
-      full_memory_segment(nullptr) {}
+      full_memory_segment(nullptr), update_logger(nullptr) {}
 
 PredicatesIndexCacheMD::PredicatesIndexCacheMD(
     PredicatesIndexCacheMD &&other) noexcept
     : metadata(std::move(other.metadata)), is(std::move(other.is)),
       k2tree_config(other.k2tree_config),
       memory_segments_map(std::move(other.memory_segments_map)),
-      full_memory_segment(other.full_memory_segment) {}
+      full_memory_segment(other.full_memory_segment), update_logger(nullptr) {}
 
 bool PredicatesIndexCacheMD::load_single_predicate(uint64_t predicate_index) {
   if (!has_predicate_stored(predicate_index))
@@ -38,6 +38,10 @@ bool PredicatesIndexCacheMD::load_single_predicate(uint64_t predicate_index) {
       K2TreeMixed::read_from_istream(*is, memory_segment));
   is->seekg(pos);
 
+  if (update_logger) {
+    update_logger->recover_predicate(predicate_index);
+  }
+
   return true;
 }
 
@@ -56,12 +60,14 @@ bool PredicatesIndexCacheMD::has_predicate(uint64_t predicate_index) {
 }
 
 bool PredicatesIndexCacheMD::has_predicate_active(uint64_t predicate_index) {
-  return predicates.find(predicate_index) != predicates.end();
+  return predicates.find(predicate_index) != predicates.end() ||
+         new_predicates.find(predicate_index) != new_predicates.end();
 }
 
 bool PredicatesIndexCacheMD::has_predicate_stored(uint64_t predicate_index) {
   std::lock_guard lg(map_mutex);
-  return metadata.get_map().find(predicate_index) != metadata.get_map().end();
+  return metadata.get_map().find(predicate_index) != metadata.get_map().end() ||
+  new_predicates.find(predicate_index) != new_predicates.end();
 }
 
 void PredicatesIndexCacheMD::add_predicate(uint64_t predicate_index) {
@@ -239,4 +245,8 @@ void PredicatesIndexCacheMD::load_all_predicates() {
     predicates[*it] = std::make_unique<K2TreeMixed>(
         K2TreeMixed::read_from_istream(*is, mem_segment));
   }
+}
+void PredicatesIndexCacheMD::set_update_logger(
+    I_UpdateLoggerPCM *input_update_logger) {
+  update_logger = input_update_logger;
 }
