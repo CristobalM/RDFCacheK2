@@ -36,7 +36,7 @@ private:
 
   MemorySegment *full_memory_segment;
 
-  I_UpdateLoggerPCM * update_logger;
+  I_UpdateLoggerPCM *update_logger;
 
 public:
   PredicatesIndexCacheMD(std::unique_ptr<std::istream> &&is);

@@ -216,8 +216,7 @@ parsed_options parse_cmline(int argc, char **argv) {
     throw std::runtime_error(
         "replacement-strategy (R) (one of: 'LRU','None') argument is required");
   if (!has_update_log_filename)
-    throw std::runtime_error(
-        "update-log-filename (U) argument is required");
+    throw std::runtime_error("update-log-filename (U) argument is required");
 
   return out;
 }

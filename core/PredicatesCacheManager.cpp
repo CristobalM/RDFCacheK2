@@ -265,7 +265,8 @@ void PredicatesCacheManager::merge_op_tree(
     const std::function<void(K2TreeBulkOp &, unsigned long, unsigned long)> &op,
     bool create_if_doesnt_exists) {
   if (!predicates_index->has_predicate_active(predicate_id)) {
-    if(!create_if_doesnt_exists) return;
+    if (!create_if_doesnt_exists)
+      return;
     predicates_index->add_predicate(predicate_id);
   }
   auto fetched = predicates_index->fetch_k2tree(predicate_id);
@@ -284,8 +285,10 @@ void PredicatesCacheManager::set_update_logger(
   this->update_logger = input_update_logger;
 }
 void PredicatesCacheManager::merge_update(std::vector<K2TreeUpdates> &updates) {
-  for(auto &update: updates){
-    if(update.k2tree_add) merge_add_tree(update.predicate_id, *update.k2tree_add);
-    if(update.k2tree_del) merge_delete_tree(update.predicate_id, *update.k2tree_del);
+  for (auto &update : updates) {
+    if (update.k2tree_add)
+      merge_add_tree(update.predicate_id, *update.k2tree_add);
+    if (update.k2tree_del)
+      merge_delete_tree(update.predicate_id, *update.k2tree_del);
   }
 }

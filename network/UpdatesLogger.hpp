@@ -9,6 +9,7 @@
 
 #include "I_DataMerger.hpp"
 #include "I_FileRWHandler.hpp"
+#include "I_IOStream.hpp"
 #include "K2TreeUpdates.hpp"
 #include <I_IStream.hpp>
 #include <I_OStream.hpp>
@@ -22,17 +23,19 @@ class UpdatesLogger {
   I_DataMerger &data_merger;
   I_FileRWHandler &logs_file_handler;
   I_FileRWHandler &predicates_offsets_file_handler;
-  enum UPDATE_KIND{
-    INSERT_UPDATE=0,
-    DELETE_UPDATE,
-    BOTH_UPDATE
-  };
+  I_FileRWHandler &metadata_rw_handler;
+  std::unique_ptr<I_IOStream> metadata_file_rw;
+
+  enum UPDATE_KIND { INSERT_UPDATE = 0, DELETE_UPDATE, BOTH_UPDATE };
 
   std::map<unsigned long, std::vector<long>> offsets_map;
 
+  int total_updates;
+
 public:
   UpdatesLogger(I_DataMerger &data_merger, I_FileRWHandler &logs_file_handler,
-                I_FileRWHandler &predicates_offsets_file_handler);
+                I_FileRWHandler &predicates_offsets_file_handler,
+                I_FileRWHandler &metadata_rw_handler);
   void recover(const std::vector<unsigned long> &predicates);
   void recover_all();
   void log(NaiveDynamicStringDictionary *added_resources,
@@ -50,6 +53,8 @@ private:
   void recover_single_predicate_update(I_IStream &ifs);
   void register_update_offset(unsigned long predicate_id, std::ostream &ofs);
   void recover_all_data();
+  int read_total_updates();
+  void commit_total_updates();
 };
 
 #endif // RDFCACHEK2_UPDATESLOGGER_HPP

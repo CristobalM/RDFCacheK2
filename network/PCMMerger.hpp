@@ -14,6 +14,7 @@
 // This exists to avoid inheriting PredicatesCacheManager from I_DataMerger
 class PCMMerger : public I_DataMerger {
   PredicatesCacheManager &pcm;
+
 public:
   explicit PCMMerger(PredicatesCacheManager &predicates_cache_manager);
   void merge_with_extra_dict(

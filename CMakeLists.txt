@@ -423,10 +423,13 @@ add_library(Utils utils/serialization_util.cpp
         utils/FileRWHandler.hpp
         utils/I_OStream.hpp
         utils/I_IStream.hpp
+        utils/I_IOStream.hpp
         utils/FileIStream.cpp
         utils/FileIStream.hpp
         utils/FileOStream.cpp
-        utils/FileOStream.hpp)
+        utils/FileOStream.hpp
+
+        utils/FileIOStream.cpp utils/FileIOStream.hpp)
 
 add_dependencies(Proc CppBase64)
 
@@ -591,6 +594,22 @@ target_link_libraries(measure_serialization_time ${DEFAULT_LIBS})
 find_package(GTest QUIET)
 if (GTest_FOUND)
     enable_testing()
+
+    set(MOCK_STRUCTURES
+            test/mock_structures/DataMergerMock.hpp
+            test/mock_structures/DataMergerMock.cpp
+            test/mock_structures/StringIStream.hpp
+            test/mock_structures/StringIStream.cpp
+            test/mock_structures/StringOStream.hpp
+            test/mock_structures/StringOStream.cpp
+            test/mock_structures/FHMock.hpp
+            test/mock_structures/FHMock.cpp
+            test/mock_structures/StringIOStream.cpp test/mock_structures/StringIOStream.hpp)
+
+    add_library(MockStructureLib STATIC ${MOCK_STRUCTURES})
+    add_dependencies(MockStructureLib RDFCacheK2 Utils)
+
+
     include_directories(${GTEST_INCLUDE_DIRS})
     add_executable(serialization_test test/serialization_tests.cpp)
     target_link_libraries(serialization_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} pthread)
@@ -640,7 +659,11 @@ if (GTest_FOUND)
 
 
     add_executable(update_log_test test/update_log_test.cpp)
-    target_link_libraries(update_log_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES})
+    target_link_libraries(update_log_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} MockStructureLib)
+
+
+    add_executable(naive_string_dictionary_test test/naive_string_dictionary_test.cpp)
+    target_link_libraries(naive_string_dictionary_test  ${DEFAULT_LIBS}  ${GTEST_BOTH_LIBRARIES}  MockStructureLib)
 
 
     add_test(NAME serialization_test COMMAND ./serialization_test)
@@ -658,6 +681,7 @@ if (GTest_FOUND)
     add_test(NAME cache_replacement_test COMMAND ./cache_replacement_test)
     add_test(NAME memory_segment_test COMMAND ./memory_segment_test)
     add_test(NAME update_log_test COMMAND ./update_log_test)
+    add_test(NAME naive_string_dictionary_test COMMAND ./update_log_test)
 
     # K2 Tree Tests
 

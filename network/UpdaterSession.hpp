@@ -36,7 +36,7 @@ private:
   K2TreeBulkOp &get_tree_inserter(RDFTripleResource &triple_resource);
   K2TreeConfig get_config();
   K2TreeBulkOp &get_tree_bulk_op(tmap_t &map_src,
-      RDFTripleResource &triple_resource);
+                                 RDFTripleResource &triple_resource);
   unsigned long add_resource_get_id(RDFResource &resource);
   inline unsigned long get_resource_id(RDFResource &resource);
   unsigned long get_or_create_resource_id(RDFResource &resource);

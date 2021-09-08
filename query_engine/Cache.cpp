@@ -25,7 +25,11 @@ Cache::Cache(std::shared_ptr<PredicatesCacheManager> predicates_cache_manager,
       update_log_filename(args.update_log_filename),
       file_rw_handler(std::make_unique<FileRWHandler>(update_log_filename)),
       file_offsets_rw_handler(
-          std::make_unique<FileRWHandler>(update_log_filename + ".offsets")) {}
+          std::make_unique<FileRWHandler>(update_log_filename + ".offsets")),
+      file_metadata_rw_handler(
+          std::make_unique<FileRWHandler>(update_log_filename + ".meta"))
+
+{}
 
 std::shared_ptr<QueryResultIteratorHolder>
 Cache::run_query(const proto_msg::SparqlTree &query_tree,
@@ -232,4 +236,7 @@ std::vector<unsigned long> Cache::extract_loaded_predicates_from_sequence(
 I_FileRWHandler &Cache::get_log_file_handler() { return *file_rw_handler; }
 I_FileRWHandler &Cache::get_log_offsets_file_handler() {
   return *file_offsets_rw_handler;
+}
+I_FileRWHandler &Cache::get_log_metadata_file_handler() {
+  return *file_metadata_rw_handler;
 }

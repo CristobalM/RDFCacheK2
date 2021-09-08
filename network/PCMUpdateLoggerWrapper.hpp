@@ -9,6 +9,7 @@
 #include <I_UpdateLoggerPCM.hpp>
 class PCMUpdateLoggerWrapper : public I_UpdateLoggerPCM {
   UpdatesLogger &logger;
+
 public:
   explicit PCMUpdateLoggerWrapper(UpdatesLogger &logger);
   void recover_predicate(unsigned long predicate_id) override;

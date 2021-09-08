@@ -95,12 +95,13 @@ size_t NaiveDynamicStringDictionary::size() const {
 }
 void NaiveDynamicStringDictionary::merge_with_extra_dict(
     NaiveDynamicStringDictionary &other_dict) {
-  if(resources_extra.empty()){
+  if (resources_extra.empty()) {
     *this = other_dict;
     return;
   }
-  resources_extra.reserve(resources_extra.size()+other_dict.resources_extra.size());
-  for(auto &resource : other_dict.resources_extra){
+  resources_extra.reserve(resources_extra.size() +
+                          other_dict.resources_extra.size());
+  for (auto &resource : other_dict.resources_extra) {
     add_resource(std::move(resource));
   }
 }
@@ -128,7 +129,8 @@ NaiveDynamicStringDictionary::deserialize(std::istream &ifs) {
   uint64_t offset_base = 0;
   for (uint64_t i = 2; i < buffer.size();) {
     if (!buffer[i]) {
-      std::string raw_type(buffer.data() + offset_base, buffer.data() + offset_base + sizeof(uint16_t));
+      std::string raw_type(buffer.data() + offset_base,
+                           buffer.data() + offset_base + sizeof(uint16_t));
       std::stringstream ss(raw_type);
       auto type = static_cast<RDFResourceType>(read_u16(ss));
       std::string s(buffer.data() + sizeof(uint16_t) + offset_base);

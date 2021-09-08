@@ -46,15 +46,16 @@ class Cache {
 
   std::unique_ptr<I_FileRWHandler> file_rw_handler;
   std::unique_ptr<I_FileRWHandler> file_offsets_rw_handler;
+  std::unique_ptr<I_FileRWHandler> file_metadata_rw_handler;
 
 public:
   using cm_t = std::shared_ptr<PredicatesCacheManager>;
   using pcm_t = PredicatesCacheManager;
-//  Cache(std::shared_ptr<PredicatesCacheManager> &cache_manager,
-//        size_t memory_budget_bytes, std::string temp_files_dir,
-//        unsigned long timeout_ms,
-//        I_CacheReplacement::REPLACEMENT_STRATEGY replacement_strategy);
-//
+  //  Cache(std::shared_ptr<PredicatesCacheManager> &cache_manager,
+  //        size_t memory_budget_bytes, std::string temp_files_dir,
+  //        unsigned long timeout_ms,
+  //        I_CacheReplacement::REPLACEMENT_STRATEGY replacement_strategy);
+  //
   Cache(std::shared_ptr<PredicatesCacheManager> predicates_cache_manager,
         CacheArgs args);
 
@@ -81,6 +82,7 @@ public:
   I_FileRWHandler &get_log_file_handler();
 
   I_FileRWHandler &get_log_offsets_file_handler();
+  I_FileRWHandler &get_log_metadata_file_handler();
 };
 
 #endif // RDFCACHEK2_CACHE_HPP

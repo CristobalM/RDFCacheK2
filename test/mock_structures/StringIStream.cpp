@@ -1,0 +1,19 @@
+//
+// Created by cristobal on 9/7/21.
+//
+
+#include "StringIStream.hpp"
+
+StringIStream::StringIStream(std::string &data, std::ios::openmode openmode)
+    : data(data), iss(data, openmode) {}
+
+void StringIStream::seekg(std::streamoff offset, std::ios_base::seekdir way) {
+  iss.seekg(offset, way);
+}
+
+std::istream &StringIStream::get_stream() { return iss; }
+
+StringIStream::operator bool() const {
+  return iss.operator bool() && !iss.eof() && iss.good();
+}
+std::streampos StringIStream::tellg() { return iss.tellg(); }

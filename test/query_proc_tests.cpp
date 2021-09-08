@@ -103,11 +103,11 @@ TEST(QueryProcTests, test_optional_1) {
 
   CacheArgs args;
   args.update_log_filename = "ulf.bin";
-  args.replacement_strategy = I_CacheReplacement::REPLACEMENT_STRATEGY::NO_CACHING;
+  args.replacement_strategy =
+      I_CacheReplacement::REPLACEMENT_STRATEGY::NO_CACHING;
   args.memory_budget_bytes = 100'000;
   args.time_out_ms = 5000;
   args.temp_files_dir = "./";
-
 
   Cache cache(pcm, args);
 
@@ -199,15 +199,13 @@ TEST(QueryProcTests, test_union_1) {
                                     RDFResource("<pred2>", RDF_TYPE_IRI),
                                     RDFResource("obj3", RDF_TYPE_LITERAL)));
 
-
-
   CacheArgs args;
   args.update_log_filename = "ulf.bin";
-  args.replacement_strategy = I_CacheReplacement::REPLACEMENT_STRATEGY::NO_CACHING;
+  args.replacement_strategy =
+      I_CacheReplacement::REPLACEMENT_STRATEGY::NO_CACHING;
   args.memory_budget_bytes = 100'000;
   args.time_out_ms = 5000;
   args.temp_files_dir = "./";
-
 
   Cache cache(pcm, args);
 
@@ -275,11 +273,11 @@ TEST(QueryProcTests, test_bgp_node_1) {
 
   CacheArgs args;
   args.update_log_filename = "ulf.bin";
-  args.replacement_strategy = I_CacheReplacement::REPLACEMENT_STRATEGY::NO_CACHING;
+  args.replacement_strategy =
+      I_CacheReplacement::REPLACEMENT_STRATEGY::NO_CACHING;
   args.memory_budget_bytes = 100'000;
   args.time_out_ms = 5000;
   args.temp_files_dir = "./";
-
 
   Cache cache(pcm, args);
 
@@ -373,7 +371,8 @@ TEST(QueryProcTests, test_bgp_node_2) {
 
   CacheArgs args;
   args.update_log_filename = "ulf.bin";
-  args.replacement_strategy = I_CacheReplacement::REPLACEMENT_STRATEGY::NO_CACHING;
+  args.replacement_strategy =
+      I_CacheReplacement::REPLACEMENT_STRATEGY::NO_CACHING;
   args.memory_budget_bytes = 100'000;
   args.time_out_ms = 5000;
   args.temp_files_dir = "./";
@@ -494,11 +493,12 @@ TEST(QueryProcTests, test_bgp_node_3) {
 
   CacheArgs args;
   args.update_log_filename = "ulf.bin";
-  args.replacement_strategy = I_CacheReplacement::REPLACEMENT_STRATEGY::NO_CACHING;
+  args.replacement_strategy =
+      I_CacheReplacement::REPLACEMENT_STRATEGY::NO_CACHING;
   args.memory_budget_bytes = 100'000;
   args.time_out_ms = 5000;
   args.temp_files_dir = "./";
-  Cache cache(pcm,args);
+  Cache cache(pcm, args);
 
   auto result = cache.run_query(tree, time_control)->as_query_result_original();
 
@@ -718,7 +718,8 @@ TEST(QueryProcTests, test_bgp_node_4_compact_dicts) {
 
   CacheArgs args;
   args.update_log_filename = "ulf.bin";
-  args.replacement_strategy = I_CacheReplacement::REPLACEMENT_STRATEGY::NO_CACHING;
+  args.replacement_strategy =
+      I_CacheReplacement::REPLACEMENT_STRATEGY::NO_CACHING;
   args.memory_budget_bytes = 100'000;
   args.time_out_ms = 5000;
   args.temp_files_dir = "./";
@@ -971,7 +972,8 @@ TEST(QueryProcTests, join_two_two_vars) {
 
   CacheArgs args;
   args.update_log_filename = "ulf.bin";
-  args.replacement_strategy = I_CacheReplacement::REPLACEMENT_STRATEGY::NO_CACHING;
+  args.replacement_strategy =
+      I_CacheReplacement::REPLACEMENT_STRATEGY::NO_CACHING;
   args.memory_budget_bytes = 100'000;
   args.time_out_ms = 5000;
   args.temp_files_dir = "./";

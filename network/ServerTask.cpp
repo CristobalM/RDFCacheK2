@@ -418,7 +418,8 @@ void ServerTask::process_done_update_triples(Message &message) {
   auto &updater = task_processor.get_updater(update_id);
   updater.commit_updates();
   proto_msg::CacheResponse cache_response;
-  cache_response.set_response_type(proto_msg::MessageType::ACK_DONE_UPDATE_TRIPLES);
+  cache_response.set_response_type(
+      proto_msg::MessageType::ACK_DONE_UPDATE_TRIPLES);
   cache_response.mutable_ack_done_update();
   send_response(cache_response);
 }

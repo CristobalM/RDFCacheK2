@@ -5,6 +5,7 @@
 #ifndef RDFCACHEK2_I_FILERWHANDLER_HPP
 #define RDFCACHEK2_I_FILERWHANDLER_HPP
 
+#include "I_IOStream.hpp"
 #include "I_IStream.hpp"
 #include "I_OStream.hpp"
 #include <iostream>
@@ -21,6 +22,8 @@ public:
   virtual std::unique_ptr<I_OStream>
   get_writer_temp(std::ios::openmode openmode) = 0;
   virtual void commit_temp_writer() = 0;
+  virtual std::unique_ptr<I_IOStream>
+  get_reader_writer(std::ios::openmode openmode) = 0;
 };
 
 #endif // RDFCACHEK2_I_FILERWHANDLER_HPP

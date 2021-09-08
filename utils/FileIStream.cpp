@@ -11,5 +11,5 @@ FileIStream::operator bool() const { return ifs.operator bool(); }
 std::istream &FileIStream::get_stream() { return ifs; }
 FileIStream::FileIStream(const std::string &filename,
                          std::ios::openmode openmode)
-: ifs(filename, openmode)
-{}
+    : ifs(filename, openmode) {}
+std::streampos FileIStream::tellg() { return ifs.tellg(); }

@@ -108,12 +108,12 @@ public:
 
     CacheArgs args;
     args.update_log_filename = "ulf.bin";
-    args.replacement_strategy = I_CacheReplacement::REPLACEMENT_STRATEGY::NO_CACHING;
+    args.replacement_strategy =
+        I_CacheReplacement::REPLACEMENT_STRATEGY::NO_CACHING;
     args.memory_budget_bytes = 100'000;
     args.time_out_ms = 5000;
     args.temp_files_dir = "./";
-    cache = std::make_unique<Cache>(
-        pcm, args);
+    cache = std::make_unique<Cache>(pcm, args);
   }
 
   static void TearDownTestCase() {

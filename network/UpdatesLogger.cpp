@@ -9,10 +9,22 @@ namespace fs = std::filesystem;
 
 UpdatesLogger::UpdatesLogger(I_DataMerger &data_merger,
                              I_FileRWHandler &logs_file_handler,
-                             I_FileRWHandler &predicates_offsets_file_handler)
+                             I_FileRWHandler &predicates_offsets_file_handler,
+                             I_FileRWHandler &metadata_rw_handler)
     : data_merger(data_merger), logs_file_handler(logs_file_handler),
-      predicates_offsets_file_handler(predicates_offsets_file_handler) {
+      predicates_offsets_file_handler(predicates_offsets_file_handler),
+      metadata_rw_handler(metadata_rw_handler),
+      metadata_file_rw(
+          metadata_rw_handler.get_reader_writer(std::ios::binary)) {
   retrieve_offsets_map();
+
+  if (metadata_rw_handler.exists()) {
+    // auto reader = logs_file_handler.get_reader(std::ios::binary);
+    // total_updates = (int)read_u32(rw_metadata->get_stream());
+    total_updates = read_total_updates();
+  }
+  // TODO: unused for now, might want to remove it
+  (void)(this->metadata_rw_handler);
 }
 
 void UpdatesLogger::log(NaiveDynamicStringDictionary *added_resources,
@@ -25,7 +37,7 @@ void UpdatesLogger::log(NaiveDynamicStringDictionary *added_resources,
 
   auto &writer_real = current_file_writer->get_stream();
   // to indicate there is a resources dict
-  write_u32(writer_real, added_resources != nullptr);
+  write_u32(writer_real, added_resources != nullptr ? 1 : 0);
 
   if (added_resources) {
     added_resources->serialize(writer_real);
@@ -61,10 +73,12 @@ void UpdatesLogger::log(NaiveDynamicStringDictionary *added_resources,
   current_file_writer->flush();
   dump_offsets_map();
   data_merger.merge_update(k2tree_updates);
+  total_updates++;
+  commit_total_updates();
 }
 
 void UpdatesLogger::recover(const std::vector<unsigned long> &predicates) {
-  if(current_file_writer){
+  if (current_file_writer) {
     current_file_writer->flush();
     current_file_writer = nullptr; // close file if it's open
   }
@@ -72,7 +86,7 @@ void UpdatesLogger::recover(const std::vector<unsigned long> &predicates) {
 }
 
 void UpdatesLogger::recover_all() {
-  if(current_file_writer){
+  if (current_file_writer) {
     current_file_writer->flush();
     current_file_writer = nullptr; // close file if it's open
   }
@@ -83,11 +97,10 @@ void UpdatesLogger::recover_all_data() {
   if (!logs_file_handler.exists())
     return;
   // auto ifs_logs = logs_file_handler.get_reader(std::ios::binary);
-  if(!current_file_reader){
+  if (!current_file_reader) {
     current_file_reader = logs_file_handler.get_reader(std::ios::binary);
   }
-  current_file_reader->seekg(0, std::ios::beg);
-  while (*current_file_reader) {
+  for (int i = 0; i < total_updates; i++) {
     recover_single_update(*current_file_reader);
   }
 }
@@ -96,7 +109,7 @@ void UpdatesLogger::recover_data(const std::vector<unsigned long> &predicates) {
   if (!logs_file_handler.exists())
     return;
   // auto ifs_logs = logs_file_handler.get_reader(std::ios::binary);
-  if(!current_file_reader){
+  if (!current_file_reader) {
     current_file_reader = logs_file_handler.get_reader(std::ios::binary);
   }
   for (auto predicate_id : predicates) {
@@ -198,11 +211,11 @@ void UpdatesLogger::register_update_offset(unsigned long predicate_id,
 void UpdatesLogger::recover_predicate(unsigned long predicate_id) {
   if (!logs_file_handler.exists())
     return;
-  if(current_file_writer){
+  if (current_file_writer) {
     current_file_writer->flush();
     current_file_writer = nullptr;
   }
-  if(!current_file_reader){
+  if (!current_file_reader) {
     current_file_reader = logs_file_handler.get_reader(std::ios::binary);
   }
   const auto &offsets = offsets_map[predicate_id];
@@ -213,4 +226,22 @@ void UpdatesLogger::recover_predicate(unsigned long predicate_id) {
 }
 bool UpdatesLogger::has_predicate_stored(uint64_t predicate_id) {
   return offsets_map.find(predicate_id) != offsets_map.end();
+}
+int UpdatesLogger::read_total_updates() {
+  auto last_offset = metadata_file_rw->tellg();
+  metadata_file_rw->seekg(0, std::ios::beg);
+  auto result = (int)read_u32(metadata_file_rw->get_stream());
+  if (last_offset != 0) {
+    metadata_file_rw->seekg(last_offset, std::ios::beg);
+  }
+  return result;
+}
+void UpdatesLogger::commit_total_updates() {
+  auto last_offset = metadata_file_rw->tellp();
+  metadata_file_rw->seekp(0, std::ios::beg);
+  write_u32(metadata_file_rw->get_stream(), total_updates);
+  if (last_offset != 0) {
+    metadata_file_rw->seekp(last_offset, std::ios::beg);
+  }
+  metadata_file_rw->flush();
 }

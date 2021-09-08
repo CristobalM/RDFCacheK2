@@ -24,7 +24,7 @@ class PredicatesCacheManager : public I_DataManager {
 
   NaiveDynamicStringDictionary extra_dicts;
 
-  I_UpdateLoggerPCM * update_logger;
+  I_UpdateLoggerPCM *update_logger;
 
 public:
   double measured_time_sd_lookup;

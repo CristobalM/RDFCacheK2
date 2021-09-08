@@ -4,8 +4,7 @@
 
 #include "UpdaterSession.hpp"
 #include "K2TreeUpdates.hpp"
-UpdaterSession::UpdaterSession(TaskProcessor *task_processor,
-                               Cache *cache)
+UpdaterSession::UpdaterSession(TaskProcessor *task_processor, Cache *cache)
     : task_processor(task_processor), cache(cache),
       last_id_known(cache->get_pcm().get_last_id()) {}
 

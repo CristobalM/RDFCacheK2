@@ -36,9 +36,9 @@ CacheServerTaskProcessor::CacheServerTaskProcessor(Cache &cache,
       current_triples_streamers_channel_id(0), current_update_session_id(0),
       pcm_merger(cache.get_pcm()),
       updates_logger(pcm_merger, cache.get_log_file_handler(),
-                     cache.get_log_offsets_file_handler()),
-      pcm_update_logger_wrapper(updates_logger)
-{
+                     cache.get_log_offsets_file_handler(),
+                     cache.get_log_metadata_file_handler()),
+      pcm_update_logger_wrapper(updates_logger) {
   updates_logger.recover_all();
   cache.get_pcm().set_update_logger(&pcm_update_logger_wrapper);
 }
@@ -140,8 +140,7 @@ void CacheServerTaskProcessor::clean_triple_streamer(int channel_id) {
 int CacheServerTaskProcessor::begin_update_session() {
   std::lock_guard lg(mutex);
   int update_id = current_update_session_id;
-  updaters_sessions[update_id] =
-      std::make_unique<UpdaterSession>(this, &cache);
+  updaters_sessions[update_id] = std::make_unique<UpdaterSession>(this, &cache);
   current_update_session_id++;
   return update_id;
 }
