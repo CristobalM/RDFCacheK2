@@ -57,12 +57,3 @@ TEST(update_log_test, test_1) {
 
   ASSERT_EQ(dm_tree.size(), k2tree.size());
 }
-
-TEST(oss_test, test1) {
-  std::string s;
-  StringOStream oss(s, std::ios::binary | std::ios::out | std::ios::app);
-  oss.get_stream() << "hola que tal"
-                   << " bueno" << std::endl;
-  oss.flush();
-  std::cout << "s is: " << s << std::endl;
-}
