@@ -55,6 +55,7 @@ private:
   build_bgp_ops(std::vector<std::unique_ptr<K2TreeScanner>> &&scanners);
   void build_rev_map();
   bool do_all_predicates_have_trees();
+  void reorder_triples_optimization();
 };
 
 #endif // RDFCACHEK2_BGPPROCESSOR_HPP

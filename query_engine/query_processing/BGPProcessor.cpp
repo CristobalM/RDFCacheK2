@@ -22,6 +22,7 @@ void BGPProcessor::set_triples_from_proto() {
     const auto &triple = bgp_node.triple()[i];
     triples.push_back(std::make_shared<Triple>(triple, cm));
   }
+  reorder_triples_optimization();
 }
 
 std::shared_ptr<QueryIterator> BGPProcessor::execute_it() {
@@ -143,4 +144,29 @@ bool BGPProcessor::do_all_predicates_have_trees() {
     return triple->predicate.id_value != 0 &&
            cm.get_tree_by_predicate_index(triple->predicate.id_value).exists();
   });
+}
+
+void BGPProcessor::reorder_triples_optimization() {
+  using pis_t = std::pair<int, size_t>;
+  std::vector<pis_t> positions_with_sizes;
+
+  for (size_t i = 0; i < triples.size(); i++) {
+    auto &triple = triples[i];
+    auto fetched = cm.get_tree_by_predicate_index(triple->predicate.id_value);
+    const auto &tree = fetched.get();
+    size_t tree_size = 0;
+    if(fetched.exists())
+      tree_size = tree.size();
+    positions_with_sizes.emplace_back(i, tree_size);
+  }
+  std::sort(positions_with_sizes.begin(), positions_with_sizes.end(),
+            [](const pis_t &lhs, const pis_t &rhs) {
+              return lhs.second < rhs.second;
+            });
+  std::vector<std::shared_ptr<Triple>> next_triples;
+  next_triples.reserve(positions_with_sizes.size());
+  for (auto &positions_with_size : positions_with_sizes) {
+    next_triples.push_back(std::move(triples[positions_with_size.first]));
+  }
+  triples = std::move(next_triples);
 }
