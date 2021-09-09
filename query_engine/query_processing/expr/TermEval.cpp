@@ -301,7 +301,9 @@ TermEval::make_data_type_resource(std::string &&input_string,
   case EDT_DATETIME:
     return std::make_shared<DateTimeResource>(
         ParsingUtils::parse_iso8601(input_string));
+  case EDT_WKT_LITERAL:
   case EDT_STRING:
+  case EDT_GML_LITERAL:
     return std::make_shared<StringLiteralResource>(std::move(input_string),
                                                    data_type);
   }

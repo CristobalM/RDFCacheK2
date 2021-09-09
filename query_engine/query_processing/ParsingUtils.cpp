@@ -6,6 +6,7 @@
 #include "ParsingUtils.hpp"
 
 #include <ctime>
+#include <iostream>
 #include <sstream>
 
 namespace {
@@ -35,6 +36,14 @@ const pcrecpp::RE re_datatype(datatype_regex);
 const pcrecpp::RE re_literal(string_literal);
 const pcrecpp::RE re_decimal_number(decimal_number);
 const pcrecpp::RE re_iri(iri_valid);
+
+// extra datatypes
+std::string geo_dtype = "(wktLiteral|gmlLiteral)";
+std::string geo_sparql_data_types_regex =
+    "\\^\\^(?:<http://www.opengis.net/ont/geosparql#" + geo_dtype +
+    ">|geo:" + geo_dtype + ")";
+const pcrecpp::RE re_geo(geo_sparql_data_types_regex);
+
 } // namespace
 
 ExprDataType
@@ -44,11 +53,36 @@ ParsingUtils::extract_data_type_from_string(const std::string &input_string) {
   std::string b;
   bool matched = re_datatype.PartialMatch(re_input, &a, &b);
   if (!matched)
-    return ExprDataType::EDT_UNKNOWN;
+    return extract_possible_extra_data_types_from_string(input_string);
   if (!a.empty())
     return select_data_type(a);
   else
     return select_data_type(b);
+}
+
+ExprDataType ParsingUtils::extract_possible_extra_data_types_from_string(
+    const std::string &input_string) {
+  pcrecpp::StringPiece re_input(input_string);
+  std::string a;
+  std::string b;
+  bool matched = re_geo.PartialMatch(re_input, &a, &b);
+  if (!matched)
+    return ExprDataType::EDT_UNKNOWN;
+  if (!a.empty())
+    return select_data_type_geo(a);
+  else
+    return select_data_type_geo(b);
+}
+
+ExprDataType
+ParsingUtils::select_data_type_geo(const std::string &data_type_geo_string) {
+  if (data_type_geo_string == "wktLiteral") {
+    return ExprDataType::EDT_WKT_LITERAL;
+  }
+  if (data_type_geo_string == "gmlLiteral") {
+    return ExprDataType::EDT_GML_LITERAL;
+  }
+  return ExprDataType::EDT_UNKNOWN;
 }
 
 ExprDataType

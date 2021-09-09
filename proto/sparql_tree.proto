@@ -229,6 +229,7 @@ message RDFTerm {
   BasicType basic_type = 2;
   string term_value = 3;
   bool is_null = 4;
+  string lang_tag = 5;
 }
 
 enum TermType {
@@ -245,8 +246,18 @@ enum BasicType {
   BOOLEAN = 2;
   DATE = 3;
   TIME = 4;
-  NO_TYPE = 5;
+  INTEGER = 5;
+  FLOAT = 6;
+  DOUBLE = 7;
+  DECIMAL = 8;
+  DATETIME = 9;
+  NO_TYPE = 10;
+
+  // GeoSPARQL
+  WKT_LITERAL = 11;
+  GML_LITERAL = 12;
 }
+
 
 enum FunctionOP {
   // one value function

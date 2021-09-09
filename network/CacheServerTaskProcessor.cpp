@@ -4,6 +4,8 @@
 
 #include "CacheServerTaskProcessor.hpp"
 #include "QueryResultPartStreamer.hpp"
+#include "TripleMatchesPartStreamer.hpp"
+#include "UpdaterSession.hpp"
 
 #include <iostream>
 
@@ -30,7 +32,16 @@ std::unique_ptr<ServerTask> CacheServerTaskProcessor::get_server_task() {
 CacheServerTaskProcessor::CacheServerTaskProcessor(Cache &cache,
                                                    uint8_t workers_count)
     : cache(cache), workers_count(workers_count), current_id(0),
-      replacement_task_processor(cache) {}
+      replacement_task_processor(cache),
+      current_triples_streamers_channel_id(0), current_update_session_id(0),
+      pcm_merger(cache.get_pcm()),
+      updates_logger(pcm_merger, cache.get_log_file_handler(),
+                     cache.get_log_offsets_file_handler(),
+                     cache.get_log_metadata_file_handler()),
+      pcm_update_logger_wrapper(updates_logger) {
+  updates_logger.recover_all();
+  cache.get_pcm().set_update_logger(&pcm_update_logger_wrapper);
+}
 
 void CacheServerTaskProcessor::start_workers(
     TCPServerConnection<CacheServerTaskProcessor> &connection) {
@@ -96,4 +107,53 @@ void CacheServerTaskProcessor::mark_ready(
     const std::vector<unsigned long> &predicates_in_use) {
   std::lock_guard lg(cache.get_replacement().get_replacement_mutex());
   replacement_task_processor.mark_ready(predicates_in_use);
+}
+
+I_TRStreamer &CacheServerTaskProcessor::create_triples_streamer(
+    std::vector<unsigned long> &&loaded_predicates,
+    std::unique_ptr<TimeControl> &&time_control) {
+  std::lock_guard lg(mutex);
+
+  auto streamer = std::make_unique<TripleMatchesPartStreamer>(
+      current_triples_streamers_channel_id, std::move(loaded_predicates),
+      DEFAULT_THRESHOLD_PART_SZ, std::move(time_control), this, &cache);
+  auto *ptr = streamer.get();
+  triples_streamer_map[current_triples_streamers_channel_id] =
+      std::move(streamer);
+
+  current_triples_streamers_channel_id++;
+  return *ptr;
+}
+I_TRStreamer &CacheServerTaskProcessor::get_triple_streamer(int channel_id) {
+  std::lock_guard lg(mutex);
+  return *triples_streamer_map[channel_id];
+}
+bool CacheServerTaskProcessor::has_triple_streamer(int channel_id) {
+  std::lock_guard lg(mutex);
+  return triples_streamer_map.find(channel_id) != triples_streamer_map.end();
+}
+void CacheServerTaskProcessor::clean_triple_streamer(int channel_id) {
+  std::lock_guard lg(mutex);
+  triples_streamer_map[channel_id] = nullptr;
+  triples_streamer_map.erase(channel_id);
+}
+int CacheServerTaskProcessor::begin_update_session() {
+  std::lock_guard lg(mutex);
+  int update_id = current_update_session_id;
+  updaters_sessions[update_id] = std::make_unique<UpdaterSession>(this, &cache);
+  current_update_session_id++;
+  return update_id;
+}
+I_Updater &CacheServerTaskProcessor::get_updater(int updater_id) {
+  std::lock_guard lg(mutex);
+  return *updaters_sessions[updater_id];
+}
+void CacheServerTaskProcessor::log_updates(
+    NaiveDynamicStringDictionary *added_resources,
+    std::vector<K2TreeUpdates> &k2trees_updates) {
+  // std::lock_guard lg(mutex);
+  updates_logger.log(added_resources, k2trees_updates);
+}
+WriteDataLock CacheServerTaskProcessor::acquire_write_lock() {
+  return WriteDataLock();
 }

@@ -16,7 +16,42 @@ message CacheResponse{
         InvalidQueryResponse invalid_query_response = 3;
         ResultTablePartResponse result_table_part_response = 4;
         ErrorResponse error_response = 5;
+        ExtractSeparatePredicatesResponse extract_separate_predicates_response = 6;
+        StreamOfTriplesMatchingPatternResponse stream_of_triples_matching_pattern_response = 7;
+        AckDoneWithChannel ack_done_with_channel = 8;
+        AcceptUpdateRequest accept_update_request = 9;
+        AckDoneUpdate ack_done_update = 10;
+        BatchReceivedResponse batch_received_response = 11;
     }
+}
+
+message  BatchReceivedResponse{
+    int32 update_id = 1;
+}
+
+message AckDoneUpdate{}
+
+message AcceptUpdateRequest{
+    int32 update_id = 1;
+}
+
+message AckDoneWithChannel {}
+
+message StreamOfTriplesMatchingPatternResponse{
+    int32 channel_id = 1;
+    int32 pattern_channel_id = 2;
+    repeated string variables = 3; // Only on first response giving the order of the matching values
+    repeated MatchingValues matching_values = 4;
+    bool last_result = 5;
+}
+
+message MatchingValues{
+    repeated RDFTerm single_match = 1;
+}
+
+message ExtractSeparatePredicatesResponse{
+    int32 id = 1;
+    repeated RDFTerm available_predicates = 2;
 }
 
 message ResultTablePartResponse{

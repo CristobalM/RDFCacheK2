@@ -109,7 +109,7 @@ void CacheReplacement<CRStrategy>::mark_ready(unsigned long key) {
   if (it == in_use.end()) {
     return;
   }
-  it->second--;
+  it->second = it->second > 0 ? it->second - 1 : 0;
   if (it->second <= 0) {
     in_use.erase(it);
   }

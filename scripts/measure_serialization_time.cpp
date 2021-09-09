@@ -3,12 +3,11 @@
 //
 
 #include <chrono>
+#include <filesystem>
 #include <getopt.h>
 #include <iostream>
 #include <memory>
 #include <string>
-#include <filesystem>
-
 
 #include <PredicatesCacheManager.hpp>
 #include <SDEntitiesMapping.hpp>

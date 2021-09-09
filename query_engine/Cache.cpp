@@ -6,20 +6,30 @@
 #include <caching/LRUReplacementStrategy.hpp>
 #include <chrono>
 #include <query_processing/QueryProcessor.hpp>
+#include <utility>
 
 #include "Cache.hpp"
+#include "FileRWHandler.hpp"
 #include "caching/CacheReplacement.hpp"
 #include "caching/CacheReplacementFactory.hpp"
 
-Cache::Cache(std::shared_ptr<PredicatesCacheManager> &cache_manager,
-             size_t max_size_bytes, std::string temp_files_dir,
-             unsigned long timeout_ms,
-             I_CacheReplacement::REPLACEMENT_STRATEGY replacement_strategy)
-    : cache_manager(cache_manager), temp_files_dir(std::move(temp_files_dir)),
-      timeout_ms(timeout_ms),
+Cache::Cache(std::shared_ptr<PredicatesCacheManager> predicates_cache_manager,
+             CacheArgs args)
+    : cache_manager(std::move(predicates_cache_manager)),
+      temp_files_dir(std::move(args.temp_files_dir)),
+      timeout_ms(args.time_out_ms),
       cache_replacement(CacheReplacementFactory::create_cache_replacement(
-          max_size_bytes, cache_manager.get(), replacement_strategy)),
-      strategy_id(replacement_strategy) {}
+          args.memory_budget_bytes, cache_manager.get(),
+          args.replacement_strategy)),
+      strategy_id(args.replacement_strategy),
+      update_log_filename(args.update_log_filename),
+      file_rw_handler(std::make_unique<FileRWHandler>(update_log_filename)),
+      file_offsets_rw_handler(
+          std::make_unique<FileRWHandler>(update_log_filename + ".offsets")),
+      file_metadata_rw_handler(
+          std::make_unique<FileRWHandler>(update_log_filename + ".meta"))
+
+{}
 
 std::shared_ptr<QueryResultIteratorHolder>
 Cache::run_query(const proto_msg::SparqlTree &query_tree,
@@ -210,4 +220,23 @@ bool Cache::has_all_predicates_loaded(
 I_CacheReplacement &Cache::get_replacement() { return *cache_replacement; }
 I_CacheReplacement::REPLACEMENT_STRATEGY Cache::get_strategy_id() {
   return strategy_id;
+}
+std::vector<unsigned long> Cache::extract_loaded_predicates_from_sequence(
+    const std::vector<unsigned long> &input_predicates_ids) {
+  std::vector<unsigned long> result;
+  auto &predicates_index_cache = cache_manager->get_predicates_index_cache();
+
+  for (auto current_predicate_id : input_predicates_ids) {
+    if (predicates_index_cache.has_predicate_active(current_predicate_id))
+      result.push_back(current_predicate_id);
+  }
+
+  return result;
+}
+I_FileRWHandler &Cache::get_log_file_handler() { return *file_rw_handler; }
+I_FileRWHandler &Cache::get_log_offsets_file_handler() {
+  return *file_offsets_rw_handler;
+}
+I_FileRWHandler &Cache::get_log_metadata_file_handler() {
+  return *file_metadata_rw_handler;
 }

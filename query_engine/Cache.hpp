@@ -9,6 +9,7 @@
 #include <mutex>
 #include <string>
 
+#include <I_FileRWHandler.hpp>
 #include <PredicatesCacheManager.hpp>
 #include <TimeControl.hpp>
 #include <caching/I_CacheReplacement.hpp>
@@ -16,6 +17,7 @@
 #include <query_processing/QueryResultIteratorHolder.hpp>
 #include <request_msg.pb.h>
 
+#include "CacheArgs.hpp"
 #include "query_processing/QueryResult.hpp"
 
 struct CacheStats {
@@ -40,13 +42,22 @@ class Cache {
 
   I_CacheReplacement::REPLACEMENT_STRATEGY strategy_id;
 
+  std::string update_log_filename;
+
+  std::unique_ptr<I_FileRWHandler> file_rw_handler;
+  std::unique_ptr<I_FileRWHandler> file_offsets_rw_handler;
+  std::unique_ptr<I_FileRWHandler> file_metadata_rw_handler;
+
 public:
   using cm_t = std::shared_ptr<PredicatesCacheManager>;
   using pcm_t = PredicatesCacheManager;
-  Cache(std::shared_ptr<PredicatesCacheManager> &cache_manager,
-        size_t memory_budget_bytes, std::string temp_files_dir,
-        unsigned long timeout_ms,
-        I_CacheReplacement::REPLACEMENT_STRATEGY replacement_strategy);
+  //  Cache(std::shared_ptr<PredicatesCacheManager> &cache_manager,
+  //        size_t memory_budget_bytes, std::string temp_files_dir,
+  //        unsigned long timeout_ms,
+  //        I_CacheReplacement::REPLACEMENT_STRATEGY replacement_strategy);
+  //
+  Cache(std::shared_ptr<PredicatesCacheManager> predicates_cache_manager,
+        CacheArgs args);
 
   std::shared_ptr<QueryResultIteratorHolder>
   run_query(const proto_msg::SparqlTree &query_tree, TimeControl &time_control);
@@ -66,6 +77,12 @@ public:
   bool has_all_predicates_loaded(const std::vector<unsigned long> &predicates);
   I_CacheReplacement &get_replacement();
   I_CacheReplacement::REPLACEMENT_STRATEGY get_strategy_id();
+  std::vector<unsigned long> extract_loaded_predicates_from_sequence(
+      const std::vector<unsigned long> &input_predicates_ids);
+  I_FileRWHandler &get_log_file_handler();
+
+  I_FileRWHandler &get_log_offsets_file_handler();
+  I_FileRWHandler &get_log_metadata_file_handler();
 };
 
 #endif // RDFCACHEK2_CACHE_HPP

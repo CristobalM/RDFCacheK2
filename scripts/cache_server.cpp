@@ -7,6 +7,7 @@
 
 #include <getopt.h>
 
+#include "CacheArgs.hpp"
 #include <Cache.hpp>
 #include <CacheServer.hpp>
 #include <PredicatesCacheManager.hpp>
@@ -29,6 +30,8 @@ struct parsed_options {
   unsigned long time_out_ms;
 
   I_CacheReplacement::REPLACEMENT_STRATEGY replacement_strategy;
+
+  std::string update_log_filename;
 };
 
 parsed_options parse_cmline(int argc, char **argv);
@@ -79,15 +82,21 @@ int main(int argc, char **argv) {
               << " seconds" << std::endl;
   }
 
-  Cache cache(pcm, parsed.memory_budget_bytes, parsed.temp_files_dir,
-              parsed.time_out_ms, parsed.replacement_strategy);
+  CacheArgs cache_args;
+  cache_args.memory_budget_bytes = parsed.memory_budget_bytes;
+  cache_args.temp_files_dir = parsed.temp_files_dir;
+  cache_args.time_out_ms = parsed.time_out_ms;
+  cache_args.replacement_strategy = parsed.replacement_strategy;
+  cache_args.update_log_filename = parsed.update_log_filename;
+
+  Cache cache(pcm, cache_args);
 
   CacheServer server(cache, parsed.port, parsed.workers_count);
   server.start();
 }
 
 parsed_options parse_cmline(int argc, char **argv) {
-  const char short_options[] = "I:O:i:b:l:m:p:w:t:T:R:";
+  const char short_options[] = "I:O:i:b:l:m:p:w:t:T:R:U:";
   struct option long_options[] = {
       {"index-file", required_argument, nullptr, 'I'},
       {"iris-file", required_argument, nullptr, 'i'},
@@ -99,6 +108,7 @@ parsed_options parse_cmline(int argc, char **argv) {
       {"temp-files-dir", required_argument, nullptr, 't'},
       {"timeout-ms", required_argument, nullptr, 'T'},
       {"replacement-strategy", required_argument, nullptr, 'R'},
+      {"update-log-filename", required_argument, nullptr, 'U'},
   };
 
   int opt, opt_index;
@@ -113,6 +123,7 @@ parsed_options parse_cmline(int argc, char **argv) {
   bool has_temp_files_dir = false;
   bool has_timeout = false;
   bool has_strategy = false;
+  bool has_update_log_filename = false;
   parsed_options out{};
 
   while ((
@@ -174,6 +185,10 @@ parsed_options parse_cmline(int argc, char **argv) {
       }
       has_strategy = true;
     } break;
+    case 'U':
+      out.update_log_filename = optarg;
+      has_update_log_filename = true;
+      break;
     default:
       break;
     }
@@ -200,6 +215,8 @@ parsed_options parse_cmline(int argc, char **argv) {
   if (!has_strategy)
     throw std::runtime_error(
         "replacement-strategy (R) (one of: 'LRU','None') argument is required");
+  if (!has_update_log_filename)
+    throw std::runtime_error("update-log-filename (U) argument is required");
 
   return out;
 }

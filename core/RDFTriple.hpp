@@ -117,6 +117,9 @@ struct RDFTripleResource {
   RDFTripleResource(RDFResource &subject, RDFResource &predicate,
                     RDFResource &object)
       : subject(subject), predicate(predicate), object(object) {}
+  explicit RDFTripleResource(const proto_msg::TripleNode &triple_node)
+      : subject(triple_node.subject()), predicate(triple_node.predicate()),
+        object(triple_node.object()) {}
 };
 
 #endif // RDFCACHEK2_RDFTRIPLE_HPP

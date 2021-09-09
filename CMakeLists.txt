@@ -57,7 +57,8 @@ set(CORE_SOURCE_FILES
         core/K2TreeBulkOp.cpp
         core/K2TreeBulkOp.hpp
         core/I_DataManager.hpp
-        )
+        core/NullScanner.cpp
+        core/NullScanner.hpp core/I_UpdateLoggerPCM.hpp)
 
 set(PROC_SOURCE_FILES
         proc/SDFeed.cpp
@@ -294,7 +295,9 @@ set(QUERY_ENGINE_FILES
         ${CACHING_FILES}
         ${QUERY_ITERATORS}
         ${BGPOPS}
-        query_engine/caching/I_PQTraverse.hpp)
+        query_engine/caching/I_PQTraverse.hpp
+        query_engine/CacheArgs.hpp
+        )
 
 
 set(NETWORK_SOURCE_FILES
@@ -310,7 +313,13 @@ set(NETWORK_SOURCE_FILES
         network/ReplacementTaskProcessor.cpp
         network/ReplacementTaskProcessor.hpp
         network/ReplacementTask.cpp
-        network/ReplacementTask.hpp)
+        network/ReplacementTask.hpp
+        network/TripleMatchesPartStreamer.cpp
+        network/TripleMatchesPartStreamer.hpp
+        network/I_TRStreamer.hpp
+        network/I_TRMatchingStreamer.hpp
+        network/TriplePatternMatchingStreamer.cpp
+        network/TriplePatternMatchingStreamer.hpp network/I_Updater.hpp network/UpdaterSession.cpp network/UpdaterSession.hpp network/K2TreeUpdates.cpp network/K2TreeUpdates.hpp network/WriteDataLock.cpp network/WriteDataLock.hpp network/UpdatesLogger.cpp network/UpdatesLogger.hpp network/I_DataMerger.hpp network/PCMMerger.cpp network/PCMMerger.hpp network/PCMUpdateLoggerWrapper.cpp network/PCMUpdateLoggerWrapper.hpp)
 
 
 set(PROTO_MESSAGES
@@ -407,7 +416,20 @@ add_library(Proc STATIC ${PROC_SOURCE_FILES})
 
 add_library(CppBase64 ${LIB_CPPBASE64_PATH}/base64.cpp)
 
-add_library(Utils utils/serialization_util.cpp utils/hashing.cpp)
+add_library(Utils utils/serialization_util.cpp
+        utils/hashing.cpp
+        utils/I_FileRWHandler.hpp
+        utils/FileRWHandler.cpp
+        utils/FileRWHandler.hpp
+        utils/I_OStream.hpp
+        utils/I_IStream.hpp
+        utils/I_IOStream.hpp
+        utils/FileIStream.cpp
+        utils/FileIStream.hpp
+        utils/FileOStream.cpp
+        utils/FileOStream.hpp
+
+        utils/FileIOStream.cpp utils/FileIOStream.hpp)
 
 add_dependencies(Proc CppBase64)
 
@@ -572,6 +594,22 @@ target_link_libraries(measure_serialization_time ${DEFAULT_LIBS})
 find_package(GTest QUIET)
 if (GTest_FOUND)
     enable_testing()
+
+    set(MOCK_STRUCTURES
+            test/mock_structures/DataMergerMock.hpp
+            test/mock_structures/DataMergerMock.cpp
+            test/mock_structures/StringIStream.hpp
+            test/mock_structures/StringIStream.cpp
+            test/mock_structures/StringOStream.hpp
+            test/mock_structures/StringOStream.cpp
+            test/mock_structures/FHMock.hpp
+            test/mock_structures/FHMock.cpp
+            test/mock_structures/StringIOStream.cpp test/mock_structures/StringIOStream.hpp)
+
+    add_library(MockStructureLib STATIC ${MOCK_STRUCTURES})
+    add_dependencies(MockStructureLib RDFCacheK2 Utils)
+
+
     include_directories(${GTEST_INCLUDE_DIRS})
     add_executable(serialization_test test/serialization_tests.cpp)
     target_link_libraries(serialization_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} pthread)
@@ -616,8 +654,16 @@ if (GTest_FOUND)
     target_link_libraries(cache_replacement_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES})
 
 
-    add_executable(memory_segment_test test/memory_segment_test.cpp test/memory_segment_test.cpp)
+    add_executable(memory_segment_test test/memory_segment_test.cpp)
     target_link_libraries(memory_segment_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES})
+
+
+    add_executable(update_log_test test/update_log_test.cpp)
+    target_link_libraries(update_log_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} MockStructureLib)
+
+
+    add_executable(naive_string_dictionary_test test/naive_string_dictionary_test.cpp)
+    target_link_libraries(naive_string_dictionary_test  ${DEFAULT_LIBS}  ${GTEST_BOTH_LIBRARIES}  MockStructureLib)
 
 
     add_test(NAME serialization_test COMMAND ./serialization_test)
@@ -634,6 +680,8 @@ if (GTest_FOUND)
     add_test(NAME query_proc_tests2 COMMAND ./query_proc_tests2)
     add_test(NAME cache_replacement_test COMMAND ./cache_replacement_test)
     add_test(NAME memory_segment_test COMMAND ./memory_segment_test)
+    add_test(NAME update_log_test COMMAND ./update_log_test)
+    add_test(NAME naive_string_dictionary_test COMMAND ./update_log_test)
 
     # K2 Tree Tests
 
