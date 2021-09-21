@@ -12,15 +12,14 @@
 #include <unistd.h>
 
 #include "ServerTask.hpp"
-#include "TimeControl.hpp"
 #include "network_msg_definitions.hpp"
 
 #include <message_type.pb.h>
 #include <response_msg.pb.h>
 
+#include <NodeId.hpp>
 #include <condition_variable>
 #include <hashing.hpp>
-#include <query_processing/QueryResultIteratorHolder.hpp>
 #include <serialization_util.hpp>
 
 using namespace std::chrono_literals;
@@ -84,18 +83,10 @@ void ServerTask::process() {
     message.deserialize();
 
     switch (message.request_type()) {
-    case proto_msg::MessageType::RUN_QUERY:
-      std::cout << "Request of type RUN_QUERY" << std::endl;
-      process_cache_query(message);
-      break;
     case proto_msg::MessageType::CONNECTION_END:
       std::cout << "Request of type CONNECTION_END" << std::endl;
       process_connection_end();
       return;
-    case proto_msg::MessageType::RECEIVE_REMAINING_RESULT:
-      std::cout << "Request of type RECEIVE_REMAINING_RESULT" << std::endl;
-      process_receive_remaining_result(message);
-      break;
     case proto_msg::MessageType::CACHE_REQUEST_SEPARATE_PREDICATES:
       std::cout << "Request of type CACHE_REQUEST_SEPARATE_PREDICATES"
                 << std::endl;
@@ -138,41 +129,6 @@ int ServerTask::get_client_socket_fd() { return client_socket_fd; }
 
 Cache &ServerTask::get_cache() { return cache; }
 
-void ServerTask::process_cache_query(Message &message) {
-  auto &tree =
-      message.get_cache_request().cache_run_query_algebra().sparql_tree();
-  auto valid = cache.query_is_valid(tree);
-
-  if (!valid) {
-    send_invalid_response();
-    return;
-  }
-
-  auto predicates_in_query = get_predicates_in_query(tree.root());
-
-  if (cache.get_strategy_id() !=
-      I_CacheReplacement::REPLACEMENT_STRATEGY::NO_CACHING) {
-    auto &replacement_mutex = cache.get_replacement().get_replacement_mutex();
-    // auto &replacement_mutex = task_processor.get_replacement_mutex();
-    std::lock_guard lg(replacement_mutex);
-    if (!cache.has_all_predicates_loaded(*predicates_in_query)) {
-      send_cache_miss_response();
-      task_processor.process_missed_predicates(std::move(predicates_in_query));
-      // starts a task which also locks replacement_mutex
-      return;
-    }
-
-    if (!predicates_in_query->empty())
-      task_processor.mark_using(*predicates_in_query);
-  }
-
-  auto time_control = std::make_unique<TimeControl>(
-      1'000, std::chrono::milliseconds(cache.get_timeout_ms()));
-  auto query_result_it = cache.run_query(tree, *time_control);
-  begin_streaming_results(query_result_it, std::move(time_control),
-                          std::move(predicates_in_query));
-}
-
 void ServerTask::send_invalid_response() {
   std::cout << "invalid query... aborting" << std::endl;
   proto_msg::CacheResponse cache_response;
@@ -201,42 +157,6 @@ void ServerTask::process_connection_end() {
   proto_msg::CacheResponse cache_response;
   cache_response.set_response_type(proto_msg::MessageType::CONNECTION_END);
   cache_response.mutable_connection_end_response()->set_end(true);
-  send_response(cache_response);
-}
-void ServerTask::process_receive_remaining_result(Message &message) {
-  int id = message.get_cache_request().receive_remaining_result().id();
-  if (!task_processor.has_streamer(id)) {
-    std::cout << "not found streamer with id " << id << std::endl;
-    send_invalid_response();
-    return;
-  }
-  auto &streamer = task_processor.get_streamer(id);
-  auto next_response = streamer.get_next_response();
-  if (streamer.all_sent()) {
-    task_processor.clean_streamer(id);
-  }
-  send_response(next_response);
-}
-void ServerTask::begin_streaming_results(
-    std::shared_ptr<QueryResultIteratorHolder> query_result_iterator,
-    std::unique_ptr<TimeControl> &&time_control,
-    std::shared_ptr<const std::vector<unsigned long>> predicates_in_use) {
-  auto &streamer = task_processor.create_streamer(
-      std::move(query_result_iterator), std::move(time_control),
-      std::move(predicates_in_use));
-
-  auto first_response = streamer.get_next_response();
-  if (streamer.all_sent()) {
-    task_processor.clean_streamer(streamer.get_id());
-  }
-  send_response(first_response);
-}
-
-void ServerTask::send_cache_miss_response() {
-  std::cout << "cache miss... aborting" << std::endl;
-  proto_msg::CacheResponse cache_response;
-  cache_response.set_response_type(proto_msg::MessageType::CACHE_MISS);
-  cache_response.error_response();
   send_response(cache_response);
 }
 
@@ -315,8 +235,9 @@ void ServerTask::process_predicates_lock_for_triple_stream(Message &message) {
   std::vector<unsigned long> predicates_requested;
   for (int i = 0; i < sep_pred.predicates_size(); i++) {
     const auto &pred_term = sep_pred.predicates(i);
-    auto resource_id =
-        cache.get_pcm().get_resource_index(RDFResource(pred_term));
+
+    auto node_id = NodeId(pred_term.encoded_data());
+    auto resource_id = cache.get_pcm().get_resource_index(node_id);
     if (resource_id > 0)
       predicates_requested.push_back(resource_id);
   }

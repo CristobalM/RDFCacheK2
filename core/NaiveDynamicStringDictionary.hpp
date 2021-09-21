@@ -8,38 +8,39 @@
 #include <unordered_map>
 #include <vector>
 
+#include "NodeId.hpp"
+
 struct NaiveHash {
-  std::size_t operator()(const RDFResource &key) const {
-    return std::hash<std::string>()(key.value) ^ key.resource_type;
+  std::size_t operator()(const NodeId &key) const {
+    return std::hash<unsigned long>()(key.get_raw());
   }
 };
 
 class NaiveDynamicStringDictionary {
 
-  std::vector<RDFResource> resources_extra;
-  std::unordered_map<RDFResource, unsigned long, NaiveHash> reverse_resources;
+  std::vector<NodeId> node_ids;
+  std::unordered_map<NodeId, unsigned long, NaiveHash> reverse_node_ids;
 
 public:
   NaiveDynamicStringDictionary() = default;
   NaiveDynamicStringDictionary(
-      std::vector<RDFResource> &&resources_extra,
-      std::unordered_map<RDFResource, unsigned long, NaiveHash>
-          &&reverse_resources_extra);
+      std::vector<NodeId> &&node_ids_extra,
+      std::unordered_map<NodeId, unsigned long, NaiveHash> &&reverse_node_ids);
 
   void serialize(std::ostream &ofs);
   static NaiveDynamicStringDictionary deserialize(std::istream &ifs);
 
-  static void serialize_dict(std::vector<RDFResource> &resources,
+  static void serialize_dict(std::vector<NodeId> &node_ids,
                              const std::string &fname);
-  static std::vector<RDFResource> deserialize_dict(const std::string &fname);
-  static std::unordered_map<RDFResource, unsigned long, NaiveHash>
-  create_reverse(std::vector<RDFResource> &input);
+  static std::vector<NodeId> deserialize_dict(const std::string &fname);
+  static std::unordered_map<NodeId, unsigned long, NaiveHash>
+  create_reverse(std::vector<NodeId> &input_nodes_ids);
   void save(const std::string &res_fname);
   static NaiveDynamicStringDictionary load(const std::string &res_fname);
 
-  void add_resource(RDFResource resource);
-  unsigned long locate_resource(const RDFResource &resource) const;
-  RDFResource extract_resource(unsigned long id) const;
+  void add_node_id(NodeId node_id);
+  unsigned long locate_node_id(const NodeId &node_id) const;
+  NodeId extract_node_id(unsigned long id) const;
 
   size_t size() const;
   void merge_with_extra_dict(NaiveDynamicStringDictionary &other_dict);

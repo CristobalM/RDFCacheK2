@@ -58,245 +58,11 @@ set(CORE_SOURCE_FILES
         core/K2TreeBulkOp.hpp
         core/I_DataManager.hpp
         core/NullScanner.cpp
-        core/NullScanner.hpp core/I_UpdateLoggerPCM.hpp)
+        core/NullScanner.hpp core/I_UpdateLoggerPCM.hpp core/NodeId.cpp core/NodeId.hpp core/InvalidStringSizeForNodeId.hpp core/SDWrapper.cpp)
 
 set(PROC_SOURCE_FILES
         proc/SDFeed.cpp
         proc/SDBuilder.cpp
-        )
-
-set(QUERY_ITERATORS
-        query_engine/query_processing/iterators/FilterIterator.cpp
-        query_engine/query_processing/iterators/FilterIterator.hpp
-        query_engine/query_processing/iterators/QueryIterator.cpp
-        query_engine/query_processing/iterators/QueryIterator.hpp
-        query_engine/query_processing/iterators/BGPIterator.cpp
-        query_engine/query_processing/iterators/BGPIterator.hpp
-        query_engine/query_processing/iterators/CrossProductIterator.hpp
-        query_engine/query_processing/iterators/CrossProductIterator.cpp
-        query_engine/query_processing/iterators/EmptyIterator.cpp
-        query_engine/query_processing/iterators/EmptyIterator.hpp
-        query_engine/query_processing/iterators/ExtendIterator.cpp
-        query_engine/query_processing/iterators/ExtendIterator.hpp
-        query_engine/query_processing/iterators/FromMaterializedIterator.cpp
-        query_engine/query_processing/iterators/FromMaterializedIterator.hpp
-        query_engine/query_processing/iterators/InnerJoinIterator.cpp
-        query_engine/query_processing/iterators/InnerJoinIterator.hpp
-        query_engine/query_processing/iterators/LeftOuterJoinIterator.cpp
-        query_engine/query_processing/iterators/LeftOuterJoinIterator.hpp
-        query_engine/query_processing/iterators/MinusIterator.cpp
-        query_engine/query_processing/iterators/MinusIterator.hpp
-        query_engine/query_processing/iterators/OrderIterator.cpp
-        query_engine/query_processing/iterators/OrderIterator.hpp
-        query_engine/query_processing/iterators/ProjectIterator.cpp
-        query_engine/query_processing/iterators/ProjectIterator.hpp
-        query_engine/query_processing/iterators/SliceIterator.cpp
-        query_engine/query_processing/iterators/SliceIterator.hpp
-        query_engine/query_processing/iterators/UnionIterator.cpp
-        query_engine/query_processing/iterators/UnionIterator.hpp
-
-        query_engine/query_processing/iterators/ExternalSortedFileHandler.cpp
-        query_engine/query_processing/iterators/ExternalSortedFileHandler.hpp
-
-        query_engine/query_processing/iterators/RowSortConnector.cpp
-        query_engine/query_processing/iterators/RowSortConnector.hpp
-        )
-
-set(BGPOPS
-        query_engine/query_processing/iterators/bgpops/BGPOp.hpp
-        query_engine/query_processing/iterators/bgpops/BGPOpsFactory.cpp
-        query_engine/query_processing/iterators/bgpops/BGPOpsFactory.hpp
-        query_engine/query_processing/iterators/bgpops/OneVarCPBGPOp.cpp
-        query_engine/query_processing/iterators/bgpops/OneVarCPBGPOp.hpp
-        query_engine/query_processing/iterators/bgpops/OneVarIntersectBGPOp.cpp
-        query_engine/query_processing/iterators/bgpops/OneVarIntersectBGPOp.hpp
-        query_engine/query_processing/iterators/bgpops/OneVarJoinBGPOp.cpp
-        query_engine/query_processing/iterators/bgpops/OneVarJoinBGPOp.hpp
-        query_engine/query_processing/iterators/bgpops/TripleExistenceBGPOP.cpp
-        query_engine/query_processing/iterators/bgpops/TripleExistenceBGPOP.hpp
-        query_engine/query_processing/iterators/bgpops/TwoVarCProductBGPOp.cpp
-        query_engine/query_processing/iterators/bgpops/TwoVarCProductBGPOp.hpp
-        query_engine/query_processing/iterators/bgpops/TwoVarIntersectionBGPOp.cpp
-        query_engine/query_processing/iterators/bgpops/TwoVarIntersectionBGPOp.hpp
-        query_engine/query_processing/iterators/bgpops/TwoVarJoinOneBGPOp.cpp
-        query_engine/query_processing/iterators/bgpops/TwoVarJoinOneBGPOp.hpp
-        )
-
-set(CACHING_FILES
-        query_engine/caching/CacheReplacement.cpp
-        query_engine/caching/CacheReplacement.hpp
-        query_engine/caching/CacheReplacementFactory.cpp
-        query_engine/caching/CacheReplacementFactory.hpp
-        query_engine/caching/FrequencyReplacementStrategy.cpp
-        query_engine/caching/FrequencyReplacementStrategy.hpp
-        query_engine/caching/I_CacheReplacement.hpp
-        query_engine/caching/I_ReplacementPriorityQueue.hpp
-        query_engine/caching/LRUReplacementStrategy.cpp
-        query_engine/caching/LRUReplacementStrategy.hpp
-        query_engine/caching/NoCachingReplacement.cpp
-        query_engine/caching/NoCachingReplacement.hpp
-        )
-
-set(SPARQL_EXPRESSIONS_FILES
-        query_engine/query_processing/expr/AddEval.cpp
-        query_engine/query_processing/expr/BNodeEval.cpp
-        query_engine/query_processing/expr/BoundEval.cpp
-        query_engine/query_processing/expr/BoundVarsMap.cpp
-        query_engine/query_processing/expr/CallEval.cpp
-        query_engine/query_processing/expr/CastEval.cpp
-        query_engine/query_processing/expr/CoalesceEval.cpp
-        query_engine/query_processing/expr/ConditionalEval.cpp
-        query_engine/query_processing/expr/DataTypeEval.cpp
-        query_engine/query_processing/expr/DateTimeDayEval.cpp
-        query_engine/query_processing/expr/DateTimeHoursEval.cpp
-        query_engine/query_processing/expr/DateTimeMinutesEval.cpp
-        query_engine/query_processing/expr/DateTimeMonthEval.cpp
-        query_engine/query_processing/expr/DateTimeSecondsEval.cpp
-        query_engine/query_processing/expr/DateTimeTZEval.cpp
-        query_engine/query_processing/expr/DateTimeYearEval.cpp
-        query_engine/query_processing/expr/DigestMD5Eval.cpp
-        query_engine/query_processing/expr/DigestSHA1Eval.cpp
-        query_engine/query_processing/expr/DigestSHA224Eval.cpp
-        query_engine/query_processing/expr/DigestSHA256Eval.cpp
-        query_engine/query_processing/expr/DigestSHA384Eval.cpp
-        query_engine/query_processing/expr/DigestSHA512Eval.cpp
-        query_engine/query_processing/expr/DivideEval.cpp
-        query_engine/query_processing/expr/EqualsEval.cpp
-        query_engine/query_processing/expr/ExistsEval.cpp
-        query_engine/query_processing/expr/ExprEval.cpp
-        query_engine/query_processing/expr/FunIRIEval.cpp
-        query_engine/query_processing/expr/FunctionEval.cpp
-        query_engine/query_processing/expr/GreaterThanEval.cpp
-        query_engine/query_processing/expr/GreaterThanOrEqualEval.cpp
-        query_engine/query_processing/expr/InEval.cpp
-        query_engine/query_processing/expr/IsBlankEval.cpp
-        query_engine/query_processing/expr/IsIRIEval.cpp
-        query_engine/query_processing/expr/IsLiteralEval.cpp
-        query_engine/query_processing/expr/IsNumericEval.cpp
-        query_engine/query_processing/expr/LangEval.cpp
-        query_engine/query_processing/expr/LangMatchesEval.cpp
-        query_engine/query_processing/expr/LessThanEval.cpp
-        query_engine/query_processing/expr/LessThanOrEqualEval.cpp
-        query_engine/query_processing/expr/LogicalAndEval.cpp
-        query_engine/query_processing/expr/LogicalNotEval.cpp
-        query_engine/query_processing/expr/LogicalOrEval.cpp
-        query_engine/query_processing/expr/MultiplyEval.cpp
-        query_engine/query_processing/expr/NotEqualsEval.cpp
-        query_engine/query_processing/expr/NotExistsEval.cpp
-        query_engine/query_processing/expr/NotInEval.cpp
-        query_engine/query_processing/expr/NowEval.cpp
-        query_engine/query_processing/expr/NumAbsEval.cpp
-        query_engine/query_processing/expr/NumCeilingEval.cpp
-        query_engine/query_processing/expr/NumFloorEval.cpp
-        query_engine/query_processing/expr/NumRoundEval.cpp
-        query_engine/query_processing/expr/OneOfBaseEval.cpp
-        query_engine/query_processing/expr/RandEval.cpp
-        query_engine/query_processing/expr/RegexEval.cpp
-        query_engine/query_processing/expr/SameTermEval.cpp
-        query_engine/query_processing/expr/SecuredFunctionEval.cpp
-        query_engine/query_processing/expr/StrAfterEval.cpp
-        query_engine/query_processing/expr/StrBeforeEval.cpp
-        query_engine/query_processing/expr/StrConcatEval.cpp
-        query_engine/query_processing/expr/StrContainsEval.cpp
-        query_engine/query_processing/expr/StrDataTypeEval.cpp
-        query_engine/query_processing/expr/StrEncodeForURIEval.cpp
-        query_engine/query_processing/expr/StrEndsWithEval.cpp
-        query_engine/query_processing/expr/StrEval.cpp
-        query_engine/query_processing/expr/StrLangEval.cpp
-        query_engine/query_processing/expr/StrLengthEval.cpp
-        query_engine/query_processing/expr/StrLowerCaseEval.cpp
-        query_engine/query_processing/expr/StrReplaceEval.cpp
-        query_engine/query_processing/expr/StrStartsWithEval.cpp
-        query_engine/query_processing/expr/StrSubstringEval.cpp
-        query_engine/query_processing/expr/StrUpperCaseCaseEval.cpp
-        query_engine/query_processing/expr/SubtractEval.cpp
-        query_engine/query_processing/expr/TermEval.cpp
-        query_engine/query_processing/expr/UnaryMinusEval.cpp
-        query_engine/query_processing/expr/UnaryPlusEval.cpp
-        )
-
-set(QUERY_PROCESSING_FILES
-
-        query_engine/query_processing/BGPProcessor.cpp
-        query_engine/query_processing/BGPProcessor.hpp
-        query_engine/query_processing/DateInfo.cpp
-        query_engine/query_processing/DateInfo.hpp
-        query_engine/query_processing/DateInfo.hpp
-        query_engine/query_processing/ExprProcessor.cpp
-        query_engine/query_processing/MinusProcessor.cpp
-        query_engine/query_processing/MinusProcessor.hpp
-        query_engine/query_processing/OptionalProcessor.cpp
-        query_engine/query_processing/OptionalProcessor.hpp
-        query_engine/query_processing/ParsingUtils.cpp
-        query_engine/query_processing/QProc.hpp
-        query_engine/query_processing/QueryProcHashing.cpp
-        query_engine/query_processing/QueryProcHashing.hpp
-        query_engine/query_processing/QueryProcessor.cpp
-        query_engine/query_processing/QueryResult.cpp
-        query_engine/query_processing/QueryResultIteratorHolder.cpp
-        query_engine/query_processing/QueryResultIteratorHolder.hpp
-        query_engine/query_processing/ResultTableVector.cpp
-        query_engine/query_processing/ResultTableVector.hpp
-        query_engine/query_processing/SequenceProcessor.cpp
-        query_engine/query_processing/SequenceProcessor.hpp
-        query_engine/query_processing/Triple.cpp
-        query_engine/query_processing/UnionProcessor.cpp
-        query_engine/query_processing/VDGNode.cpp
-        query_engine/query_processing/VDGNode.hpp
-        query_engine/query_processing/VarBindingQProc.cpp
-        query_engine/query_processing/VarBindingQProc.hpp
-        query_engine/query_processing/VarDependencyGraph.cpp
-        query_engine/query_processing/VarDependencyGraph.hpp
-        query_engine/query_processing/VarIndexManager.cpp
-        query_engine/query_processing/VarLazyBinding.cpp
-        query_engine/query_processing/VarLazyBinding.hpp
-        query_engine/query_processing/VarsCollection.cpp
-        query_engine/query_processing/VarsCollection.hpp
-        )
-
-set(QENGINE_RESOURCES_FILES
-
-        query_engine/query_processing/resources/BooleanResource.cpp
-        query_engine/query_processing/resources/ConcreteRDFResource.cpp
-        query_engine/query_processing/resources/DataTypeResource.cpp
-        query_engine/query_processing/resources/DateTimeResource.cpp
-        query_engine/query_processing/resources/DayTimeDurationResource.cpp
-        query_engine/query_processing/resources/DoubleResource.cpp
-        query_engine/query_processing/resources/FloatResource.cpp
-        query_engine/query_processing/resources/IRIResource.cpp
-        query_engine/query_processing/resources/IntegerResource.cpp
-        query_engine/query_processing/resources/NullResource.cpp
-        query_engine/query_processing/resources/StringLiteralLangResource.cpp
-        query_engine/query_processing/resources/StringLiteralResource.cpp
-        query_engine/query_processing/resources/TermResource.cpp
-        )
-
-set(QENGINE_UTILITY_FILES
-        query_engine/query_processing/utility/GatheredVars.cpp
-        query_engine/query_processing/utility/GatheredVars.hpp
-        query_engine/query_processing/utility/ProtoGatherVars.cpp
-        query_engine/query_processing/utility/ProtoGatherVars.hpp
-        query_engine/query_processing/utility/StringHandlingUtil.cpp
-        query_engine/query_processing/utility/UuidGenerator.cpp
-        query_engine/query_processing/utility/UuidGenerator.hpp
-        )
-set(QUERY_ENGINE_FILES
-
-        query_engine/Cache.cpp
-        query_engine/QueryError.cpp
-        query_engine/QueryError.hpp
-        query_engine/TimeControl.cpp
-        query_engine/TimeControl.hpp
-
-        ${QENGINE_UTILITY_FILES}
-        ${QENGINE_RESOURCES_FILES}
-        ${QUERY_PROCESSING_FILES}
-        ${SPARQL_EXPRESSIONS_FILES}
-        ${CACHING_FILES}
-        ${QUERY_ITERATORS}
-        ${BGPOPS}
-        query_engine/caching/I_PQTraverse.hpp
-        query_engine/CacheArgs.hpp
         )
 
 
@@ -307,9 +73,6 @@ set(NETWORK_SOURCE_FILES
         network/CacheServerTaskProcessor.cpp
         network/ServerWorker.cpp
         network/Message.cpp
-        network/QueryResultPartStreamer.cpp
-        network/QueryResultPartStreamer.hpp
-        network/I_QRStreamer.hpp
         network/ReplacementTaskProcessor.cpp
         network/ReplacementTaskProcessor.hpp
         network/ReplacementTask.cpp
@@ -319,7 +82,21 @@ set(NETWORK_SOURCE_FILES
         network/I_TRStreamer.hpp
         network/I_TRMatchingStreamer.hpp
         network/TriplePatternMatchingStreamer.cpp
-        network/TriplePatternMatchingStreamer.hpp network/I_Updater.hpp network/UpdaterSession.cpp network/UpdaterSession.hpp network/K2TreeUpdates.cpp network/K2TreeUpdates.hpp network/WriteDataLock.cpp network/WriteDataLock.hpp network/UpdatesLogger.cpp network/UpdatesLogger.hpp network/I_DataMerger.hpp network/PCMMerger.cpp network/PCMMerger.hpp network/PCMUpdateLoggerWrapper.cpp network/PCMUpdateLoggerWrapper.hpp)
+        network/TriplePatternMatchingStreamer.hpp
+        network/I_Updater.hpp
+        network/UpdaterSession.cpp
+        network/UpdaterSession.hpp
+        network/K2TreeUpdates.cpp
+        network/K2TreeUpdates.hpp
+        network/WriteDataLock.cpp
+        network/WriteDataLock.hpp
+        network/UpdatesLogger.cpp
+        network/UpdatesLogger.hpp
+        network/I_DataMerger.hpp
+        network/PCMMerger.cpp
+        network/PCMMerger.hpp
+        network/PCMUpdateLoggerWrapper.cpp
+        network/PCMUpdateLoggerWrapper.hpp)
 
 
 set(PROTO_MESSAGES
@@ -334,6 +111,27 @@ set(MEMORY_SOURCES
         memory/MemoryManager.cpp
         memory/MemoryPool.hpp
         memory/MemorySegment.cpp memory/MemorySegment.hpp)
+
+set(CACHE_SOURCES
+        cache/Cache.hpp
+        cache/Cache.cpp
+        cache/CacheArgs.hpp
+
+        cache/replacement/I_PQTraverse.hpp
+        cache/replacement/CacheReplacement.cpp
+        cache/replacement/CacheReplacement.hpp
+        cache/replacement/CacheReplacementFactory.cpp
+        cache/replacement/CacheReplacementFactory.hpp
+        cache/replacement/FrequencyReplacementStrategy.cpp
+        cache/replacement/FrequencyReplacementStrategy.hpp
+        cache/replacement/I_CacheReplacement.hpp
+        cache/replacement/I_ReplacementPriorityQueue.hpp
+        cache/replacement/LRUReplacementStrategy.cpp
+        cache/replacement/LRUReplacementStrategy.hpp
+        cache/replacement/NoCachingReplacement.cpp
+        cache/replacement/NoCachingReplacement.hpp
+
+        )
 
 
 set(K2TREE_PATH ${CMAKE_SOURCE_DIR}/lib/c-k2tree-dyn)
@@ -352,6 +150,7 @@ set(K2TREE_SOURCES
         ${K2TREE_PATH}/src/vectors.c
         )
 
+
 add_library(k2dyn_custom_mem ${K2TREE_SOURCES})
 
 set(PROTO_MESSAGES_PATH ${CMAKE_SOURCE_DIR}/proto/generated)
@@ -362,8 +161,8 @@ set(INCLUDES
         proc
         algorithms
         utils
-        query_engine
         memory
+        cache
         ${PROTO_MESSAGES_PATH}
         )
 
@@ -404,11 +203,10 @@ include_directories(
 )
 
 
-add_library(RDFCacheK2 STATIC ${CORE_SOURCE_FILES} ${QUERY_ENGINE_FILES})
+add_library(RDFCacheK2 STATIC ${CORE_SOURCE_FILES})
 add_library(RDFCacheK2_Network STATIC ${NETWORK_SOURCE_FILES})
 add_library(RDFCacheK2_Memory STATIC ${MEMORY_SOURCES})
-#add_library(RDFCacheK2_GR STATIC ${QUERY_ENGINE_FILES})
-
+add_library(RDFCacheK2_Cache STATIC ${CACHE_SOURCES})
 add_library(ProtoMessages STATIC ${PROTO_MESSAGES})
 
 
@@ -609,7 +407,6 @@ if (GTest_FOUND)
     add_library(MockStructureLib STATIC ${MOCK_STRUCTURES})
     add_dependencies(MockStructureLib RDFCacheK2 Utils)
 
-
     include_directories(${GTEST_INCLUDE_DIRS})
     add_executable(serialization_test test/serialization_tests.cpp)
     target_link_libraries(serialization_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} pthread)
@@ -623,14 +420,8 @@ if (GTest_FOUND)
     add_executable(k2tree_tests test/k2tree_tests.cpp)
     target_link_libraries(k2tree_tests ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} pthread)
 
-    add_executable(result_table_test test/result_table_test.cpp)
-    target_link_libraries(result_table_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} pthread)
-
     add_executable(k2tree_mixed_test test/k2tree_mixed_test.cpp)
     target_link_libraries(k2tree_mixed_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} pthread)
-
-    add_executable(query_proc_tests test/query_proc_tests.cpp test/cache_test_util.cpp)
-    target_link_libraries(query_proc_tests ${DEFAULT_LIBS} ${PROC_LIBS} ${GTEST_BOTH_LIBRARIES} pthread)
 
     add_executable(test_sd_builder test/test_sd_builder.cpp)
     target_link_libraries(test_sd_builder ${PROC_LIBS} ${GTEST_BOTH_LIBRARIES} pthread)
@@ -644,15 +435,8 @@ if (GTest_FOUND)
     add_executable(k2mixed_from_file test/k2mixed_from_file.cpp)
     target_link_libraries(k2mixed_from_file ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES})
 
-    add_executable(query_filters_test test/query_filters_test.cpp test/cache_test_util.cpp)
-    target_link_libraries(query_filters_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES})
-
-    add_executable(query_proc_tests2 test/query_proc_tests2.cpp test/cache_test_util.cpp)
-    target_link_libraries(query_proc_tests2 ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES})
-
     add_executable(cache_replacement_test test/cache_replacement_test.cpp test/cache_test_util.cpp)
     target_link_libraries(cache_replacement_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES})
-
 
     add_executable(memory_segment_test test/memory_segment_test.cpp)
     target_link_libraries(memory_segment_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES})

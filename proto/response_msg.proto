@@ -46,12 +46,12 @@ message StreamOfTriplesMatchingPatternResponse{
 }
 
 message MatchingValues{
-    repeated RDFTerm single_match = 1;
+    repeated NodeIdEncoded single_match = 1;
 }
 
 message ExtractSeparatePredicatesResponse{
     int32 id = 1;
-    repeated RDFTerm available_predicates = 2;
+    repeated NodeIdEncoded available_predicates = 2;
 }
 
 message ResultTablePartResponse{

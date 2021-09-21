@@ -79,7 +79,7 @@ translate_table(QueryResult &input_query_result, Cache &cache) {
       } else {
         RDFResource col_resource;
         if (col > cache.get_pcm().get_last_id()) {
-          col_resource = input_query_result.get_extra_dict().extract_resource(
+          col_resource = input_query_result.get_extra_dict().extract_node_id(
               col - cache.get_pcm().get_last_id());
         } else {
           col_resource = cache.extract_resource(col);

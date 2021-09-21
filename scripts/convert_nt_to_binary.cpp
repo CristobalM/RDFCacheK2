@@ -10,7 +10,7 @@
 #include <triple_external_sort.hpp>
 
 #include <ISDManager.hpp>
-#include <SDEntitiesMapping.hpp>
+#include <SDWrapper.hpp>
 #include <StringDictionaryHASHRPDACBlocks.h>
 #include <StringDictionaryPFC.h>
 
@@ -112,10 +112,10 @@ std::unique_ptr<ISDManager> read_sds(parsed_options &parsed) {
     throw std::runtime_error(ss.str());
   }
 
-  isd_manager = std::make_unique<
-      SDEntitiesMapping<StringDictionaryPFC, StringDictionaryPFC,
-                        StringDictionaryHASHRPDACBlocks>>(ifs_iris, ifs_blanks,
-                                                          ifs_literals);
+  isd_manager =
+      std::make_unique<SDWrapper<StringDictionaryPFC, StringDictionaryPFC,
+                                 StringDictionaryHASHRPDACBlocks>>(
+          ifs_iris, ifs_blanks, ifs_literals);
 
   return isd_manager;
 }

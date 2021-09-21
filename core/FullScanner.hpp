@@ -7,11 +7,10 @@
 
 #include "K2QStateWrapper.hpp"
 #include "K2TreeScanner.hpp"
-#include <TimeControl.hpp>
 #include <k2node.h>
 class FullScanner : public K2TreeScanner {
 public:
-  FullScanner(K2TreeMixed &k2tree);
+  explicit FullScanner(K2TreeMixed &k2tree);
 
   bool has_next() override;
   std::pair<unsigned long, unsigned long> next() override;

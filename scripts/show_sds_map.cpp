@@ -7,7 +7,7 @@
 #include <memory>
 #include <string>
 
-#include <SDEntitiesMapping.hpp>
+#include <SDWrapper.hpp>
 #include <StringDictionaryHASHRPDAC.h>
 #include <StringDictionaryHASHRPDACBlocks.h>
 #include <StringDictionaryHTFC.h>
@@ -35,8 +35,8 @@ int main(int argc, char **argv) {
   std::ifstream ifs_literals(parsed.literals_file,
                              std::ios::in | std::ios::binary);
 
-  SDEntitiesMapping<StringDictionaryPFC, StringDictionaryPFC,
-                    StringDictionaryHASHRPDACBlocks>
+  SDWrapper<StringDictionaryPFC, StringDictionaryPFC,
+            StringDictionaryHASHRPDACBlocks>
       sds(ifs_iris, ifs_blanks, ifs_literals);
 
   std::ofstream ofs(parsed.output_file, std::ios::out | std::ios::trunc);

@@ -338,3 +338,13 @@ enum FunctionOP {
   NOT_IN = 70;
   RAND = 71;
 }
+
+
+message NodeIdEncoded{
+  bytes encoded_data = 1;
+}
+message TripleNodeIdEnc{
+  NodeIdEncoded subject = 1;
+  NodeIdEncoded predicate = 2;
+  NodeIdEncoded object = 3;
+}

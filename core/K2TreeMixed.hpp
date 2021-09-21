@@ -12,7 +12,6 @@
 #include "k2tree_stats.hpp"
 
 #include <MemorySegment.hpp>
-#include <TimeControl.hpp>
 #include <serialization_util.hpp>
 
 extern "C" {

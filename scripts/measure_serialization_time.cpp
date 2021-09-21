@@ -10,7 +10,7 @@
 #include <string>
 
 #include <PredicatesCacheManager.hpp>
-#include <SDEntitiesMapping.hpp>
+#include <SDWrapper.hpp>
 #include <StringDictionaryHASHRPDAC.h>
 #include <StringDictionaryHASHRPDACBlocks.h>
 #include <StringDictionaryPFC.h>
@@ -38,10 +38,10 @@ int main(int argc, char **argv) {
   std::ifstream ifs_literals(parsed.literals_file,
                              std::ios::in | std::ios::binary);
 
-  auto sds_tmp = std::make_unique<
-      SDEntitiesMapping<StringDictionaryPFC, StringDictionaryPFC,
-                        StringDictionaryHASHRPDACBlocks>>(ifs_iris, ifs_blanks,
-                                                          ifs_literals);
+  auto sds_tmp =
+      std::make_unique<SDWrapper<StringDictionaryPFC, StringDictionaryPFC,
+                                 StringDictionaryHASHRPDACBlocks>>(
+          ifs_iris, ifs_blanks, ifs_literals);
 
   PredicatesCacheManager pcm(std::move(sds_tmp), parsed.k2trees_file);
 

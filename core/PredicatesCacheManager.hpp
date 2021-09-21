@@ -10,6 +10,7 @@
 #include "I_UpdateLoggerPCM.hpp"
 #include "K2TreeBulkOp.hpp"
 #include "NaiveDynamicStringDictionary.hpp"
+#include "NodeId.hpp"
 #include "PredicatesIndexCacheMDFile.hpp"
 #include "RDFTriple.hpp"
 #include <K2TreeUpdates.hpp>
@@ -39,22 +40,9 @@ public:
   PredicatesCacheManager(std::unique_ptr<ISDManager> &&isd_manager,
                          const std::string &fname);
 
-  void add_triple(RDFTripleResource &rdf_triple);
-  void add_triple(RDFTripleResource &&rdf_triple);
-
-  bool has_triple(const RDFTripleResource &rdf_triple) const;
-  bool has_predicate(const std::string &predicate_name) const;
-  void replace_index_cache(
-      std::unique_ptr<PredicatesIndexCacheMDFile> &&predicates_index);
-  PredicateFetchResult get_tree_by_predicate_index(unsigned long index) const;
-  NaiveDynamicStringDictionary &get_dyn_dicts();
-  void save_all(const std::string &fname, const std::string &dirname);
-  unsigned long get_iri_index(const std::string &value) const;
-  unsigned long get_literal_index(const std::string &value) const;
-  unsigned long get_blank_index(const std::string &value) const;
   RDFResource extract_resource(unsigned long index) const;
   PredicatesIndexCacheMDFile &get_predicates_index_cache();
-  uint64_t get_resource_index(const RDFResource &resource) const;
+  uint64_t get_resource_index(const NodeId &node_id) const;
   ISDManager *get_isd_manager();
   std::vector<std::pair<unsigned long, std::string>> get_plain_mapping_debug();
   unsigned long get_last_id() const;
@@ -79,7 +67,7 @@ public:
 
 private:
   void handle_not_found(unsigned long &resource_id, RDFResource &resource);
-  uint64_t get_resource_index_notfound_zero(const RDFResource &resource) const;
+  uint64_t get_resource_index_notfound_zero(const NodeId &node_id) const;
   void merge_op_tree(unsigned long predicate_id, K2TreeMixed &to_merge_k2tree,
                      const std::function<void(K2TreeBulkOp &, unsigned long,
                                               unsigned long)> &op,

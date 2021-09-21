@@ -55,12 +55,12 @@ unsigned long UpdaterSession::add_resource_get_id(RDFResource &resource) {
   if (!added_resources) {
     added_resources = std::make_unique<NaiveDynamicStringDictionary>();
   }
-  auto id = added_resources->locate_resource(resource);
+  auto id = added_resources->locate_node_id(resource);
   if (id != 0)
     return id;
 
-  added_resources->add_resource(resource);
-  return added_resources->locate_resource(resource) + last_id_known;
+  added_resources->add_node_id(resource);
+  return added_resources->locate_node_id(resource) + last_id_known;
 }
 unsigned long UpdaterSession::get_resource_id(RDFResource &resource) {
   return cache->get_pcm().get_resource_index(resource);

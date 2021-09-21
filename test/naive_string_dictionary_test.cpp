@@ -11,8 +11,8 @@ static bool matching_naive_sds(NaiveDynamicStringDictionary &lhs,
   if (lhs.size() != rhs.size())
     return false;
   for (size_t i = 0; i < lhs.size(); i++) {
-    auto resource_left = lhs.extract_resource(i + 1);
-    auto resource_right = rhs.extract_resource(i + 1);
+    auto resource_left = lhs.extract_node_id(i + 1);
+    auto resource_right = rhs.extract_node_id(i + 1);
     if (resource_left.value != resource_right.value ||
         resource_left.resource_type != resource_right.resource_type)
       return false;
@@ -38,9 +38,9 @@ TEST(naive_string_dictionary_test, can_serialize_and_deserialize_test_1) {
   };
 
   for (int i = 0; i < resources_amount; i++) {
-    sd.add_resource(
+    sd.add_node_id(
         RDFResource(resource_name_gen(i), RDFResourceType::RDF_TYPE_LITERAL));
-    sd2.add_resource(
+    sd2.add_node_id(
         RDFResource(resource_name_gen2(i), RDFResourceType::RDF_TYPE_LITERAL));
   }
 
@@ -62,22 +62,22 @@ TEST(naive_string_dictionary_test, can_serialize_and_deserialize_test_1) {
 
   for (int i = 0; i < resources_amount; i++) {
     auto resource = RDFResource(resource_name_gen(i), RDF_TYPE_LITERAL);
-    auto id = sd.locate_resource(resource);
-    auto id_des = sd_des->locate_resource(resource);
+    auto id = sd.locate_node_id(resource);
+    auto id_des = sd_des->locate_node_id(resource);
     ASSERT_EQ(id, id_des);
   }
 
   for (int i = 0; i < resources_amount; i++) {
     auto resource = RDFResource(resource_name_gen2(i), RDF_TYPE_LITERAL);
-    auto id = sd2.locate_resource(resource);
-    auto id_des = sd2_des->locate_resource(resource);
+    auto id = sd2.locate_node_id(resource);
+    auto id_des = sd2_des->locate_node_id(resource);
     ASSERT_EQ(id, id_des);
   }
 
   for (int i = 0; i < resources_amount; i++) {
     int id = i + 1;
-    auto resource = sd.extract_resource(id);
-    auto resource_des = sd_des->extract_resource(id);
+    auto resource = sd.extract_node_id(id);
+    auto resource_des = sd_des->extract_node_id(id);
     auto gen_value = resource_name_gen(i);
     ASSERT_EQ(resource.value, resource_des.value);
     ASSERT_EQ(resource.value, gen_value);
@@ -87,8 +87,8 @@ TEST(naive_string_dictionary_test, can_serialize_and_deserialize_test_1) {
 
   for (int i = 0; i < resources_amount; i++) {
     int id = i + 1;
-    auto resource = sd2.extract_resource(id);
-    auto resource_des = sd2_des->extract_resource(id);
+    auto resource = sd2.extract_node_id(id);
+    auto resource_des = sd2_des->extract_node_id(id);
     auto gen_value = resource_name_gen2(i);
     ASSERT_EQ(resource.value, resource_des.value);
     ASSERT_EQ(resource.value, gen_value);

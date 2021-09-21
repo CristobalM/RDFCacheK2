@@ -27,8 +27,8 @@ message CacheRequest{
 
 message TriplesUpdateBatch{
     int32 update_id = 1;
-    repeated TripleNode triples_to_add = 2;
-    repeated TripleNode triples_to_delete = 3;
+    repeated TripleNodeIdEnc triples_to_add = 2;
+    repeated TripleNodeIdEnc triples_to_delete = 3;
 }
 
 
@@ -46,7 +46,7 @@ message StreamContinueTriplePattern{
 
 message StreamRequestTriplePattern{
     int32 channel_id = 1;
-    TripleNode triple_node = 2;
+    TripleNodeIdEnc triple_node = 2;
 }
 
 message DoneWithPredicatesNotify{
@@ -54,7 +54,7 @@ message DoneWithPredicatesNotify{
 }
 
 message CacheRequestSeparatePredicates{
-    repeated RDFTerm predicates = 1;
+    repeated NodeIdEncoded predicates = 1;
 }
 
 
@@ -79,4 +79,10 @@ message RDFTriple {
     uint64 subject = 1;
     uint64 predicate = 2;
     uint64 object = 3;
+}
+
+message TripleIds {
+    int64 subject = 1;
+    int64 predicate = 2;
+    int64 object = 3;
 }

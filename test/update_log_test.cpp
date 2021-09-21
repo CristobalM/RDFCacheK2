@@ -29,8 +29,8 @@ TEST(update_log_test, test_1) {
   int size = 10;
   int predicate_id_1 = 123;
   for (int i = 0; i < size; i++) {
-    sd.add_resource(RDFResource("Resource #" + std::to_string(i),
-                                RDFResourceType::RDF_TYPE_LITERAL));
+    sd.add_node_id(RDFResource("Resource #" + std::to_string(i),
+                               RDFResourceType::RDF_TYPE_LITERAL));
   }
   K2TreeMixed k2tree(config);
   K2TreeBulkOp op(k2tree);

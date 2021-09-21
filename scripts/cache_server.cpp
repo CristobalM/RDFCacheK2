@@ -11,7 +11,7 @@
 #include <Cache.hpp>
 #include <CacheServer.hpp>
 #include <PredicatesCacheManager.hpp>
-#include <SDEntitiesMapping.hpp>
+#include <SDWrapper.hpp>
 #include <StringDictionaryHASHRPDACBlocks.h>
 #include <StringDictionaryPFC.h>
 
@@ -59,9 +59,8 @@ int main(int argc, char **argv) {
     std::ifstream blanks_ifs(parsed.blanks_file, open_mode);
     std::ifstream literals_ifs(parsed.literals_file, open_mode);
 
-    sds = std::make_unique<
-        SDEntitiesMapping<StringDictionaryPFC, StringDictionaryPFC,
-                          StringDictionaryHASHRPDACBlocks>>(
+    sds = std::make_unique<SDWrapper<StringDictionaryPFC, StringDictionaryPFC,
+                                     StringDictionaryHASHRPDACBlocks>>(
         iris_ifs, blanks_ifs, literals_ifs);
   }
 
