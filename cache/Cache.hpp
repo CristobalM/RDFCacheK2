@@ -31,9 +31,6 @@ struct CacheStats {
 class Cache {
   std::shared_ptr<PredicatesCacheManager> cache_manager;
 
-  std::string temp_files_dir;
-  unsigned long timeout_ms;
-
   std::unique_ptr<I_CacheReplacement> cache_replacement;
 
   I_CacheReplacement::REPLACEMENT_STRATEGY strategy_id;
@@ -47,8 +44,6 @@ class Cache {
 public:
   Cache(std::shared_ptr<PredicatesCacheManager> predicates_cache_manager,
         CacheArgs args);
-
-  RDFResource extract_resource(unsigned long index) const;
 
   PredicatesCacheManager &get_pcm();
   I_CacheReplacement &get_replacement();

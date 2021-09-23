@@ -9,7 +9,7 @@ class I_UpdateLoggerPCM {
 public:
   virtual ~I_UpdateLoggerPCM() = default;
   virtual void recover_predicate(unsigned long predicate_id) = 0;
-  virtual bool has_predicate_stored(uint64_t predicate_id) = 0;
+  virtual bool has_predicate_stored(unsigned long predicate_id) = 0;
 };
 
 #endif // RDFCACHEK2_I_UPDATELOGGERPCM_HPP

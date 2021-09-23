@@ -27,8 +27,7 @@ UpdatesLogger::UpdatesLogger(I_DataMerger &data_merger,
   (void)(this->metadata_rw_handler);
 }
 
-void UpdatesLogger::log(NaiveDynamicStringDictionary *added_resources,
-                        std::vector<K2TreeUpdates> &k2tree_updates) {
+void UpdatesLogger::log(std::vector<K2TreeUpdates> &k2tree_updates) {
   current_file_reader = nullptr;
   if (!current_file_writer) {
     current_file_writer =
@@ -36,13 +35,6 @@ void UpdatesLogger::log(NaiveDynamicStringDictionary *added_resources,
   }
 
   auto &writer_real = current_file_writer->get_stream();
-  // to indicate there is a resources dict
-  write_u32(writer_real, added_resources != nullptr ? 1 : 0);
-
-  if (added_resources) {
-    added_resources->serialize(writer_real);
-    data_merger.merge_with_extra_dict(*added_resources);
-  }
 
   write_u32(writer_real, k2tree_updates.size());
   for (auto &update : k2tree_updates) {
@@ -121,12 +113,6 @@ void UpdatesLogger::recover_data(const std::vector<unsigned long> &predicates) {
   }
 }
 void UpdatesLogger::recover_single_update(I_IStream &ifs) {
-  auto &ifs_real = ifs.get_stream();
-  bool has_dict = read_u32(ifs_real);
-  if (has_dict) {
-    auto recovered_dict = NaiveDynamicStringDictionary::deserialize(ifs_real);
-    data_merger.merge_with_extra_dict(recovered_dict);
-  }
   auto updates_amount = static_cast<size_t>(read_u32(ifs.get_stream()));
   for (size_t i = 0; i < updates_amount; i++) {
     recover_single_predicate_update(ifs);

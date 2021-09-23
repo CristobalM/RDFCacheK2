@@ -341,7 +341,7 @@ enum FunctionOP {
 
 
 message NodeIdEncoded{
-  bytes encoded_data = 1;
+  uint64 encoded_data = 1;
 }
 message TripleNodeIdEnc{
   NodeIdEncoded subject = 1;

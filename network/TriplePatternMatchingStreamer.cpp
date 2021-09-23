@@ -3,18 +3,15 @@
 //
 
 #include "TriplePatternMatchingStreamer.hpp"
-#include <query_processing/ParsingUtils.hpp>
 
 TriplePatternMatchingStreamer::TriplePatternMatchingStreamer(
     int channel_id, int pattern_channel_id,
-    const proto_msg::TripleNode triple_pattern_node, Cache *cache,
-    TimeControl *time_control, unsigned long threshold_part_size)
+    const proto_msg::TripleNodeIdEnc triple_pattern_node, Cache *cache,
+    unsigned long threshold_part_size)
     : channel_id(channel_id), pattern_channel_id(pattern_channel_id),
       triple_pattern_node(std::move(triple_pattern_node)), cache(cache),
-      time_control(time_control), threshold_part_size(threshold_part_size),
-      first(true), finished(false) {
+      threshold_part_size(threshold_part_size), first(true), finished(false) {
   initialize_scanner();
-  (void)(time_control);
 }
 
 proto_msg::CacheResponse TriplePatternMatchingStreamer::get_next_response() {
@@ -25,42 +22,28 @@ proto_msg::CacheResponse TriplePatternMatchingStreamer::get_next_response() {
       cache_response.mutable_stream_of_triples_matching_pattern_response();
   unsigned long acc_size = 0;
   if (first) {
-    if (subject_variable) {
-      auto subject_var_name = triple_pattern_node.subject().term_value();
-      acc_size += subject_var_name.size() * sizeof(char);
-      stream_response->mutable_variables()->Add(std::move(subject_var_name));
-    }
-    if (object_variable) {
-      auto object_var_name = triple_pattern_node.object().term_value();
-      acc_size += object_var_name.size() * sizeof(char);
-      stream_response->mutable_variables()->Add(std::move(object_var_name));
-    }
     first = false;
   }
-  (void)(time_control);
 
   stream_response->set_channel_id(channel_id);
   stream_response->set_pattern_channel_id(pattern_channel_id);
 
   while (k2tree_scanner->has_next()) {
-    //    if(!time_control->tick()){
-    //      return timeout_proto_response();
-    //    }
     auto matching_pair_so = k2tree_scanner->next();
     auto *matching_values = stream_response->mutable_matching_values()->Add();
     if (subject_variable) {
-      auto subject_resource = cache->extract_resource(matching_pair_so.first);
-      acc_size += subject_resource.value.size() * sizeof(char);
-      acc_size += sizeof(subject_resource.resource_type);
-      matching_values->mutable_single_match()->Add(
-          resource_to_term(std::move(subject_resource)));
+      // auto subject_resource =
+      // cache->extract_resource(matching_pair_so.first);
+      acc_size += sizeof(unsigned long);
+      proto_msg::NodeIdEncoded node_id;
+      node_id.set_encoded_data(matching_pair_so.first);
+      matching_values->mutable_single_match()->Add(std::move(node_id));
     }
     if (object_variable) {
-      auto object_resource = cache->extract_resource(matching_pair_so.second);
-      acc_size += object_resource.value.size() * sizeof(char);
-      acc_size += sizeof(object_resource.resource_type);
-      matching_values->mutable_single_match()->Add(
-          resource_to_term(std::move(object_resource)));
+      acc_size += sizeof(unsigned long);
+      proto_msg::NodeIdEncoded node_id;
+      node_id.set_encoded_data(matching_pair_so.second);
+      matching_values->mutable_single_match()->Add(std::move(node_id));
     }
 
     if (acc_size > threshold_part_size) {
@@ -84,13 +67,20 @@ int TriplePatternMatchingStreamer::get_channel_id() { return channel_id; }
 bool TriplePatternMatchingStreamer::all_sent() { return finished; }
 
 void TriplePatternMatchingStreamer::initialize_scanner() {
-  subject_variable = triple_pattern_node.subject().term_type() ==
-                     proto_msg::TermType::VARIABLE;
+  subject_variable =
+      (long)triple_pattern_node.subject().encoded_data() == NODE_ANY;
   object_variable =
-      triple_pattern_node.object().term_type() == proto_msg::TermType::VARIABLE;
+      (long)triple_pattern_node.object().encoded_data() == NODE_ANY;
 
-  auto predicate_id = cache->get_pcm().get_resource_index(
-      RDFResource(triple_pattern_node.predicate()));
+  std::cout << "initializing scan of pattern: "
+            << (long)triple_pattern_node.subject().encoded_data() << ","
+            << (long)triple_pattern_node.predicate().encoded_data() << ","
+            << (long)triple_pattern_node.object().encoded_data()
+            << " subject_variable: " << (subject_variable ? "YES" : "NO")
+            << ", object variable: " << (object_variable ? "YES" : "NO")
+            << std::endl;
+
+  auto predicate_id = triple_pattern_node.predicate().encoded_data();
 
   auto fetch_result =
       cache->get_pcm().get_predicates_index_cache().fetch_k2tree(predicate_id);
@@ -104,38 +94,16 @@ void TriplePatternMatchingStreamer::initialize_scanner() {
   if (subject_variable && object_variable) {
     k2tree_scanner = k2tree.create_full_scanner();
   } else if (subject_variable) {
-    auto object_id = cache->get_pcm().get_resource_index(
-        RDFResource(triple_pattern_node.object()));
+    auto object_id = triple_pattern_node.object().encoded_data();
     k2tree_scanner = k2tree.create_band_scanner(
         object_id, K2TreeScanner::BandType::ROW_BAND_TYPE);
   } else {
-    auto subject_id = cache->get_pcm().get_resource_index(
-        RDFResource(triple_pattern_node.subject()));
+    auto subject_id = triple_pattern_node.subject().encoded_data();
     k2tree_scanner = k2tree.create_band_scanner(
         subject_id, K2TreeScanner::BandType::COLUMN_BAND_TYPE);
   }
 }
-proto_msg::RDFTerm
-TriplePatternMatchingStreamer::resource_to_term(RDFResource &&resource) {
-  proto_msg::RDFTerm rdf_term;
-  rdf_term.set_term_type(resource.get_proto_type());
 
-  auto lang_tag = ParsingUtils::extract_language_tag(resource.value);
-  auto content =
-      ParsingUtils::extract_literal_content_from_string(resource.value);
-  if (!lang_tag.empty()) {
-    rdf_term.set_lang_tag(lang_tag);
-
-  } else {
-    auto data_type =
-        ParsingUtils::extract_data_type_from_string(resource.value);
-    if (data_type != EDT_UNKNOWN)
-      rdf_term.set_basic_type(basic_type_from_data_type(data_type));
-  }
-
-  rdf_term.set_term_value(std::move(content));
-  return rdf_term;
-}
 void TriplePatternMatchingStreamer::set_finished() { finished = true; }
 proto_msg::CacheResponse
 TriplePatternMatchingStreamer::timeout_proto_response() {
@@ -144,30 +112,4 @@ TriplePatternMatchingStreamer::timeout_proto_response() {
   result.set_response_type(proto_msg::TIMED_OUT_RESPONSE);
   result.mutable_error_response();
   return result;
-}
-proto_msg::BasicType
-TriplePatternMatchingStreamer::basic_type_from_data_type(ExprDataType type) {
-  switch (type) {
-  case EDT_INTEGER:
-    return proto_msg::BasicType::INTEGER;
-  case EDT_DECIMAL:
-    return proto_msg::BasicType::DECIMAL;
-  case EDT_FLOAT:
-    return proto_msg::BasicType::FLOAT;
-  case EDT_DOUBLE:
-    return proto_msg::BasicType::DOUBLE;
-  case EDT_STRING:
-    return proto_msg::BasicType::STRING;
-  case EDT_BOOLEAN:
-    return proto_msg::BasicType::BOOLEAN;
-  case EDT_DATETIME:
-    return proto_msg::BasicType::DATETIME;
-  case EDT_WKT_LITERAL:
-    return proto_msg::BasicType::WKT_LITERAL;
-  case EDT_GML_LITERAL:
-    return proto_msg::BasicType::GML_LITERAL;
-  case EDT_UNKNOWN:
-  default:
-    return proto_msg::BasicType::NO_TYPE;
-  }
 }

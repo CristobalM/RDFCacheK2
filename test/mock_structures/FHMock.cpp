@@ -7,7 +7,7 @@
 #include "StringIStream.hpp"
 #include "StringOStream.hpp"
 
-FHMock::FHMock(std::string &data) : data(data) {}
+FHMock::FHMock(std::string data) : data(std::move(data)) {}
 
 std::unique_ptr<I_OStream> FHMock::get_writer(std::ios::openmode) {
   return std::make_unique<StringOStream>(data, std::ios::out | std::ios::app |
@@ -27,3 +27,4 @@ FHMock::get_reader_writer(std::ios::openmode openmode) {
   return std::make_unique<StringIOStream>(
       temp_data, std::ios::in | std::ios::out | openmode);
 }
+FHMock::FHMock() {}

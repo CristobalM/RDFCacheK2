@@ -13,9 +13,9 @@ class TriplePatternMatchingStreamer : public I_TRMatchingStreamer {
   int channel_id;
   int pattern_channel_id;
 
-  proto_msg::TripleNode triple_pattern_node;
+  proto_msg::TripleNodeIdEnc triple_pattern_node;
+
   Cache *cache;
-  TimeControl *time_control;
   unsigned long threshold_part_size;
 
   bool first;
@@ -26,10 +26,12 @@ class TriplePatternMatchingStreamer : public I_TRMatchingStreamer {
 
   bool finished;
 
+  static constexpr long NODE_ANY = -9;
+
 public:
   TriplePatternMatchingStreamer(int channel_id, int pattern_channel_id,
-                                proto_msg::TripleNode triple_pattern_node,
-                                Cache *cache, TimeControl *time_control,
+                                proto_msg::TripleNodeIdEnc triple_pattern_node,
+                                Cache *cache,
                                 unsigned long threshold_part_size);
   proto_msg::CacheResponse get_next_response() override;
   int get_pattern_channel_id() override;
@@ -39,7 +41,6 @@ public:
   proto_msg::RDFTerm resource_to_term(RDFResource &&resource);
   void set_finished();
   proto_msg::CacheResponse timeout_proto_response();
-  proto_msg::BasicType basic_type_from_data_type(ExprDataType type);
 };
 
 #endif // RDFCACHEK2_TRIPLEPATTERNMATCHINGSTREAMER_HPP

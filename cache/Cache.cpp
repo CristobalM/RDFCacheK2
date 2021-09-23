@@ -27,10 +27,6 @@ Cache::Cache(std::shared_ptr<PredicatesCacheManager> predicates_cache_manager,
 
 {}
 
-RDFResource Cache::extract_resource(unsigned long index) const {
-  return cache_manager->extract_resource(index);
-}
-
 PredicatesCacheManager &Cache::get_pcm() { return *cache_manager; }
 
 I_CacheReplacement &Cache::get_replacement() { return *cache_replacement; }

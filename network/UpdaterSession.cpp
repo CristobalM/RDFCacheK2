@@ -5,8 +5,7 @@
 #include "UpdaterSession.hpp"
 #include "K2TreeUpdates.hpp"
 UpdaterSession::UpdaterSession(TaskProcessor *task_processor, Cache *cache)
-    : task_processor(task_processor), cache(cache),
-      last_id_known(cache->get_pcm().get_last_id()) {}
+    : task_processor(task_processor), cache(cache) {}
 
 void UpdaterSession::commit_updates() {
   auto write_lock = task_processor->acquire_write_lock();
@@ -14,21 +13,21 @@ void UpdaterSession::commit_updates() {
   (void)(write_lock);
 }
 
-void UpdaterSession::add_triple(RDFTripleResource &rdf_triple_resource) {
+void UpdaterSession::add_triple(TripleNodeId &rdf_triple_resource) {
 
   auto &tree_inserter = get_tree_inserter(rdf_triple_resource);
-  auto subject_id = get_or_create_resource_id(rdf_triple_resource.subject);
-  auto object_id = get_or_create_resource_id(rdf_triple_resource.object);
+  auto subject_id = rdf_triple_resource.subject.get_raw();
+  auto object_id = rdf_triple_resource.object.get_raw();
   tree_inserter.insert(subject_id, object_id);
 }
-void UpdaterSession::delete_triple(RDFTripleResource &rdf_triple_resource) {
-  auto predicate_id = get_resource_id(rdf_triple_resource.predicate);
+void UpdaterSession::delete_triple(TripleNodeId &rdf_triple_resource) {
+  auto predicate_id = rdf_triple_resource.predicate.get_raw();
   if (predicate_id == 0)
     return;
-  auto subject_id = get_resource_id(rdf_triple_resource.subject);
+  auto subject_id = rdf_triple_resource.subject.get_raw();
   if (subject_id == 0)
     return;
-  auto object_id = get_resource_id(rdf_triple_resource.subject);
+  auto object_id = rdf_triple_resource.subject.get_raw();
   if (object_id == 0)
     return;
 
@@ -36,41 +35,19 @@ void UpdaterSession::delete_triple(RDFTripleResource &rdf_triple_resource) {
   tree_deleter.insert(subject_id, object_id);
 }
 
-K2TreeBulkOp &
-UpdaterSession::get_tree_inserter(RDFTripleResource &triple_resource) {
+K2TreeBulkOp &UpdaterSession::get_tree_inserter(TripleNodeId &triple_resource) {
   return get_tree_bulk_op(added_triples, triple_resource);
 }
 K2TreeConfig UpdaterSession::get_config() {
   return cache->get_pcm().get_predicates_index_cache().get_config();
 }
 
-K2TreeBulkOp &
-UpdaterSession::get_tree_bulk_op(tmap_t &map_src,
-                                 RDFTripleResource &triple_resource) {
-  unsigned long predicate_id =
-      get_or_create_resource_id(triple_resource.predicate);
+K2TreeBulkOp &UpdaterSession::get_tree_bulk_op(tmap_t &map_src,
+                                               TripleNodeId &triple_resource) {
+  unsigned long predicate_id = triple_resource.predicate.get_raw();
   return get_tree_bulk_op_id(map_src, predicate_id);
 }
-unsigned long UpdaterSession::add_resource_get_id(RDFResource &resource) {
-  if (!added_resources) {
-    added_resources = std::make_unique<NaiveDynamicStringDictionary>();
-  }
-  auto id = added_resources->locate_node_id(resource);
-  if (id != 0)
-    return id;
 
-  added_resources->add_node_id(resource);
-  return added_resources->locate_node_id(resource) + last_id_known;
-}
-unsigned long UpdaterSession::get_resource_id(RDFResource &resource) {
-  return cache->get_pcm().get_resource_index(resource);
-}
-unsigned long UpdaterSession::get_or_create_resource_id(RDFResource &resource) {
-  auto id = get_resource_id(resource);
-  if (id != 0)
-    return id;
-  return add_resource_get_id(resource);
-}
 K2TreeBulkOp &UpdaterSession::get_tree_deleter(unsigned long id) {
   return get_tree_bulk_op_id(removed_triples, id);
 }
@@ -115,18 +92,6 @@ void UpdaterSession::log_updates() {
     k2tree_updates.emplace_back(predicate_id, add_tree, del_tree);
   }
 
-  task_processor->log_updates(added_resources.get(), k2tree_updates);
+  task_processor->log_updates(k2tree_updates);
 }
-void UpdaterSession::do_commit_updates() {
-  log_updates();
-  /*
-  if (added_resources)
-    cache->get_pcm().merge_with_extra_dict(*added_resources);
-  for (auto &kv : added_triples) {
-    cache->get_pcm().merge_add_tree(kv.first, *kv.second.first);
-  }
-  for (auto &kv : removed_triples) {
-    cache->get_pcm().merge_delete_tree(kv.first, *kv.second.first);
-  }
-   */
-}
+void UpdaterSession::do_commit_updates() { log_updates(); }

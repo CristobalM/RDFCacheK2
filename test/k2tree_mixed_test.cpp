@@ -9,7 +9,6 @@
 #include <utility>
 
 using namespace std::chrono_literals;
-TimeControl time_control(1e12, 100min);
 
 TEST(k2tree_mixed_tests, single_band_sip_1) {
   const uint32_t tree_depth = 10;
@@ -265,6 +264,48 @@ TEST(k2tree_mixed_test, can_scan_band_lazy_with_virtual_scanner) {
     ASSERT_EQ(curr.first, i++);
   }
   ASSERT_EQ(i, 100);
+}
+
+TEST(k2tree_mixed_test, check_if_64_depth_works_1) {
+  unsigned long treedepth = 64;
+  K2TreeMixed tree(treedepth, 256, 10);
+  K2TreeBulkOp bulk_op(tree);
+  constexpr size_t values_sz = 10;
+  std::set<std::pair<unsigned long, unsigned long>> values;
+  for (size_t i = 1; i <= values_sz; i++) {
+    // values.insert({(1UL << 38) + i, (1UL << 38) + i});
+    // values.insert({(1UL << 38UL) + i, (1UL << 38UL) + i});
+    auto exp = 63UL;
+    auto value = (1UL << exp) + i;
+    values.insert({value, value});
+  }
+  for (const auto &vp : values) {
+    bulk_op.insert(vp.first, vp.second);
+  }
+  K2QStateWrapper kst(treedepth, 10, 256);
+  tree.scan_points(
+      [](unsigned long col, unsigned long row, void *rs) {
+        auto &values = *reinterpret_cast<
+            std::set<std::pair<unsigned long, unsigned long>> *>(rs);
+        // std::cout << col << ", " << row << "\n";
+        auto found = values.find({col, row}) != values.end();
+        ASSERT_TRUE(found) << "failed with pair (" << col << ", " << row << ")";
+      },
+      &values, kst);
+
+  auto scanner = tree.create_full_scanner();
+  size_t i = 0;
+  while (scanner->has_next()) {
+    auto next_pair = scanner->next();
+    auto found = values.find(next_pair) != values.end();
+    ASSERT_TRUE(found) << "failed with pair (" << next_pair.first << ", "
+                       << next_pair.second << ") i = " << i;
+    i++;
+  }
+
+  for (const auto &vp : values) {
+    ASSERT_TRUE(tree.has(vp.first, vp.second));
+  }
 }
 
 int main(int argc, char **argv) {

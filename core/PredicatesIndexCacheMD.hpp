@@ -1,6 +1,8 @@
 #ifndef _PREDICATES_INDEX_CACHE_MD_HPP_
 #define _PREDICATES_INDEX_CACHE_MD_HPP_
 
+#include <I_FileRWHandler.hpp>
+#include <I_IStream.hpp>
 #include <istream>
 #include <map>
 #include <memory>
@@ -14,12 +16,12 @@
 #include "PredicatesCacheMetadata.hpp"
 
 class PredicatesIndexCacheMD {
+  std::unique_ptr<I_FileRWHandler> file_handler;
+  std::unique_ptr<I_IStream> is;
+
   PredicatesCacheMetadata metadata;
   std::mutex retrieval_mutex;
   std::mutex map_mutex;
-
-protected:
-  std::unique_ptr<std::istream> is;
 
 private:
   using predicates_map_t =
@@ -39,7 +41,7 @@ private:
   I_UpdateLoggerPCM *update_logger;
 
 public:
-  PredicatesIndexCacheMD(std::unique_ptr<std::istream> &&is);
+  PredicatesIndexCacheMD(std::unique_ptr<I_FileRWHandler> &&file_handler);
 
   PredicatesIndexCacheMD(PredicatesIndexCacheMD &&other) noexcept;
 
@@ -53,8 +55,7 @@ public:
   void insert_point(uint64_t subject_index, uint64_t predicate_index,
                     uint64_t object_index);
 
-  void sync_to_stream(std::ostream &os);
-  void replace_istream(std::unique_ptr<std::istream> &&is);
+  // void replace_istream(std::unique_ptr<I_IStream> &&is);
 
   void discard_in_memory_predicate(uint64_t predicate_index);
   K2TreeConfig get_config();
@@ -69,6 +70,13 @@ public:
   bool is_stored_in_main_index(uint64_t predicate_id);
   bool is_stored_in_updates_log(uint64_t predicate_id);
   void mark_dirty(uint64_t predicate_id);
+
+  void sync_to_persistent();
+
+  PredicatesIndexCacheMD(const std::string &input_filename);
+
+private:
+  void sync_to_stream(std::ostream &os);
 };
 
 #endif /* _PREDICATES_INDEX_CACHE_MD_HPP_ */

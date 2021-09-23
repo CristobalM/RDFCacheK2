@@ -3,7 +3,6 @@
 //
 
 #include "CacheServerTaskProcessor.hpp"
-#include "QueryResultPartStreamer.hpp"
 #include "TripleMatchesPartStreamer.hpp"
 #include "UpdaterSession.hpp"
 
@@ -31,7 +30,7 @@ std::unique_ptr<ServerTask> CacheServerTaskProcessor::get_server_task() {
 
 CacheServerTaskProcessor::CacheServerTaskProcessor(Cache &cache,
                                                    uint8_t workers_count)
-    : cache(cache), workers_count(workers_count), current_id(0),
+    : cache(cache), workers_count(workers_count),
       replacement_task_processor(cache),
       current_triples_streamers_channel_id(0), current_update_session_id(0),
       pcm_merger(cache.get_pcm()),
@@ -63,37 +62,6 @@ bool CacheServerTaskProcessor::tasks_available() {
   std::lock_guard<std::mutex> lock_guard(mutex);
   return !server_tasks.empty();
 }
-I_QRStreamer &CacheServerTaskProcessor::get_streamer(int id) {
-  std::lock_guard lg(mutex);
-  return *streamer_map[id];
-}
-
-bool CacheServerTaskProcessor::has_streamer(int id) {
-  std::lock_guard lg(mutex);
-
-  return streamer_map.find(id) != streamer_map.end();
-}
-
-I_QRStreamer &CacheServerTaskProcessor::create_streamer(
-    std::shared_ptr<QueryResultIteratorHolder> query_result_iterator,
-    std::unique_ptr<TimeControl> &&time_control,
-    std::shared_ptr<const std::vector<unsigned long>> predicates_in_use) {
-  std::lock_guard lg(mutex);
-
-  streamer_map[current_id] = std::make_unique<QueryResultPartStreamer>(
-      current_id, std::move(query_result_iterator), std::move(time_control),
-      DEFAULT_THRESHOLD_PART_SZ, std::move(predicates_in_use), this);
-
-  auto last_created = current_id;
-  current_id++;
-  return *streamer_map[last_created];
-}
-
-void CacheServerTaskProcessor::clean_streamer(int id) {
-  std::lock_guard lg(mutex);
-  streamer_map[id] = nullptr;
-  streamer_map.erase(id);
-}
 void CacheServerTaskProcessor::process_missed_predicates(
     std::shared_ptr<const std::vector<unsigned long>> predicates) {
   replacement_task_processor.add_task(std::move(predicates));
@@ -110,13 +78,12 @@ void CacheServerTaskProcessor::mark_ready(
 }
 
 I_TRStreamer &CacheServerTaskProcessor::create_triples_streamer(
-    std::vector<unsigned long> &&loaded_predicates,
-    std::unique_ptr<TimeControl> &&time_control) {
+    std::vector<unsigned long> &&loaded_predicates) {
   std::lock_guard lg(mutex);
 
   auto streamer = std::make_unique<TripleMatchesPartStreamer>(
       current_triples_streamers_channel_id, std::move(loaded_predicates),
-      DEFAULT_THRESHOLD_PART_SZ, std::move(time_control), this, &cache);
+      DEFAULT_THRESHOLD_PART_SZ, this, &cache);
   auto *ptr = streamer.get();
   triples_streamer_map[current_triples_streamers_channel_id] =
       std::move(streamer);
@@ -149,11 +116,11 @@ I_Updater &CacheServerTaskProcessor::get_updater(int updater_id) {
   return *updaters_sessions[updater_id];
 }
 void CacheServerTaskProcessor::log_updates(
-    NaiveDynamicStringDictionary *added_resources,
     std::vector<K2TreeUpdates> &k2trees_updates) {
   // std::lock_guard lg(mutex);
-  updates_logger.log(added_resources, k2trees_updates);
+  updates_logger.log(k2trees_updates);
 }
 WriteDataLock CacheServerTaskProcessor::acquire_write_lock() {
   return WriteDataLock();
 }
+CacheServerTaskProcessor::~CacheServerTaskProcessor() {}

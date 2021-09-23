@@ -2,7 +2,7 @@
 // Created by Cristobal Miranda, 2020
 //
 
-#include <chrono>
+#include <condition_variable>
 #include <iostream>
 #include <netinet/in.h>
 #include <set>
@@ -18,7 +18,7 @@
 #include <response_msg.pb.h>
 
 #include <NodeId.hpp>
-#include <condition_variable>
+#include <TripleNodeId.hpp>
 #include <hashing.hpp>
 #include <serialization_util.hpp>
 
@@ -160,87 +160,19 @@ void ServerTask::process_connection_end() {
   send_response(cache_response);
 }
 
-std::shared_ptr<const std::vector<unsigned long>>
-ServerTask::get_predicates_in_query(const proto_msg::SparqlNode &query_tree) {
-  std::set<unsigned long> result;
-  get_predicates_in_query_rec(query_tree, result);
-  return std::make_shared<const std::vector<unsigned long>>(result.begin(),
-                                                            result.end());
-}
-void ServerTask::get_predicates_in_query_rec(
-    const proto_msg::SparqlNode &node, std::set<unsigned long> &result_set) {
-  switch (node.node_case()) {
-
-  case proto_msg::SparqlNode::kProjectNode:
-    get_predicates_in_query_rec(node.project_node().sub_op(), result_set);
-    break;
-  case proto_msg::SparqlNode::kLeftJoinNode:
-    get_predicates_in_query_rec(node.left_join_node().left_node(), result_set);
-    get_predicates_in_query_rec(node.left_join_node().right_node(), result_set);
-    break;
-  case proto_msg::SparqlNode::kBgpNode:
-    get_predicates_in_query_bgp(node.bgp_node(), result_set);
-    break;
-  case proto_msg::SparqlNode::kUnionNode: {
-    for (int i = 0; i < node.union_node().nodes_list_size(); i++) {
-      get_predicates_in_query_rec(node.union_node().nodes_list(i), result_set);
-    }
-  } break;
-  case proto_msg::SparqlNode::kDistinctNode:
-    get_predicates_in_query_rec(node.distinct_node().sub_node(), result_set);
-    break;
-  case proto_msg::SparqlNode::kOptionalNode:
-    get_predicates_in_query_rec(node.optional_node().left_node(), result_set);
-    get_predicates_in_query_rec(node.optional_node().right_node(), result_set);
-    break;
-  case proto_msg::SparqlNode::kMinusNode:
-    get_predicates_in_query_rec(node.minus_node().left_node(), result_set);
-    get_predicates_in_query_rec(node.minus_node().right_node(), result_set);
-    break;
-  case proto_msg::SparqlNode::kFilterNode:
-    get_predicates_in_query_rec(node.filter_node().node(), result_set);
-    break;
-  case proto_msg::SparqlNode::kExtendNode:
-    get_predicates_in_query_rec(node.extend_node().node(), result_set);
-    break;
-  case proto_msg::SparqlNode::kSequenceNode: {
-    for (int i = 0; i < node.sequence_node().nodes_size(); i++) {
-      get_predicates_in_query_rec(node.sequence_node().nodes(i), result_set);
-    }
-  } break;
-  case proto_msg::SparqlNode::kSliceNode:
-    get_predicates_in_query_rec(node.slice_node().node(), result_set);
-    break;
-  case proto_msg::SparqlNode::kOrderNode:
-    get_predicates_in_query_rec(node.order_node().node(), result_set);
-    break;
-  default:
-    break;
-  }
-}
-void ServerTask::get_predicates_in_query_bgp(
-    const proto_msg::BGPNode &bgp_node, std::set<unsigned long> &result_set) {
-  for (int i = 0; i < bgp_node.triple_size(); i++) {
-    const auto &triple = bgp_node.triple(i);
-    auto predicate_id =
-        cache.get_pcm().get_resource_index(RDFResource(triple.predicate()));
-    if (predicate_id != 0)
-      result_set.insert(predicate_id);
-  }
-}
 void ServerTask::process_predicates_lock_for_triple_stream(Message &message) {
   const auto &sep_pred =
       message.get_cache_request().cache_request_separate_predicates();
 
   std::vector<unsigned long> predicates_requested;
+  std::cout << "requested predicates: ";
   for (int i = 0; i < sep_pred.predicates_size(); i++) {
     const auto &pred_term = sep_pred.predicates(i);
 
-    auto node_id = NodeId(pred_term.encoded_data());
-    auto resource_id = cache.get_pcm().get_resource_index(node_id);
-    if (resource_id > 0)
-      predicates_requested.push_back(resource_id);
+    predicates_requested.push_back(pred_term.encoded_data());
+    std::cout << pred_term.encoded_data() << ", ";
   }
+  std::cout << std::endl;
 
   std::vector<unsigned long> loaded_predicates;
 
@@ -275,11 +207,8 @@ void ServerTask::process_predicates_lock_for_triple_stream(Message &message) {
     loaded_predicates = std::move(predicates_requested);
   }
 
-  auto time_control = std::make_unique<TimeControl>(
-      100'000, std::chrono::milliseconds(cache.get_timeout_ms()));
-
-  auto &triples_streamer = task_processor.create_triples_streamer(
-      std::move(loaded_predicates), std::move(time_control));
+  auto &triples_streamer =
+      task_processor.create_triples_streamer(std::move(loaded_predicates));
 
   auto response = triples_streamer.get_loaded_predicates_response();
   send_response(response);
@@ -353,10 +282,17 @@ void ServerTask::process_update_triples_batch(Message &message) {
   const auto &triples_to_delete = req.triples_to_delete();
 
   for (const auto &triple_proto : triples_to_add) {
-    updater.add_triple(RDFTripleResource(triple_proto));
+
+    updater.add_triple(
+        TripleNodeId(NodeId(triple_proto.subject().encoded_data()),
+                     NodeId(triple_proto.predicate().encoded_data()),
+                     NodeId(triple_proto.object().encoded_data())));
   }
   for (const auto &triple_proto : triples_to_delete) {
-    updater.delete_triple(RDFTripleResource(triple_proto));
+    updater.delete_triple(
+        TripleNodeId(NodeId(triple_proto.subject().encoded_data()),
+                     NodeId(triple_proto.predicate().encoded_data()),
+                     NodeId(triple_proto.object().encoded_data())));
   }
 
   proto_msg::CacheResponse cache_response;

@@ -5,7 +5,7 @@
 #ifndef RDFCACHEK2_CACHEARGS_HPP
 #define RDFCACHEK2_CACHEARGS_HPP
 
-#include <replacement/I_CacheReplacement.hpp>
+#include "replacement/I_CacheReplacement.hpp"
 struct CacheArgs {
   unsigned long memory_budget_bytes;
   I_CacheReplacement::REPLACEMENT_STRATEGY replacement_strategy;

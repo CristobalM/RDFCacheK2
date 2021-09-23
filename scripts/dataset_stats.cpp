@@ -8,11 +8,8 @@
 #include <string>
 
 #include <PredicatesCacheManager.hpp>
-#include <SDWrapper.hpp>
-#include <StringDictionaryHASHRPDAC.h>
-#include <StringDictionaryHASHRPDACBlocks.h>
-#include <StringDictionaryPFC.h>
 
+#include <FileRWHandler.hpp>
 #include <exception>
 
 struct parsed_options {
@@ -35,14 +32,8 @@ int main(int argc, char **argv) {
   std::ifstream ifs_literals(parsed.literals_file,
                              std::ios::in | std::ios::binary);
 
-  auto sds_tmp =
-      std::make_unique<SDWrapper<StringDictionaryPFC, StringDictionaryPFC,
-                                 StringDictionaryHASHRPDACBlocks>>(
-          ifs_iris, ifs_blanks, ifs_literals);
-
-  PredicatesCacheManager pcm(std::move(sds_tmp), parsed.k2trees_file);
-
-  auto *sds = pcm.get_isd_manager();
+  auto frw_handler = std::make_unique<FileRWHandler>(parsed.k2trees_file);
+  PredicatesCacheManager pcm(std::move(frw_handler));
 
   auto &predicates_index = pcm.get_predicates_index_cache();
   const auto &predicates_ids = predicates_index.get_predicates_ids();
@@ -52,7 +43,6 @@ int main(int argc, char **argv) {
   unsigned long total_points = 0;
 
   ofs << "#,"
-      << "predicate,"
       << "points,"
       << "total_block_nodes,"
       << "bytes_topology,"
@@ -80,20 +70,16 @@ int main(int argc, char **argv) {
     auto stats = k2tree.k2tree_stats();
     size_t tree_number_of_points = k2tree.size();
     total_points += tree_number_of_points;
-    auto pred_resource = pcm.get_isd_manager()->get_resource(predicate_id);
 
-    ofs << predicate_id << "," << pred_resource.value << ","
-        << tree_number_of_points << "," << stats.total_blocks << ","
-        << stats.bytes_topology << "," << stats.total_bytes << ","
-        << serialized_bytes << "," << size_in_memory << ","
-        << duration_ms.count() << "\n";
+    ofs << predicate_id << "," << tree_number_of_points << ","
+        << stats.total_blocks << "," << stats.bytes_topology << ","
+        << stats.total_bytes << "," << serialized_bytes << "," << size_in_memory
+        << "," << duration_ms.count() << "\n";
 
     predicates_index.discard_in_memory_predicate(predicate_id);
   }
 
-  std::cout << "Different strings: " << sds->last_id() << "\n"
-            << "Total triples: " << total_points << "\n"
-            << std::endl;
+  std::cout << "Total triples: " << total_points << "\n" << std::endl;
 
   return 0;
 }

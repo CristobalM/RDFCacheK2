@@ -7,6 +7,8 @@ MemorySegment::MemorySegment(size_t size_bytes)
     : data(std::make_unique<uint8_t[]>(size_bytes)), size_bytes(size_bytes),
       byte_position(0) {}
 void *MemorySegment::require_bytes(size_t needed_bytes) {
+  if (needed_bytes == 0)
+    return nullptr;
   if (needed_bytes + byte_position > size_bytes)
     return nullptr;
   void *result = data.get() + byte_position;

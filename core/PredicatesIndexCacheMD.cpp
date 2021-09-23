@@ -4,18 +4,25 @@
 #include "PredicatesIndexCacheMD.hpp"
 #include <serialization_util.hpp>
 
+#include <FileRWHandler.hpp>
 #include <MemoryManager.hpp>
 #include <hashing.hpp>
 
 PredicatesIndexCacheMD::PredicatesIndexCacheMD(
-    std::unique_ptr<std::istream> &&is)
-    : metadata(*is), is(std::move(is)), k2tree_config(metadata.get_config()),
+    const std::string &input_filename)
+    : PredicatesIndexCacheMD(std::make_unique<FileRWHandler>(input_filename)) {}
+
+PredicatesIndexCacheMD::PredicatesIndexCacheMD(
+    std::unique_ptr<I_FileRWHandler> &&file_handler)
+    : file_handler(std::move(file_handler)),
+      is(this->file_handler->get_reader(std::ios::binary)),
+      metadata(is->get_stream()), k2tree_config(metadata.get_config()),
       full_memory_segment(nullptr), update_logger(nullptr) {}
 
 PredicatesIndexCacheMD::PredicatesIndexCacheMD(
     PredicatesIndexCacheMD &&other) noexcept
-    : metadata(std::move(other.metadata)), is(std::move(other.is)),
-      k2tree_config(other.k2tree_config),
+    : file_handler(std::move(other.file_handler)), is(std::move(other.is)),
+      metadata(std::move(other.metadata)), k2tree_config(other.k2tree_config),
       memory_segments_map(std::move(other.memory_segments_map)),
       full_memory_segment(other.full_memory_segment), update_logger(nullptr) {}
 
@@ -35,7 +42,7 @@ bool PredicatesIndexCacheMD::load_single_predicate(uint64_t predicate_index) {
   memory_segments_map[predicate_metadata.predicate_id] = memory_segment;
 
   predicates[predicate_metadata.predicate_id] = std::make_unique<K2TreeMixed>(
-      K2TreeMixed::read_from_istream(*is, memory_segment));
+      K2TreeMixed::read_from_istream(is->get_stream(), memory_segment));
   is->seekg(pos);
 
   if (update_logger) {
@@ -69,10 +76,7 @@ bool PredicatesIndexCacheMD::has_predicate_active(uint64_t predicate_index) {
 
 bool PredicatesIndexCacheMD::has_predicate_stored(uint64_t predicate_index) {
   std::lock_guard lg(map_mutex);
-  /*
-  return metadata.get_map().find(predicate_index) != metadata.get_map().end() ||
-  update_logger->has_predicate_stored(predicate_index);
-   */
+
   return is_stored_in_main_index(predicate_index) ||
          is_stored_in_updates_log(predicate_index);
 }
@@ -103,6 +107,7 @@ void PredicatesIndexCacheMD::insert_point(uint64_t subject_index,
 
 // Dont use the same stream as the stored, create a new one and then replace it
 // with this
+
 void PredicatesIndexCacheMD::sync_to_stream(std::ostream &os) {
 
   std::lock_guard lg(retrieval_mutex);
@@ -138,7 +143,7 @@ void PredicatesIndexCacheMD::sync_to_stream(std::ostream &os) {
       is->seekg(current_md.tree_offset);
       {
         std::vector<char> buf(meta.tree_size);
-        is->read(buf.data(), buf.size());
+        is->get_stream().read(buf.data(), buf.size());
         os.write(buf.data(), buf.size());
       }
     } else {
@@ -168,10 +173,12 @@ void PredicatesIndexCacheMD::sync_to_stream(std::ostream &os) {
 }
 
 // Call after sync_to_stream
+/*
 void PredicatesIndexCacheMD::replace_istream(
-    std::unique_ptr<std::istream> &&_is) {
+    std::unique_ptr<I_IStream> &&_is) {
   this->is = std::move(_is);
 }
+ */
 
 void PredicatesIndexCacheMD::discard_in_memory_predicate(
     uint64_t predicate_index) {
@@ -258,7 +265,7 @@ void PredicatesIndexCacheMD::load_all_predicates() {
     raw_k2tree.clear();
 */
     predicates[*it] = std::make_unique<K2TreeMixed>(
-        K2TreeMixed::read_from_istream(*is, mem_segment));
+        K2TreeMixed::read_from_istream(is->get_stream(), mem_segment));
   }
 }
 void PredicatesIndexCacheMD::set_update_logger(
@@ -273,4 +280,13 @@ bool PredicatesIndexCacheMD::is_stored_in_updates_log(uint64_t predicate_id) {
 }
 void PredicatesIndexCacheMD::mark_dirty(uint64_t predicate_id) {
   dirty_predicates.insert(predicate_id);
+}
+void PredicatesIndexCacheMD::sync_to_persistent() {
+  auto temp_writer =
+      file_handler->get_writer_temp(std::ios::binary | std::ios::trunc);
+  sync_to_stream(temp_writer->get_stream());
+  temp_writer->flush();
+  is = nullptr; // closes the open file
+  file_handler->commit_temp_writer();
+  is = file_handler->get_reader(std::ios::binary);
 }

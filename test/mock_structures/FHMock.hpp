@@ -14,9 +14,10 @@
 #include <I_OStream.hpp>
 
 struct FHMock : public I_FileRWHandler {
-  std::string &data;
+  std::string data;
   std::string temp_data;
-  explicit FHMock(std::string &data);
+  explicit FHMock(std::string data);
+  FHMock();
 
   std::unique_ptr<I_OStream> get_writer(std::ios::openmode) override;
   std::unique_ptr<I_IStream> get_reader(std::ios::openmode) override;

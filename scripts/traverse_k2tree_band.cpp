@@ -4,9 +4,10 @@
 #include <stdexcept>
 #include <string>
 
+#include <FileRWHandler.hpp>
 #include <K2TreeBulkOp.hpp>
 #include <K2TreeMixed.hpp>
-#include <PredicatesIndexCacheMDFile.hpp>
+#include <PredicatesIndexCacheMD.hpp>
 #include <set>
 #include <triple_external_sort.hpp>
 
@@ -31,7 +32,9 @@ int main(int argc, char **argv) {
     throw std::runtime_error("Not found file " + parsed.input_file);
   }
 
-  PredicatesIndexCacheMDFile pc(parsed.input_file);
+  auto frw_handler = std::make_unique<FileRWHandler>(parsed.input_file);
+
+  PredicatesIndexCacheMD pc(std::move(frw_handler));
 
   auto fetch_result = pc.fetch_k2tree(parsed.predicate);
   auto &k2tree = fetch_result.get_mutable();

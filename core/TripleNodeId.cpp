@@ -1,0 +1,7 @@
+//
+// Created by cristobal on 21-09-21.
+//
+
+#include "TripleNodeId.hpp"
+TripleNodeId::TripleNodeId(NodeId subject, NodeId predicate, NodeId object)
+    : subject(subject), predicate(predicate), object(object) {}

@@ -66,51 +66,6 @@ void build_cache_test_file(const std::string &fname) {
   build_cache_test_file(fname, {});
 }
 
-std::vector<std::vector<RDFResource>>
-translate_table(QueryResult &input_query_result, Cache &cache) {
-  std::vector<std::vector<RDFResource>> translated_table;
-  auto &input_table = input_query_result.table();
-  for (auto &row : input_table.data) {
-    std::vector<RDFResource> translated_row;
-    for (auto col : row) {
-      if (col == 0) {
-        RDFResource null_resource("NULL", RDFResourceType::RDF_TYPE_LITERAL);
-        translated_row.push_back(null_resource);
-      } else {
-        RDFResource col_resource;
-        if (col > cache.get_pcm().get_last_id()) {
-          col_resource = input_query_result.get_extra_dict().extract_node_id(
-              col - cache.get_pcm().get_last_id());
-        } else {
-          col_resource = cache.extract_resource(col);
-        }
-
-        translated_row.push_back(col_resource);
-      }
-    }
-    translated_table.push_back(std::move(translated_row));
-  }
-  return translated_table;
-}
-std::vector<std::vector<RDFResource>> translate_table(ResultTable &input_table,
-                                                      Cache &cache) {
-  std::vector<std::vector<RDFResource>> translated_table;
-  for (auto &row : input_table.data) {
-    std::vector<RDFResource> translated_row;
-    for (auto col : row) {
-      if (col == 0) {
-        RDFResource null_resource("NULL", RDFResourceType::RDF_TYPE_LITERAL);
-        translated_row.push_back(null_resource);
-      } else {
-        auto col_resource = cache.extract_resource(col);
-        translated_row.push_back(col_resource);
-      }
-    }
-    translated_table.push_back(std::move(translated_row));
-  }
-  return translated_table;
-}
-
 void print_table_debug(
     ResultTable &table,
     std::unordered_map<unsigned long, std::string> &reverse_map,
@@ -128,13 +83,4 @@ void print_table_debug(
   }
 
   std::cout << "total size: " << translated_table.size() << std::endl;
-}
-
-void print_table_debug2(QueryResult &query_result, Cache &cache) {
-  auto &table = query_result.table();
-  auto translated_table = translate_table(query_result, cache);
-
-  auto &vim = query_result.get_vim();
-  auto reverse_map = vim.reverse();
-  print_table_debug(table, reverse_map, translated_table);
 }

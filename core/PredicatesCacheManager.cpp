@@ -4,98 +4,31 @@
 
 #include "PredicatesCacheManager.hpp"
 #include "K2TreeBulkOp.hpp"
-#include "NodeId.hpp"
 #include "NullScanner.hpp"
-#include <StringDictionary.h>
+#include <FileRWHandler.hpp>
 #include <chrono>
-#include <filesystem>
-#include <fstream>
 #include <functional>
 
 namespace fs = std::filesystem;
 
 PredicatesCacheManager::PredicatesCacheManager(
-    std::unique_ptr<ISDManager> &&isd_manager,
-    std::unique_ptr<PredicatesIndexCacheMDFile> &&predicates_index)
-    : isd_manager(std::move(isd_manager)),
-      predicates_index(std::move(predicates_index)), update_logger(nullptr),
+    std::unique_ptr<PredicatesIndexCacheMD> &&predicates_index)
+    : predicates_index(std::move(predicates_index)), update_logger(nullptr),
       measured_time_sd_lookup(0) {}
 
 PredicatesCacheManager::PredicatesCacheManager(
-    std::unique_ptr<ISDManager> &&isd_manager, const std::string &fname)
+    std::unique_ptr<I_FileRWHandler> &&file_rwhandler)
     : PredicatesCacheManager(
-          std::move(isd_manager),
-          std::make_unique<PredicatesIndexCacheMDFile>(fname)) {}
-uint64_t
-PredicatesCacheManager::get_resource_index(const NodeId &node_id) const {
-  auto index = get_resource_index_notfound_zero(node_id);
-  if (index == NORESULT) {
-    auto naive_id = extra_dicts.locate_node_id(node_id);
-    if (naive_id == NORESULT) {
-      return NORESULT;
-    }
-    return naive_id + isd_manager->last_id();
-  }
-
-  return index;
+          std::make_unique<PredicatesIndexCacheMD>(std::move(file_rwhandler))) {
 }
 
-uint64_t PredicatesCacheManager::get_resource_index_notfound_zero(
-    const NodeId &node_id) const {
-  return isd_manager->get_resource_id_from_node_id(node_id);
-}
+PredicatesCacheManager::PredicatesCacheManager(
+    const std::string &input_k2tree_filename)
+    : PredicatesCacheManager(
+          std::make_unique<FileRWHandler>(input_k2tree_filename)) {}
 
-// void PredicatesCacheManager::handle_not_found(unsigned long &resource_id,
-//                                              RDFResource &resource) {
-//  if (resource_id != NORESULT)
-//    return;
-//
-//  resource_id = extra_dicts.locate_node_id(resource);
-//  if (resource_id == 0) {
-//    extra_dicts.add_node_id(resource);
-//    resource_id = extra_dicts.locate_node_id(resource);
-//  }
-//  resource_id = resource_id + isd_manager->last_id();
-//}
-//
-// void PredicatesCacheManager::add_triple(RDFTripleResource &rdf_triple) {
-//  auto start = std::chrono::high_resolution_clock::now();
-//  auto subject_id = get_resource_index_notfound_zero(rdf_triple.subject);
-//  auto predicate_id = get_resource_index_notfound_zero(rdf_triple.predicate);
-//  auto object_id = get_resource_index_notfound_zero(rdf_triple.object);
-//
-//  measured_time_sd_lookup +=
-//      std::chrono::duration_cast<std::chrono::nanoseconds>(
-//          std::chrono::high_resolution_clock::now() - start)
-//          .count();
-//
-//  handle_not_found(subject_id, rdf_triple.subject);
-//  handle_not_found(predicate_id, rdf_triple.predicate);
-//  handle_not_found(object_id, rdf_triple.object);
-//  predicates_index->insert_point(subject_id, predicate_id, object_id);
-//}
-
-PredicatesIndexCacheMDFile &
-PredicatesCacheManager::get_predicates_index_cache() {
+PredicatesIndexCacheMD &PredicatesCacheManager::get_predicates_index_cache() {
   return *predicates_index;
-}
-
-ISDManager *PredicatesCacheManager::get_isd_manager() {
-  return isd_manager.get();
-}
-
-std::vector<std::pair<unsigned long, std::string>>
-PredicatesCacheManager::get_plain_mapping_debug() {
-  std::vector<std::pair<unsigned long, std::string>> result;
-  for (unsigned long i = 1; i <= isd_manager->last_id() + extra_dicts.size();
-       i++) {
-    auto res = extract_resource(i);
-    result.push_back({i, res.value});
-  }
-  return result;
-}
-unsigned long PredicatesCacheManager::get_last_id() const {
-  return isd_manager->last_id() + extra_dicts.size();
 }
 
 void PredicatesCacheManager::load_all_predicates() {
@@ -118,10 +51,6 @@ void PredicatesCacheManager::retrieve_key(unsigned long key) {
 std::unique_ptr<K2TreeScanner>
 PredicatesCacheManager::create_null_k2tree_scanner() {
   return std::make_unique<NullScanner>();
-}
-void PredicatesCacheManager::merge_with_extra_dict(
-    NaiveDynamicStringDictionary &input_extra_dict) {
-  extra_dicts.merge_with_extra_dict(input_extra_dict);
 }
 void PredicatesCacheManager::merge_add_tree(unsigned long predicate_id,
                                             K2TreeMixed &k2tree) {

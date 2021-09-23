@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 
+#include "mock_structures/FHMock.hpp"
 #include <K2TreeBulkOp.hpp>
 #include <PredicatesIndexCacheMD.hpp>
 #include <PredicatesIndexFileBuilder.hpp>
@@ -31,7 +32,9 @@ static std::pair<PredicatesIndexCacheMD, unsigned long> build_picmd() {
 
   PredicatesIndexFileBuilder::build(ss, *out, tmp, config);
 
-  return {PredicatesIndexCacheMD(std::move(out)), sz};
+  auto frw_handler = std::make_unique<FHMock>(out->str());
+
+  return {PredicatesIndexCacheMD(std::move(frw_handler)), sz};
 }
 static std::pair<PredicatesIndexCacheMD, unsigned long>
 build_picmd_single_predicate(unsigned long predicate_id) {
@@ -56,7 +59,9 @@ build_picmd_single_predicate(unsigned long predicate_id) {
 
   PredicatesIndexFileBuilder::build(ss, *out, tmp, config);
 
-  return {PredicatesIndexCacheMD(std::move(out)), sz};
+  auto frw_handler = std::make_unique<FHMock>(out->str());
+
+  return {PredicatesIndexCacheMD(std::move(frw_handler)), sz};
 }
 
 static std::pair<PredicatesIndexCacheMD, unsigned long>
@@ -82,7 +87,9 @@ build_picmd_2(unsigned long predicate_id) {
 
   PredicatesIndexFileBuilder::build(ss, *out, tmp, config);
 
-  return {PredicatesIndexCacheMD(std::move(out)), sz};
+  auto frw_handler = std::make_unique<FHMock>(out->str());
+
+  return {PredicatesIndexCacheMD(std::move(frw_handler)), sz};
 }
 
 TEST(predicates_metadata_serialization, same_k2tree_as_non_serialized) {
@@ -172,9 +179,7 @@ TEST(predicates_metadata_serialization, can_sync_with_external) {
     pc.insert_point(i, i, i);
   }
 
-  auto new_data = std::make_unique<std::stringstream>();
-  pc.sync_to_stream(*new_data);
-  pc.replace_istream(std::move(new_data));
+  pc.sync_to_persistent();
 
   for (unsigned long i = sz; i > 0; i--) {
     auto fetch_result = pc.fetch_k2tree(i);

@@ -6,11 +6,6 @@
 
 DataMergerMock::DataMergerMock(K2TreeConfig config) : config(config) {}
 
-void DataMergerMock::merge_with_extra_dict(
-    NaiveDynamicStringDictionary &input_extra_dict) {
-  main_dict.merge_with_extra_dict(input_extra_dict);
-}
-
 void DataMergerMock::merge_add_tree(unsigned long predicate_id,
                                     K2TreeMixed &k2tree) {
   auto it = trees.find(predicate_id);
@@ -50,7 +45,6 @@ void DataMergerMock::merge_delete_tree(unsigned long predicate_id,
 }
 
 void DataMergerMock::drop() {
-  main_dict = NaiveDynamicStringDictionary();
   trees = std::unordered_map<unsigned long, std::unique_ptr<K2TreeMixed>>();
 }
 

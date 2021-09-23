@@ -5,6 +5,7 @@
 #ifndef RDFCACHEK2_UPDATESLOGGER_HPP
 #define RDFCACHEK2_UPDATESLOGGER_HPP
 
+#include <map>
 #include <ostream>
 
 #include "I_DataMerger.hpp"
@@ -13,7 +14,6 @@
 #include "K2TreeUpdates.hpp"
 #include <I_IStream.hpp>
 #include <I_OStream.hpp>
-#include <NaiveDynamicStringDictionary.hpp>
 
 class UpdatesLogger {
 
@@ -38,8 +38,7 @@ public:
                 I_FileRWHandler &metadata_rw_handler);
   void recover(const std::vector<unsigned long> &predicates);
   void recover_all();
-  void log(NaiveDynamicStringDictionary *added_resources,
-           std::vector<K2TreeUpdates> &k2tree_updates);
+  void log(std::vector<K2TreeUpdates> &k2tree_updates);
 
   void recover_predicate(unsigned long predicate_id);
 

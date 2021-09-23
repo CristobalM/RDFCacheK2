@@ -10,12 +10,6 @@
 #include <string>
 
 #include <PredicatesCacheManager.hpp>
-#include <SDWrapper.hpp>
-#include <StringDictionaryHASHRPDAC.h>
-#include <StringDictionaryHASHRPDACBlocks.h>
-#include <StringDictionaryPFC.h>
-
-#include <exception>
 
 struct parsed_options {
   std::string iris_file;
@@ -33,17 +27,7 @@ void print_help();
 int main(int argc, char **argv) {
   parsed_options parsed = parse_cmline(argc, argv);
 
-  std::ifstream ifs_iris(parsed.iris_file, std::ios::in | std::ios::binary);
-  std::ifstream ifs_blanks(parsed.blanks_file, std::ios::in | std::ios::binary);
-  std::ifstream ifs_literals(parsed.literals_file,
-                             std::ios::in | std::ios::binary);
-
-  auto sds_tmp =
-      std::make_unique<SDWrapper<StringDictionaryPFC, StringDictionaryPFC,
-                                 StringDictionaryHASHRPDACBlocks>>(
-          ifs_iris, ifs_blanks, ifs_literals);
-
-  PredicatesCacheManager pcm(std::move(sds_tmp), parsed.k2trees_file);
+  PredicatesCacheManager pcm(parsed.k2trees_file);
 
   auto &predicates_index = pcm.get_predicates_index_cache();
   const auto &predicates_ids = predicates_index.get_predicates_ids();
@@ -53,7 +37,6 @@ int main(int argc, char **argv) {
                         std::ios::out | std::ios::binary | std::ios::trunc);
 
   ofs << "#,"
-      << "predicate,"
       << "serialization_time_microsecs"
       << "\n";
 
@@ -69,10 +52,7 @@ int main(int argc, char **argv) {
     auto duration_ms =
         std::chrono::duration_cast<std::chrono::microseconds>(end - start);
 
-    auto pred_resource = pcm.get_isd_manager()->get_resource(predicate_id);
-
-    ofs << predicate_id << "," << pred_resource.value << ","
-        << duration_ms.count() << "\n";
+    ofs << predicate_id << "," << duration_ms.count() << "\n";
   }
   ofs_tmp.close();
   std::filesystem::remove(parsed.tmp_serialization_file);

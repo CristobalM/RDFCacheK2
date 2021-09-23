@@ -15,7 +15,9 @@ set(CMAKE_C_FLAGS "-Wall -Wextra -std=c99 -pedantic -Wmissing-prototypes -Wstric
 set(CMAKE_CXX_FLAGS "-Wall -Wextra -std=c++17 -pedantic -Werror")
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fstandalone-debug")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fstandalone-debug -fprofile-instr-generate -fcoverage-mapping")
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}  -fprofile-arcs -ftest-coverage -lgcov --coverage")
 endif ()
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
@@ -35,9 +37,7 @@ set(CORE_SOURCE_FILES
         core/PredicatesCacheMetadata.cpp
         core/PredicatesIndexFileBuilder.cpp
         core/PredicatesIndexCacheMD.cpp
-        core/PredicatesIndexCacheMDFile.cpp
         core/PredicatesCacheManager.cpp
-        core/NaiveDynamicStringDictionary.cpp
         core/ResultTable.cpp
         core/EmptyISDManager.cpp
         core/block_serialization.cpp
@@ -58,12 +58,13 @@ set(CORE_SOURCE_FILES
         core/K2TreeBulkOp.hpp
         core/I_DataManager.hpp
         core/NullScanner.cpp
-        core/NullScanner.hpp core/I_UpdateLoggerPCM.hpp core/NodeId.cpp core/NodeId.hpp core/InvalidStringSizeForNodeId.hpp core/SDWrapper.cpp)
-
-set(PROC_SOURCE_FILES
-        proc/SDFeed.cpp
-        proc/SDBuilder.cpp
-        )
+        core/NullScanner.hpp
+        core/I_UpdateLoggerPCM.hpp
+        core/NodeId.cpp
+        core/NodeId.hpp
+        core/InvalidStringSizeForNodeId.hpp
+        core/TripleNodeId.cpp
+        core/TripleNodeId.hpp)
 
 
 set(NETWORK_SOURCE_FILES
@@ -116,7 +117,6 @@ set(CACHE_SOURCES
         cache/Cache.hpp
         cache/Cache.cpp
         cache/CacheArgs.hpp
-
         cache/replacement/I_PQTraverse.hpp
         cache/replacement/CacheReplacement.cpp
         cache/replacement/CacheReplacement.hpp
@@ -167,22 +167,13 @@ set(INCLUDES
         )
 
 
-set(LIB_CPPBASE64_PATH lib/cpp-base64)
 set(LIB_EXTERNAL_SORT_PATH lib/external-sort)
 
 set(INCLUDES_LIBS
         ${K2TREE_PATH}/include
-        ${LIB_CPPBASE64_PATH}
         ${LIB_EXTERNAL_SORT_PATH}/include
         )
 
-set(LIB_CSD_BPATH lib/libCSD)
-set(LIB_CSD_INCLUDES
-        ${LIB_CSD_BPATH}
-        ${LIB_CSD_BPATH}/libcds/includes
-        )
-
-add_subdirectory(${LIB_CSD_BPATH})
 
 set(LIB_NTPARSER lib/ntparser)
 set(LIB_NTPARSER_INCLUDES
@@ -198,7 +189,6 @@ add_subdirectory(${LIB_NTPARSER})
 include_directories(
         ${INCLUDES}
         ${INCLUDES_LIBS}
-        ${LIB_CSD_INCLUDES}
         ${LIB_NTPARSER_INCLUDES}
 )
 
@@ -209,10 +199,6 @@ add_library(RDFCacheK2_Memory STATIC ${MEMORY_SOURCES})
 add_library(RDFCacheK2_Cache STATIC ${CACHE_SOURCES})
 add_library(ProtoMessages STATIC ${PROTO_MESSAGES})
 
-
-add_library(Proc STATIC ${PROC_SOURCE_FILES})
-
-add_library(CppBase64 ${LIB_CPPBASE64_PATH}/base64.cpp)
 
 add_library(Utils utils/serialization_util.cpp
         utils/hashing.cpp
@@ -229,12 +215,11 @@ add_library(Utils utils/serialization_util.cpp
 
         utils/FileIOStream.cpp utils/FileIOStream.hpp)
 
-add_dependencies(Proc CppBase64)
-
 # add_dependencies(RDFCacheK2 _k2tree_merged_noalloc)
 #add_dependencies(RDFCacheK2 k2dyn Utils)
 add_dependencies(RDFCacheK2 k2dyn_custom_mem Utils)
-add_dependencies(RDFCacheK2_Network RDFCacheK2)
+add_dependencies(RDFCacheK2_Cache RDFCacheK2)
+add_dependencies(RDFCacheK2_Network RDFCacheK2 RDFCacheK2_Cache)
 
 #add_dependencies(RDFCacheK2_GR RDFCacheK2)
 
@@ -257,8 +242,6 @@ set(BASE_LIBS
         k2dyn_custom_mem
         ProtoMessages
         ${Protobuf_LIBRARIES}
-        CSD
-        cds
         Utils
         ${OPENSSL_LIBRARIES}
         stdc++fs
@@ -268,23 +251,18 @@ set(BASE_LIBS
         )
 
 set(PROC_LIBS
-        Proc
-        CSD
-        cds
         pthread
-        CppBase64
         Utils
         )
 
 set(DEFAULT_LIBS
-        RDFCacheK2
         RDFCacheK2_Network
+        RDFCacheK2_Cache
+        RDFCacheK2
         #k2dyn
         k2dyn_custom_mem
         ProtoMessages
         ${Protobuf_LIBRARIES}
-        CSD
-        cds
         Utils
         ${OPENSSL_LIBRARIES}
         stdc++fs
@@ -295,41 +273,9 @@ set(DEFAULT_LIBS
         )
 
 
-# target_link_libraries(start_cache_server_example RDFCacheK2_GR ${DEFAULT_LIBS} )
-
-add_executable(validate_sd_from_nt scripts/validate_sd_from_nt.cpp)
-target_include_directories(validate_sd_from_nt PUBLIC ${LIB_CPPBASE64_PATH})
-target_link_libraries(validate_sd_from_nt ${BASE_LIBS} CppBase64 ntparser pthread)
-
-
-#add_executable(index_by_k2tree_with_sd scripts/index_by_k2tree_with_sd.cpp)
-#target_link_libraries(index_by_k2tree_with_sd ${BASE_LIBS} ntparser )
-
-
-add_executable(split_nt_triples scripts/split_nt_triples.cpp)
-target_include_directories(split_nt_triples PUBLIC ${LIB_CPPBASE64_PATH})
-target_link_libraries(split_nt_triples ntparser CppBase64)
-
-
-add_executable(sd_from_fileset_readfull scripts/sd_from_fileset_readfull.cpp)
-target_link_libraries(sd_from_fileset_readfull ${PROC_LIBS})
-
-add_executable(print_sd scripts/print_sd.cpp)
-target_include_directories(print_sd PUBLIC ${LIB_CPPBASE64_PATH})
-target_link_libraries(print_sd ${PROC_LIBS})
-
-
-add_executable(base64_transform scripts/base64_transform.cpp)
-target_include_directories(base64_transform PUBLIC ${LIB_CPPBASE64_PATH})
-target_link_libraries(base64_transform ${PROC_LIBS})
-
 add_executable(external_sort scripts/triple_external_sort.cpp)
 target_include_directories(external_sort PUBLIC ${INCLUDES})
 target_link_libraries(external_sort pthread Utils stdc++fs)
-
-add_executable(convert_nt_to_binary scripts/convert_nt_to_binary.cpp)
-target_include_directories(convert_nt_to_binary PUBLIC ${INCLUDES})
-target_link_libraries(convert_nt_to_binary ${PROC_LIBS} ntparser)
 
 add_executable(extract_triples_binary scripts/extract_triples_binary.cpp)
 target_include_directories(extract_triples_binary PUBLIC ${INCLUDES})
@@ -353,14 +299,6 @@ add_executable(debug_read_k2trees_metadata scripts/debug_read_k2trees_metadata.c
 target_include_directories(debug_read_k2trees_metadata PUBLIC ${INCLUDES})
 target_link_libraries(debug_read_k2trees_metadata ${DEFAULT_LIBS})
 
-add_executable(show_sds_map scripts/show_sds_map.cpp)
-target_include_directories(show_sds_map PUBLIC ${INCLUDES})
-target_link_libraries(show_sds_map ${DEFAULT_LIBS})
-
-add_executable(validate_pcm scripts/validate_pcm.cpp)
-target_include_directories(validate_pcm PUBLIC ${INCLUDES})
-target_link_libraries(validate_pcm ${DEFAULT_LIBS})
-
 add_executable(dataset_stats scripts/dataset_stats.cpp)
 target_include_directories(dataset_stats PUBLIC ${INCLUDES})
 target_link_libraries(dataset_stats ${DEFAULT_LIBS})
@@ -378,11 +316,6 @@ target_link_libraries(traverse_k2tree_band ${DEFAULT_LIBS})
 
 add_executable(k2tree_example example/k2tree_example.cpp)
 target_link_libraries(k2tree_example ${BASE_LIBS})
-
-
-add_executable(count_nt_predicates scripts/count_nt_predicates.cpp)
-target_link_libraries(count_nt_predicates ${PROC_LIBS} ntparser)
-
 
 add_executable(measure_serialization_time scripts/measure_serialization_time.cpp)
 target_include_directories(measure_serialization_time PUBLIC ${INCLUDES})
@@ -414,23 +347,17 @@ if (GTest_FOUND)
     add_executable(k2tree_serialization_test test/k2tree_serialization_test.cpp)
     target_link_libraries(k2tree_serialization_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} pthread)
 
-    add_executable(predicates_cache_manager_test test/predicates_cache_manager_test.cpp test/cache_test_util.cpp)
-    target_link_libraries(predicates_cache_manager_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} pthread)
-
     add_executable(k2tree_tests test/k2tree_tests.cpp)
     target_link_libraries(k2tree_tests ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} pthread)
 
     add_executable(k2tree_mixed_test test/k2tree_mixed_test.cpp)
     target_link_libraries(k2tree_mixed_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} pthread)
 
-    add_executable(test_sd_builder test/test_sd_builder.cpp)
-    target_link_libraries(test_sd_builder ${PROC_LIBS} ${GTEST_BOTH_LIBRARIES} pthread)
-
     add_executable(test_external_sort test/test_external_sort.cpp)
     target_link_libraries(test_external_sort ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} pthread)
 
     add_executable(predicates_metadata_serialization_test test/predicates_metadata_serialization_test.cpp)
-    target_link_libraries(predicates_metadata_serialization_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} pthread)
+    target_link_libraries(predicates_metadata_serialization_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} pthread MockStructureLib)
 
     add_executable(k2mixed_from_file test/k2mixed_from_file.cpp)
     target_link_libraries(k2mixed_from_file ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES})
@@ -445,30 +372,22 @@ if (GTest_FOUND)
     add_executable(update_log_test test/update_log_test.cpp)
     target_link_libraries(update_log_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} MockStructureLib)
 
-
-    add_executable(naive_string_dictionary_test test/naive_string_dictionary_test.cpp)
-    target_link_libraries(naive_string_dictionary_test  ${DEFAULT_LIBS}  ${GTEST_BOTH_LIBRARIES}  MockStructureLib)
+    add_executable(predicates_cache_manager_test test/predicates_cache_manager_test.cpp)
+    target_link_libraries(predicates_cache_manager_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} MockStructureLib)
 
 
     add_test(NAME serialization_test COMMAND ./serialization_test)
     add_test(NAME k2tree_serialization_test COMMAND ./k2tree_serialization_test)
-    add_test(NAME predicates_cache_manager_test COMMAND ./predicates_cache_manager_test)
     add_test(NAME k2tree_tests COMMAND ./k2tree_tests)
-    add_test(NAME result_table_test COMMAND ./result_table_test)
     add_test(NAME k2tree_mixed_test COMMAND ./k2tree_mixed_test)
-    add_test(NAME query_proc_tests COMMAND ./query_proc_tests)
-    add_test(NAME test_sd_builder COMMAND ./test_sd_builder)
     add_test(NAME test_external_sort COMMAND ./test_external_sort)
     add_test(NAME predicates_metadata_serialization_test COMMAND ./predicates_metadata_serialization_test)
-    add_test(NAME query_filters_test COMMAND ./query_filters_test)
-    add_test(NAME query_proc_tests2 COMMAND ./query_proc_tests2)
     add_test(NAME cache_replacement_test COMMAND ./cache_replacement_test)
     add_test(NAME memory_segment_test COMMAND ./memory_segment_test)
     add_test(NAME update_log_test COMMAND ./update_log_test)
-    add_test(NAME naive_string_dictionary_test COMMAND ./update_log_test)
+    add_test(NAME predicates_cache_manager_test COMMAND ./predicates_cache_manager_test)
 
     # K2 Tree Tests
-
 
     add_executable(block_test ${K2TREE_PATH}/test/block_test.cpp ${K2TREE_PATH}/test/block_wrapper.hpp)
     add_executable(block_leak_test ${K2TREE_PATH}/test/block_leak_test.cpp ${K2TREE_PATH}/test/block_wrapper.hpp)
@@ -484,19 +403,19 @@ if (GTest_FOUND)
     add_executable(block_delete_test ${K2TREE_PATH}/test/block_delete_test.cpp)
     add_executable(k2node_delete_test ${K2TREE_PATH}/test/k2node_delete_test.cpp)
 
-    target_link_libraries(block_test  ${GTEST_BOTH_LIBRARIES} pthread k2dyn_custom_mem RDFCacheK2_Memory)
-    target_link_libraries(block_leak_test  ${GTEST_BOTH_LIBRARIES} pthread k2dyn_custom_mem RDFCacheK2_Memory)
-    target_link_libraries(morton_code_test  ${GTEST_BOTH_LIBRARIES} pthread k2dyn_custom_mem RDFCacheK2_Memory)
-    target_link_libraries(block_usages_test   ${GTEST_BOTH_LIBRARIES} pthread k2dyn_custom_mem RDFCacheK2_Memory)
-    target_link_libraries(debug_insertion_out_of_bounds_1_test   k2dyn_custom_mem  ${GTEST_BOTH_LIBRARIES} pthread RDFCacheK2_Memory)
-    target_link_libraries(interactive_report_test   k2dyn_custom_mem ${GTEST_BOTH_LIBRARIES} pthread RDFCacheK2_Memory)
-    target_link_libraries(bitvector_test   k2dyn_custom_mem ${GTEST_BOTH_LIBRARIES} pthread RDFCacheK2_Memory)
-    target_link_libraries(k2node_test   k2dyn_custom_mem ${GTEST_BOTH_LIBRARIES} pthread RDFCacheK2_Memory)
-    target_link_libraries(sip_join_test   k2dyn_custom_mem ${GTEST_BOTH_LIBRARIES} pthread RDFCacheK2_Memory)
-    target_link_libraries(k2node_sip_join_test   k2dyn_custom_mem ${GTEST_BOTH_LIBRARIES} pthread RDFCacheK2_Memory)
-    target_link_libraries(lazy_scan_test   k2dyn_custom_mem ${GTEST_BOTH_LIBRARIES} pthread RDFCacheK2_Memory)
-    target_link_libraries(block_delete_test   k2dyn_custom_mem ${GTEST_BOTH_LIBRARIES} pthread RDFCacheK2_Memory)
-    target_link_libraries(k2node_delete_test   k2dyn_custom_mem ${GTEST_BOTH_LIBRARIES} pthread RDFCacheK2_Memory)
+    target_link_libraries(block_test ${GTEST_BOTH_LIBRARIES} pthread k2dyn_custom_mem RDFCacheK2_Memory)
+    target_link_libraries(block_leak_test ${GTEST_BOTH_LIBRARIES} pthread k2dyn_custom_mem RDFCacheK2_Memory)
+    target_link_libraries(morton_code_test ${GTEST_BOTH_LIBRARIES} pthread k2dyn_custom_mem RDFCacheK2_Memory)
+    target_link_libraries(block_usages_test ${GTEST_BOTH_LIBRARIES} pthread k2dyn_custom_mem RDFCacheK2_Memory)
+    target_link_libraries(debug_insertion_out_of_bounds_1_test k2dyn_custom_mem ${GTEST_BOTH_LIBRARIES} pthread RDFCacheK2_Memory)
+    target_link_libraries(interactive_report_test k2dyn_custom_mem ${GTEST_BOTH_LIBRARIES} pthread RDFCacheK2_Memory)
+    target_link_libraries(bitvector_test k2dyn_custom_mem ${GTEST_BOTH_LIBRARIES} pthread RDFCacheK2_Memory)
+    target_link_libraries(k2node_test k2dyn_custom_mem ${GTEST_BOTH_LIBRARIES} pthread RDFCacheK2_Memory)
+    target_link_libraries(sip_join_test k2dyn_custom_mem ${GTEST_BOTH_LIBRARIES} pthread RDFCacheK2_Memory)
+    target_link_libraries(k2node_sip_join_test k2dyn_custom_mem ${GTEST_BOTH_LIBRARIES} pthread RDFCacheK2_Memory)
+    target_link_libraries(lazy_scan_test k2dyn_custom_mem ${GTEST_BOTH_LIBRARIES} pthread RDFCacheK2_Memory)
+    target_link_libraries(block_delete_test k2dyn_custom_mem ${GTEST_BOTH_LIBRARIES} pthread RDFCacheK2_Memory)
+    target_link_libraries(k2node_delete_test k2dyn_custom_mem ${GTEST_BOTH_LIBRARIES} pthread RDFCacheK2_Memory)
 
     add_test(NAME block_test COMMAND ./block_test)
     add_test(NAME block_leak_test COMMAND ./block_leak_test)

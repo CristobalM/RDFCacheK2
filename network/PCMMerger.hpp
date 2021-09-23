@@ -7,7 +7,6 @@
 
 #include "I_DataMerger.hpp"
 #include <K2TreeMixed.hpp>
-#include <NaiveDynamicStringDictionary.hpp>
 #include <PredicatesCacheManager.hpp>
 
 // Wrapper of PredicatesCacheManager merging functionality
@@ -17,8 +16,6 @@ class PCMMerger : public I_DataMerger {
 
 public:
   explicit PCMMerger(PredicatesCacheManager &predicates_cache_manager);
-  void merge_with_extra_dict(
-      NaiveDynamicStringDictionary &input_extra_dict) override;
   void merge_add_tree(unsigned long predicate_id, K2TreeMixed &k2tree) override;
   void merge_delete_tree(unsigned long predicate_id,
                          K2TreeMixed &k2tree) override;

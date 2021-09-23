@@ -4,7 +4,7 @@
 #include <string>
 
 #include <K2TreeMixed.hpp>
-#include <PredicatesIndexCacheMDFile.hpp>
+#include <PredicatesIndexCacheMD.hpp>
 #include <iostream>
 #include <triple_external_sort.hpp>
 
@@ -31,7 +31,7 @@ int main(int argc, char **argv) {
     throw std::runtime_error("Not found file " + parsed.input_file);
   }
 
-  auto pc = std::make_unique<PredicatesIndexCacheMDFile>(parsed.input_file);
+  auto pc = std::make_unique<PredicatesIndexCacheMD>(parsed.input_file);
 
   auto predicates_ids = pc->get_predicates_ids();
 

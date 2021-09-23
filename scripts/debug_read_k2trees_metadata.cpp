@@ -5,7 +5,8 @@
 #include <stdexcept>
 #include <string>
 
-#include <PredicatesIndexCacheMDFile.hpp>
+#include <FileRWHandler.hpp>
+#include <PredicatesIndexCacheMD.hpp>
 
 namespace fs = std::filesystem;
 
@@ -22,7 +23,8 @@ int main(int argc, char **argv) {
     throw std::runtime_error("Not found file " + parsed.input_file);
   }
 
-  PredicatesIndexCacheMDFile predicates_manager(parsed.input_file);
+  auto frw_handler = std::make_unique<FileRWHandler>(parsed.input_file);
+  PredicatesIndexCacheMD predicates_manager(std::move(frw_handler));
 
   // auto &metadata = predicates_manager.get_metadata();
 

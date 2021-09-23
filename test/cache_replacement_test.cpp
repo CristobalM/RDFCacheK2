@@ -3,10 +3,10 @@
 //
 
 #include <I_DataManager.hpp>
-#include <caching/CacheReplacement.hpp>
-#include <caching/FrequencyReplacementStrategy.hpp>
-#include <caching/LRUReplacementStrategy.hpp>
 #include <gtest/gtest.h>
+#include <replacement/CacheReplacement.hpp>
+#include <replacement/FrequencyReplacementStrategy.hpp>
+#include <replacement/LRUReplacementStrategy.hpp>
 
 struct MockDataManager : public I_DataManager {
   std::set<unsigned long> keys;

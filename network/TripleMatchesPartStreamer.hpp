@@ -9,13 +9,11 @@
 #include "TaskProcessor.hpp"
 #include <Cache.hpp>
 #include <K2TreeScanner.hpp>
-#include <TimeControl.hpp>
 #include <mutex>
 class TripleMatchesPartStreamer : public I_TRStreamer {
   int channel_id;
   std::vector<unsigned long> loaded_predicates;
   size_t threshold_part_size;
-  std::unique_ptr<TimeControl> time_control;
   Cache *cache;
   TaskProcessor *task_processor;
 
@@ -31,7 +29,6 @@ public:
   TripleMatchesPartStreamer(int channel_id,
                             std::vector<unsigned long> &&loaded_predicates,
                             size_t threshold_part_size,
-                            std::unique_ptr<TimeControl> &&time_control,
                             TaskProcessor *task_processor, Cache *cache);
 
   const std::vector<unsigned long> &get_predicates_in_use() override;
@@ -40,7 +37,7 @@ public:
 
   ~TripleMatchesPartStreamer() override;
   I_TRMatchingStreamer &start_streaming_matching_triples(
-      const proto_msg::TripleNode &triple_pattern) override;
+      const proto_msg::TripleNodeIdEnc &triple_pattern) override;
   void clean_pattern_streamer(int pattern_channel_id) override;
   bool is_done() override;
   I_TRMatchingStreamer &
