@@ -286,6 +286,10 @@ add_executable(build_k2tree_index scripts/build_k2tree_index.cpp)
 target_include_directories(build_k2tree_index PUBLIC ${INCLUDES})
 target_link_libraries(build_k2tree_index ${DEFAULT_LIBS})
 
+add_executable(build_k2tree_index_debug scripts/build_k2tree_index_debug.cpp)
+target_include_directories(build_k2tree_index_debug PUBLIC ${INCLUDES})
+target_link_libraries(build_k2tree_index_debug ${DEFAULT_LIBS})
+
 add_executable(print_k2tree_index scripts/print_k2tree_index.cpp)
 target_include_directories(print_k2tree_index PUBLIC ${INCLUDES})
 target_link_libraries(print_k2tree_index ${DEFAULT_LIBS})
