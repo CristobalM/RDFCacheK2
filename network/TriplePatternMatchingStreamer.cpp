@@ -72,14 +72,6 @@ void TriplePatternMatchingStreamer::initialize_scanner() {
   object_variable =
       (long)triple_pattern_node.object().encoded_data() == NODE_ANY;
 
-  std::cout << "initializing scan of pattern: "
-            << (long)triple_pattern_node.subject().encoded_data() << ","
-            << (long)triple_pattern_node.predicate().encoded_data() << ","
-            << (long)triple_pattern_node.object().encoded_data()
-            << " subject_variable: " << (subject_variable ? "YES" : "NO")
-            << ", object variable: " << (object_variable ? "YES" : "NO")
-            << std::endl;
-
   auto predicate_id = triple_pattern_node.predicate().encoded_data();
 
   auto fetch_result =

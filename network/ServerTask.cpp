@@ -253,8 +253,6 @@ void ServerTask::process_done_with_predicates_notify(Message &message) {
 }
 
 void ServerTask::process_request_start_update_triples(Message &) {
-  // auto &req =
-  // message.get_cache_request().cache_request_start_update_triples();
   auto update_id = task_processor.begin_update_session();
   proto_msg::CacheResponse cache_response;
   cache_response.set_response_type(
