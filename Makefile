@@ -85,7 +85,7 @@ bundle-code: # clean-all
 	--include 'core/***' \
 	--include 'docker/***' \
 	--include 'example/***' \
-	--include 'query_engine/***' \
+	--include 'cache/***' \
 	--include 'memory/***' \
 	--include 'network/***' \
 	--include 'proc/***' \
