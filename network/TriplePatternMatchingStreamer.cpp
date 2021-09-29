@@ -32,18 +32,14 @@ proto_msg::CacheResponse TriplePatternMatchingStreamer::get_next_response() {
     auto matching_pair_so = k2tree_scanner->next();
     auto *matching_values = stream_response->mutable_matching_values()->Add();
     if (subject_variable) {
-      // auto subject_resource =
-      // cache->extract_resource(matching_pair_so.first);
       acc_size += sizeof(unsigned long);
-      proto_msg::NodeIdEncoded node_id;
-      node_id.set_encoded_data(matching_pair_so.first);
-      matching_values->mutable_single_match()->Add(std::move(node_id));
+      auto *s_match = matching_values->mutable_single_match()->Add();
+      s_match->set_encoded_data(matching_pair_so.first);
     }
     if (object_variable) {
       acc_size += sizeof(unsigned long);
-      proto_msg::NodeIdEncoded node_id;
-      node_id.set_encoded_data(matching_pair_so.second);
-      matching_values->mutable_single_match()->Add(std::move(node_id));
+      auto *s_match = matching_values->mutable_single_match()->Add();
+      s_match->set_encoded_data(matching_pair_so.second);
     }
 
     if (acc_size > threshold_part_size) {

@@ -55,9 +55,8 @@ TripleMatchesPartStreamer::get_loaded_predicates_response() {
 
   for (auto predicate : loaded_predicates) {
     // auto resource = cache->extract_resource(predicate);
-    proto_msg::NodeIdEncoded node_id;
-    node_id.set_encoded_data(predicate);
-    sep_resp->mutable_available_predicates()->Add(std::move(node_id));
+    auto *av_predicate = sep_resp->mutable_available_predicates()->Add();
+    av_predicate->set_encoded_data(predicate);
   }
 
   return cache_response;

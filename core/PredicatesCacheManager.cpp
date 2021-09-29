@@ -7,6 +7,7 @@
 #include "NullScanner.hpp"
 #include <FileRWHandler.hpp>
 #include <chrono>
+#include <filesystem>
 #include <functional>
 
 namespace fs = std::filesystem;

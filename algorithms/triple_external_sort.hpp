@@ -11,6 +11,7 @@
 #include <ostream>
 #include <queue>
 #include <regex>
+#include <set>
 #include <sstream>
 #include <string>
 #include <unordered_set>
@@ -18,6 +19,9 @@
 
 #include "ParallelWorker.hpp"
 #include "serialization_util.hpp"
+
+namespace fs = std::filesystem;
+
 // TODO: refactor to use external-sort library and delete this file
 struct TripleValue {
   uint64_t first{};
@@ -57,10 +61,10 @@ struct FileData {
   bool finished() const { return current_triple >= size; }
 };
 
-using pair_tvalue_int = std::pair<TripleValue, int>;
+using pair_tvalue_ul = std::pair<TripleValue, unsigned long>;
 
 template <typename Comparator> struct PairComp {
-  bool operator()(const pair_tvalue_int &lhs, const pair_tvalue_int &rhs) {
+  bool operator()(const pair_tvalue_ul &lhs, const pair_tvalue_ul &rhs) {
     return !Comparator()(lhs.first, rhs.first);
   }
 };
@@ -69,10 +73,11 @@ template <typename Comparator>
 static void parallel_sort(std::vector<TripleValue> &data, int max_workers,
                           unsigned long segment_size, Comparator &comparator) {
 
-  std::vector<int> offsets = {0};
-  std::unordered_set<int> offsets_set;
+  std::vector<unsigned long> offsets = {0};
+  std::set<unsigned long> offsets_set;
   unsigned long acc_size = sizeof(TripleValue);
-  for (int i = 1; i < static_cast<int>(data.size()); i++) {
+  offsets.reserve(data.size() / (segment_size / sizeof(TripleValue)) + 10);
+  for (unsigned long i = 1; i < data.size(); i++) {
     acc_size += sizeof(TripleValue);
     if (acc_size >= segment_size) {
       offsets.push_back(i);
@@ -83,8 +88,8 @@ static void parallel_sort(std::vector<TripleValue> &data, int max_workers,
   offsets.push_back(data.size());
   offsets_set.insert(data.size());
 
-  int parts = offsets.size() - 1;
-  int workers = std::min(max_workers, parts);
+  unsigned long parts = offsets.size() - 1;
+  unsigned long workers = std::min((unsigned long)max_workers, parts);
   if (workers == 1) {
     std::sort(data.begin(), data.end(), comparator);
     return;
@@ -92,7 +97,7 @@ static void parallel_sort(std::vector<TripleValue> &data, int max_workers,
 
   ParallelWorkerPool pool(workers);
 
-  for (int i = 0; i < parts; i++) {
+  for (unsigned long i = 0; i < parts; i++) {
     pool.add_task([i, &offsets, &data, &comparator]() {
       std::sort(data.begin() + offsets[i], data.begin() + offsets[i + 1],
                 comparator);
@@ -104,18 +109,18 @@ static void parallel_sort(std::vector<TripleValue> &data, int max_workers,
 
   std::vector<TripleValue> result;
 
-  std::priority_queue<pair_tvalue_int, std::vector<pair_tvalue_int>,
+  std::priority_queue<pair_tvalue_ul, std::vector<pair_tvalue_ul>,
                       PairComp<Comparator>>
       pqueue;
 
-  for (int i = 0; i < parts; i++) {
+  for (unsigned long i = 0; i < parts; i++) {
     pqueue.push({data[offsets[i]], offsets[i]});
   }
 
   while (!pqueue.empty()) {
     auto &current = pqueue.top();
     result.push_back(current.first);
-    int next = current.second + 1;
+    auto next = current.second + 1;
     pqueue.pop();
     if (offsets_set.find(next) != offsets_set.end()) {
       continue;
@@ -151,6 +156,7 @@ static void create_file_part(
     write_u64(ofs, triple.second);
     write_u64(ofs, triple.third);
   }
+  ofs.flush();
   data.clear();
 }
 
@@ -175,9 +181,25 @@ split_file(const std::string &input_filename, const std::string &tmp_dir,
   filedata.size = read_u64(input_file);
   filedata.current_triple = 0;
 
+  auto max_triples_to_hold =
+      std::min(memory_budget / (sizeof(TripleValue)), filedata.size);
+  data.reserve(max_triples_to_hold + 10);
+
+  // auto upper_bound_offsets = segment_size / sizeof(TripleValue) + 1;
+  auto offsets_upper_bound_qty = memory_budget / segment_size + 1;
+  auto offsets_size_ub = offsets_upper_bound_qty * sizeof(unsigned long);
+  auto offsets_set_size_ub =
+      offsets_upper_bound_qty * (sizeof(unsigned long) + sizeof(void *));
+
+  auto extra_structs_budget = offsets_size_ub + offsets_set_size_ub;
+
+  auto mem_budget_bound = memory_budget > extra_structs_budget
+                              ? memory_budget - extra_structs_budget
+                              : extra_structs_budget;
+
   while (!filedata.finished()) {
     auto triple = filedata.read_triple(input_file);
-    if (accumulated_size >= memory_budget / 3) {
+    if (accumulated_size >= mem_budget_bound) {
       create_file_part(input_filename, tmp_dir, workers, buffer_out, comparator,
                        accumulated_size, data, current_file_index, filenames,
                        segment_size);
@@ -211,10 +233,10 @@ static inline bool fill_with_file(std::list<TripleValue> &data_block,
 
 template <typename Comparator>
 static void
-block_update(int index, std::vector<std::list<TripleValue>> &data,
+block_update(unsigned long index, std::vector<std::list<TripleValue>> &data,
              std::vector<std::unique_ptr<std::ifstream>> &opened_files,
              std::vector<FileData> &files_data,
-             std::priority_queue<pair_tvalue_int, std::vector<pair_tvalue_int>,
+             std::priority_queue<pair_tvalue_ul, std::vector<pair_tvalue_ul>,
                                  PairComp<Comparator>> &pqueue,
              unsigned long block_size) {
   if (data[index].empty() && opened_files[index]) {
@@ -253,7 +275,7 @@ merge_pass(const std::vector<std::string> &filenames, int start, int end,
   ofs.rdbuf()->pubsetbuf(buffers[buffers.size() - 1].data(),
                          buffers[buffers.size() - 1].size());
 
-  std::priority_queue<pair_tvalue_int, std::vector<pair_tvalue_int>,
+  std::priority_queue<pair_tvalue_ul, std::vector<pair_tvalue_ul>,
                       PairComp<Comparator>>
       pqueue;
 
@@ -298,7 +320,7 @@ merge_pass(const std::vector<std::string> &filenames, int start, int end,
     total_size += fdata.size;
   }
 
-  for (int i = 0; i < static_cast<int>(data.size()); i++) {
+  for (unsigned long i = 0; i < data.size(); i++) {
     block_update(i, data, opened_files, files_data, pqueue, block_size);
   }
 
@@ -306,7 +328,7 @@ merge_pass(const std::vector<std::string> &filenames, int start, int end,
 
   while (!pqueue.empty()) {
     auto &current = pqueue.top();
-    int index = current.second;
+    auto index = current.second;
     current.first.write_to_file(ofs);
     pqueue.pop();
     block_update(index, data, opened_files, files_data, pqueue, block_size);
@@ -369,7 +391,7 @@ void external_sort_triples(const std::string &input_filename,
     current_filenames = merge_bottom_up(current_filenames, tmp_dir, max_files,
                                         block_size, buffers, comparator);
   }
-  rename(current_filenames[0].c_str(), output_filename.c_str());
+  fs::rename(current_filenames[0], output_filename);
 }
 
 #endif /* _TRIPLE_EXTERNAL_SORT_HPP_ */
