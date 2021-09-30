@@ -3,6 +3,7 @@
 //
 
 #include <MemoryManager.hpp>
+#include <OutOfMemoryException.hpp>
 #include <filesystem>
 #include <google/protobuf/message_lite.h>
 #include <gtest/gtest.h>
@@ -26,9 +27,15 @@ TEST(memory_segment_test, test1) {
     ASSERT_EQ(*values[i], i);
   }
 
-  int *next_val = req_integer();
-  ASSERT_EQ(next_val, nullptr);
-
+  EXPECT_THROW(
+      {
+        try {
+          req_integer();
+        } catch (const OutOfMemoryException &e) {
+          throw;
+        }
+      },
+      OutOfMemoryException);
   for (int i = 0; i < (int)values.size(); i++) {
     auto *segment = MemoryManager::instance().find_segment(values[i]);
     ASSERT_EQ(segment, memory_segment) << "Failed at i = " << i;

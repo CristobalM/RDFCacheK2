@@ -111,7 +111,7 @@ set(MEMORY_SOURCES
         memory/MemoryManager.hpp
         memory/MemoryManager.cpp
         memory/MemoryPool.hpp
-        memory/MemorySegment.cpp memory/MemorySegment.hpp)
+        memory/MemorySegment.cpp memory/MemorySegment.hpp memory/OutOfMemoryException.cpp memory/OutOfMemoryException.hpp)
 
 set(CACHE_SOURCES
         cache/Cache.hpp
