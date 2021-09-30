@@ -230,7 +230,9 @@ void PredicatesIndexCacheMD::load_all_predicates() {
   auto first_offset = metadata.get_map().at(all_predicates[0]).tree_offset;
   is->seekg(first_offset);
 
-  for (auto it = all_predicates.begin(); it != all_predicates.end(); it++) {
+  predicates.reserve(all_predicates.size()+ (unsigned long)((double)all_predicates.size()*.5));
+  for (unsigned long predicate_id : all_predicates) {
+    // commented code kept for future debugging
     /*
     size_t end_pos;
     auto next_it = std::next(it);
@@ -264,7 +266,7 @@ void PredicatesIndexCacheMD::load_all_predicates() {
 
     raw_k2tree.clear();
 */
-    predicates[*it] = std::make_unique<K2TreeMixed>(
+    predicates[predicate_id] = std::make_unique<K2TreeMixed>(
         K2TreeMixed::read_from_istream(is->get_stream(), mem_segment));
   }
 }
