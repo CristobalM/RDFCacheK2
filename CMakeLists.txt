@@ -441,3 +441,15 @@ target_link_libraries(k2tree_size_benchmark ${BASE_LIBS})
 
 add_executable(k2tree_mixed_benchmark benchmarks/k2tree_mixed_benchmark.cpp)
 target_link_libraries(k2tree_mixed_benchmark ${BASE_LIBS})
+
+add_executable(compare_64_32_depths_performance benchmarks/compare_64_32_depths_performance.cpp)
+target_include_directories(compare_64_32_depths_performance PUBLIC ${INCLUDES})
+target_link_libraries(compare_64_32_depths_performance ${DEFAULT_LIBS})
+
+add_executable(compare_64_32_depths_performance_2 benchmarks/compare_64_32_depths_performance_2.cpp)
+target_include_directories(compare_64_32_depths_performance_2 PUBLIC ${INCLUDES})
+target_link_libraries(compare_64_32_depths_performance_2 ${DEFAULT_LIBS})
+
+add_executable(compare_64_32_depths_performance_3 benchmarks/compare_64_32_depths_performance_3.cpp)
+target_include_directories(compare_64_32_depths_performance_3 PUBLIC ${INCLUDES})
+target_link_libraries(compare_64_32_depths_performance_3 ${DEFAULT_LIBS})
