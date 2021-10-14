@@ -43,6 +43,8 @@ message StreamOfTriplesMatchingPatternResponse{
     // repeated string variables = 3; // Only on first response giving the order of the matching values
     repeated MatchingValues matching_values = 3;
     bool last_result = 4;
+    bool has_exact_response = 5;
+    bool exact_response = 6;
 }
 
 message MatchingValues{

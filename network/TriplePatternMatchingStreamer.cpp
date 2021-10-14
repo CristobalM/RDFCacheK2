@@ -28,6 +28,18 @@ proto_msg::CacheResponse TriplePatternMatchingStreamer::get_next_response() {
   stream_response->set_channel_id(channel_id);
   stream_response->set_pattern_channel_id(pattern_channel_id);
 
+  if(!subject_variable && !object_variable){
+    stream_response->set_last_result(true);
+    set_finished();
+    auto subject_id = triple_pattern_node.subject().encoded_data();
+    auto object_id = triple_pattern_node.object().encoded_data();
+    stream_response->set_has_exact_response(true);
+    stream_response->set_exact_response(k2tree_scanner->get_tree().has(subject_id, object_id));
+    return cache_response;
+  }
+
+  stream_response->set_has_exact_response(false);
+
   while (k2tree_scanner->has_next()) {
     auto matching_pair_so = k2tree_scanner->next();
     auto *matching_values = stream_response->mutable_matching_values()->Add();
@@ -77,6 +89,8 @@ void TriplePatternMatchingStreamer::initialize_scanner() {
     return;
   }
 
+
+
   auto &k2tree = fetch_result.get_mutable();
 
   if (subject_variable && object_variable) {
@@ -85,10 +99,14 @@ void TriplePatternMatchingStreamer::initialize_scanner() {
     auto object_id = triple_pattern_node.object().encoded_data();
     k2tree_scanner = k2tree.create_band_scanner(
         object_id, K2TreeScanner::BandType::ROW_BAND_TYPE);
-  } else {
+  } else if(object_variable){
     auto subject_id = triple_pattern_node.subject().encoded_data();
     k2tree_scanner = k2tree.create_band_scanner(
         subject_id, K2TreeScanner::BandType::COLUMN_BAND_TYPE);
+  }
+  else{
+    // none variable
+    k2tree_scanner = k2tree.create_empty_scanner();
   }
 }
 
