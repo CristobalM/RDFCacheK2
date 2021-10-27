@@ -1,70 +1,69 @@
-#include <filesystem>
-#include <iostream>
-#include <iterator>
 #include <stdexcept>
+#include <string>
 
 #include <getopt.h>
-#include <cstdlib>
+#include <serialization_util.hpp>
 #include <triple_external_sort.hpp>
+#include <BinaryTriplesToSingleStringFile.hpp>
+#include <FileIStream.hpp>
+#include <FileOStream.hpp>
+#include <external_sort.hpp>
+#include <LightStringSortConnector.hpp>
+#include <system_info.hpp>
 
 struct parsed_options {
     std::string input_file;
     std::string output_file;
     std::string tmp_dir;
-    unsigned long max_memory;
     int workers;
+    unsigned long max_memory;
     bool tmpdir_generated;
 };
 
 parsed_options parse_cmline(int argc, char **argv);
 
-unsigned long get_mem_total();
-
-struct Comparator {
-
-    bool operator()(const TripleValue &lhs, const TripleValue &rhs) {
-        return lhs.second < rhs.second;
-    }
-};
-
 int main(int argc, char **argv) {
     auto parsed = parse_cmline(argc, argv);
 
-    std::cout << "given options:\n"
-              << "workers: " << parsed.workers << "\n"
-              << "max-memory: " << parsed.max_memory << "\n"
-              << "tmp-dir: " << parsed.tmp_dir << std::endl;
+    auto unsorted_file = parsed.output_file + ".unsorted";
 
-    // std::ifstream ifs(parsed.input_file, std::ios::in);
-    // std::ofstream ofs(parsed.output_file, std::ios::out | std::ios::trunc);
-    external_sort_triples(parsed.input_file, parsed.output_file, parsed.tmp_dir,
-                          parsed.workers, 10, parsed.max_memory, 8192, 10'000'000,
-                          Comparator());
+    {
+        FileIStream file_istream(parsed.input_file, std::ios::in | std::ios::binary);
+        FileOStream file_ostream(unsorted_file, std::ios::out | std::ios::trunc);
+        BinaryTriplesToSingleStringFile::run(file_ostream, file_istream);
+    }
 
-    if (parsed.tmpdir_generated) {
+    ExternalSort::ExternalSort<ExternalSort::LightStringSortConnector>::sort(
+            unsorted_file, parsed.output_file, parsed.tmp_dir, parsed.workers, 10,
+            parsed.max_memory, 4096, true);
+
+    if(parsed.tmpdir_generated){
         std::filesystem::remove(parsed.tmp_dir);
     }
 }
 
 parsed_options parse_cmline(int argc, char **argv) {
-    const char short_options[] = "i:o:t::m::w::";
+    const char short_options[] = "i:o:";
     struct option long_options[] = {
-            {"input-file",  required_argument, nullptr, 'i'},
+            {"input-file", required_argument, nullptr, 'i'},
             {"output-file", required_argument, nullptr, 'o'},
-            {"tmp-dir",     optional_argument, nullptr, 't'},
-            {"max-memory",  optional_argument, nullptr, 'm'},
-            {"workers",     optional_argument, nullptr, 'w'},
-    };
+            {"tmp-dir", optional_argument, nullptr, 't'},
+            {"max-memory", optional_argument, nullptr, 'm'},
+            {"workers", optional_argument, nullptr, 'w'},    };
 
     int opt, opt_index;
 
     bool has_input = false;
     bool has_output = false;
+
     bool has_tmp_dir = false;
     bool has_max_mem = false;
     bool has_workers = false;
 
     parsed_options out{};
+
+    out.tmpdir_generated = false;
+
     while ((
             opt = getopt_long(argc, argv, short_options, long_options, &opt_index))) {
         if (opt == -1) {
@@ -96,6 +95,7 @@ parsed_options parse_cmline(int argc, char **argv) {
                     out.workers = std::stoi(std::string(optarg));
                     has_workers = true;
                 }
+                break;
             default:
                 break;
         }
@@ -108,7 +108,7 @@ parsed_options parse_cmline(int argc, char **argv) {
     if (!has_tmp_dir) {
         auto tmp_base = std::filesystem::current_path();
         auto fname_template = (
-                std::filesystem::path("tmpsort_XXXXXXXXXX"))
+                               std::filesystem::path("tmpsort_XXXXXXXXXX"))
                 .string();
         auto mut_fname_template =
                 std::make_unique<char[]>(fname_template.size() + 1);
@@ -121,6 +121,7 @@ parsed_options parse_cmline(int argc, char **argv) {
         auto resulting_dir = tmp_base / std::filesystem::path(std::string(tmp_dir));
         out.tmp_dir = resulting_dir;
         out.tmpdir_generated = true;
+
     }
 
     if (!has_max_mem) {

@@ -64,7 +64,10 @@ set(CORE_SOURCE_FILES
         core/NodeId.hpp
         core/InvalidStringSizeForNodeId.hpp
         core/TripleNodeId.cpp
-        core/TripleNodeId.hpp)
+        core/TripleNodeId.hpp
+        core/HTSDictionary.hpp
+        core/HTSDictionary.cpp
+        core/BinaryTriplesToSingleStringFile.cpp core/BinaryTriplesToSingleStringFile.hpp core/SDBlocksWrapper.cpp core/SDBlocksWrapper.hpp core/LazyLoadSDIter.cpp core/LazyLoadSDIter.hpp core/IteratorDictStringPlainBuilder.cpp core/IteratorDictStringPlainBuilder.hpp core/ItPlainWrapperWInfo.cpp core/ItPlainWrapperWInfo.hpp)
 
 
 set(NETWORK_SOURCE_FILES
@@ -186,10 +189,21 @@ add_subdirectory(${LIB_NTPARSER})
 # add_subdirectory(${K2TREE_PATH})
 
 
+set(LIB_CSD_BPATH lib/libCSD)
+set(LIB_CSD_INCLUDES
+        ${LIB_CSD_BPATH}
+        ${LIB_CSD_BPATH}/libcds/includes
+        )
+
+add_subdirectory(${LIB_CSD_BPATH})
+
+
+
 include_directories(
         ${INCLUDES}
         ${INCLUDES_LIBS}
         ${LIB_NTPARSER_INCLUDES}
+        ${LIB_CSD_INCLUDES}
 )
 
 
@@ -213,7 +227,7 @@ add_library(Utils utils/serialization_util.cpp
         utils/FileOStream.cpp
         utils/FileOStream.hpp
 
-        utils/FileIOStream.cpp utils/FileIOStream.hpp)
+        utils/FileIOStream.cpp utils/FileIOStream.hpp utils/system_info.cpp utils/system_info.hpp)
 
 # add_dependencies(RDFCacheK2 _k2tree_merged_noalloc)
 #add_dependencies(RDFCacheK2 k2dyn Utils)
@@ -242,6 +256,8 @@ set(BASE_LIBS
         k2dyn_custom_mem
         ProtoMessages
         ${Protobuf_LIBRARIES}
+        CSD
+        cds
         Utils
         ${OPENSSL_LIBRARIES}
         stdc++fs
@@ -252,6 +268,8 @@ set(BASE_LIBS
 
 set(PROC_LIBS
         pthread
+        CSD
+        cds
         Utils
         )
 
@@ -263,6 +281,8 @@ set(DEFAULT_LIBS
         k2dyn_custom_mem
         ProtoMessages
         ${Protobuf_LIBRARIES}
+        CSD
+        cds
         Utils
         ${OPENSSL_LIBRARIES}
         stdc++fs
@@ -325,6 +345,18 @@ add_executable(measure_serialization_time scripts/measure_serialization_time.cpp
 target_include_directories(measure_serialization_time PUBLIC ${INCLUDES})
 target_link_libraries(measure_serialization_time ${DEFAULT_LIBS})
 
+add_executable(binary_triples_to_file_set scripts/binary_triples_to_file_set.cpp)
+target_include_directories(binary_triples_to_file_set PUBLIC ${INCLUDES})
+target_link_libraries(binary_triples_to_file_set ${DEFAULT_LIBS})
+
+add_executable(build_sd_from_fileset scripts/build_sd_from_fileset.cpp)
+target_include_directories(build_sd_from_fileset PUBLIC ${INCLUDES})
+target_link_libraries(build_sd_from_fileset ${DEFAULT_LIBS})
+
+add_executable(print_sd scripts/print_sd.cpp)
+target_include_directories(print_sd PUBLIC ${INCLUDES})
+target_link_libraries(print_sd ${DEFAULT_LIBS})
+
 # Only create test executables if google test is found
 find_package(GTest QUIET)
 if (GTest_FOUND)
@@ -339,7 +371,8 @@ if (GTest_FOUND)
             test/mock_structures/StringOStream.cpp
             test/mock_structures/FHMock.hpp
             test/mock_structures/FHMock.cpp
-            test/mock_structures/StringIOStream.cpp test/mock_structures/StringIOStream.hpp)
+            test/mock_structures/StringIOStream.cpp
+            test/mock_structures/StringIOStream.hpp)
 
     add_library(MockStructureLib STATIC ${MOCK_STRUCTURES})
     add_dependencies(MockStructureLib RDFCacheK2 Utils)
@@ -379,6 +412,9 @@ if (GTest_FOUND)
     add_executable(predicates_cache_manager_test test/predicates_cache_manager_test.cpp)
     target_link_libraries(predicates_cache_manager_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} MockStructureLib)
 
+    add_executable(binary_triples_to_single_string_file_test test/binary_triples_to_single_string_file_test.cpp)
+    target_link_libraries(binary_triples_to_single_string_file_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} MockStructureLib)
+
 
     add_test(NAME serialization_test COMMAND ./serialization_test)
     add_test(NAME k2tree_serialization_test COMMAND ./k2tree_serialization_test)
@@ -390,6 +426,7 @@ if (GTest_FOUND)
     add_test(NAME memory_segment_test COMMAND ./memory_segment_test)
     add_test(NAME update_log_test COMMAND ./update_log_test)
     add_test(NAME predicates_cache_manager_test COMMAND ./predicates_cache_manager_test)
+    add_test(NAME binary_triples_to_single_string_file_test COMMAND ./binary_triples_to_single_string_file_test)
 
     # K2 Tree Tests
 
