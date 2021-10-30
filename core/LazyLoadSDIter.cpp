@@ -17,14 +17,14 @@ LazyLoadSDIter::LazyLoadSDIter(I_IStream &istream) :
         next_available(false),
         last_value(nullptr),
         last_length(0) {
-    last_value = next_concrete(&last_length);
+    next_concrete(&last_length);
 }
 
 // user is expected to manage this returned resource
 unsigned char *LazyLoadSDIter::next_concrete(uint *str_length) {
 
     *str_length = last_length;
-    auto out = last_value;
+    auto *out = last_value;
 
     std::string line;
     if(!std::getline(istream.get_stream(),line)){

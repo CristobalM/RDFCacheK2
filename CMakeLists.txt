@@ -67,7 +67,7 @@ set(CORE_SOURCE_FILES
         core/TripleNodeId.hpp
         core/HTSDictionary.hpp
         core/HTSDictionary.cpp
-        core/BinaryTriplesToSingleStringFile.cpp core/BinaryTriplesToSingleStringFile.hpp core/SDBlocksWrapper.cpp core/SDBlocksWrapper.hpp core/LazyLoadSDIter.cpp core/LazyLoadSDIter.hpp core/IteratorDictStringPlainBuilder.cpp core/IteratorDictStringPlainBuilder.hpp core/ItPlainWrapperWInfo.cpp core/ItPlainWrapperWInfo.hpp)
+        core/BinaryTriplesToSingleStringFile.cpp core/BinaryTriplesToSingleStringFile.hpp core/SDHRPDACWrapper.cpp core/SDHRPDACWrapper.hpp core/LazyLoadSDIter.cpp core/LazyLoadSDIter.hpp core/IteratorDictStringPlainBuilder.cpp core/IteratorDictStringPlainBuilder.hpp core/ItPlainWrapperWInfo.cpp core/ItPlainWrapperWInfo.hpp core/HRPDACBlocksBuilderFromIStream.cpp core/HRPDACBlocksBuilderFromIStream.hpp core/SDHRPDACBlocksAlt.cpp core/SDHRPDACBlocksAlt.hpp)
 
 
 set(NETWORK_SOURCE_FILES
@@ -416,6 +416,10 @@ if (GTest_FOUND)
     target_link_libraries(binary_triples_to_single_string_file_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} MockStructureLib)
 
 
+    add_executable(sd_block_wrapper_test test/sd_block_wrapper_test.cpp)
+    target_link_libraries(sd_block_wrapper_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} MockStructureLib)
+
+
     add_test(NAME serialization_test COMMAND ./serialization_test)
     add_test(NAME k2tree_serialization_test COMMAND ./k2tree_serialization_test)
     add_test(NAME k2tree_tests COMMAND ./k2tree_tests)
@@ -427,6 +431,7 @@ if (GTest_FOUND)
     add_test(NAME update_log_test COMMAND ./update_log_test)
     add_test(NAME predicates_cache_manager_test COMMAND ./predicates_cache_manager_test)
     add_test(NAME binary_triples_to_single_string_file_test COMMAND ./binary_triples_to_single_string_file_test)
+    add_test(NAME sd_block_wrapper_test COMMAND ./sd_block_wrapper_test)
 
     # K2 Tree Tests
 

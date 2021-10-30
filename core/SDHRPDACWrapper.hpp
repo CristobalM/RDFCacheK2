@@ -2,23 +2,23 @@
 // Created by cristobal on 26-10-21.
 //
 
-#ifndef RDFCACHEK2_SDBLOCKSWRAPPER_HPP
-#define RDFCACHEK2_SDBLOCKSWRAPPER_HPP
+#ifndef RDFCACHEK2_SDHRPDACWRAPPER_HPP
+#define RDFCACHEK2_SDHRPDACWRAPPER_HPP
 
 
 #include <StringDictionary.h>
 #include <iterators/IteratorDictStringPlain.h>
-#include <StringDictionaryHASHRPDACBlocks.h>
+#include <StringDictionaryHASHRPDAC.h>
+#include <I_IStream.hpp>
 #include "ItPlainWrapperWInfo.hpp"
 
-class SDBlocksWrapper : public StringDictionary {
+class SDHRPDACWrapper : public StringDictionary {
 
-    std::unique_ptr<StringDictionaryHASHRPDACBlocks> internal_sd;
+    std::unique_ptr<StringDictionaryHASHRPDAC> internal_sd;
 public:
 
-    SDBlocksWrapper(ItPlainWrapperWInfo itw,
-                    unsigned long len, int overhead,
-                    unsigned long cut_size, int thread_count);
+    SDHRPDACWrapper(ItPlainWrapperWInfo itw,
+                    unsigned long len, int overhead);
 
     unsigned long locate(uchar *str, uint strLen) override;
 
@@ -45,4 +45,4 @@ public:
 };
 
 
-#endif //RDFCACHEK2_SDBLOCKSWRAPPER_HPP
+#endif //RDFCACHEK2_SDHRPDACWRAPPER_HPP
