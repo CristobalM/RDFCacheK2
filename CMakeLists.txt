@@ -329,6 +329,10 @@ add_executable(node_ids_set_from_triples_set scripts/node_ids_set_from_triples_s
 target_include_directories(node_ids_set_from_triples_set PUBLIC ${INCLUDES})
 target_link_libraries(node_ids_set_from_triples_set ${DEFAULT_LIBS})
 
+add_executable(print_nodeids scripts/print_nodeids.cpp)
+target_include_directories(print_nodeids PUBLIC ${INCLUDES})
+target_link_libraries(print_nodeids ${DEFAULT_LIBS})
+
 # Only create test executables if google test is found
 find_package(GTest QUIET)
 if (GTest_FOUND)

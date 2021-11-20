@@ -7,6 +7,7 @@
 #include <triple_external_sort.hpp>
 #include <external_sort.hpp>
 #include <UnsignedLongSortConnector.hpp>
+#include "BinaryNodesReader.hpp"
 
 struct parsed_options {
     std::string input_file;
@@ -37,9 +38,13 @@ int main(int argc, char **argv) {
     ifs.close();
     ofs.close();
 
-    auto dir_path = fs::path("tmpdir");
+    auto base_path = fs::path(parsed.output_file).parent_path();
+    auto dir_path = base_path / fs::path("tmpdir");
+
+    bool existed = true;
     if(!fs::exists(dir_path)){
         fs::create_directory(dir_path);
+        existed = false;
     }
 
     auto tmp_sorted = parsed.output_file + "-sorted";
@@ -53,6 +58,10 @@ int main(int argc, char **argv) {
                                                    true);
     fs::remove(parsed.output_file);
     fs::rename(tmp_sorted, parsed.output_file);
+
+    if(!existed){
+      fs::remove_all(dir_path);
+    }
 
     return 0;   
 }
