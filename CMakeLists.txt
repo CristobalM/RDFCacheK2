@@ -64,7 +64,7 @@ set(CORE_SOURCE_FILES
         core/NodeId.hpp
         core/InvalidStringSizeForNodeId.hpp
         core/TripleNodeId.cpp
-        core/TripleNodeId.hpp)
+        core/TripleNodeId.hpp core/NodesSequence.cpp core/NodesSequence.hpp)
 
 
 set(NETWORK_SOURCE_FILES
@@ -325,6 +325,10 @@ add_executable(measure_serialization_time scripts/measure_serialization_time.cpp
 target_include_directories(measure_serialization_time PUBLIC ${INCLUDES})
 target_link_libraries(measure_serialization_time ${DEFAULT_LIBS})
 
+add_executable(node_ids_set_from_triples_set scripts/node_ids_set_from_triples_set.cpp)
+target_include_directories(node_ids_set_from_triples_set PUBLIC ${INCLUDES})
+target_link_libraries(node_ids_set_from_triples_set ${DEFAULT_LIBS})
+
 # Only create test executables if google test is found
 find_package(GTest QUIET)
 if (GTest_FOUND)
@@ -379,6 +383,9 @@ if (GTest_FOUND)
     add_executable(predicates_cache_manager_test test/predicates_cache_manager_test.cpp)
     target_link_libraries(predicates_cache_manager_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} MockStructureLib)
 
+    add_executable(nodes_map_test test/nodes_map_test.cpp)
+    target_link_libraries(nodes_map_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} MockStructureLib)
+
 
     add_test(NAME serialization_test COMMAND ./serialization_test)
     add_test(NAME k2tree_serialization_test COMMAND ./k2tree_serialization_test)
@@ -390,6 +397,7 @@ if (GTest_FOUND)
     add_test(NAME memory_segment_test COMMAND ./memory_segment_test)
     add_test(NAME update_log_test COMMAND ./update_log_test)
     add_test(NAME predicates_cache_manager_test COMMAND ./predicates_cache_manager_test)
+    add_test(NAME nodes_map_test COMMAND ./nodes_map_test)
 
     # K2 Tree Tests
 
