@@ -6,8 +6,9 @@
 #include <serialization_util.hpp>
 #include <triple_external_sort.hpp>
 #include <external_sort.hpp>
-#include <UnsignedLongSortConnector.hpp>
-#include "BinaryNodesReader.hpp"
+
+#include "ULConnectorWHeaderCustomSerialization.hpp"
+#include "ULHeaderIOHandlerCustomSerialization.hpp"
 
 struct parsed_options {
     std::string input_file;
@@ -50,8 +51,11 @@ int main(int argc, char **argv) {
     auto tmp_sorted = parsed.output_file + "-sorted";
 
     ExternalSort::ExternalSort<
-            ExternalSort::UnsignedLongSortConnector,
-            ExternalSort::DATA_MODE::BINARY>::sort(parsed.output_file,
+            ULConnectorWHeaderCustomSerialization,
+            ExternalSort::DATA_MODE::BINARY,
+            ExternalSort::NoTimeControl,
+            ULHeaderIOHandlerCustomSerialization
+            >::sort(parsed.output_file,
                                                    tmp_sorted,
                                                    dir_path.string(), 4, 10,
                                                    1'000'000'000, 4096,
