@@ -5,7 +5,7 @@
 #include <iostream>
 
 #include <K2TreeMixed.hpp>
-int main(int, char **){
+int main(int, char **) {
   K2TreeConfig config1{};
   config1.cut_depth = 10;
   config1.treedepth = 32;
@@ -19,10 +19,9 @@ int main(int, char **){
 
   static constexpr unsigned long TEN_MILL = 10'000'000;
 
-
   std::cout << "inserting to tree1 " << std::endl;
   auto start = std::chrono::high_resolution_clock::now();
-  for(size_t i = 0; i < TEN_MILL; i++){
+  for (size_t i = 0; i < TEN_MILL; i++) {
     tree1.insert(i, i);
   }
   auto stop = std::chrono::high_resolution_clock::now();
@@ -32,8 +31,8 @@ int main(int, char **){
   std::cout << "took " << duration.count() << " ms" << std::endl;
   std::cout << "inserting to tree2 " << std::endl;
   start = std::chrono::high_resolution_clock::now();
-  for(size_t i = 0; i < TEN_MILL; i++){
-    tree2.insert(i,i);
+  for (size_t i = 0; i < TEN_MILL; i++) {
+    tree2.insert(i, i);
   }
   stop = std::chrono::high_resolution_clock::now();
   duration =
@@ -43,10 +42,8 @@ int main(int, char **){
   std::cout << "scanning... " << std::endl;
   start = std::chrono::high_resolution_clock::now();
 
-  tree1.scan_points([](unsigned long col, unsigned long, void *){
-    (void)(col);
-  },
-                    nullptr);
+  tree1.scan_points(
+      [](unsigned long col, unsigned long, void *) { (void)(col); }, nullptr);
 
   stop = std::chrono::high_resolution_clock::now();
   duration =
@@ -56,18 +53,12 @@ int main(int, char **){
 
   start = std::chrono::high_resolution_clock::now();
 
-  tree2.scan_points([](unsigned long col, unsigned long, void *){
-    (void)(col);
-    },
-                    nullptr);
-
+  tree2.scan_points(
+      [](unsigned long col, unsigned long, void *) { (void)(col); }, nullptr);
 
   stop = std::chrono::high_resolution_clock::now();
   duration =
       std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
 
   std::cout << "full scan 2 took " << duration.count() << " ms" << std::endl;
-
-
-
 }

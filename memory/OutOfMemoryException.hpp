@@ -9,7 +9,8 @@
 
 class OutOfMemoryException : public std::runtime_error {
 public:
-  OutOfMemoryException(unsigned long required_bytes, unsigned long capacity_bytes);
+  OutOfMemoryException(unsigned long required_bytes,
+                       unsigned long capacity_bytes);
 };
 
 #endif // RDFCACHEK2_OUTOFMEMORYEXCEPTION_HPP

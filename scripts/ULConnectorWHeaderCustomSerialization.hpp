@@ -8,64 +8,65 @@
 #include <fstream>
 
 class ULConnectorWHeaderCustomSerialization {
-    unsigned long value;
+  unsigned long value;
 
 public:
-    static constexpr bool fixed_size = true;
+  static constexpr bool fixed_size = true;
 
-    explicit ULConnectorWHeaderCustomSerialization(unsigned long value)
-            : value(value) {}
+  explicit ULConnectorWHeaderCustomSerialization(unsigned long value)
+      : value(value) {}
 
-    ULConnectorWHeaderCustomSerialization() : value(0) {}
+  ULConnectorWHeaderCustomSerialization() : value(0) {}
 
-    ULConnectorWHeaderCustomSerialization(
-            ULConnectorWHeaderCustomSerialization &&other) noexcept
-            : value(other.value) {}
+  ULConnectorWHeaderCustomSerialization(
+      ULConnectorWHeaderCustomSerialization &&other) noexcept
+      : value(other.value) {}
 
-    ULConnectorWHeaderCustomSerialization(
-            const ULConnectorWHeaderCustomSerialization &other) = default;
+  ULConnectorWHeaderCustomSerialization(
+      const ULConnectorWHeaderCustomSerialization &other) = default;
 
-    ULConnectorWHeaderCustomSerialization &
-    operator=(ULConnectorWHeaderCustomSerialization &&other) noexcept {
-        this->value = other.value;
-        return *this;
+  ULConnectorWHeaderCustomSerialization &
+  operator=(ULConnectorWHeaderCustomSerialization &&other) noexcept {
+    this->value = other.value;
+    return *this;
+  }
+
+  ULConnectorWHeaderCustomSerialization &
+  operator=(const ULConnectorWHeaderCustomSerialization &other) = default;
+
+  struct Comparator {
+    bool operator()(const ULConnectorWHeaderCustomSerialization &lhs,
+                    const ULConnectorWHeaderCustomSerialization &rhs) {
+      return lhs.value < rhs.value;
     }
+  };
 
-    ULConnectorWHeaderCustomSerialization &
-    operator=(const ULConnectorWHeaderCustomSerialization &other) = default;
+  friend std::ostream &
+  operator<<(std::ostream &os,
+             const ULConnectorWHeaderCustomSerialization &data);
 
-    struct Comparator {
-        bool operator()(const ULConnectorWHeaderCustomSerialization &lhs,
-                        const ULConnectorWHeaderCustomSerialization &rhs) {
-            return lhs.value < rhs.value;
-        }
-    };
+  bool operator==(const ULConnectorWHeaderCustomSerialization &other) const {
+    return value == other.value;
+  }
 
-    friend std::ostream &operator<<(std::ostream &os,
-                                    const ULConnectorWHeaderCustomSerialization &data);
+  bool operator!=(const ULConnectorWHeaderCustomSerialization &other) const {
+    return value != other.value;
+  }
 
-    bool operator==(const ULConnectorWHeaderCustomSerialization &other) const {
-        return value == other.value;
-    }
+  static bool read_value(std::ifstream &ifs,
+                         ULConnectorWHeaderCustomSerialization &next_val) {
+    unsigned long value = read_u64(ifs);
+    next_val = ULConnectorWHeaderCustomSerialization(value);
+    return true;
+  }
 
-    bool operator!=(const ULConnectorWHeaderCustomSerialization &other) const {
-        return value != other.value;
-    }
-
-    static bool read_value(std::ifstream &ifs,
-                           ULConnectorWHeaderCustomSerialization &next_val) {
-        unsigned long value = read_u64(ifs);
-        next_val = ULConnectorWHeaderCustomSerialization(value);
-        return true;
-    }
-
-    static size_t size() { return sizeof(unsigned long); }
+  static size_t size() { return sizeof(unsigned long); }
 };
 
 std::ostream &operator<<(std::ostream &os,
                          const ULConnectorWHeaderCustomSerialization &data) {
-    write_u64(os, data.value);
-    return os;
+  write_u64(os, data.value);
+  return os;
 }
 
 #endif // ULConnectorWHeaderCustomSerialization_CUSTOM_SERIALIZATION_HPP

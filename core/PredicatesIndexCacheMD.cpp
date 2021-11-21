@@ -230,7 +230,8 @@ void PredicatesIndexCacheMD::load_all_predicates() {
   auto first_offset = metadata.get_map().at(all_predicates[0]).tree_offset;
   is->seekg(first_offset);
 
-  predicates.reserve(all_predicates.size()+ (unsigned long)((double)all_predicates.size()*.5));
+  predicates.reserve(all_predicates.size() +
+                     (unsigned long)((double)all_predicates.size() * .5));
   for (unsigned long predicate_id : all_predicates) {
     // commented code kept for future debugging
     /*

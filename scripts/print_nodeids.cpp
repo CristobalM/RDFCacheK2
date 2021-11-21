@@ -1,12 +1,12 @@
+#include <filesystem>
 #include <stdexcept>
 #include <string>
-#include <filesystem>
 
+#include <UnsignedLongSortConnector.hpp>
+#include <external_sort.hpp>
 #include <getopt.h>
 #include <serialization_util.hpp>
 #include <triple_external_sort.hpp>
-#include <external_sort.hpp>
-#include <UnsignedLongSortConnector.hpp>
 
 struct parsed_options {
   std::string input_file;
@@ -23,7 +23,7 @@ int main(int argc, char **argv) {
   std::ifstream ifs(parsed.input_file, std::ios::in | std::ios::binary);
   std::ofstream ofs(parsed.output_file, std::ios::out | std::ios::trunc);
   auto total_nodes = read_u64(ifs);
-  for(size_t i = 0; i < total_nodes; i++){
+  for (size_t i = 0; i < total_nodes; i++) {
     auto nodeid = read_u64(ifs);
     ofs << nodeid << "\n";
   }

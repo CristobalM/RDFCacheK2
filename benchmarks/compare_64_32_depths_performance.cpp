@@ -5,7 +5,7 @@
 #include <iostream>
 
 #include <K2TreeMixed.hpp>
-int main(int, char **){
+int main(int, char **) {
   K2TreeConfig config1{};
   config1.cut_depth = 10;
   config1.treedepth = 32;
@@ -19,10 +19,9 @@ int main(int, char **){
 
   static constexpr unsigned long TEN_MILL = 1'000'000;
 
-
   std::cout << "inserting to tree1 " << std::endl;
   auto start = std::chrono::high_resolution_clock::now();
-  for(size_t i = 0; i < TEN_MILL; i++){
+  for (size_t i = 0; i < TEN_MILL; i++) {
     tree1.insert(i, i);
   }
   auto stop = std::chrono::high_resolution_clock::now();
@@ -32,8 +31,8 @@ int main(int, char **){
   std::cout << "took " << duration.count() << " ms" << std::endl;
   std::cout << "inserting to tree2 " << std::endl;
   start = std::chrono::high_resolution_clock::now();
-  for(size_t i = 0; i < TEN_MILL; i++){
-    tree2.insert(i,i);
+  for (size_t i = 0; i < TEN_MILL; i++) {
+    tree2.insert(i, i);
   }
   stop = std::chrono::high_resolution_clock::now();
   duration =
@@ -44,28 +43,26 @@ int main(int, char **){
   auto scanner1 = tree1.create_full_scanner();
 
   start = std::chrono::high_resolution_clock::now();
-  while(scanner1->has_next()){
+  while (scanner1->has_next()) {
     scanner1->next();
   }
   stop = std::chrono::high_resolution_clock::now();
   duration =
       std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
 
-  std::cout << "full scan for scanner1 took " << duration.count() << " ms" << std::endl;
-
+  std::cout << "full scan for scanner1 took " << duration.count() << " ms"
+            << std::endl;
 
   auto scanner2 = tree2.create_full_scanner();
 
   start = std::chrono::high_resolution_clock::now();
-  while(scanner2->has_next()){
+  while (scanner2->has_next()) {
     scanner2->next();
   }
   stop = std::chrono::high_resolution_clock::now();
   duration =
       std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
 
-  std::cout << "full scan for scanner2 took " << duration.count() << " ms" << std::endl;
-
-
-
+  std::cout << "full scan for scanner2 took " << duration.count() << " ms"
+            << std::endl;
 }

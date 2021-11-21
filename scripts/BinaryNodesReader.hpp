@@ -7,17 +7,16 @@
 
 #include <fstream>
 
-class BinaryNodesReader{
+class BinaryNodesReader {
   std::ifstream &ifs;
   unsigned long nodes;
+
 public:
-  explicit BinaryNodesReader(std::ifstream &ifs) : ifs(ifs){
+  explicit BinaryNodesReader(std::ifstream &ifs) : ifs(ifs) {
     nodes = read_u64(ifs);
   }
 
-  void read_value(ExternalSort::UnsignedLongSortConnector &value){
-
-  }
+  void read_value(ExternalSort::UnsignedLongSortConnector &value) {}
 };
 
 #endif // RDFCACHEK2_BINARYNODESREADER_HPP
