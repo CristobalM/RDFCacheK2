@@ -3,8 +3,10 @@
 //
 
 #include "NodesSequence.hpp"
+#include "mock_structures/StringIStream.hpp"
 #include "mock_structures/StringOStream.hpp"
 #include <gtest/gtest.h>
+#include <serialization_util.hpp>
 
 TEST(NodesMapSuite, CanGetNodesIdCorrectly) {
 
@@ -45,5 +47,23 @@ TEST(NodesMapSuite, NotFoundFailGraciously) {
     ASSERT_EQ(id, NodesSequence::NOT_FOUND);
     auto extracted_value = nodes_sequence.get_value(i + 100000);
     ASSERT_EQ(extracted_value, NodesSequence::NOT_FOUND);
+  }
+}
+
+TEST(NodesMapSuite, CanDeserialize) {
+
+  std::stringstream ss;
+
+  const long nodes_number = 1'000'000;
+  write_u64(ss, nodes_number);
+  for (unsigned long i = 0; i < nodes_number; i++) {
+    write_u64(ss, i);
+  }
+  auto data = ss.str();
+  StringIStream sis(data, std::ios::binary | std::ios::in);
+  auto nodes_sequence = NodesSequence::from_input_stream(sis);
+  for (long i = 0; i < nodes_number; i++) {
+    auto value = nodes_sequence.get_value(i);
+    ASSERT_EQ(value, i);
   }
 }

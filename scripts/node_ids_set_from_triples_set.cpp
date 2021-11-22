@@ -4,6 +4,7 @@
 
 #include <external_sort.hpp>
 #include <getopt.h>
+#include <iostream>
 #include <serialization_util.hpp>
 #include <triple_external_sort.hpp>
 
@@ -13,6 +14,8 @@
 struct parsed_options {
   std::string input_file;
   std::string output_file;
+  int workers;
+  unsigned long memory_budget;
 };
 
 parsed_options parse_cmline(int argc, char **argv);
@@ -21,6 +24,16 @@ namespace fs = std::filesystem;
 
 int main(int argc, char **argv) {
   auto parsed = parse_cmline(argc, argv);
+
+  std::cout << "processing " << parsed.input_file << " ..." << std::endl;
+  if (!fs::exists(parsed.input_file)) {
+    std::cerr << "file " << parsed.input_file << " doesn't exist" << std::endl;
+    return 1;
+  }
+
+  std::cout << "output file: " << parsed.output_file << " ..." << std::endl;
+  std::cout << "workers: " << parsed.workers << std::endl;
+  std::cout << "memory-budget: " << parsed.memory_budget << std::endl;
 
   std::ifstream ifs(parsed.input_file, std::ios::in | std::ios::binary);
   std::ofstream ofs(parsed.output_file,
@@ -46,19 +59,26 @@ int main(int argc, char **argv) {
 
   bool existed = true;
   if (!fs::exists(dir_path)) {
+    std::cout << "creating directory " << dir_path << std::endl;
     fs::create_directory(dir_path);
     existed = false;
+  } else {
+    std::cout << "using existing directory " << dir_path << std::endl;
   }
 
   auto tmp_sorted = parsed.output_file + "-sorted";
+
+  std::cout << "starting external sort..." << std::endl;
 
   ExternalSort::ExternalSort<
       ULConnectorWHeaderCustomSerialization, ExternalSort::DATA_MODE::BINARY,
       ExternalSort::NoTimeControl,
       ULHeaderIOHandlerCustomSerialization>::sort(parsed.output_file,
                                                   tmp_sorted, dir_path.string(),
-                                                  4, 10, 1'000'000'000, 4096,
+                                                  parsed.workers, 10,
+                                                  parsed.memory_budget, 4096,
                                                   true);
+  std::cout << "external sort done" << std::endl;
   fs::remove(parsed.output_file);
   fs::rename(tmp_sorted, parsed.output_file);
 
@@ -70,16 +90,20 @@ int main(int argc, char **argv) {
 }
 
 parsed_options parse_cmline(int argc, char **argv) {
-  const char short_options[] = "i:o:";
+  const char short_options[] = "i:o:w:m:";
   struct option long_options[] = {
       {"input-file", required_argument, nullptr, 'i'},
       {"output-file", required_argument, nullptr, 'o'},
+      {"workers", required_argument, nullptr, 'w'},
+      {"memory-budget", required_argument, nullptr, 'm'},
   };
 
   int opt, opt_index;
 
   bool has_input = false;
   bool has_output = false;
+  bool has_workers = false;
+  bool has_memory_budget = false;
   parsed_options out{};
 
   while ((
@@ -94,7 +118,15 @@ parsed_options parse_cmline(int argc, char **argv) {
       break;
     case 'o':
       out.output_file = optarg;
-      has_output = optarg;
+      has_output = true;
+      break;
+    case 'w':
+      out.workers = std::stoi(optarg);
+      has_workers = true;
+      break;
+    case 'm':
+      out.memory_budget = std::stoul(optarg);
+      has_memory_budget = true;
       break;
     default:
       break;
@@ -105,6 +137,11 @@ parsed_options parse_cmline(int argc, char **argv) {
     throw std::runtime_error("input-file (i) argument is required");
   if (!has_output)
     throw std::runtime_error("output-file (o) argument is required");
+
+  if (!has_workers)
+    throw std::runtime_error("workers (w) argument is required");
+  if (!has_memory_budget)
+    throw std::runtime_error("memory-budget (m) argument is required");
 
   return out;
 }

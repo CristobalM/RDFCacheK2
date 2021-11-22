@@ -5,6 +5,7 @@
 #ifndef RDFCACHEK2_NODESSEQUENCE_HPP
 #define RDFCACHEK2_NODESSEQUENCE_HPP
 
+#include <I_IStream.hpp>
 #include <vector>
 
 class NodesSequence {
@@ -18,6 +19,8 @@ public:
   long get_id(long value);
 
   long get_value(long position);
+
+  static NodesSequence from_input_stream(I_IStream &input_stream);
 };
 
 #endif // RDFCACHEK2_NODESSEQUENCE_HPP
