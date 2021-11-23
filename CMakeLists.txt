@@ -333,6 +333,10 @@ add_executable(print_nodeids scripts/print_nodeids.cpp)
 target_include_directories(print_nodeids PUBLIC ${INCLUDES})
 target_link_libraries(print_nodeids ${DEFAULT_LIBS})
 
+add_executable(translate_triples_to_nseq scripts/translate_triples_to_nseq.cpp)
+target_include_directories(translate_triples_to_nseq PUBLIC ${INCLUDES})
+target_link_libraries(translate_triples_to_nseq ${DEFAULT_LIBS})
+
 # Only create test executables if google test is found
 find_package(GTest QUIET)
 if (GTest_FOUND)
