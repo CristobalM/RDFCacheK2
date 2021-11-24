@@ -10,26 +10,16 @@
 #include <string>
 
 #include <I_FileRWHandler.hpp>
+#include <NodesSequence.hpp>
 #include <PredicatesCacheManager.hpp>
 #include <replacement/I_CacheReplacement.hpp>
 #include <request_msg.pb.h>
 
 #include "CacheArgs.hpp"
 
-struct CacheStats {
-  int allocated_u32s;
-  int nodes_count;
-  int containers_sz_sum;
-  int frontier_data;
-  int blocks_data;
-
-  int max_points_k2;
-  int number_of_points_avg;
-  int blocks_counted;
-};
-
 class Cache {
   std::shared_ptr<PredicatesCacheManager> cache_manager;
+  std::unique_ptr<NodesSequence> nodes_sequence;
 
   std::unique_ptr<I_CacheReplacement> cache_replacement;
 
@@ -43,9 +33,10 @@ class Cache {
 
 public:
   Cache(std::shared_ptr<PredicatesCacheManager> predicates_cache_manager,
-        CacheArgs args);
+        const CacheArgs &args);
 
   PredicatesCacheManager &get_pcm();
+  NodesSequence &get_nodes_sequence();
   I_CacheReplacement &get_replacement();
   I_CacheReplacement::REPLACEMENT_STRATEGY get_strategy_id();
   std::vector<unsigned long> extract_loaded_predicates_from_sequence(

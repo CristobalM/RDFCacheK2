@@ -2,7 +2,6 @@
 // Created by Cristobal Miranda, 2020
 //
 
-#include <chrono>
 #include <replacement/LRUReplacementStrategy.hpp>
 #include <utility>
 
@@ -12,8 +11,10 @@
 #include "replacement/CacheReplacementFactory.hpp"
 
 Cache::Cache(std::shared_ptr<PredicatesCacheManager> predicates_cache_manager,
-             CacheArgs args)
+             const CacheArgs &args)
     : cache_manager(std::move(predicates_cache_manager)),
+      nodes_sequence(std::make_unique<NodesSequence>(
+          NodesSequence::from_file(args.node_ids_filename))),
       cache_replacement(CacheReplacementFactory::create_cache_replacement(
           args.memory_budget_bytes, cache_manager.get(),
           args.replacement_strategy)),
@@ -53,3 +54,4 @@ I_FileRWHandler &Cache::get_log_offsets_file_handler() {
 I_FileRWHandler &Cache::get_log_metadata_file_handler() {
   return *file_metadata_rw_handler;
 }
+NodesSequence &Cache::get_nodes_sequence() { return *nodes_sequence; }

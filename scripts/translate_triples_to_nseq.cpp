@@ -19,13 +19,15 @@ int main(int argc, char **argv) {
   auto parsed = parse_cmline(argc, argv);
 
   std::ifstream ifs(parsed.input_file, std::ios::in | std::ios::binary);
-  std::ofstream ofs(parsed.output_file, std::ios::out | std::ios::binary | std::ios::trunc);
+  std::ofstream ofs(parsed.output_file,
+                    std::ios::out | std::ios::binary | std::ios::trunc);
 
   std::unique_ptr<NodesSequence> nodes_sequence = nullptr;
   {
     FileIStream nodes_fis(parsed.nodes_sequence_file,
                           std::ios::in | std::ios::binary);
-    nodes_sequence = std::make_unique<NodesSequence>(NodesSequence::from_input_stream(nodes_fis));
+    nodes_sequence = std::make_unique<NodesSequence>(
+        NodesSequence::from_input_stream(nodes_fis));
   }
   FileData filedata{};
   filedata.size = read_u64(ifs);
@@ -33,10 +35,11 @@ int main(int argc, char **argv) {
   write_u64(ofs, filedata.size);
   while (!filedata.finished()) {
     auto triple = filedata.read_triple(ifs);
-    //ofs << triple.first << "," << triple.second << "," << triple.third << "\n";
+    // ofs << triple.first << "," << triple.second << "," << triple.third <<
+    // "\n";
     auto first = (unsigned long)nodes_sequence->get_id((long)triple.first);
-    auto second =  (unsigned long)nodes_sequence->get_id((long)triple.second);
-    auto third =  (unsigned long)nodes_sequence->get_id((long)triple.third);
+    auto second = (unsigned long)nodes_sequence->get_id((long)triple.second);
+    auto third = (unsigned long)nodes_sequence->get_id((long)triple.third);
     TripleValue triple_value(first, second, third);
     triple_value.write_to_file(ofs);
   }

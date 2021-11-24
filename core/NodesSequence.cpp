@@ -3,6 +3,7 @@
 //
 
 #include "NodesSequence.hpp"
+#include <FileIStream.hpp>
 #include <serialization_util.hpp>
 #include <stdexcept>
 
@@ -33,4 +34,8 @@ NodesSequence NodesSequence::from_input_stream(I_IStream &input_stream) {
     data.push_back(node_id);
   }
   return NodesSequence(std::move(data));
+}
+NodesSequence NodesSequence::from_file(const std::string &file_name) {
+  FileIStream file_istream(file_name, std::ios::binary | std::ios::in);
+  return from_input_stream(file_istream);
 }

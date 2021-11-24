@@ -10,6 +10,7 @@ struct CacheArgs {
   unsigned long memory_budget_bytes;
   I_CacheReplacement::REPLACEMENT_STRATEGY replacement_strategy;
   std::string update_log_filename;
+  std::string node_ids_filename;
 };
 
 #endif // RDFCACHEK2_CACHEARGS_HPP
