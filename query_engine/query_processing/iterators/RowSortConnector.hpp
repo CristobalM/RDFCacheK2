@@ -12,6 +12,8 @@
 class RowSortConnector {
 
 public:
+
+  static constexpr bool fixed_size = false;
   using row_t = std::vector<unsigned long>;
 
   explicit RowSortConnector(std::vector<unsigned long> input_row);
