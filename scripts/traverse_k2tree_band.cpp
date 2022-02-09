@@ -73,15 +73,6 @@ int main(int argc, char **argv) {
   }
 
   std::vector<const K2TreeMixed *> trees = {&k2tree};
-  struct sip_ipoint join_coordinate;
-  join_coordinate.coord = parsed.position;
-  join_coordinate.coord_type =
-      (parsed.band == BandType::COL ? COLUMN_COORD : ROW_COORD);
-
-  std::vector<sip_ipoint> join_coordinates = {join_coordinate};
-  auto join_result = K2TreeMixed::sip_join_k2trees(trees, join_coordinates);
-
-  std::set<unsigned long> sip_set(join_result.begin(), join_result.end());
 
   int real_points_count = 0;
   trees[0]->scan_points(
@@ -103,9 +94,6 @@ int main(int argc, char **argv) {
 
   std::vector<const K2TreeMixed *> other_trees = {&copy_k2tree};
 
-  auto join_result_copy =
-      K2TreeMixed::sip_join_k2trees(other_trees, join_coordinates);
-
   unsigned long sz_serialized_original;
   unsigned long sz_serialized_copy;
   {
@@ -119,29 +107,16 @@ int main(int argc, char **argv) {
     sz_serialized_copy = ss_copy.str().size();
   }
 
-  std::cout << "join_result sz: " << join_result.size() << std::endl
-            << "join_coordinate.coord: " << join_coordinate.coord << std::endl
-            << "join_coordinate.coord_type: " << join_coordinate.coord_type
-            << std::endl
-            << "join_coordinates.size: " << join_coordinates.size() << std::endl
-            << "join_coordinates[0].coord: " << join_coordinates[0].coord
-            << std::endl
-            << "join_coordinates[0].coord_type: "
-            << join_coordinates[0].coord_type << std::endl
-            << "real_points_count: " << real_points_count << std::endl
-            << "traverse size: " << band_tr.size() << std::endl
-            << "same as traverse: " << (sip_set == band_tr ? "TRUE" : "FALSE")
-            << std::endl
-            << "other_join_result sz: " << join_result_copy.size() << std::endl
-            << "sz serialized original: " << sz_serialized_original << std::endl
-            << "sz serialized copy: " << sz_serialized_copy << std::endl
-            << "sz original: " << k2tree.size() << std::endl
-            << "sz copy: " << copy_k2tree.size() << std::endl
-            << std::endl;
+  std::cout
 
-  for (auto value : join_result) {
-    ofs << value << "\n";
-  }
+      << "real_points_count: " << real_points_count << std::endl
+      << "traverse size: " << band_tr.size() << std::endl
+      << std::endl
+      << "sz serialized original: " << sz_serialized_original << std::endl
+      << "sz serialized copy: " << sz_serialized_copy << std::endl
+      << "sz original: " << k2tree.size() << std::endl
+      << "sz copy: " << copy_k2tree.size() << std::endl
+      << std::endl;
 
   return 0;
 }

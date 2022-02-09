@@ -10,30 +10,6 @@
 
 using namespace std::chrono_literals;
 
-TEST(k2tree_mixed_tests, single_band_sip_1) {
-  const uint32_t tree_depth = 10;
-  const uint32_t matrix_side = 1 << tree_depth;
-
-  K2TreeMixed tree(tree_depth, 256, 5);
-  K2TreeBulkOp bulk_op(tree);
-  for (unsigned long i = 0; i < matrix_side; i++) {
-    bulk_op.insert(i, 5);
-  }
-  for (unsigned long i = 0; i < matrix_side; i++) {
-    std::vector<const K2TreeMixed *> trees = {&tree};
-    sip_ipoint join_coordinate;
-    join_coordinate.coord = i;
-    join_coordinate.coord_type = COLUMN_COORD;
-
-    std::vector<sip_ipoint> join_coordinates = {join_coordinate};
-    auto join_result = K2TreeMixed::sip_join_k2trees(trees, join_coordinates);
-    ASSERT_EQ(join_result.size(), 1);
-    ASSERT_EQ(join_result[0], 5);
-  }
-
-  ASSERT_TRUE(tree.has_valid_structure(bulk_op.get_stw()));
-}
-
 TEST(k2tree_mixed_tests, can_insert) {
   K2TreeMixed tree(10);
   K2TreeBulkOp bulk_op(tree);
@@ -77,30 +53,6 @@ TEST(k2tree_mixed_test, exhaustive_validation) {
       }
     }
   }
-  ASSERT_TRUE(tree.has_valid_structure(bulk_op.get_stw()));
-}
-
-TEST(k2tree_mixed_test, can_sip_join) {
-  std::set<std::pair<unsigned long, unsigned long>> points_to_insert = {
-      {0, 3}, {2, 1}, {123, 321}, {44, 41}, {33, 21}, {6, 9}, {5, 3}, {100, 3}};
-
-  unsigned long treedepth = 10;
-  K2TreeMixed tree(treedepth, 255, 5);
-  K2TreeBulkOp bulk_op(tree);
-  for (auto point : points_to_insert) {
-    bulk_op.insert(point.first, point.second);
-  }
-  std::vector<const K2TreeMixed *> trees_to_join = {&tree};
-  std::vector<struct sip_ipoint> coords;
-  struct sip_ipoint first;
-  first.coord = 3;
-  first.coord_type = ROW_COORD;
-  coords.push_back(first);
-  auto result = K2TreeMixed::sip_join_k2trees(trees_to_join, coords);
-  ASSERT_EQ(result.size(), 3);
-  ASSERT_EQ(result[0], 0);
-  ASSERT_EQ(result[1], 5);
-  ASSERT_EQ(result[2], 100);
   ASSERT_TRUE(tree.has_valid_structure(bulk_op.get_stw()));
 }
 
@@ -189,7 +141,7 @@ TEST(k2tree_mixed_test, can_report_row) {
   ASSERT_TRUE(tree.has_valid_structure(bulk_op.get_stw()));
 }
 
-TEST(k2tree_mixed_test, can_report_row_and_sip) {
+TEST(k2tree_mixed_test, can_report_row_2) {
   unsigned long treedepth = 10;
   K2TreeMixed tree(treedepth, 255, 5);
   K2TreeBulkOp bulk_op(tree);
@@ -206,25 +158,9 @@ TEST(k2tree_mixed_test, can_report_row_and_sip) {
       },
       &retrieved, bulk_op.get_stw());
 
-  std::vector<unsigned long> retrieved_sip;
-
   std::vector<const K2TreeMixed *> trees;
 
   trees.push_back(&tree);
-  std::vector<struct sip_ipoint> join_coords;
-
-  struct sip_ipoint coord;
-  coord.coord = 1;
-  coord.coord_type = coord_t::ROW_COORD;
-
-  join_coords.push_back(coord);
-
-  auto result_sip = K2TreeMixed::sip_join_k2trees(trees, join_coords);
-  ASSERT_EQ(result_sip.size(), retrieved.size());
-
-  for (int i = 0; i < 99; i++) {
-    ASSERT_EQ(retrieved[i], result_sip[i]);
-  }
 
   ASSERT_TRUE(tree.has_valid_structure());
 }

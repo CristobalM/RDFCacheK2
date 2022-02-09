@@ -310,57 +310,6 @@ K2TreeMixed K2TreeMixed::read_from_istream(std::istream &is) {
                      points_count);
 }
 
-std::vector<unsigned long> K2TreeMixed::sip_join_k2trees(
-    const std::vector<const K2TreeMixed *> &trees,
-    std::vector<struct sip_ipoint> &join_coordinates) {
-  if (trees.size() != join_coordinates.size()) {
-    throw std::runtime_error(
-        "Trees amount differ from join coordinates amount " +
-        std::to_string(trees.size()) +
-        " != " + std::to_string(join_coordinates.size()));
-  }
-
-  std::vector<struct k2node *> root_nodes(trees.size());
-
-  std::vector<struct k2qstate> states(trees.size());
-  std::vector<struct k2qstate *> states_ptrs(trees.size());
-
-  for (size_t i = 0; i < trees.size(); i++) {
-    root_nodes[i] = trees[i]->root;
-    init_k2qstate(&states[i], trees[i]->tree_depth, trees[i]->max_nodes_count,
-                  trees[i]->cut_depth);
-    states_ptrs[i] = &states[i];
-  }
-
-  struct k2node_sip_input sip_input;
-  sip_input.nodes = root_nodes.data();
-  sip_input.sts = states_ptrs.data();
-  sip_input.join_coords = join_coordinates.data();
-  sip_input.join_size = static_cast<int>(join_coordinates.size());
-
-  std::vector<unsigned long> result;
-
-  int err = k2node_sip_join(
-      sip_input,
-      [](unsigned long coord, void *report_state) {
-        reinterpret_cast<std::vector<unsigned long> *>(report_state)
-            ->push_back(coord);
-      },
-      &result);
-
-  for (auto &state : states) {
-    clean_k2qstate(&state);
-  }
-
-  if (err) {
-    throw std::runtime_error(
-        "K2TreeMixed::sip_join_k2trees:: error in k2node_sip_join: " +
-        std::to_string(err));
-  }
-
-  return result;
-}
-
 size_t K2TreeMixed::size() const { return points_count; }
 
 struct k2node *K2TreeMixed::get_root_k2node() {
