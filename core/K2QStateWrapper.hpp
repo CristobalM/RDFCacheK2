@@ -7,7 +7,7 @@
 
 extern "C" {
 #include <k2node.h>
-};
+}
 
 #include <cstdint>
 

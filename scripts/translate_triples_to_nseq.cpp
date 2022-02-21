@@ -1,3 +1,5 @@
+#include <filesystem>
+#include <iostream>
 #include <stdexcept>
 #include <string>
 
@@ -15,8 +17,21 @@ struct parsed_options {
 
 parsed_options parse_cmline(int argc, char **argv);
 
+namespace fs = std::filesystem;
+
 int main(int argc, char **argv) {
   auto parsed = parse_cmline(argc, argv);
+
+  if (!fs::exists(parsed.input_file)) {
+    std::cerr << "file does not exist (input_file): " << parsed.input_file
+              << std::endl;
+    exit(1);
+  }
+  if (!fs::exists(parsed.nodes_sequence_file)) {
+    std::cerr << "file does not exist (nodes_sequence_file): "
+              << parsed.nodes_sequence_file << std::endl;
+    exit(1);
+  }
 
   std::ifstream ifs(parsed.input_file, std::ios::in | std::ios::binary);
   std::ofstream ofs(parsed.output_file,

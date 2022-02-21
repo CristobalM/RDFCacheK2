@@ -376,23 +376,23 @@ if (GTest_FOUND)
     target_link_libraries(predicates_metadata_serialization_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} pthread MockStructureLib)
 
     add_executable(k2mixed_from_file test/k2mixed_from_file.cpp)
-    target_link_libraries(k2mixed_from_file ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES})
+    target_link_libraries(k2mixed_from_file ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} pthread)
 
     add_executable(cache_replacement_test test/cache_replacement_test.cpp test/cache_test_util.cpp)
-    target_link_libraries(cache_replacement_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES})
+    target_link_libraries(cache_replacement_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} pthread)
 
     add_executable(memory_segment_test test/memory_segment_test.cpp)
-    target_link_libraries(memory_segment_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES})
+    target_link_libraries(memory_segment_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} pthread)
 
 
     add_executable(update_log_test test/update_log_test.cpp)
-    target_link_libraries(update_log_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} MockStructureLib)
+    target_link_libraries(update_log_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} MockStructureLib pthread)
 
     add_executable(predicates_cache_manager_test test/predicates_cache_manager_test.cpp)
-    target_link_libraries(predicates_cache_manager_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} MockStructureLib)
+    target_link_libraries(predicates_cache_manager_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} MockStructureLib pthread)
 
     add_executable(nodes_map_test test/nodes_map_test.cpp)
-    target_link_libraries(nodes_map_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} MockStructureLib)
+    target_link_libraries(nodes_map_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} MockStructureLib pthread)
 
 
     add_test(NAME serialization_test COMMAND ./serialization_test)
