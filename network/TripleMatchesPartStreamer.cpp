@@ -65,9 +65,8 @@ I_TRMatchingStreamer &
 TripleMatchesPartStreamer::start_streaming_matching_triples(
     const proto_msg::TripleNodeIdEnc &triple_pattern) {
 
-  auto streamer = std::make_unique<TriplePatternMatchingStreamer>(
-      channel_id, current_pattern_channel_id, triple_pattern, cache,
-      threshold_part_size);
+
+  auto streamer = get_streamer(triple_pattern);
   auto *ptr = streamer.get();
   triples_streamers_map[current_pattern_channel_id] = std::move(streamer);
   current_pattern_channel_id++;
@@ -83,4 +82,44 @@ I_TRMatchingStreamer &
 TripleMatchesPartStreamer::get_triple_pattern_streamer(int pattern_channel_id) {
   std::lock_guard lg(mutex);
   return *triples_streamers_map[pattern_channel_id];
+}
+std::unique_ptr<I_TRMatchingStreamer> TripleMatchesPartStreamer::get_streamer(
+    const proto_msg::TripleNodeIdEnc &triple_pattern) {
+  if(should_load_completely(triple_pattern)){
+    return get_full_streamer(triple_pattern);
+  }
+  return std::make_unique<TriplePatternMatchingStreamer>(
+        channel_id, current_pattern_channel_id, triple_pattern, cache,
+        threshold_part_size);
+}
+bool TripleMatchesPartStreamer::should_load_completely(
+    const proto_msg::TripleNodeIdEnc &triple_pattern) {
+
+  auto predicate_id = triple_pattern.predicate().encoded_data();
+  auto predicate_id_translated =
+      (unsigned long)cache->get_nodes_sequence().get_id((long)predicate_id);
+
+  auto fetch_result =
+      cache->get_pcm().get_predicates_index_cache().fetch_k2tree(
+          predicate_id_translated);
+  if (!fetch_result.exists()) {
+    return true;
+  }
+
+  auto &k2tree = fetch_result.get();
+  static constexpr unsigned long max_points = 6'250'000;
+  return k2tree.size() <= max_points;
+}
+std::unique_ptr<I_TRMatchingStreamer>
+TripleMatchesPartStreamer::get_full_streamer(
+    const proto_msg::TripleNodeIdEnc &triple_pattern) {
+
+
+  return std::make_unique<FullyLoadedStreamer>(
+      channel_id, current_pattern_channel_id, triple_pattern, cache,
+      threshold_part_size);
+}
+std::unique_ptr<I_TRMatchingStreamer>
+TripleMatchesPartStreamer::create_null_streamer() {
+  return std::unique_ptr<I_TRMatchingStreamer>();
 }

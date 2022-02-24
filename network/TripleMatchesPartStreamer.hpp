@@ -25,6 +25,8 @@ class TripleMatchesPartStreamer : public I_TRStreamer {
 
   std::mutex mutex;
 
+  std::unordered_map<unsigned long, >
+
 public:
   TripleMatchesPartStreamer(int channel_id,
                             std::vector<unsigned long> &&loaded_predicates,
@@ -47,6 +49,12 @@ private:
   proto_msg::CacheResponse time_control_finished_error();
   proto_msg::CacheResponse timeout_proto();
   void set_finished();
+  std::unique_ptr<I_TRMatchingStreamer>
+  get_streamer(const proto_msg::TripleNodeIdEnc &triple_pattern);
+  bool should_load_completely(const proto_msg::TripleNodeIdEnc &triple_pattern);
+  std::unique_ptr<I_TRMatchingStreamer>
+  get_full_streamer(const proto_msg::TripleNodeIdEnc &triple_pattern);
+  std::unique_ptr<I_TRMatchingStreamer> create_null_streamer();
 };
 
 #endif // RDFCACHEK2_TRIPLEMATCHESPARTSTREAMER_HPP
