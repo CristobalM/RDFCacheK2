@@ -17,3 +17,7 @@ K2TreeMixed &EmptyScanner::get_tree() { return k2tree; }
 EmptyScanner::EmptyScanner(K2TreeMixed &k2tree)
     : stw(k2tree.create_k2qw()), k2tree(k2tree) {}
 K2QStateWrapper &EmptyScanner::get_k2qw() { return stw; }
+unsigned long EmptyScanner::get_size() { return 0; }
+bool EmptyScanner::has_point(unsigned long col, unsigned long row) {
+  return k2tree.has(col, row);
+}

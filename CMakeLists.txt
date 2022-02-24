@@ -97,7 +97,12 @@ set(NETWORK_SOURCE_FILES
         network/PCMMerger.cpp
         network/PCMMerger.hpp
         network/PCMUpdateLoggerWrapper.cpp
-        network/PCMUpdateLoggerWrapper.hpp)
+        network/PCMUpdateLoggerWrapper.hpp
+        network/CachingTripleTraversalCondition.cpp
+        network/CachingTripleTraversalCondition.hpp
+        network/CachedK2TreeScanner.cpp
+        network/CachedK2TreeScanner.hpp
+        )
 
 
 set(PROTO_MESSAGES

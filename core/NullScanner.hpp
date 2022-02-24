@@ -17,6 +17,8 @@ public:
   K2TreeMixed &get_tree() override;
   K2QStateWrapper &get_k2qw() override;
   ~NullScanner() override;
+  unsigned long get_size() override;
+  bool has_point(unsigned long col, unsigned long row) override;
 };
 
 #endif // RDFCACHEK2_NULLSCANNER_HPP

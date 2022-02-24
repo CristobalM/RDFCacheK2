@@ -39,3 +39,7 @@ void BandScanner::reset_scan() { k2node_report_band_reset(&lazy_handler); }
 K2TreeMixed &BandScanner::get_tree() { return k2tree; }
 unsigned long BandScanner::get_band_value() { return band; }
 K2QStateWrapper &BandScanner::get_k2qw() { return stw; }
+unsigned long BandScanner::get_size() { return k2tree.size(); }
+bool BandScanner::has_point(unsigned long col, unsigned long row) {
+  return k2tree.has(col, row);
+}

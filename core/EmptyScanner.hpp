@@ -17,6 +17,9 @@ public:
   unsigned long get_band_value() override;
   K2TreeMixed &get_tree() override;
   K2QStateWrapper &get_k2qw() override;
+  unsigned long get_size() override;
+  ~EmptyScanner() override = default;
+  bool has_point(unsigned long col, unsigned long row) override;
 
 private:
   K2QStateWrapper stw;

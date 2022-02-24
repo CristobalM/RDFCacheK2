@@ -3,16 +3,36 @@
 //
 
 #include "TriplePatternMatchingStreamer.hpp"
+#include "CachedK2TreeScanner.hpp"
 
 TriplePatternMatchingStreamer::TriplePatternMatchingStreamer(
     int channel_id, int pattern_channel_id,
     const proto_msg::TripleNodeIdEnc triple_pattern_node, Cache *cache,
-    unsigned long threshold_part_size)
+    unsigned long threshold_part_size,
+    CachingTripleTraversalCondition caching_condition)
     : channel_id(channel_id), pattern_channel_id(pattern_channel_id),
       triple_pattern_node(std::move(triple_pattern_node)), cache(cache),
-      threshold_part_size(threshold_part_size), first(true), finished(false) {
+      threshold_part_size(threshold_part_size),
+      caching_condition(caching_condition),
+      first(true), finished(false), should_cache(false) {
   initialize_scanner();
 }
+
+TriplePatternMatchingStreamer::TriplePatternMatchingStreamer(
+    int channel_id, int pattern_channel_id,
+    const proto_msg::TripleNodeIdEnc triple_pattern_node, Cache *cache,
+    unsigned long threshold_part_size,
+    CachingTripleTraversalCondition caching_condition,
+    std::unique_ptr<K2TreeScanner> &&scanner)
+:
+      channel_id(channel_id), pattern_channel_id(pattern_channel_id),
+      triple_pattern_node(std::move(triple_pattern_node)), cache(cache),
+      threshold_part_size(threshold_part_size),
+      caching_condition(caching_condition),
+      first(true),k2tree_scanner(std::move(scanner)), finished(false), should_cache(false)
+{
+}
+
 
 proto_msg::CacheResponse TriplePatternMatchingStreamer::get_next_response() {
   proto_msg::CacheResponse cache_response;
@@ -36,7 +56,7 @@ proto_msg::CacheResponse TriplePatternMatchingStreamer::get_next_response() {
     auto object_id = triple_pattern_node.object().encoded_data();
     stream_response->set_has_exact_response(true);
     stream_response->set_exact_response(
-        k2tree_scanner->get_tree().has(subject_id, object_id));
+        k2tree_scanner->has_point(subject_id, object_id));
     return cache_response;
   }
 
@@ -44,8 +64,15 @@ proto_msg::CacheResponse TriplePatternMatchingStreamer::get_next_response() {
 
   auto &nodes_sequence = cache->get_nodes_sequence();
 
+
+  // CachedK2TreeScanner::Builder cached_scanner_builder( should_cache ? k2tree_scanner->get_size() : 0);
+
   while (k2tree_scanner->has_next()) {
     auto matching_pair_so = k2tree_scanner->next();
+    if(should_cache){
+      cached_scanner_builder->add_point(matching_pair_so.first, matching_pair_so.second);
+    }
+
     auto *matching_values = stream_response->mutable_matching_values()->Add();
     if (subject_variable) {
       acc_size += sizeof(unsigned long);
@@ -120,6 +147,13 @@ void TriplePatternMatchingStreamer::initialize_scanner() {
     // none variable
     k2tree_scanner = k2tree.create_empty_scanner();
   }
+  caching_condition.set_points(k2tree_scanner->get_size());
+  should_cache = !k2tree_scanner->is_cached() && caching_condition.should_cache();
+
+  // CachedK2TreeScanner::Builder cached_scanner_builder( should_cache ? k2tree_scanner->get_size() : 0);
+  if(should_cache){
+    cached_scanner_builder = std::make_unique<CachedK2TreeScanner::Builder>(k2tree_scanner->get_size());
+  }
 }
 
 void TriplePatternMatchingStreamer::set_finished() { finished = true; }
@@ -130,4 +164,17 @@ TriplePatternMatchingStreamer::timeout_proto_response() {
   result.set_response_type(proto_msg::TIMED_OUT_RESPONSE);
   result.mutable_error_response();
   return result;
+}
+std::unique_ptr<K2TreeScanner>
+TriplePatternMatchingStreamer::grab_cached_scanner() {
+  if(k2tree_scanner->is_cached()) {
+    k2tree_scanner->reset_scan();
+    return std::move(k2tree_scanner);
+  }
+  if(should_cache){
+    return cached_scanner_builder->get_scanner();
+  }
+
+  throw std::runtime_error("caching was not enabled");
+  // or return nullptr
 }

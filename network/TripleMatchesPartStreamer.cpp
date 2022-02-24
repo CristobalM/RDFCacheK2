@@ -65,9 +65,12 @@ I_TRMatchingStreamer &
 TripleMatchesPartStreamer::start_streaming_matching_triples(
     const proto_msg::TripleNodeIdEnc &triple_pattern) {
 
+  CachingTripleTraversalCondition caching_condition(100000000);
+
   auto streamer = std::make_unique<TriplePatternMatchingStreamer>(
       channel_id, current_pattern_channel_id, triple_pattern, cache,
-      threshold_part_size);
+      threshold_part_size, caching_condition);
+  streamer->grab_cached_scanner()
   auto *ptr = streamer.get();
   triples_streamers_map[current_pattern_channel_id] = std::move(streamer);
   current_pattern_channel_id++;

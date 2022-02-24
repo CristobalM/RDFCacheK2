@@ -35,3 +35,7 @@ unsigned long FullScanner::get_band_value() {
   throw std::runtime_error("Not band");
 }
 K2QStateWrapper &FullScanner::get_k2qw() { return stw; }
+unsigned long FullScanner::get_size() { return k2tree.size(); }
+bool FullScanner::has_point(unsigned long col, unsigned long row) {
+  return k2tree.has(col, row);
+}

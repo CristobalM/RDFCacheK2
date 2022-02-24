@@ -8,6 +8,7 @@
 #include <utility>
 
 class K2TreeMixed;
+class K2QStateWrapper;
 
 class K2TreeScanner {
 public:
@@ -24,6 +25,10 @@ public:
   virtual ~K2TreeScanner() = default;
 
   virtual K2QStateWrapper &get_k2qw() = 0;
+
+  virtual unsigned long get_size() = 0;
+  virtual bool has_point(unsigned long col, unsigned long row) = 0;
+  virtual bool is_cached() { return false; };
 };
 
 #endif // RDFCACHEK2_K2TREESCANNER_HPP
