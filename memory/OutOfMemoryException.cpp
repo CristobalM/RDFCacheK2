@@ -2,6 +2,7 @@
 // Created by cristobal on 9/30/21.
 //
 
+#include <string>
 #include "OutOfMemoryException.hpp"
 OutOfMemoryException::OutOfMemoryException(unsigned long required_bytes,
                                            unsigned long capacity_bytes)

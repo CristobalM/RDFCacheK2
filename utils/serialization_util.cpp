@@ -4,7 +4,7 @@
 
 #include <netinet/in.h>
 
-#include <endian.h>
+#include <portable_endian.h>
 
 #include <memory>
 

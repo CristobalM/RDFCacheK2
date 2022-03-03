@@ -8,6 +8,6 @@ PCMUpdateLoggerWrapper::PCMUpdateLoggerWrapper(UpdatesLogger &logger)
 void PCMUpdateLoggerWrapper::recover_predicate(unsigned long predicate_id) {
   logger.recover_predicate(predicate_id);
 }
-bool PCMUpdateLoggerWrapper::has_predicate_stored(uint64_t predicate_id) {
+bool PCMUpdateLoggerWrapper::has_predicate_stored(unsigned long predicate_id) {
   return logger.has_predicate_stored(predicate_id);
 }

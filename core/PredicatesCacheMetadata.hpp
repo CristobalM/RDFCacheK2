@@ -7,6 +7,7 @@
 #include <ostream>
 #include <unordered_map>
 #include <vector>
+#include <array>
 
 #include "K2TreeMixed.hpp"
 struct PredicateMetadata {

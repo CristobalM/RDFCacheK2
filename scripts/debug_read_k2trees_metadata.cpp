@@ -1,5 +1,4 @@
-#include <filesystem>
-#include <fstream>
+#include <portable_fs.h>
 #include <getopt.h>
 #include <iostream>
 #include <stdexcept>

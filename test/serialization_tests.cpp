@@ -26,6 +26,25 @@ TEST(u64_network_host, test_one) {
   }
 }
 
+TEST(u32_network_host, test_one){
+  std::random_device rd;
+
+  std::mt19937 e2(rd());
+
+  std::uniform_int_distribution<int> dist(
+          (int)std::round(std::pow(2, 30)), std::round(std::pow(2, 31)));
+
+  for (int i = 0; i < 1'000'000; i++) {
+    std::ostringstream oss;
+    uint32_t val = dist(e2);
+    write_u32(oss, val);
+    auto stored = oss.str();
+    std::istringstream iss(stored);
+    auto result = read_u32(iss);
+    ASSERT_EQ(val, result) << "Fails for val = " << val;
+  }
+}
+
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);
   int result = RUN_ALL_TESTS();

@@ -13,7 +13,7 @@ class PCMUpdateLoggerWrapper : public I_UpdateLoggerPCM {
 public:
   explicit PCMUpdateLoggerWrapper(UpdatesLogger &logger);
   void recover_predicate(unsigned long predicate_id) override;
-  bool has_predicate_stored(uint64_t predicate_id) override;
+  bool has_predicate_stored(unsigned long predicate_id) override;
 };
 
 #endif // RDFCACHEK2_PCMUPDATELOGGERWRAPPER_HPP

@@ -3,22 +3,65 @@
 #include "hashing.hpp"
 
 #include <algorithm>
+#include <stdexcept>
+#include <iostream>
 #include <openssl/md5.h>
 #include <openssl/sha.h>
+#include <openssl/evp.h>
+
+
+static void digest_message(
+        const unsigned char *message,
+        size_t message_len,
+        unsigned char **digest,
+        unsigned int *digest_len,
+        const EVP_MD * (* hash_fun)(void)
+        )
+{
+  EVP_MD_CTX *mdctx;
+
+  if((mdctx = EVP_MD_CTX_new()) == NULL)
+    throw std::runtime_error("failed to create md context");
+
+  if(1 != EVP_DigestInit_ex(mdctx, hash_fun(), NULL))
+    throw std::runtime_error("failed to initialize md context");
+
+  if(1 != EVP_DigestUpdate(mdctx, message, message_len))
+    throw std::runtime_error("failed to digest update message");
+
+  if((*digest = (unsigned char *)OPENSSL_malloc(EVP_MD_size(hash_fun()))) == NULL)
+    throw std::runtime_error("failed to create digest message");
+
+  if(1 != EVP_DigestFinal_ex(mdctx, *digest, digest_len))
+    throw std::runtime_error("failed to digest final evp");
+  EVP_MD_CTX_free(mdctx);
+}
 
 std::array<char, 16> md5calc(const std::string &input) {
   std::array<char, 16> result;
 
-  MD5(reinterpret_cast<const unsigned char *>(input.data()), input.size(),
-      reinterpret_cast<unsigned char *>(result.data()));
+  const auto * uc_msg = reinterpret_cast<const unsigned char*>(input.data());
+  auto *uc_result = reinterpret_cast<unsigned char *>(result.data());
+  unsigned int result_sz;
+
+  digest_message(uc_msg, input.size(), &uc_result, &result_sz, EVP_md5);
+
+
   return result;
 }
+
+
 
 std::array<char, 16> md5calc(const std::vector<char> &input) {
   std::array<char, 16> result;
 
-  MD5(reinterpret_cast<const unsigned char *>(input.data()), input.size(),
-      reinterpret_cast<unsigned char *>(result.data()));
+
+  const auto * uc_msg = reinterpret_cast<const unsigned char*>(input.data());
+  auto *uc_result = reinterpret_cast<unsigned char *>(result.data());
+  unsigned int result_sz;
+
+  digest_message(uc_msg, input.size(), &uc_result, &result_sz, EVP_md5);
+
   return result;
 }
 

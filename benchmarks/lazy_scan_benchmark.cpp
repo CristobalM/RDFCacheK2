@@ -5,7 +5,7 @@
 #include <K2TreeMixed.hpp>
 #include <PredicatesCacheManager.hpp>
 #include <cstdlib>
-#include <filesystem>
+#include <portable_fs.h>
 #include <iostream>
 
 void run_benchmarks(PredicatesCacheManager &pcm);

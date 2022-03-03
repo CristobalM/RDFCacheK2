@@ -17,7 +17,7 @@ unsigned long NodeId::get_raw() const { return data; }
 bool NodeId::operator==(const NodeId &other) const {
   return data == other.data;
 }
-NodeId::NodeId(uint64_t value) : data(value) {}
+NodeId::NodeId(unsigned long value) : data(value) {}
 
 unsigned long NodeId::string_to_ul(const std::string &input_string) {
   if (input_string.size() != DATA_SIZE) {

@@ -3,7 +3,7 @@
 
 #include <algorithm>
 #include <cstdio>
-#include <filesystem>
+#include <portable_fs.h>
 #include <fstream>
 #include <istream>
 #include <list>
@@ -182,7 +182,7 @@ split_file(const std::string &input_filename, const std::string &tmp_dir,
   filedata.current_triple = 0;
 
   auto max_triples_to_hold =
-      std::min(memory_budget / (sizeof(TripleValue)), filedata.size);
+      std::min((unsigned long)(memory_budget / (sizeof(TripleValue))), (unsigned long)filedata.size);
   data.reserve(max_triples_to_hold + 10);
 
   // auto upper_bound_offsets = segment_size / sizeof(TripleValue) + 1;

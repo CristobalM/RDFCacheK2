@@ -74,9 +74,9 @@ public:
 std::unique_ptr<K2TreeMixed> K2MixedFromFileFixture::k2tree = nullptr;
 
 struct coords_sets {
-  std::set<ulong> &cols;
-  std::set<ulong> &rows;
-  coords_sets(std::set<ulong> &cols, std::set<ulong> &rows)
+  std::set<unsigned long> &cols;
+  std::set<unsigned long> &rows;
+  coords_sets(std::set<unsigned long> &cols, std::set<unsigned long> &rows)
       : cols(cols), rows(rows) {}
 };
 

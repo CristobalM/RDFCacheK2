@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.14)
 project(RDFCacheK2)
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake/Modules)
 
@@ -12,13 +12,20 @@ endif ()
 
 #set(CMAKE_CXX_FLAGS "-Wall -Wextra")
 set(CMAKE_C_FLAGS "-Wall -Wextra -std=c99 -pedantic -Wmissing-prototypes -Wstrict-prototypes -Wold-style-definition")
-set(CMAKE_CXX_FLAGS "-Wall -Wextra -std=c++17 -pedantic -Werror")
+set(CMAKE_CXX_FLAGS "-Wall -Wextra -pedantic -Werror")
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fstandalone-debug -fprofile-instr-generate -fcoverage-mapping")
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}  -fprofile-arcs -ftest-coverage -lgcov --coverage")
 endif ()
+
+if (APPLE)
+    set(FSLIB "")
+else ()
+    set(FSLIB "stdc++fs")
+endif ()
+
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 configure_file(${CMAKE_SOURCE_DIR}/CTestCustom.cmake ${CMAKE_BINARY_DIR})
@@ -185,11 +192,13 @@ set(LIB_NTPARSER_INCLUDES
 add_subdirectory(${LIB_NTPARSER})
 # add_subdirectory(${K2TREE_PATH})
 
+set(PORTABLE_ENDIAN lib/portable)
 
 include_directories(
         ${INCLUDES}
         ${INCLUDES_LIBS}
         ${LIB_NTPARSER_INCLUDES}
+        ${PORTABLE_ENDIAN}
 )
 
 
@@ -244,8 +253,8 @@ set(BASE_LIBS
         ${Protobuf_LIBRARIES}
         Utils
         ${OPENSSL_LIBRARIES}
-        stdc++fs
-        pcrecpp
+        ${FSLIB}
+
         ${CURL_LIBRARIES}
         RDFCacheK2_Memory
         )
@@ -265,8 +274,7 @@ set(DEFAULT_LIBS
         ${Protobuf_LIBRARIES}
         Utils
         ${OPENSSL_LIBRARIES}
-        stdc++fs
-        pcrecpp
+        ${FSLIB}
         ${CURL_LIBRARIES}
         pthread
         RDFCacheK2_Memory
@@ -275,7 +283,8 @@ set(DEFAULT_LIBS
 
 add_executable(external_sort scripts/triple_external_sort.cpp)
 target_include_directories(external_sort PUBLIC ${INCLUDES})
-target_link_libraries(external_sort pthread Utils stdc++fs)
+target_link_libraries(external_sort pthread Utils ${FSLIB})
+#target_link_libraries(external_sort pthread Utils c++fs)
 
 add_executable(extract_triples_binary scripts/extract_triples_binary.cpp)
 target_include_directories(extract_triples_binary PUBLIC ${INCLUDES})

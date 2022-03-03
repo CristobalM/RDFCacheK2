@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include "mock_structures/FHMock.hpp"
+#include "hashing.hpp"
 #include <K2TreeBulkOp.hpp>
 #include <PredicatesIndexCacheMD.hpp>
 #include <PredicatesIndexFileBuilder.hpp>
@@ -90,6 +91,16 @@ build_picmd_2(unsigned long predicate_id) {
   auto frw_handler = std::make_unique<FHMock>(out->str());
 
   return {PredicatesIndexCacheMD(std::move(frw_handler)), sz};
+}
+
+TEST(predicates_metadata_serialization, md5_fun_test){
+  std::string input1("HELLOHELLOHELLOHELLOHELLOHELLOHELLOHELLOHELLOHELLOHELLOHELLOHELLOHELLOHELLOHELLOHELLOHELLOHELLOHELLOHELLOHELLOHELLOHELLO");
+  auto first_hash = md5calc(input1);
+  for(int i = 0; i < 10000; i++){
+    auto a = md5calc(input1);
+    ASSERT_EQ(a, first_hash);
+  }
+
 }
 
 TEST(predicates_metadata_serialization, same_k2tree_as_non_serialized) {
