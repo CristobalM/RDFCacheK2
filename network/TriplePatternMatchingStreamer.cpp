@@ -4,9 +4,11 @@
 
 #include "TriplePatternMatchingStreamer.hpp"
 
+#include <utility>
+
 TriplePatternMatchingStreamer::TriplePatternMatchingStreamer(
     int channel_id, int pattern_channel_id,
-    const proto_msg::TripleNodeIdEnc triple_pattern_node, Cache *cache,
+    proto_msg::TripleNodeIdEnc triple_pattern_node, Cache *cache,
     unsigned long threshold_part_size)
     : channel_id(channel_id), pattern_channel_id(pattern_channel_id),
       triple_pattern_node(std::move(triple_pattern_node)), cache(cache),

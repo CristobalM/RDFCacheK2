@@ -5,6 +5,8 @@
 #ifndef RDFCACHEK2_TRIPLEMATCHESPARTSTREAMER_HPP
 #define RDFCACHEK2_TRIPLEMATCHESPARTSTREAMER_HPP
 
+#include "FullyIndexedCache.hpp"
+#include "I_CachedPredicateSource.hpp"
 #include "I_TRStreamer.hpp"
 #include "TaskProcessor.hpp"
 #include <Cache.hpp>
@@ -25,11 +27,14 @@ class TripleMatchesPartStreamer : public I_TRStreamer {
 
   std::mutex mutex;
 
+  FullyIndexedCache &fully_indexed_cache;
+
 public:
   TripleMatchesPartStreamer(int channel_id,
                             std::vector<unsigned long> &&loaded_predicates,
                             size_t threshold_part_size,
-                            TaskProcessor *task_processor, Cache *cache);
+                            TaskProcessor *task_processor, Cache *cache,
+                            FullyIndexedCache &fully_indexed_cache);
 
   const std::vector<unsigned long> &get_predicates_in_use() override;
   int get_id() override;
@@ -47,6 +52,7 @@ private:
   proto_msg::CacheResponse time_control_finished_error();
   proto_msg::CacheResponse timeout_proto();
   void set_finished();
+  void init_cached_predicate_sources();
 };
 
 #endif // RDFCACHEK2_TRIPLEMATCHESPARTSTREAMER_HPP

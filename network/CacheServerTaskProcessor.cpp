@@ -37,7 +37,7 @@ CacheServerTaskProcessor::CacheServerTaskProcessor(Cache &cache,
       updates_logger(pcm_merger, cache.get_log_file_handler(),
                      cache.get_log_offsets_file_handler(),
                      cache.get_log_metadata_file_handler()),
-      pcm_update_logger_wrapper(updates_logger) {
+      pcm_update_logger_wrapper(updates_logger), fully_indexed_cache(cache) {
   updates_logger.recover_all();
   cache.get_pcm().set_update_logger(&pcm_update_logger_wrapper);
 }
@@ -83,7 +83,7 @@ I_TRStreamer &CacheServerTaskProcessor::create_triples_streamer(
 
   auto streamer = std::make_unique<TripleMatchesPartStreamer>(
       current_triples_streamers_channel_id, std::move(loaded_predicates),
-      DEFAULT_THRESHOLD_PART_SZ, this, &cache);
+      DEFAULT_THRESHOLD_PART_SZ, this, &cache, fully_indexed_cache);
   auto *ptr = streamer.get();
   triples_streamer_map[current_triples_streamers_channel_id] =
       std::move(streamer);

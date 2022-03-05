@@ -168,9 +168,13 @@ void ServerTask::process_predicates_lock_for_triple_stream(Message &message) {
   std::cout << "requested predicates: ";
   for (int i = 0; i < sep_pred.predicates_size(); i++) {
     const auto &pred_term = sep_pred.predicates(i);
+    auto predicate_id_original = pred_term.encoded_data();
+    auto translated_predicate_id =
+        cache.get_nodes_sequence().get_id(predicate_id_original);
 
-    predicates_requested.push_back(pred_term.encoded_data());
-    std::cout << pred_term.encoded_data() << ", ";
+    predicates_requested.push_back(translated_predicate_id);
+    std::cout << "(" << pred_term.encoded_data() << ", "
+              << translated_predicate_id << "); ";
   }
   std::cout << std::endl;
 

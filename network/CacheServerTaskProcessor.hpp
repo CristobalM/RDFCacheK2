@@ -10,6 +10,7 @@
 #include <mutex>
 #include <queue>
 
+#include "FullyIndexedCache.hpp"
 #include "I_TRStreamer.hpp"
 #include "I_Updater.hpp"
 #include "Message.hpp"
@@ -48,6 +49,8 @@ class CacheServerTaskProcessor : public TaskProcessor {
   PCMMerger pcm_merger;
   UpdatesLogger updates_logger;
   PCMUpdateLoggerWrapper pcm_update_logger_wrapper;
+
+  FullyIndexedCache fully_indexed_cache;
 
 public:
   explicit CacheServerTaskProcessor(Cache &cache, uint8_t workers_count);

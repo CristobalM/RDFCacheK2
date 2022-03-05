@@ -97,7 +97,25 @@ set(NETWORK_SOURCE_FILES
         network/PCMMerger.cpp
         network/PCMMerger.hpp
         network/PCMUpdateLoggerWrapper.cpp
-        network/PCMUpdateLoggerWrapper.hpp)
+        network/PCMUpdateLoggerWrapper.hpp
+
+        network/I_CachedPredicateSource.hpp
+        network/FullyIndexedPredicate.hpp
+        network/FullyIndexedPredicate.cpp
+        network/StreamerFromCachedSource.hpp
+        network/StreamerFromCachedSource.cpp
+        network/CachedSourceScanner.hpp
+        network/CachedSubjectObjectScanner.hpp
+        network/CachedSubjectObjectScanner.cpp
+        network/CachedSubjectScanner.hpp
+        network/CachedSubjectScanner.cpp
+        network/CachedObjectScanner.hpp
+        network/CachedObjectScanner.cpp
+        network/FullyIndexedCache.cpp
+        network/FullyIndexedCache.hpp
+        network/FullyIndexedCacheResponse.cpp
+        network/FullyIndexedCacheResponse.hpp
+        )
 
 
 set(PROTO_MESSAGES
