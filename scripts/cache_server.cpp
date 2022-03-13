@@ -16,7 +16,6 @@ namespace fs = std::filesystem;
 
 struct parsed_options {
   std::string index_file;
-  std::string node_ids_file;
   unsigned long memory_budget_bytes;
   int port;
   int workers_count;
@@ -58,7 +57,6 @@ int main(int argc, char **argv) {
   cache_args.memory_budget_bytes = parsed.memory_budget_bytes;
   cache_args.replacement_strategy = parsed.replacement_strategy;
   cache_args.update_log_filename = parsed.update_log_filename;
-  cache_args.node_ids_filename = parsed.node_ids_file;
 
   Cache cache(pcm, cache_args);
 
@@ -67,10 +65,9 @@ int main(int argc, char **argv) {
 }
 
 parsed_options parse_cmline(int argc, char **argv) {
-  const char short_options[] = "I:N:O:m:p:w:R:U:";
+  const char short_options[] = "I:O:m:p:w:R:U:";
   struct option long_options[] = {
       {"index-file", required_argument, nullptr, 'I'},
-      {"node-ids-file", required_argument, nullptr, 'N'},
       {"memory-budget", required_argument, nullptr, 'm'},
       {"port", required_argument, nullptr, 'p'},
       {"workers", required_argument, nullptr, 'w'},
@@ -81,7 +78,6 @@ parsed_options parse_cmline(int argc, char **argv) {
   int opt, opt_index;
 
   bool has_index = false;
-  bool has_node_ids = false;
   bool has_memory_budget = false;
   bool has_port = false;
   bool has_workers = false;
@@ -98,10 +94,6 @@ parsed_options parse_cmline(int argc, char **argv) {
     case 'I':
       out.index_file = optarg;
       has_index = true;
-      break;
-    case 'N':
-      out.node_ids_file = optarg;
-      has_node_ids = true;
       break;
     case 'm':
       out.memory_budget_bytes = std::stoul(std::string(optarg));
@@ -143,8 +135,6 @@ parsed_options parse_cmline(int argc, char **argv) {
 
   if (!has_index)
     throw std::runtime_error("index-file (I) argument is required");
-  if (!has_node_ids)
-    throw std::runtime_error("node-ids-file (N) argument is required");
   if (!has_memory_budget)
     throw std::runtime_error("memory-budget (m) argument is required");
   if (!has_port)

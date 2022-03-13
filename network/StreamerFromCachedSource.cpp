@@ -7,7 +7,6 @@
 #include "CachedSubjectObjectScanner.hpp"
 #include "CachedSubjectScanner.hpp"
 
-#include <utility>
 proto_msg::CacheResponse StreamerFromCachedSource::get_next_response() {
   proto_msg::CacheResponse cache_response;
   cache_response.set_response_type(
@@ -26,17 +25,13 @@ proto_msg::CacheResponse StreamerFromCachedSource::get_next_response() {
   if (!subject_variable && !object_variable) {
     stream_response->set_last_result(true);
     set_finished();
-    auto subject_id = triple_pattern_node.subject().encoded_data();
-    auto object_id = triple_pattern_node.object().encoded_data();
     stream_response->set_has_exact_response(true);
-    stream_response->set_exact_response(
-        cached_source->has(subject_id, object_id));
+    stream_response->set_exact_response(cached_source->has(
+        triple_pattern_query.subject, triple_pattern_query.object));
     return cache_response;
   }
 
   stream_response->set_has_exact_response(false);
-
-  auto &nodes_sequence = cache->get_nodes_sequence();
 
   while (cached_source_scanner->has_next()) {
     auto matching_pair_so = cached_source_scanner->next();
@@ -44,16 +39,12 @@ proto_msg::CacheResponse StreamerFromCachedSource::get_next_response() {
     if (subject_variable) {
       acc_size += sizeof(unsigned long);
       auto *s_match = matching_values->mutable_single_match()->Add();
-      auto original_value =
-          nodes_sequence.get_value((long)matching_pair_so.first);
-      s_match->set_encoded_data(original_value);
+      s_match->set_encoded_data((long)matching_pair_so.first);
     }
     if (object_variable) {
       acc_size += sizeof(unsigned long);
       auto *s_match = matching_values->mutable_single_match()->Add();
-      auto original_value =
-          nodes_sequence.get_value((long)matching_pair_so.second);
-      s_match->set_encoded_data(original_value);
+      s_match->set_encoded_data(matching_pair_so.second);
     }
 
     if (acc_size > threshold_part_size) {
@@ -74,33 +65,22 @@ proto_msg::CacheResponse StreamerFromCachedSource::get_next_response() {
 int StreamerFromCachedSource::get_pattern_channel_id() {
   return pattern_channel_id;
 }
+
 int StreamerFromCachedSource::get_channel_id() { return channel_id; }
+
 bool StreamerFromCachedSource::all_sent() { return finished; }
+
 StreamerFromCachedSource::StreamerFromCachedSource(
     I_CachedPredicateSource *cached_source, int channel_id,
-    int current_pattern_channel_id,
-    proto_msg::TripleNodeIdEnc triple_pattern_node, Cache *cache,
-    unsigned long threshold_part_size)
+    int current_pattern_channel_id, TriplePatternQuery triple_pattern_query,
+    Cache *cache, unsigned long threshold_part_size)
     : cached_source(cached_source), channel_id(channel_id),
       pattern_channel_id(current_pattern_channel_id),
-      triple_pattern_node(std::move(triple_pattern_node)), cache(cache),
+      triple_pattern_query(triple_pattern_query), cache(cache),
       threshold_part_size(threshold_part_size), finished(false), first(true) {
 
-  subject_variable =
-      (long)triple_pattern_node.subject().encoded_data() == NODE_ANY;
-  object_variable =
-      (long)triple_pattern_node.object().encoded_data() == NODE_ANY;
-
-  translated_subject = -1;
-  translated_object = -1;
-
-  if (!subject_variable)
-    translated_subject = cache->get_nodes_sequence().get_id(
-        (long)triple_pattern_node.subject().encoded_data());
-
-  if (!object_variable)
-    translated_object = cache->get_nodes_sequence().get_id(
-        (long)triple_pattern_node.object().encoded_data());
+  subject_variable = triple_pattern_query.subject == NODE_ANY;
+  object_variable = triple_pattern_query.object == NODE_ANY;
 
   if (subject_variable && object_variable) {
     cached_source_scanner =
@@ -109,10 +89,11 @@ StreamerFromCachedSource::StreamerFromCachedSource(
     cached_source_scanner = nullptr;
   } else if (!subject_variable) { // only
     cached_source_scanner = std::make_unique<CachedObjectScanner>(
-        cached_source, translated_subject);
+        cached_source, (unsigned long)triple_pattern_query.subject);
   } else { // !object_variable only
     cached_source_scanner = std::make_unique<CachedSubjectScanner>(
-        cached_source, translated_object);
+        cached_source, (unsigned long)triple_pattern_query.object);
   }
 }
+
 void StreamerFromCachedSource::set_finished() { finished = true; }

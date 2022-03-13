@@ -5,6 +5,7 @@
 #ifndef RDFCACHEK2_TASKPROCESSOR_HPP
 #define RDFCACHEK2_TASKPROCESSOR_HPP
 
+#include "FullyIndexedCache.hpp"
 #include "I_TRStreamer.hpp"
 #include "I_Updater.hpp"
 #include "K2TreeUpdates.hpp"
@@ -31,6 +32,7 @@ public:
   virtual I_Updater &get_updater(int updater_id) = 0;
   virtual void log_updates(std::vector<K2TreeUpdates> &k2trees_updates) = 0;
   virtual WriteDataLock acquire_write_lock() = 0;
+  virtual FullyIndexedCache &get_fully_indexed_cache() = 0;
 };
 
 #endif // RDFCACHEK2_TASKPROCESSOR_HPP

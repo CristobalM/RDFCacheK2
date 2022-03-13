@@ -19,6 +19,9 @@ void UpdaterSession::add_triple(TripleNodeId &rdf_triple_resource) {
   auto subject_id = rdf_triple_resource.subject.get_raw();
   auto object_id = rdf_triple_resource.object.get_raw();
   tree_inserter.insert(subject_id, object_id);
+  //
+  //  auto &fully_indexed_cache = task_processor->get_fully_indexed_cache();
+  //  fully_indexed_cache.get()
 }
 void UpdaterSession::delete_triple(TripleNodeId &rdf_triple_resource) {
   auto predicate_id = rdf_triple_resource.predicate.get_raw();

@@ -7,6 +7,7 @@
 #include "FullyIndexedPredicate.hpp"
 #include "StreamerFromCachedSource.hpp"
 #include "TriplePatternMatchingStreamer.hpp"
+#include "TriplePatternQuery.hpp"
 #include <map>
 
 TripleMatchesPartStreamer::TripleMatchesPartStreamer(
@@ -71,17 +72,21 @@ TripleMatchesPartStreamer::start_streaming_matching_triples(
 
   std::unique_ptr<I_TRMatchingStreamer> streamer;
 
+  TriplePatternQuery triple_pattern_query{};
+  triple_pattern_query.subject = (long)triple_pattern.subject().encoded_data();
+  triple_pattern_query.predicate =
+      (long)triple_pattern.predicate().encoded_data();
+  triple_pattern_query.object = (long)triple_pattern.object().encoded_data();
+
   auto predicate_id = triple_pattern.predicate().encoded_data();
-  auto predicate_id_translated =
-      (unsigned long)cache->get_nodes_sequence().get_id((long)predicate_id);
-  auto fic_response = fully_indexed_cache.get(predicate_id_translated);
+  auto fic_response = fully_indexed_cache.get(predicate_id);
   if (fic_response.exists()) {
     streamer = std::make_unique<StreamerFromCachedSource>(
         fic_response.get(), channel_id, current_pattern_channel_id,
-        triple_pattern, cache, threshold_part_size);
+        triple_pattern_query, cache, threshold_part_size);
   } else {
     streamer = std::make_unique<TriplePatternMatchingStreamer>(
-        channel_id, current_pattern_channel_id, triple_pattern, cache,
+        channel_id, current_pattern_channel_id, triple_pattern_query, cache,
         threshold_part_size);
   }
 

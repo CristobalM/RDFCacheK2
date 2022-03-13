@@ -19,7 +19,6 @@
 
 class Cache {
   std::shared_ptr<PredicatesCacheManager> cache_manager;
-  std::unique_ptr<NodesSequence> nodes_sequence;
 
   std::unique_ptr<I_CacheReplacement> cache_replacement;
 
@@ -36,7 +35,6 @@ public:
         const CacheArgs &args);
 
   PredicatesCacheManager &get_pcm();
-  NodesSequence &get_nodes_sequence();
   I_CacheReplacement &get_replacement();
   I_CacheReplacement::REPLACEMENT_STRATEGY get_strategy_id();
   std::vector<unsigned long> extract_loaded_predicates_from_sequence(

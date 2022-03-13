@@ -124,3 +124,7 @@ WriteDataLock CacheServerTaskProcessor::acquire_write_lock() {
   return WriteDataLock();
 }
 CacheServerTaskProcessor::~CacheServerTaskProcessor() {}
+
+FullyIndexedCache &CacheServerTaskProcessor::get_fully_indexed_cache() {
+  return fully_indexed_cache;
+}

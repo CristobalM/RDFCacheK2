@@ -6,6 +6,7 @@
 #define RDFCACHEK2_TRIPLEPATTERNMATCHINGSTREAMER_HPP
 
 #include "I_TRMatchingStreamer.hpp"
+#include "TriplePatternQuery.hpp"
 #include <Cache.hpp>
 #include <sparql_tree.pb.h>
 class TriplePatternMatchingStreamer : public I_TRMatchingStreamer {
@@ -13,7 +14,7 @@ class TriplePatternMatchingStreamer : public I_TRMatchingStreamer {
   int channel_id;
   int pattern_channel_id;
 
-  proto_msg::TripleNodeIdEnc triple_pattern_node;
+  TriplePatternQuery triple_pattern_query;
 
   Cache *cache;
   unsigned long threshold_part_size;
@@ -30,7 +31,7 @@ class TriplePatternMatchingStreamer : public I_TRMatchingStreamer {
 
 public:
   TriplePatternMatchingStreamer(int channel_id, int pattern_channel_id,
-                                proto_msg::TripleNodeIdEnc triple_pattern_node,
+                                TriplePatternQuery triple_pattern_query,
                                 Cache *cache,
                                 unsigned long threshold_part_size);
   proto_msg::CacheResponse get_next_response() override;

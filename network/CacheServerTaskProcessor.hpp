@@ -78,6 +78,8 @@ public:
   void log_updates(std::vector<K2TreeUpdates> &k2trees_updates) override;
   WriteDataLock acquire_write_lock() override;
   ~CacheServerTaskProcessor() override;
+
+  FullyIndexedCache &get_fully_indexed_cache() override;
 };
 
 #endif // RDFCACHEK2_CACHESERVERTASKPROCESSOR_HPP

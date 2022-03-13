@@ -115,7 +115,7 @@ set(NETWORK_SOURCE_FILES
         network/FullyIndexedCache.hpp
         network/FullyIndexedCacheResponse.cpp
         network/FullyIndexedCacheResponse.hpp
-        )
+        network/TriplePatternQuery.hpp)
 
 
 set(PROTO_MESSAGES
