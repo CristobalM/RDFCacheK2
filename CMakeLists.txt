@@ -281,6 +281,7 @@ set(DEFAULT_LIBS
         k2dyn_custom_mem
         ProtoMessages
         ${Protobuf_LIBRARIES}
+        ${Protobuf_PROTOC_LIBRARIES}
         Utils
         ${OPENSSL_LIBRARIES}
         stdc++fs

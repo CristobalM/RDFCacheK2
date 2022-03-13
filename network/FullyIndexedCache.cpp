@@ -27,7 +27,7 @@ bool FullyIndexedCache::should_cache(unsigned long predicate) {
       cache.get_pcm().get_predicates_index_cache().fetch_k2tree(predicate);
   if (!fetch_result.exists())
     return false;
-  static constexpr auto max_to_cache_sz = 100'000UL;
+  static constexpr auto max_to_cache_sz = 10'000'000UL;
   return fetch_result.get().size() < max_to_cache_sz;
 }
 
