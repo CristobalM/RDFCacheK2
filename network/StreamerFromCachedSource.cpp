@@ -73,10 +73,10 @@ bool StreamerFromCachedSource::all_sent() { return finished; }
 StreamerFromCachedSource::StreamerFromCachedSource(
     I_CachedPredicateSource *cached_source, int channel_id,
     int current_pattern_channel_id, TriplePatternQuery triple_pattern_query,
-    Cache *cache, unsigned long threshold_part_size)
+    unsigned long threshold_part_size)
     : cached_source(cached_source), channel_id(channel_id),
       pattern_channel_id(current_pattern_channel_id),
-      triple_pattern_query(triple_pattern_query), cache(cache),
+      triple_pattern_query(triple_pattern_query),
       threshold_part_size(threshold_part_size), finished(false), first(true) {
 
   subject_variable = triple_pattern_query.subject == NODE_ANY;

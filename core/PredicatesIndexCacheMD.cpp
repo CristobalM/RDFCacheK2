@@ -293,3 +293,6 @@ void PredicatesIndexCacheMD::sync_to_persistent() {
   file_handler->commit_temp_writer();
   is = file_handler->get_reader(std::ios::binary);
 }
+bool PredicatesIndexCacheMD::is_loaded_in_memory(unsigned long predicate_id) {
+  return predicates.find(predicate_id) != predicates.end();
+}

@@ -83,7 +83,7 @@ TripleMatchesPartStreamer::start_streaming_matching_triples(
   if (fic_response.exists()) {
     streamer = std::make_unique<StreamerFromCachedSource>(
         fic_response.get(), channel_id, current_pattern_channel_id,
-        triple_pattern_query, cache, threshold_part_size);
+        triple_pattern_query, threshold_part_size);
   } else {
     streamer = std::make_unique<TriplePatternMatchingStreamer>(
         channel_id, current_pattern_channel_id, triple_pattern_query, cache,

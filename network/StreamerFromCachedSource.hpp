@@ -17,7 +17,6 @@ class StreamerFromCachedSource : public I_TRMatchingStreamer {
   int pattern_channel_id;
   //  const proto_msg::TripleNodeIdEnc triple_pattern_node;
   TriplePatternQuery triple_pattern_query;
-  Cache *cache;
   unsigned long threshold_part_size;
   bool finished;
   bool first;
@@ -34,7 +33,6 @@ public:
                                     int channel_id,
                                     int current_pattern_channel_id,
                                     TriplePatternQuery triple_pattern_query,
-                                    Cache *cache,
                                     unsigned long threshold_part_size);
   proto_msg::CacheResponse get_next_response() override;
   int get_pattern_channel_id() override;

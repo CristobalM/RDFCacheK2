@@ -52,6 +52,8 @@ public:
 
   PredicatesCacheManager(const std::string &input_k2tree_filename);
 
+  bool is_loaded_in_memory(unsigned long predicate_id);
+
 private:
   void merge_op_tree(unsigned long predicate_id, K2TreeMixed &to_merge_k2tree,
                      const std::function<void(K2TreeBulkOp &, unsigned long,

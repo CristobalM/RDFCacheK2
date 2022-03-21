@@ -75,6 +75,8 @@ public:
 
   PredicatesIndexCacheMD(const std::string &input_filename);
 
+  bool is_loaded_in_memory(unsigned long predicate_id);
+
 private:
   void sync_to_stream(std::ostream &os);
 };

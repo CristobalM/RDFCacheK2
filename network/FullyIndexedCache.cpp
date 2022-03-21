@@ -18,7 +18,17 @@ void FullyIndexedCache::init_streamer_predicates(
     auto metadata =
         cache.get_pcm().get_predicates_index_cache().get_metadata_with_id(
             predicate);
-    cache_replacement.hit_key(predicate, metadata.tree_size_in_memory);
+
+    // this value is experimental, we are trying to predict how much size
+    // is going to use the "fully index" from the size of the compressed
+    // structure the real grow factor is variable, because the compression
+    // depends on the structure, so this is an estimation based on previous
+    // observations. We attempt at least to make the worst case estimation,
+    // which could be wrong.
+    static constexpr unsigned long grow_factor = 20;
+
+    cache_replacement.hit_key(predicate,
+                              metadata.tree_size_in_memory * grow_factor);
   }
 }
 
@@ -37,9 +47,11 @@ FullyIndexedCacheResponse FullyIndexedCache::get(unsigned long predicate_id) {
     return FullyIndexedCacheResponse(nullptr);
   return FullyIndexedCacheResponse(it->second.get());
 }
+
 FullyIndexedCache::FullyIndexedCache(Cache &cache)
     : cache(cache), data_manager(cached_predicates_sources, cache),
-      cache_replacement(1'000'000'000, &data_manager) {}
+      // Experimental max size allowed: 5GB
+      cache_replacement(5'000'000'000, &data_manager) {}
 
 void FullyIndexedCache::CacheDataManager::remove_key(unsigned long key) {
   cache_map.erase(key);

@@ -103,3 +103,6 @@ void PredicatesCacheManager::merge_update(std::vector<K2TreeUpdates> &updates) {
       merge_delete_tree(update.predicate_id, *update.k2tree_del);
   }
 }
+bool PredicatesCacheManager::is_loaded_in_memory(unsigned long predicate_id) {
+  return predicates_index->is_loaded_in_memory(predicate_id);
+}
