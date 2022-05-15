@@ -18,7 +18,8 @@ void FullyIndexedCache::init_streamer_predicates(
     auto metadata =
         cache.get_pcm().get_predicates_index_cache().get_metadata_with_id(
             predicate);
-    cache_replacement.hit_key(predicate, metadata.tree_size_in_memory);
+    if (metadata)
+      cache_replacement.hit_key(predicate, metadata->tree_size_in_memory);
   }
 }
 

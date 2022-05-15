@@ -14,7 +14,7 @@ namespace fs = std::filesystem;
 
 PredicatesCacheManager::PredicatesCacheManager(
     std::unique_ptr<PredicatesIndexCacheMD> &&predicates_index)
-    : predicates_index(std::move(predicates_index)), update_logger(nullptr),
+    : predicates_index(std::move(predicates_index)),
       measured_time_sd_lookup(0) {}
 
 PredicatesCacheManager::PredicatesCacheManager(
@@ -93,7 +93,6 @@ void PredicatesCacheManager::merge_op_tree(
 void PredicatesCacheManager::set_update_logger(
     I_UpdateLoggerPCM *input_update_logger) {
   predicates_index->set_update_logger(input_update_logger);
-  this->update_logger = input_update_logger;
 }
 void PredicatesCacheManager::merge_update(std::vector<K2TreeUpdates> &updates) {
   for (auto &update : updates) {

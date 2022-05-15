@@ -37,6 +37,9 @@ PredicatesCacheMetadata::PredicatesCacheMetadata(std::istream &is) {
   }
 }
 
+PredicatesCacheMetadata::PredicatesCacheMetadata(K2TreeConfig config)
+    : config(config) {}
+
 uint32_t PredicatesCacheMetadata::get_predicates_count() const {
   return predicates_ids.size();
 }

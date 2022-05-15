@@ -32,6 +32,7 @@ public:
       std::unordered_map<uint64_t, PredicateMetadata> &&metadata_map,
       std::vector<uint64_t> &&predicates_ids, K2TreeConfig config);
   explicit PredicatesCacheMetadata(std::istream &is);
+  explicit PredicatesCacheMetadata(K2TreeConfig config);
 
   uint32_t get_predicates_count() const;
   const std::unordered_map<uint64_t, PredicateMetadata> &get_map() const;

@@ -20,18 +20,17 @@
 class PredicatesCacheManager : public I_DataManager {
   std::unique_ptr<PredicatesIndexCacheMD> predicates_index;
 
-  I_UpdateLoggerPCM *update_logger;
-
 public:
   double measured_time_sd_lookup;
 
   static constexpr int DEFAULT_WORKER_POOL_SZ = 4;
   static constexpr unsigned long DEFAULT_MAX_QUEUE_SIZE = 10'000'000;
 
-  PredicatesCacheManager(
+  explicit PredicatesCacheManager(
       std::unique_ptr<PredicatesIndexCacheMD> &&predicates_index);
 
-  PredicatesCacheManager(std::unique_ptr<I_FileRWHandler> &&file_rwhandler);
+  explicit PredicatesCacheManager(
+      std::unique_ptr<I_FileRWHandler> &&file_rwhandler);
 
   PredicatesIndexCacheMD &get_predicates_index_cache();
   void load_all_predicates();
@@ -50,7 +49,7 @@ public:
 
   void merge_update(std::vector<K2TreeUpdates> &updates);
 
-  PredicatesCacheManager(const std::string &input_k2tree_filename);
+  explicit PredicatesCacheManager(const std::string &input_k2tree_filename);
 
 private:
   void merge_op_tree(unsigned long predicate_id, K2TreeMixed &to_merge_k2tree,

@@ -41,7 +41,8 @@ private:
   I_UpdateLoggerPCM *update_logger;
 
 public:
-  PredicatesIndexCacheMD(std::unique_ptr<I_FileRWHandler> &&file_handler);
+  explicit PredicatesIndexCacheMD(
+      std::unique_ptr<I_FileRWHandler> &&file_handler);
 
   PredicatesIndexCacheMD(PredicatesIndexCacheMD &&other) noexcept;
 
@@ -62,7 +63,7 @@ public:
   const std::vector<uint64_t> &get_predicates_ids();
 
   const PredicatesCacheMetadata &get_metadata();
-  const PredicateMetadata &get_metadata_with_id(uint64_t predicate_id);
+  const PredicateMetadata *get_metadata_with_id(uint64_t predicate_id);
   void load_all_predicates();
 
   void set_update_logger(I_UpdateLoggerPCM *input_update_logger);
