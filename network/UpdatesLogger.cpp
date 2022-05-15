@@ -183,6 +183,15 @@ void UpdatesLogger::recover_single_predicate_update(I_IStream &ifs) {
   if (removed_triples)
     data_merger.merge_delete_tree(predicate_id, *removed_triples);
 }
+/**
+ * Register the current offset of ofs output stream to an offsets_map
+ * which is keyed by predicate_id, the internal map ultimately contains
+ * mappings from predicate_ids to offsets to where the data for that predicate
+ * is stored inside a file
+ *
+ * @param predicate_id Will act as key for the mapping
+ * @param ofs The output stream from which to get the current offset
+ */
 void UpdatesLogger::register_update_offset(unsigned long predicate_id,
                                            std::ostream &ofs) {
   auto offset = ofs.tellp();
@@ -194,6 +203,10 @@ void UpdatesLogger::register_update_offset(unsigned long predicate_id,
   it->second.push_back(offset);
 }
 
+/**
+ * Recovers a predicate's data from file log into memory
+ * @param predicate_id
+ */
 void UpdatesLogger::recover_predicate(unsigned long predicate_id) {
   if (!logs_file_handler.exists())
     return;
