@@ -12,7 +12,6 @@
 #include "PredicatesIndexFileBuilder.hpp"
 #include "mock_structures/DataMergerMock.hpp"
 #include "mock_structures/FHMock.hpp"
-#include "mock_structures/StringIOStream.hpp"
 #include "mock_structures/StringIStream.hpp"
 
 TEST(update_log_test, test_data_merger_mock) {
