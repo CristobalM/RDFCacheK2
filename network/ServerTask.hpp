@@ -37,6 +37,7 @@ public:
   void process_request_start_update_triples(Message &message);
   void process_done_update_triples(Message &message);
   void process_update_triples_batch(Message &message);
+  void process_sync_logs_with_indexes(const Message &);
 };
 
 #endif // RDFCACHEK2_SERVERTASK_HPP

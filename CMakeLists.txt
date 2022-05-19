@@ -115,7 +115,8 @@ set(NETWORK_SOURCE_FILES
         network/FullyIndexedCache.hpp
         network/FullyIndexedCacheResponse.cpp
         network/FullyIndexedCacheResponse.hpp
-        )
+        network/networking_utils.cpp
+        network/networking_utils.hpp)
 
 
 set(PROTO_MESSAGES
@@ -355,6 +356,10 @@ target_link_libraries(print_nodeids ${DEFAULT_LIBS})
 add_executable(translate_triples_to_nseq scripts/translate_triples_to_nseq.cpp)
 target_include_directories(translate_triples_to_nseq PUBLIC ${INCLUDES})
 target_link_libraries(translate_triples_to_nseq ${DEFAULT_LIBS})
+
+add_executable(trigger_logs_sync scripts/trigger_logs_sync.cpp)
+target_include_directories(trigger_logs_sync PUBLIC ${INCLUDES})
+target_link_libraries(trigger_logs_sync ${DEFAULT_LIBS})
 
 # Only create test executables if google test is found
 find_package(GTest QUIET)

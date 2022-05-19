@@ -22,6 +22,8 @@
 #include <hashing.hpp>
 #include <serialization_util.hpp>
 
+#include "networking_utils.hpp"
+
 using namespace std::chrono_literals;
 
 ServerTask::ServerTask(int client_socket_fd, Cache &cache,
@@ -118,6 +120,12 @@ void ServerTask::process() {
       process_update_triples_batch(message);
       break;
 
+    case proto_msg::MessageType::SYNC_LOGS_WITH_INDEXES_REQUEST:
+      std::cout << "Request of type SYNC_LOGS_WITH_INDEXES_REQUEST"
+                << std::endl;
+      process_sync_logs_with_indexes(message);
+      break;
+
     default:
       std::cout << "received unknown message... ignoring " << std::endl;
       break;
@@ -151,6 +159,7 @@ void ServerTask::send_response(proto_msg::CacheResponse &cache_response) {
   ss.write(serialized.data(), sizeof(char) * serialized.size());
 
   auto result = ss.str();
+  std::cout << "sending result of " << result.size() << " bytes" << std::endl;
   send(client_socket_fd, result.data(), result.size() * sizeof(char), 0);
 }
 void ServerTask::process_connection_end() {
@@ -224,8 +233,6 @@ void ServerTask::process_stream_request_triple_pattern(Message &message) {
   auto &triple_pattern_streamer =
       triples_streamer.start_streaming_matching_triples(s_req.triple_node());
   auto cache_response = triple_pattern_streamer.get_next_response();
-  // std::cout << "sending response for stream req: " <<
-  // cache_response.DebugString() << std::endl;
   send_response(cache_response);
   if (triple_pattern_streamer.all_sent()) {
     triples_streamer.clean_pattern_streamer(
@@ -300,5 +307,12 @@ void ServerTask::process_update_triples_batch(Message &message) {
   proto_msg::CacheResponse cache_response;
   cache_response.set_response_type(proto_msg::BATCH_RECEIVED_RESPONSE);
   cache_response.mutable_batch_received_response()->set_update_id(update_id);
+  send_response(cache_response);
+}
+
+void ServerTask::process_sync_logs_with_indexes(const Message &) {
+  task_processor.sync_logs_with_indexes();
+  proto_msg::CacheResponse cache_response;
+  cache_response.set_response_type(proto_msg::SYNC_LOGS_WITH_INDEXES_RESPONSE);
   send_response(cache_response);
 }
