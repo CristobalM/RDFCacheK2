@@ -126,6 +126,7 @@ WriteDataLock CacheServerTaskProcessor::acquire_write_lock() {
 void CacheServerTaskProcessor::sync_logs_with_indexes() {
   std::lock_guard lg(mutex);
   cache.sync_logs_with_indexes();
+  updates_logger.clean_append_log();
 }
 
 CacheServerTaskProcessor::~CacheServerTaskProcessor() {}

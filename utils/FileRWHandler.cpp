@@ -38,3 +38,4 @@ std::unique_ptr<I_IOStream>
 FileRWHandler::get_reader_writer(std::ios::openmode openmode) {
   return std::make_unique<FileIOStream>(filename, openmode);
 }
+void FileRWHandler::clean() { std::remove(filename.c_str()); }

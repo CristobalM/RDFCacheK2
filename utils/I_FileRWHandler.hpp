@@ -24,6 +24,7 @@ public:
   virtual void commit_temp_writer() = 0;
   virtual std::unique_ptr<I_IOStream>
   get_reader_writer(std::ios::openmode openmode) = 0;
+  virtual void clean() = 0;
 };
 
 #endif // RDFCACHEK2_I_FILERWHANDLER_HPP

@@ -38,30 +38,30 @@ void UpdatesLogger::log(std::vector<K2TreeUpdates> &k2tree_updates) {
 
   write_u32(writer_real, k2tree_updates.size());
   for (auto &update : k2tree_updates) {
+    auto update_kind = update.get_kind();
+    if (update_kind == K2TreeUpdates::NO_UPDATE)
+      continue;
+
     register_update_offset(update.predicate_id, writer_real);
-    UPDATE_KIND update_kind;
     write_u64(writer_real, update.predicate_id);
-    if (update.k2tree_del && update.k2tree_add) {
-      update_kind = BOTH_UPDATE;
-    } else if (update.k2tree_add) {
-      update_kind = INSERT_UPDATE;
-    } else {
-      update_kind = DELETE_UPDATE;
-    }
     write_u32(writer_real, update_kind);
+
     switch (update_kind) {
-    case INSERT_UPDATE:
+    case K2TreeUpdates::INSERT_UPDATE:
       update.k2tree_add->write_to_ostream(writer_real);
       break;
-    case DELETE_UPDATE:
+    case K2TreeUpdates::DELETE_UPDATE:
       update.k2tree_del->write_to_ostream(writer_real);
       break;
-    case BOTH_UPDATE:
+    case K2TreeUpdates::BOTH_UPDATE:
       update.k2tree_add->write_to_ostream(writer_real);
       update.k2tree_del->write_to_ostream(writer_real);
+      break;
+    case K2TreeUpdates::NO_UPDATE:
       break;
     }
   }
+
   current_file_writer->flush();
   dump_offsets_map();
   data_merger.merge_update(k2tree_updates);
@@ -159,23 +159,26 @@ void UpdatesLogger::dump_offsets_map() {
 void UpdatesLogger::recover_single_predicate_update(I_IStream &ifs) {
   auto &ifs_real = ifs.get_stream();
   auto predicate_id = static_cast<unsigned long>(read_u64(ifs_real));
-  auto update_kind = static_cast<UPDATE_KIND>(read_u32(ifs_real));
+  auto update_kind =
+      static_cast<K2TreeUpdates::UPDATE_KIND>(read_u32(ifs_real));
   std::unique_ptr<K2TreeMixed> added_triples{};
   std::unique_ptr<K2TreeMixed> removed_triples{};
   switch (update_kind) {
-  case INSERT_UPDATE:
+  case K2TreeUpdates::INSERT_UPDATE:
     added_triples =
         std::make_unique<K2TreeMixed>(K2TreeMixed::read_from_istream(ifs_real));
     break;
-  case DELETE_UPDATE:
+  case K2TreeUpdates::DELETE_UPDATE:
     removed_triples =
         std::make_unique<K2TreeMixed>(K2TreeMixed::read_from_istream(ifs_real));
     break;
-  case BOTH_UPDATE:
+  case K2TreeUpdates::BOTH_UPDATE:
     added_triples =
         std::make_unique<K2TreeMixed>(K2TreeMixed::read_from_istream(ifs_real));
     removed_triples =
         std::make_unique<K2TreeMixed>(K2TreeMixed::read_from_istream(ifs_real));
+    break;
+  case K2TreeUpdates::NO_UPDATE:
     break;
   }
   if (added_triples)
@@ -243,4 +246,17 @@ void UpdatesLogger::commit_total_updates() {
     metadata_file_rw->seekp(last_offset, std::ios::beg);
   }
   metadata_file_rw->flush();
+}
+void UpdatesLogger::clean_append_log() {
+  if (current_file_writer)
+    current_file_writer = nullptr;
+  if (current_file_reader)
+    current_file_reader = nullptr;
+  if (metadata_file_rw)
+    metadata_file_rw = nullptr;
+  offsets_map.clear();
+  logs_file_handler.clean();
+  metadata_rw_handler.clean();
+  predicates_offsets_file_handler.clean();
+  metadata_file_rw = metadata_rw_handler.get_reader_writer(std::ios::binary);
 }

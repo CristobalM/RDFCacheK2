@@ -20,6 +20,7 @@ public:
   void commit_temp_writer() override;
   std::unique_ptr<I_IOStream>
   get_reader_writer(std::ios::openmode openmode) override;
+  void clean() override;
 };
 
 #endif // RDFCACHEK2_FILERWHANDLER_HPP

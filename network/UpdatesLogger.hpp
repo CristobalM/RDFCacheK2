@@ -26,8 +26,6 @@ class UpdatesLogger {
   I_FileRWHandler &metadata_rw_handler;
   std::unique_ptr<I_IOStream> metadata_file_rw;
 
-  enum UPDATE_KIND { INSERT_UPDATE = 0, DELETE_UPDATE, BOTH_UPDATE };
-
   std::map<unsigned long, std::vector<long>> offsets_map;
 
   int total_updates;
@@ -43,6 +41,8 @@ public:
   void recover_predicate(unsigned long predicate_id);
 
   bool has_predicate_stored(uint64_t predicate_id);
+
+  void clean_append_log();
 
 private:
   void recover_data(const std::vector<unsigned long> &predicates);

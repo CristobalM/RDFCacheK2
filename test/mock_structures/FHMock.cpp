@@ -28,3 +28,7 @@ FHMock::get_reader_writer(std::ios::openmode openmode) {
       temp_data, std::ios::in | std::ios::out | openmode);
 }
 FHMock::FHMock() {}
+void FHMock::clean() {
+  data = "";
+  temp_data = "";
+}
