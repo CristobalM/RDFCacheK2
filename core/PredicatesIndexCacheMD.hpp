@@ -48,6 +48,7 @@ public:
 
   bool load_single_predicate(uint64_t predicate_index);
   PredicateFetchResult fetch_k2tree(uint64_t predicate_index);
+  PredicateFetchResult fetch_k2tree_if_loaded(uint64_t predicate_index);
 
   bool has_predicate(uint64_t predicate_index);
   bool has_predicate_active(uint64_t predicate_index);

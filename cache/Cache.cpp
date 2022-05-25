@@ -55,6 +55,6 @@ I_FileRWHandler &Cache::get_log_metadata_file_handler() {
   return *file_metadata_rw_handler;
 }
 NodesSequence &Cache::get_nodes_sequence() { return *nodes_sequence; }
-void Cache::sync_logs_with_indexes() {
+void Cache::sync_in_memory_to_persistent() {
   get_pcm().get_predicates_index_cache().sync_to_persistent();
 }

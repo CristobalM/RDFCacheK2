@@ -27,27 +27,30 @@ PredicatesIndexCacheMD::PredicatesIndexCacheMD(
       full_memory_segment(other.full_memory_segment), update_logger(nullptr) {}
 
 bool PredicatesIndexCacheMD::load_single_predicate(uint64_t predicate_index) {
-  if (!is_stored_in_main_index(predicate_index))
+  if (!is_stored_in_main_index(predicate_index) && !is_stored_in_updates_log(predicate_index))
     return false;
 
   std::lock_guard lg(retrieval_mutex);
 
-  const auto *predicate_metadata = get_metadata_with_id(predicate_index);
-  if (!predicate_metadata)
-    return false;
+  if(is_stored_in_main_index(predicate_index)){
+    const auto *predicate_metadata = get_metadata_with_id(predicate_index);
+    if (!predicate_metadata)
+      return false;
 
-  auto pos = is->tellg();
-  is->seekg(predicate_metadata->tree_offset);
+    auto pos = is->tellg();
+    is->seekg(predicate_metadata->tree_offset);
 
-  auto *memory_segment = MemoryManager::instance().new_memory_segment(
-      predicate_metadata->tree_size_in_memory);
-  memory_segments_map[predicate_metadata->predicate_id] = memory_segment;
+    auto *memory_segment = MemoryManager::instance().new_memory_segment(
+        predicate_metadata->tree_size_in_memory);
+    memory_segments_map[predicate_metadata->predicate_id] = memory_segment;
 
-  predicates[predicate_metadata->predicate_id] = std::make_unique<K2TreeMixed>(
-      K2TreeMixed::read_from_istream(is->get_stream(), memory_segment));
-  is->seekg(pos);
+    predicates[predicate_metadata->predicate_id] = std::make_unique<K2TreeMixed>(
+        K2TreeMixed::read_from_istream(is->get_stream(), memory_segment));
+    is->seekg(pos);
 
-  if (update_logger) {
+  }
+
+  if (update_logger && is_stored_in_updates_log(predicate_index)) {
     update_logger->recover_predicate(predicate_index);
   }
 
@@ -66,6 +69,21 @@ PredicatesIndexCacheMD::fetch_k2tree(uint64_t predicate_index) {
   }
   return PredicateFetchResult(true, predicates[predicate_index].get());
 }
+
+PredicateFetchResult
+PredicatesIndexCacheMD::fetch_k2tree_if_loaded(uint64_t predicate_index) {
+  auto it = predicates.find(predicate_index);
+  if (it != predicates.end()) {
+    return PredicateFetchResult(true, it->second.get());
+  }
+
+  if(has_predicate_stored(predicate_index)){
+    return PredicateFetchResult(true, nullptr);
+  }
+
+  return PredicateFetchResult(false, nullptr);
+}
+
 
 bool PredicatesIndexCacheMD::has_predicate(uint64_t predicate_index) {
   return has_predicate_active(predicate_index) ||

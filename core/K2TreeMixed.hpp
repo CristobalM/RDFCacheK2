@@ -57,8 +57,8 @@ public:
 
   K2TreeMixed(K2TreeConfig config);
 
-  K2TreeMixed(const K2TreeMixed &other) = delete;
-  K2TreeMixed &operator=(const K2TreeMixed &other) = delete;
+  K2TreeMixed(const K2TreeMixed &other);
+  K2TreeMixed &operator=(const K2TreeMixed &other);
 
   K2TreeMixed(K2TreeMixed &&other) noexcept;
   K2TreeMixed &operator=(K2TreeMixed &&other) noexcept;
@@ -98,7 +98,7 @@ public:
 
   k2tree_measurement k2tree_stats() const;
 
-  bool same_as(const K2TreeMixed &other) const;
+  bool identical_structure_as(const K2TreeMixed &other) const;
 
   unsigned long write_to_ostream(std::ostream &os) const;
   static K2TreeMixed read_from_istream(std::istream &is);
@@ -120,6 +120,10 @@ public:
 
   static K2TreeMixed read_from_istream(std::istream &istream,
                                        MemorySegment *memory_segment);
+
+  // This was made for debugging/testing purposes, to check that two copies are not
+  // sharing any references
+  bool shares_any_reference_to(K2TreeMixed &other);
 
 private:
   void clean_up();

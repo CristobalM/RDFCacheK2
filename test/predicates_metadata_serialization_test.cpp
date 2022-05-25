@@ -120,8 +120,8 @@ TEST(predicates_metadata_serialization, same_k2tree_as_non_serialized) {
   ASSERT_EQ(s_des.size(), s_nonser.size());
   ASSERT_EQ(s_des, s_nonser);
 
-  ASSERT_TRUE(deserialized.same_as(non_serialized));
-  ASSERT_TRUE(non_serialized.same_as(deserialized));
+  ASSERT_TRUE(deserialized.identical_structure_as(non_serialized));
+  ASSERT_TRUE(non_serialized.identical_structure_as(deserialized));
 
   ASSERT_TRUE(deserialized.has_valid_structure());
   ASSERT_TRUE(non_serialized.has_valid_structure());

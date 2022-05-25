@@ -96,6 +96,8 @@ void PredicatesCacheManager::set_update_logger(
 }
 void PredicatesCacheManager::merge_update(std::vector<K2TreeUpdates> &updates) {
   for (auto &update : updates) {
+    if (!predicates_index->has_predicate_active(update.predicate_id))
+      continue;
     if (update.k2tree_add)
       merge_add_tree(update.predicate_id, *update.k2tree_add);
     if (update.k2tree_del)

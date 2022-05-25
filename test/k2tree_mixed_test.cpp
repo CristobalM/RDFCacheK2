@@ -244,6 +244,25 @@ TEST(k2tree_mixed_test, check_if_64_depth_works_1) {
   }
 }
 
+TEST(k2tree_mixed_test, can_copy_full_tree) {
+  unsigned long treedepth = 64;
+  K2TreeMixed tree(treedepth, 256, 10);
+  K2TreeBulkOp bulk_op(tree);
+  constexpr size_t values_sz = 10;
+  std::set<std::pair<unsigned long, unsigned long>> values;
+  for (size_t i = 1; i <= values_sz; i++) {
+    auto exp = 63UL;
+    auto value = (1UL << exp) + i;
+    values.insert({value, value});
+  }
+  for (const auto &vp : values) {
+    bulk_op.insert(vp.first, vp.second);
+  }
+  auto copied_tree = K2TreeMixed(tree);
+  ASSERT_TRUE(copied_tree.identical_structure_as(tree));
+  ASSERT_FALSE(copied_tree.shares_any_reference_to(tree));
+}
+
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);
   int result = RUN_ALL_TESTS();

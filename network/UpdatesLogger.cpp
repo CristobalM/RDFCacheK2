@@ -106,16 +106,18 @@ void UpdatesLogger::recover_data(const std::vector<unsigned long> &predicates) {
   }
   for (auto predicate_id : predicates) {
     const auto &offsets = offsets_map[predicate_id];
-    for (auto offset : offsets) {
+    for (auto offset : *offsets) {
       current_file_reader->seekg(offset, std::ios::beg);
-      recover_single_predicate_update(*current_file_reader);
+      auto updates = recover_single_predicate_update(*current_file_reader);
+      merge_update(updates);
     }
   }
 }
 void UpdatesLogger::recover_single_update(I_IStream &ifs) {
   auto updates_amount = static_cast<size_t>(read_u32(ifs.get_stream()));
   for (size_t i = 0; i < updates_amount; i++) {
-    recover_single_predicate_update(ifs);
+    auto updates = recover_single_predicate_update(ifs);
+    merge_update(updates);
   }
 }
 void UpdatesLogger::retrieve_offsets_map() {
@@ -127,10 +129,10 @@ void UpdatesLogger::retrieve_offsets_map() {
   for (int i = 0; i < offsets_map_size; i++) {
     auto predicate_id = read_u64(ifs_real);
     auto offsets_size = (int)read_u32(ifs_real);
-    std::vector<long> offsets_retrieved;
-    offsets_retrieved.reserve(offsets_size);
+    auto offsets_retrieved = std::make_unique<std::vector<long>>();
+    offsets_retrieved->reserve(offsets_size);
     for (int offset_i = 0; offset_i < offsets_size; offset_i++) {
-      offsets_retrieved.push_back((long)read_u64(ifs_real));
+      offsets_retrieved->push_back((long)read_u64(ifs_real));
     }
     offsets_map[predicate_id] = std::move(offsets_retrieved);
   }
@@ -147,8 +149,8 @@ void UpdatesLogger::dump_offsets_map() {
       auto predicate_id = kv.first;
       const auto &offsets = kv.second;
       write_u64(ofs_temp_real, predicate_id);
-      write_u32(ofs_temp_real, offsets.size());
-      for (auto offset : offsets) {
+      write_u32(ofs_temp_real, offsets->size());
+      for (auto offset : *offsets) {
         write_u64(ofs_temp_real, (unsigned long)offset);
       }
     }
@@ -156,7 +158,7 @@ void UpdatesLogger::dump_offsets_map() {
 
   predicates_offsets_file_handler.commit_temp_writer();
 }
-void UpdatesLogger::recover_single_predicate_update(I_IStream &ifs) {
+UpdatesLogger::PredicateUpdate UpdatesLogger::recover_single_predicate_update(I_IStream &ifs) {
   auto &ifs_real = ifs.get_stream();
   auto predicate_id = static_cast<unsigned long>(read_u64(ifs_real));
   auto update_kind =
@@ -181,10 +183,11 @@ void UpdatesLogger::recover_single_predicate_update(I_IStream &ifs) {
   case K2TreeUpdates::NO_UPDATE:
     break;
   }
-  if (added_triples)
-    data_merger.merge_add_tree(predicate_id, *added_triples);
-  if (removed_triples)
-    data_merger.merge_delete_tree(predicate_id, *removed_triples);
+  PredicateUpdate out;
+  out.predicate_id = predicate_id;
+  out.add_update = std::move(added_triples);
+  out.del_update = std::move(removed_triples);
+  return out;
 }
 /**
  * Register the current offset of ofs output stream to an offsets_map
@@ -200,10 +203,12 @@ void UpdatesLogger::register_update_offset(unsigned long predicate_id,
   auto offset = ofs.tellp();
   auto it = offsets_map.find(predicate_id);
   if (it == offsets_map.end()) {
-    offsets_map[predicate_id] = {offset};
+    auto vec = std::make_unique<std::vector<long>>();
+    vec->push_back(offset);
+    offsets_map[predicate_id] = std::move(vec);
     return;
   }
-  it->second.push_back(offset);
+  it->second->push_back(offset);
 }
 
 /**
@@ -221,9 +226,10 @@ void UpdatesLogger::recover_predicate(unsigned long predicate_id) {
     current_file_reader = logs_file_handler.get_reader(std::ios::binary);
   }
   const auto &offsets = offsets_map[predicate_id];
-  for (auto offset : offsets) {
+  for (auto offset : *offsets) {
     current_file_reader->seekg(offset, std::ios::beg);
-    recover_single_predicate_update(*current_file_reader);
+    auto updates = recover_single_predicate_update(*current_file_reader);
+    merge_update(updates);
   }
 }
 bool UpdatesLogger::has_predicate_stored(uint64_t predicate_id) {
@@ -259,4 +265,33 @@ void UpdatesLogger::clean_append_log() {
   metadata_rw_handler.clean();
   predicates_offsets_file_handler.clean();
   metadata_file_rw = metadata_rw_handler.get_reader_writer(std::ios::binary);
+}
+void UpdatesLogger::for_each_predicate_offset(
+    const std::function<void(unsigned long, const std::vector<long> &)>
+        &fun) {
+  auto it = offsets_map.begin();
+  for(auto &pair: offsets_map){
+    fun(pair.first, *pair.second);
+  }
+}
+
+void UpdatesLogger::compact_predicate(unsigned long predicate_id) {
+  auto it = offsets_map.find(predicate_id);
+  if(it == offsets_map.end()) return;
+  if (!current_file_reader) {
+    current_file_reader = logs_file_handler.get_reader(std::ios::binary);
+  }
+
+  for(auto offset: *it->second){
+    current_file_reader->seekg(offset);
+    auto updates = recover_single_predicate_update(*current_file_reader);
+
+  }
+
+}
+void UpdatesLogger::merge_update(UpdatesLogger::PredicateUpdate &predicate_update) {
+    if (predicate_update.add_update)
+      data_merger.merge_add_tree(predicate_update.predicate_id, *predicate_update.add_update);
+    if (predicate_update.del_update)
+      data_merger.merge_delete_tree(predicate_update.predicate_id, *predicate_update.del_update);
 }

@@ -116,7 +116,7 @@ set(NETWORK_SOURCE_FILES
         network/FullyIndexedCacheResponse.cpp
         network/FullyIndexedCacheResponse.hpp
         network/networking_utils.cpp
-        network/networking_utils.hpp)
+        network/networking_utils.hpp network/InMemoryTreeMerger.cpp network/InMemoryTreeMerger.hpp network/UpdateLogCompacter.cpp network/UpdateLogCompacter.hpp)
 
 
 set(PROTO_MESSAGES
