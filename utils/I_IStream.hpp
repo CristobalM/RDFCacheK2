@@ -13,6 +13,6 @@ public:
   virtual std::streampos tellg() = 0;
 
   virtual explicit operator bool() const = 0;
-  virtual std::istream &get_stream() = 0;
+  virtual std::istream &get_istream() = 0;
 };
 #endif // RDFCACHEK2_I_ISTREAM_HPP

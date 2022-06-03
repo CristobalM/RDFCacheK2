@@ -21,6 +21,9 @@ public:
   std::streampos tellp() override;
   StringIOStream(std::string &data, std::ios::openmode openmode);
   void flush() override;
+  explicit operator bool() const override;
+  std::istream &get_istream() override;
+  std::ostream &get_ostream() override;
 };
 
 #endif // RDFCACHEK2_STRINGIOSTREAM_HPP

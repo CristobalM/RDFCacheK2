@@ -20,7 +20,7 @@ public:
   StringIStream(std::string &data, std::ios::openmode openmode);
   void seekg(std::streamoff offset, std::ios_base::seekdir way) override;
   explicit operator bool() const override;
-  std::istream &get_stream() override;
+  std::istream &get_istream() override;
   std::streampos tellg() override;
 };
 

@@ -70,7 +70,7 @@ TEST(update_log_test, test_fhmock_can_sync_log_to_main_storage) {
     fh_pcm = std::make_unique<FHMock>(cache_data);
     auto fh_writer = fh_pcm->get_writer(std::ios::out | std::ios::binary);
     PredicatesCacheMetadata metadata_pcm(config);
-    metadata_pcm.write_to_ostream(fh_writer->get_stream());
+    metadata_pcm.write_to_ostream(fh_writer->get_ostream());
     fh_writer->flush();
   }
 

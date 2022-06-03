@@ -26,7 +26,7 @@ NodesSequence::NodesSequence(std::vector<long> &&values)
     : values(std::move(values)) {}
 NodesSequence NodesSequence::from_input_stream(I_IStream &input_stream) {
   std::vector<long> data;
-  auto &is = input_stream.get_stream();
+  auto &is = input_stream.get_istream();
   auto nodes_number = (unsigned long)read_u64(is);
   data.reserve(nodes_number);
   for (unsigned long i = 0; i < nodes_number; i++) {

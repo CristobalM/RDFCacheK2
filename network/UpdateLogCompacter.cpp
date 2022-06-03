@@ -11,5 +11,5 @@ UpdateLogCompacter::UpdateLogCompacter(
 
 }
 void UpdateLogCompacter::compact() {
-  updates_logger.for_each_predicate_offset()
+
 }

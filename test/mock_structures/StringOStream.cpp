@@ -10,7 +10,7 @@ StringOStream::~StringOStream() { internal_flush(); }
 
 void StringOStream::flush() { internal_flush(); }
 
-std::ostream &StringOStream::get_stream() { return oss; }
+std::ostream &StringOStream::get_ostream() { return oss; }
 
 void StringOStream::internal_flush() { data = oss.str(); }
 void StringOStream::seekp(std::streamoff offset, std::ios_base::seekdir way) {

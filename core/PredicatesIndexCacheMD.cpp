@@ -16,7 +16,7 @@ PredicatesIndexCacheMD::PredicatesIndexCacheMD(
     std::unique_ptr<I_FileRWHandler> &&file_handler)
     : file_handler(std::move(file_handler)),
       is(this->file_handler->get_reader(std::ios::binary)),
-      metadata(is->get_stream()), k2tree_config(metadata.get_config()),
+      metadata(is->get_istream()), k2tree_config(metadata.get_config()),
       full_memory_segment(nullptr), update_logger(nullptr) {}
 
 PredicatesIndexCacheMD::PredicatesIndexCacheMD(
@@ -45,7 +45,7 @@ bool PredicatesIndexCacheMD::load_single_predicate(uint64_t predicate_index) {
     memory_segments_map[predicate_metadata->predicate_id] = memory_segment;
 
     predicates[predicate_metadata->predicate_id] = std::make_unique<K2TreeMixed>(
-        K2TreeMixed::read_from_istream(is->get_stream(), memory_segment));
+        K2TreeMixed::read_from_istream(is->get_istream(), memory_segment));
     is->seekg(pos);
 
   }
@@ -169,7 +169,7 @@ void PredicatesIndexCacheMD::sync_to_stream(std::ostream &os) {
       is->seekg(current_md.tree_offset);
       {
         std::vector<char> buf(meta.tree_size);
-        is->get_stream().read(buf.data(), buf.size());
+        is->get_istream().read(buf.data(), buf.size());
         os.write(buf.data(), buf.size());
       }
     } else {
@@ -294,7 +294,7 @@ void PredicatesIndexCacheMD::load_all_predicates() {
     raw_k2tree.clear();
 */
     predicates[predicate_id] = std::make_unique<K2TreeMixed>(
-        K2TreeMixed::read_from_istream(is->get_stream(), mem_segment));
+        K2TreeMixed::read_from_istream(is->get_istream(), mem_segment));
   }
 }
 void PredicatesIndexCacheMD::set_update_logger(
@@ -313,7 +313,7 @@ void PredicatesIndexCacheMD::mark_dirty(uint64_t predicate_id) {
 void PredicatesIndexCacheMD::sync_to_persistent() {
   auto temp_writer =
       file_handler->get_writer_temp(std::ios::binary | std::ios::trunc);
-  sync_to_stream(temp_writer->get_stream());
+  sync_to_stream(temp_writer->get_ostream());
   temp_writer->flush();
   is = nullptr; // closes the open file
   file_handler->commit_temp_writer();

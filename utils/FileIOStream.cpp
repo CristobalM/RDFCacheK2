@@ -16,3 +16,6 @@ void FileIOStream::seekp(std::streamoff offset, std::ios_base::seekdir way) {
 }
 std::streampos FileIOStream::tellp() { return fs.tellp(); }
 void FileIOStream::flush() { fs.flush(); }
+std::istream &FileIOStream::get_istream() { return fs; }
+std::ostream &FileIOStream::get_ostream() { return fs; }
+FileIOStream::operator bool() const { return fs.operator bool(); }
