@@ -54,6 +54,8 @@ public:
 
   void compact_logs();
 
+    int logs_number();
+
 private:
 
   static void log(std::vector<K2TreeUpdates> &k2tree_updates, offsets_map_t &offsets,

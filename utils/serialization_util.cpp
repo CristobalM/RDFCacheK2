@@ -28,7 +28,7 @@ void write_u32(std::ostream &output_stream, uint32_t value) {
 }
 
 uint32_t read_u32(std::istream &input_stream) {
-  uint32_t result;
+  uint32_t result{};
   input_stream.read(reinterpret_cast<char *>(&result), sizeof(uint32_t));
   result = ntohl(result);
   return result;

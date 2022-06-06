@@ -111,3 +111,77 @@ TEST(update_log_test, test_fhmock_can_sync_log_to_main_storage) {
   ASSERT_TRUE(
       pcm.get_predicates_index_cache().is_stored_in_main_index(predicate_id_1));
 }
+
+TEST(update_log_test, can_compact_log_only_two_inserts) {
+    K2TreeConfig config;
+    config.treedepth = 32;
+    config.cut_depth = 10;
+    config.max_node_count = 256;
+    std::string data_updates;
+    std::string data_offsets_updates;
+    std::string metadata_updates;
+    FHMock fh(data_updates);
+    FHMock fh_offsets(data_offsets_updates);
+    FHMock fh_metadata(metadata_updates);
+
+    std::unique_ptr<I_FileRWHandler> fh_pcm{};
+    {
+        std::string cache_data;
+        fh_pcm = std::make_unique<FHMock>(cache_data);
+        auto fh_writer = fh_pcm->get_writer(std::ios::out | std::ios::binary);
+        PredicatesCacheMetadata metadata_pcm(config);
+        metadata_pcm.write_to_ostream(fh_writer->get_ostream());
+        fh_writer->flush();
+    }
+
+    PredicatesCacheManager pcm(std::move(fh_pcm));
+    PCMMerger merger(pcm);
+    UpdatesLogger updates_logger(merger, fh, fh_offsets, fh_metadata);
+    PCMUpdateLoggerWrapper pcm_update_wrapper(updates_logger);
+    pcm.set_update_logger(&pcm_update_wrapper);
+
+    int predicate_id_1 = 123;
+
+    K2TreeMixed k2tree(config);
+    K2TreeBulkOp op(k2tree);
+    int size_tree = 10000;
+    for (int i = 0; i < size_tree; i++) {
+        op.insert(i + 1, i + 1);
+    }
+    K2TreeMixed k2tree2(config);
+    K2TreeBulkOp op2(k2tree2);
+    for (int i = size_tree; i < 2 * size_tree; i++) {
+        op2.insert(i + 1, i + 1);
+    }
+    K2TreeUpdates tree_update_1(predicate_id_1, &k2tree, nullptr);
+    K2TreeUpdates tree_update_2(predicate_id_1, &k2tree2, nullptr);
+    std::vector<K2TreeUpdates> tree_updates_1 = {tree_update_1};
+    std::vector<K2TreeUpdates> tree_updates_2 = {tree_update_2};
+    updates_logger.log(tree_updates_1);
+    updates_logger.log(tree_updates_2);
+
+    ASSERT_TRUE(updates_logger.has_predicate_stored(predicate_id_1));
+    ASSERT_EQ(k2tree.size(), size_tree);
+
+    auto fetched = pcm.get_predicates_index_cache().fetch_k2tree(predicate_id_1);
+    ASSERT_TRUE(fetched.exists());
+
+    auto &fetched_k2tree = fetched.get_mutable();
+    for (int i = 0; i < 2 * size_tree; i++) {
+        ASSERT_TRUE(fetched_k2tree.has(i + 1, i + 1));
+    }
+
+    ASSERT_FALSE(
+            pcm.get_predicates_index_cache().is_stored_in_main_index(predicate_id_1));
+
+    pcm.get_predicates_index_cache().sync_to_persistent();
+
+    ASSERT_TRUE(
+            pcm.get_predicates_index_cache().is_stored_in_main_index(predicate_id_1));
+
+    ASSERT_EQ(updates_logger.logs_number(),2);
+    updates_logger.compact_logs();
+
+    ASSERT_EQ(updates_logger.logs_number(),1);
+
+}
