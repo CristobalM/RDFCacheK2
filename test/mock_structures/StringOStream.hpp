@@ -20,7 +20,7 @@ public:
   StringOStream(std::string &data, std::ios::openmode openmode);
   ~StringOStream() override;
   void flush() override;
-  std::ostream &get_stream() override;
+  std::ostream &get_ostream() override;
   void seekp(std::streamoff offset, std::ios_base::seekdir way) override;
   std::streampos tellp() override;
 

@@ -3,6 +3,8 @@
 export CC=/usr/bin/gcc
 export CXX=/usr/bin/g++
 
+HN=$(echo $(($(nproc)/2)))
+
 _TMP_DIR_0="_tmp_0"
 base_dir=$(pwd)
 function _clean(){
@@ -15,8 +17,23 @@ _clean
 cd $base_dir
 mkdir -p $_TMP_DIR_0
 cd $_TMP_DIR_0
-cmake .. > /dev/null 2> /dev/null
-make -j4 > /dev/null 2> /dev/null
+
+cmake .. > /dev/null &> /dev/null
+RES=$?
+
+if [ $RES -ne 0 ]; then
+	return $RES
+fi
+
+make -j$HN > /dev/null &> /dev/null
+RES=$?
+
+if [ $RES -ne 0 ]; then
+	return $RES
+fi
+
+ctest -j$HN . &> /dev/null
+
 return $?
 }
 
@@ -33,9 +50,9 @@ export CXX=/usr/bin/clang++
 
 _build
 if [ $? -eq 0 ]; then
-    echo "Works with CLANG Compiler";
+    echo "works with clang compiler";
 else
-    echo "Doesn't work with CLANG Compiler";
+    echo "doesn't work with clang compiler";
 fi
 
 _clean

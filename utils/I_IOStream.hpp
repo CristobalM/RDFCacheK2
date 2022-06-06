@@ -5,21 +5,14 @@
 #ifndef RDFCACHEK2_I_IOSTREAM_HPP
 #define RDFCACHEK2_I_IOSTREAM_HPP
 
+#include "I_IStream.hpp"
+#include "I_OStream.hpp"
 #include <ios>
 #include <iostream>
 
-class I_IOStream {
+class I_IOStream : public I_OStream, public I_IStream {
 public:
-  virtual ~I_IOStream() = default;
   virtual std::iostream &get_stream() = 0;
-
-  virtual void seekg(std::streamoff offset, std::ios_base::seekdir way) = 0;
-  virtual std::streampos tellg() = 0;
-
-  virtual void seekp(std::streamoff offset, std::ios_base::seekdir way) = 0;
-  virtual std::streampos tellp() = 0;
-
-  virtual void flush() = 0;
 };
 
 #endif // RDFCACHEK2_I_IOSTREAM_HPP

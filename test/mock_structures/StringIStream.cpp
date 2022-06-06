@@ -11,7 +11,7 @@ void StringIStream::seekg(std::streamoff offset, std::ios_base::seekdir way) {
   iss.seekg(offset, way);
 }
 
-std::istream &StringIStream::get_stream() { return iss; }
+std::istream &StringIStream::get_istream() { return iss; }
 
 StringIStream::operator bool() const {
   return iss.operator bool() && !iss.eof() && iss.good();

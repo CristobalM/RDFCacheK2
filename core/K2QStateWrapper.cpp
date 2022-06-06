@@ -11,4 +11,19 @@ K2QStateWrapper::K2QStateWrapper(uint32_t tree_depth, uint32_t cut_depth,
 struct k2qstate *K2QStateWrapper::get_ptr() {
   return &st;
 }
-K2QStateWrapper::~K2QStateWrapper() { clean_k2qstate(&st); }
+K2QStateWrapper::~K2QStateWrapper() {
+  if (no_destruct)
+    return;
+  clean_k2qstate(&st);
+}
+K2QStateWrapper::K2QStateWrapper(K2QStateWrapper &&other) noexcept
+    : st(other.st) {
+  other.set_no_destruct();
+}
+
+K2QStateWrapper &K2QStateWrapper::operator=(K2QStateWrapper &&other) noexcept {
+  st = other.st;
+  other.set_no_destruct();
+  return *this;
+}
+void K2QStateWrapper::set_no_destruct() { no_destruct = true; }

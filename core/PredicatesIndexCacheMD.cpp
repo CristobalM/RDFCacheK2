@@ -16,7 +16,7 @@ PredicatesIndexCacheMD::PredicatesIndexCacheMD(
     std::unique_ptr<I_FileRWHandler> &&file_handler)
     : file_handler(std::move(file_handler)),
       is(this->file_handler->get_reader(std::ios::binary)),
-      metadata(is->get_stream()), k2tree_config(metadata.get_config()),
+      metadata(is->get_istream()), k2tree_config(metadata.get_config()),
       full_memory_segment(nullptr), update_logger(nullptr) {}
 
 PredicatesIndexCacheMD::PredicatesIndexCacheMD(
@@ -27,27 +27,31 @@ PredicatesIndexCacheMD::PredicatesIndexCacheMD(
       full_memory_segment(other.full_memory_segment), update_logger(nullptr) {}
 
 bool PredicatesIndexCacheMD::load_single_predicate(uint64_t predicate_index) {
-  if (!is_stored_in_main_index(predicate_index))
+  if (!is_stored_in_main_index(predicate_index) &&
+      !is_stored_in_updates_log(predicate_index))
     return false;
 
   std::lock_guard lg(retrieval_mutex);
 
-  const auto *predicate_metadata = get_metadata_with_id(predicate_index);
-  if (!predicate_metadata)
-    return false;
+  if (is_stored_in_main_index(predicate_index)) {
+    const auto *predicate_metadata = get_metadata_with_id(predicate_index);
+    if (!predicate_metadata)
+      return false;
 
-  auto pos = is->tellg();
-  is->seekg(predicate_metadata->tree_offset);
+    auto pos = is->tellg();
+    is->seekg(predicate_metadata->tree_offset);
 
-  auto *memory_segment = MemoryManager::instance().new_memory_segment(
-      predicate_metadata->tree_size_in_memory);
-  memory_segments_map[predicate_metadata->predicate_id] = memory_segment;
+    auto *memory_segment = MemoryManager::instance().new_memory_segment(
+        predicate_metadata->tree_size_in_memory);
+    memory_segments_map[predicate_metadata->predicate_id] = memory_segment;
 
-  predicates[predicate_metadata->predicate_id] = std::make_unique<K2TreeMixed>(
-      K2TreeMixed::read_from_istream(is->get_stream(), memory_segment));
-  is->seekg(pos);
+    predicates[predicate_metadata->predicate_id] =
+        std::make_unique<K2TreeMixed>(
+            K2TreeMixed::read_from_istream(is->get_istream(), memory_segment));
+    is->seekg(pos);
+  }
 
-  if (update_logger) {
+  if (update_logger && is_stored_in_updates_log(predicate_index)) {
     update_logger->recover_predicate(predicate_index);
   }
 
@@ -65,6 +69,20 @@ PredicatesIndexCacheMD::fetch_k2tree(uint64_t predicate_index) {
     update_logger->recover_predicate(predicate_index);
   }
   return PredicateFetchResult(true, predicates[predicate_index].get());
+}
+
+PredicateFetchResult
+PredicatesIndexCacheMD::fetch_k2tree_if_loaded(uint64_t predicate_index) {
+  auto it = predicates.find(predicate_index);
+  if (it != predicates.end()) {
+    return PredicateFetchResult(true, it->second.get());
+  }
+
+  if (has_predicate_stored(predicate_index)) {
+    return PredicateFetchResult(true, nullptr);
+  }
+
+  return PredicateFetchResult(false, nullptr);
 }
 
 bool PredicatesIndexCacheMD::has_predicate(uint64_t predicate_index) {
@@ -151,7 +169,7 @@ void PredicatesIndexCacheMD::sync_to_stream(std::ostream &os) {
       is->seekg(current_md.tree_offset);
       {
         std::vector<char> buf(meta.tree_size);
-        is->get_stream().read(buf.data(), buf.size());
+        is->get_istream().read(buf.data(), buf.size());
         os.write(buf.data(), buf.size());
       }
     } else {
@@ -276,7 +294,7 @@ void PredicatesIndexCacheMD::load_all_predicates() {
     raw_k2tree.clear();
 */
     predicates[predicate_id] = std::make_unique<K2TreeMixed>(
-        K2TreeMixed::read_from_istream(is->get_stream(), mem_segment));
+        K2TreeMixed::read_from_istream(is->get_istream(), mem_segment));
   }
 }
 void PredicatesIndexCacheMD::set_update_logger(
@@ -295,7 +313,7 @@ void PredicatesIndexCacheMD::mark_dirty(uint64_t predicate_id) {
 void PredicatesIndexCacheMD::sync_to_persistent() {
   auto temp_writer =
       file_handler->get_writer_temp(std::ios::binary | std::ios::trunc);
-  sync_to_stream(temp_writer->get_stream());
+  sync_to_stream(temp_writer->get_ostream());
   temp_writer->flush();
   is = nullptr; // closes the open file
   file_handler->commit_temp_writer();

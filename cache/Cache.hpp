@@ -45,7 +45,7 @@ public:
   I_FileRWHandler &get_log_file_handler();
   I_FileRWHandler &get_log_offsets_file_handler();
   I_FileRWHandler &get_log_metadata_file_handler();
-  void sync_logs_with_indexes();
+  void sync_in_memory_to_persistent();
 };
 
 #endif // RDFCACHEK2_CACHE_HPP

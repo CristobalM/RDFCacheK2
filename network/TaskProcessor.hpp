@@ -31,7 +31,7 @@ public:
   virtual I_Updater &get_updater(int updater_id) = 0;
   virtual void log_updates(std::vector<K2TreeUpdates> &k2trees_updates) = 0;
   virtual WriteDataLock acquire_write_lock() = 0;
-  virtual void sync_logs_with_indexes() = 0;
+  virtual void sync_to_persistent() = 0;
 };
 
 #endif // RDFCACHEK2_TASKPROCESSOR_HPP

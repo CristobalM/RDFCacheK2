@@ -311,7 +311,7 @@ void ServerTask::process_update_triples_batch(Message &message) {
 }
 
 void ServerTask::process_sync_logs_with_indexes(const Message &) {
-  task_processor.sync_logs_with_indexes();
+  task_processor.sync_to_persistent();
   proto_msg::CacheResponse cache_response;
   cache_response.set_response_type(proto_msg::SYNC_LOGS_WITH_INDEXES_RESPONSE);
   send_response(cache_response);

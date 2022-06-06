@@ -9,7 +9,7 @@ class I_OStream {
 public:
   virtual ~I_OStream() = default;
   virtual void flush() = 0;
-  virtual std::ostream &get_stream() = 0;
+  virtual std::ostream &get_ostream() = 0;
   virtual void seekp(std::streamoff offset, std::ios_base::seekdir way) = 0;
   virtual std::streampos tellp() = 0;
 };

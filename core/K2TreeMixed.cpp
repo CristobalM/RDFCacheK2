@@ -167,7 +167,7 @@ bool same_k2node(struct k2node *lhs, struct k2node *rhs, uint32_t current_depth,
   return same_blocks(lhs->k2subtree.block_child, rhs->k2subtree.block_child);
 }
 
-bool K2TreeMixed::same_as(const K2TreeMixed &other) const {
+bool K2TreeMixed::identical_structure_as(const K2TreeMixed &other) const {
   return same_k2node(root, other.root, 0, cut_depth);
 }
 
@@ -392,6 +392,127 @@ K2TreeMixed K2TreeMixed::read_from_istream(std::istream &is,
       is, containers, 0, cut_depth, current_node_location, memory_segment);
   return K2TreeMixed(root, k2tree_depth, max_nodes_count, cut_depth,
                      points_count);
+}
+
+static NODES_BV_T *copy_preorders(NODES_BV_T *original, int size) {
+  auto *preorders = (NODES_BV_T *)k2tree_alloc_preorders(size);
+  std::copy(original, original + size, preorders);
+  return preorders;
+}
+
+static BVCTYPE *copy_block_container(BVCTYPE *original, int size) {
+  auto *container = k2tree_alloc_u32array(size);
+  std::copy(original, original + size, container);
+  return container;
+}
+
+static void copy_block_tree(block *original, block *copy) {
+  copy->children_blocks = k2tree_alloc_blocks_array(original->children);
+  copy->children = original->children;
+  copy->container_size = original->container_size;
+  copy->nodes_count = original->nodes_count;
+  copy->preorders = copy_preorders(original->preorders, original->children);
+  copy->container =
+      copy_block_container(original->container, original->container_size);
+  for (int i = 0; i < original->children; i++) {
+    auto *child = &copy->children_blocks[i];
+    copy_block_tree(&original->children_blocks[i], child);
+  }
+}
+
+static k2node *copy_tree(k2node *root, int cut_depth, int tree_depth,
+                         int current_depth = 0) {
+  auto *node_copy = create_k2node();
+
+  if (current_depth < cut_depth) {
+    for (int i = 0; i < 4; i++) {
+      auto *child = root->k2subtree.children[i];
+      k2node *copied_child{};
+      if (child) {
+        copied_child =
+            copy_tree(child, cut_depth, tree_depth, current_depth + 1);
+      }
+      node_copy->k2subtree.children[i] = copied_child;
+    }
+  } else {
+    node_copy->k2subtree.block_child = create_block();
+    copy_block_tree(root->k2subtree.block_child,
+                    node_copy->k2subtree.block_child);
+  }
+  return node_copy;
+}
+
+K2TreeMixed::K2TreeMixed(const K2TreeMixed &other) {
+  root = copy_tree(other.root, other.cut_depth, other.tree_depth);
+  points_count = other.points_count;
+  tree_depth = other.tree_depth;
+  cut_depth = other.cut_depth;
+  max_nodes_count = other.max_nodes_count;
+}
+
+K2TreeMixed &K2TreeMixed::operator=(const K2TreeMixed &other) {
+  root = copy_tree(other.root, other.cut_depth, other.tree_depth);
+  points_count = other.points_count;
+  tree_depth = other.tree_depth;
+  cut_depth = other.cut_depth;
+  max_nodes_count = other.max_nodes_count;
+  return *this;
+}
+
+static bool blocks_any_same_ref(block *lhs, block *rhs) {
+  if (!lhs || !rhs)
+    return false; // if any of the two is nullptr we can't continue comparing
+  if (lhs == rhs)
+    return true;
+  if (lhs->preorders == rhs->preorders)
+    return true;
+  if (lhs->children_blocks == rhs->children_blocks)
+    return true;
+  if (lhs->container == rhs->container)
+    return true;
+  if (lhs->children != rhs->children)
+    return false; // can't continue comparing as the same structure is broken
+  for (int i = 0; i < lhs->children; i++) {
+    if (blocks_any_same_ref(&lhs->children_blocks[i], &rhs->children_blocks[i]))
+      return true;
+  }
+  return false;
+}
+
+static bool k2node_any_same_ref(k2node *lhs, k2node *rhs, int tree_depth,
+                                int cut_depth, int current_depth) {
+  if (!lhs || !rhs)
+    return false; // if any of the two is nullptr we can't continue comparing
+  if (lhs == rhs)
+    return true;
+  if (current_depth < cut_depth) {
+    for (int i = 0; i < 4; i++) {
+      if (lhs->k2subtree.children[i] != nullptr &&
+          rhs->k2subtree.children[i] != nullptr &&
+          lhs->k2subtree.children[i] == rhs->k2subtree.children[i])
+        return true;
+    }
+    for (int i = 0; i < 4; i++) {
+      if (k2node_any_same_ref(lhs->k2subtree.children[i],
+                              rhs->k2subtree.children[i], tree_depth, cut_depth,
+                              current_depth + 1))
+        return true;
+    }
+    return false;
+  }
+
+  return blocks_any_same_ref(lhs->k2subtree.block_child,
+                             rhs->k2subtree.block_child);
+}
+
+bool K2TreeMixed::shares_any_reference_to(K2TreeMixed &other) {
+  // for this check to make sense, we assume that they share the same structure,
+  // that is, identical_structure_as is true
+  if (cut_depth != other.cut_depth || tree_depth != other.tree_depth ||
+      max_nodes_count != other.max_nodes_count ||
+      points_count != other.points_count)
+    return false;
+  return k2node_any_same_ref(root, other.root, tree_depth, cut_depth, 0);
 }
 
 k2node *deserialize_k2node_tree(std::istream &is,
