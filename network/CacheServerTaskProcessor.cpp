@@ -131,6 +131,4 @@ void CacheServerTaskProcessor::sync_to_persistent() {
 }
 
 CacheServerTaskProcessor::~CacheServerTaskProcessor() {}
-void CacheServerTaskProcessor::sync_logs_to_indexes() {
-
-}
+void CacheServerTaskProcessor::sync_logs_to_indexes() {}

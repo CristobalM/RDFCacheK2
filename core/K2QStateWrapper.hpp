@@ -22,11 +22,11 @@ public:
   struct k2qstate *get_ptr();
   ~K2QStateWrapper();
 
-  K2QStateWrapper(K2QStateWrapper &&other) noexcept ;
-  K2QStateWrapper& operator=(K2QStateWrapper &&other) noexcept ;
+  K2QStateWrapper(K2QStateWrapper &&other) noexcept;
+  K2QStateWrapper &operator=(K2QStateWrapper &&other) noexcept;
 
   K2QStateWrapper(const K2QStateWrapper &other) = delete;
-  K2QStateWrapper& operator=(const K2QStateWrapper &other) = delete ;
+  K2QStateWrapper &operator=(const K2QStateWrapper &other) = delete;
 
 private:
   void set_no_destruct();

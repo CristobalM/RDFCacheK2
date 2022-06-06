@@ -16,7 +16,8 @@ K2QStateWrapper::~K2QStateWrapper() {
     return;
   clean_k2qstate(&st);
 }
-K2QStateWrapper::K2QStateWrapper(K2QStateWrapper &&other) noexcept : st(other.st) {
+K2QStateWrapper::K2QStateWrapper(K2QStateWrapper &&other) noexcept
+    : st(other.st) {
   other.set_no_destruct();
 }
 
@@ -25,6 +26,4 @@ K2QStateWrapper &K2QStateWrapper::operator=(K2QStateWrapper &&other) noexcept {
   other.set_no_destruct();
   return *this;
 }
-void K2QStateWrapper::set_no_destruct() {
-  no_destruct = true;
-}
+void K2QStateWrapper::set_no_destruct() { no_destruct = true; }

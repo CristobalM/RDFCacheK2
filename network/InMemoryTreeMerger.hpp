@@ -9,9 +9,9 @@
 #include <map>
 
 #include "I_DataMerger.hpp"
+#include "K2TreeBulkOp.hpp"
 #include "K2TreeMixed.hpp"
 #include "K2TreeUpdates.hpp"
-#include "K2TreeBulkOp.hpp"
 
 class InMemoryTreeMerger : public I_DataMerger {
   std::unique_ptr<K2TreeMixed> current_tree;

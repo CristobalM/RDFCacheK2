@@ -459,54 +459,58 @@ K2TreeMixed &K2TreeMixed::operator=(const K2TreeMixed &other) {
   return *this;
 }
 
-static bool blocks_any_same_ref(block *lhs, block *rhs){
-  if(!lhs || !rhs) return false; // if any of the two is nullptr we can't continue comparing
-  if(lhs == rhs) return true;
-  if(lhs->preorders == rhs->preorders) return true;
-  if(lhs->children_blocks == rhs->children_blocks) return true;
-  if(lhs->container == rhs->container) return true;
-  if(lhs->children != rhs->children) return false; // can't continue comparing as the same structure is broken
-  for(int i = 0; i < lhs->children; i++){
-    if(blocks_any_same_ref(&lhs->children_blocks[i], &rhs->children_blocks[i])) return true;
+static bool blocks_any_same_ref(block *lhs, block *rhs) {
+  if (!lhs || !rhs)
+    return false; // if any of the two is nullptr we can't continue comparing
+  if (lhs == rhs)
+    return true;
+  if (lhs->preorders == rhs->preorders)
+    return true;
+  if (lhs->children_blocks == rhs->children_blocks)
+    return true;
+  if (lhs->container == rhs->container)
+    return true;
+  if (lhs->children != rhs->children)
+    return false; // can't continue comparing as the same structure is broken
+  for (int i = 0; i < lhs->children; i++) {
+    if (blocks_any_same_ref(&lhs->children_blocks[i], &rhs->children_blocks[i]))
+      return true;
   }
   return false;
 }
 
 static bool k2node_any_same_ref(k2node *lhs, k2node *rhs, int tree_depth,
                                 int cut_depth, int current_depth) {
-  if(!lhs || !rhs) return false;  // if any of the two is nullptr we can't continue comparing
+  if (!lhs || !rhs)
+    return false; // if any of the two is nullptr we can't continue comparing
   if (lhs == rhs)
     return true;
-  if(current_depth <  cut_depth){
-    for(int i = 0; i < 4; i++){
-      if(lhs->k2subtree.children[i] != nullptr &&
+  if (current_depth < cut_depth) {
+    for (int i = 0; i < 4; i++) {
+      if (lhs->k2subtree.children[i] != nullptr &&
           rhs->k2subtree.children[i] != nullptr &&
-          lhs->k2subtree.children[i] == rhs->k2subtree.children[i]) return true;
+          lhs->k2subtree.children[i] == rhs->k2subtree.children[i])
+        return true;
     }
-    for(int i = 0; i < 4; i++){
-      if(k2node_any_same_ref(
-              lhs->k2subtree.children[i],
-              rhs->k2subtree.children[i],
-              tree_depth,
-              cut_depth,
-              current_depth + 1
-              )) return true;
+    for (int i = 0; i < 4; i++) {
+      if (k2node_any_same_ref(lhs->k2subtree.children[i],
+                              rhs->k2subtree.children[i], tree_depth, cut_depth,
+                              current_depth + 1))
+        return true;
     }
     return false;
   }
 
-  return blocks_any_same_ref(lhs->k2subtree.block_child, rhs->k2subtree.block_child);
-
+  return blocks_any_same_ref(lhs->k2subtree.block_child,
+                             rhs->k2subtree.block_child);
 }
 
 bool K2TreeMixed::shares_any_reference_to(K2TreeMixed &other) {
   // for this check to make sense, we assume that they share the same structure,
   // that is, identical_structure_as is true
-  if (cut_depth != other.cut_depth ||
-      tree_depth != other.tree_depth ||
+  if (cut_depth != other.cut_depth || tree_depth != other.tree_depth ||
       max_nodes_count != other.max_nodes_count ||
-      points_count != other.points_count
-      )
+      points_count != other.points_count)
     return false;
   return k2node_any_same_ref(root, other.root, tree_depth, cut_depth, 0);
 }

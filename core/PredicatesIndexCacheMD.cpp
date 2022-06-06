@@ -27,12 +27,13 @@ PredicatesIndexCacheMD::PredicatesIndexCacheMD(
       full_memory_segment(other.full_memory_segment), update_logger(nullptr) {}
 
 bool PredicatesIndexCacheMD::load_single_predicate(uint64_t predicate_index) {
-  if (!is_stored_in_main_index(predicate_index) && !is_stored_in_updates_log(predicate_index))
+  if (!is_stored_in_main_index(predicate_index) &&
+      !is_stored_in_updates_log(predicate_index))
     return false;
 
   std::lock_guard lg(retrieval_mutex);
 
-  if(is_stored_in_main_index(predicate_index)){
+  if (is_stored_in_main_index(predicate_index)) {
     const auto *predicate_metadata = get_metadata_with_id(predicate_index);
     if (!predicate_metadata)
       return false;
@@ -44,10 +45,10 @@ bool PredicatesIndexCacheMD::load_single_predicate(uint64_t predicate_index) {
         predicate_metadata->tree_size_in_memory);
     memory_segments_map[predicate_metadata->predicate_id] = memory_segment;
 
-    predicates[predicate_metadata->predicate_id] = std::make_unique<K2TreeMixed>(
-        K2TreeMixed::read_from_istream(is->get_istream(), memory_segment));
+    predicates[predicate_metadata->predicate_id] =
+        std::make_unique<K2TreeMixed>(
+            K2TreeMixed::read_from_istream(is->get_istream(), memory_segment));
     is->seekg(pos);
-
   }
 
   if (update_logger && is_stored_in_updates_log(predicate_index)) {
@@ -77,13 +78,12 @@ PredicatesIndexCacheMD::fetch_k2tree_if_loaded(uint64_t predicate_index) {
     return PredicateFetchResult(true, it->second.get());
   }
 
-  if(has_predicate_stored(predicate_index)){
+  if (has_predicate_stored(predicate_index)) {
     return PredicateFetchResult(true, nullptr);
   }
 
   return PredicateFetchResult(false, nullptr);
 }
-
 
 bool PredicatesIndexCacheMD::has_predicate(uint64_t predicate_index) {
   return has_predicate_active(predicate_index) ||

@@ -121,8 +121,8 @@ public:
   static K2TreeMixed read_from_istream(std::istream &istream,
                                        MemorySegment *memory_segment);
 
-  // This was made for debugging/testing purposes, to check that two copies are not
-  // sharing any references
+  // This was made for debugging/testing purposes, to check that two copies are
+  // not sharing any references
   bool shares_any_reference_to(K2TreeMixed &other);
 
 private:
