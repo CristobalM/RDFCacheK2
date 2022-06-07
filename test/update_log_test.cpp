@@ -284,4 +284,7 @@ TEST(update_log_test, can_compact_log_one_insert_one_delete) {
   auto after_compaction_scanner =
       fetched_after_compaction.get_mutable().create_full_scanner();
   ASSERT_FALSE(after_compaction_scanner->has_next());
+
+
+
 }

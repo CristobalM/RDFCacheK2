@@ -17,8 +17,6 @@
 #include <I_OStream.hpp>
 
 class UpdatesLogger {
-
-  static constexpr auto *LOGS_FILENAME = ".updates-logs.bin";
   std::unique_ptr<I_OStream> current_file_writer;
   std::unique_ptr<I_IStream> current_file_reader;
   I_DataMerger &data_merger;
@@ -54,6 +52,8 @@ public:
   void compact_logs();
 
   int logs_number();
+
+
 
 private:
   static void log(std::vector<K2TreeUpdates> &k2tree_updates,
