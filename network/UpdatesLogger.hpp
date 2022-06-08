@@ -46,8 +46,7 @@ public:
 
   void clean_append_log();
 
-  void for_each_predicate_offset(
-      const std::function<void(unsigned long, const std::vector<long> &)> &fun);
+  std::vector<unsigned long> get_predicates();
 
   void compact_logs();
 

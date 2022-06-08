@@ -85,7 +85,7 @@ void UpdatesLogger::log(std::vector<K2TreeUpdates> &k2tree_updates) {
   //  auto ofs_temp = predicates_offsets_file_handler.get_writer_temp(
   //      std::ios::binary | std::ios::trunc);
   //  dump_offsets_map(offsets_map, *ofs_temp);
-  //  predicates_offsets_file_handler.commit_temp_writer();
+  predicates_offsets_file_handler.commit_temp_writer();
 }
 
 void UpdatesLogger::recover(const std::vector<unsigned long> &predicates) {
@@ -321,13 +321,6 @@ void UpdatesLogger::clean_append_log() {
   metadata_file_rw = metadata_rw_handler.get_reader_writer(std::ios::binary);
 }
 
-void UpdatesLogger::for_each_predicate_offset(
-    const std::function<void(unsigned long, const std::vector<long> &)> &fun) {
-  for (auto &pair : offsets_map) {
-    fun(pair.first, *pair.second);
-  }
-}
-
 std::unique_ptr<UpdatesLogger::PredicateUpdate>
 UpdatesLogger::compact_predicate(unsigned long predicate_id) {
   auto it = offsets_map.find(predicate_id);
@@ -344,6 +337,7 @@ UpdatesLogger::compact_predicate(unsigned long predicate_id) {
     auto updates = recover_single_predicate_update(*current_file_reader);
     if (updates.predicate_id != predicate_id) {
       throw std::runtime_error(
+          ""
           "predicate id doesn't match the expected: actual = " +
           std::to_string(updates.predicate_id) +
           ", expected = " + std::to_string(predicate_id));
@@ -360,6 +354,9 @@ UpdatesLogger::compact_predicate(unsigned long predicate_id) {
 }
 
 void UpdatesLogger::compact_logs() {
+  current_file_reader = nullptr;
+  current_file_writer = nullptr;
+
   auto tmp_writer = logs_file_handler.get_writer_temp(std::ios::binary);
   auto offsets_writer =
       predicates_offsets_file_handler.get_writer_temp(std::ios::binary);
@@ -374,10 +371,13 @@ void UpdatesLogger::compact_logs() {
   }
   commit_total_updates(*metadata_writer, (int)offsets_map.size());
 
+  current_file_reader = nullptr;
+  current_file_writer = nullptr;
   logs_file_handler.commit_temp_writer();
   predicates_offsets_file_handler.commit_temp_writer();
   metadata_rw_handler.commit_temp_writer();
-  total_updates = (int)offsets_map.size();
+  total_updates = (int)new_offsets.size();
+  offsets_map = std::move(new_offsets);
 }
 
 void UpdatesLogger::merge_update(
@@ -391,6 +391,15 @@ void UpdatesLogger::merge_update(
 }
 
 int UpdatesLogger::logs_number() { return total_updates; }
+
+std::vector<unsigned long> UpdatesLogger::get_predicates() {
+  std::vector<unsigned long> out;
+  out.reserve(offsets_map.size());
+  for(auto &it : offsets_map){
+    out.push_back(it.first);
+  }
+  return  out;
+}
 
 void UpdatesLogger::PredicateUpdate::merge_with(
     UpdatesLogger::PredicateUpdate &update) {

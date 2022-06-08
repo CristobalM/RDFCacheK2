@@ -319,3 +319,52 @@ void PredicatesIndexCacheMD::sync_to_persistent() {
   file_handler->commit_temp_writer();
   is = file_handler->get_reader(std::ios::binary);
 }
+
+void PredicatesIndexCacheMD::sync_logs_to_indexes() {
+  if(!update_logger) {
+    throw std::runtime_error("no update logger available");
+  }
+  update_logger->compact_logs();
+  auto logger_predicates = update_logger->get_predicates();
+
+  static constexpr auto threshold = 1'000'000'000UL; // 1GB
+
+  std::set<unsigned long> loaded_predicates;
+
+  unsigned long total_sz = 0;
+  for (auto p : logger_predicates) {
+    if (!has_predicate_active(p)
+    ) {
+      // will automatically load updates from updates_logger
+      auto fetched = fetch_k2tree(p);
+      if (!fetched.exists())
+        continue;
+
+      loaded_predicates.insert(p);
+
+      auto meta = get_metadata_with_id(p);
+      total_sz += meta->tree_size_in_memory;
+
+      if (total_sz >= threshold) {
+        clean_up_bulk_sync(loaded_predicates, total_sz);
+      }
+    }
+  }
+  if (total_sz > 0) {
+    clean_up_bulk_sync(loaded_predicates, total_sz);
+  }
+}
+void PredicatesIndexCacheMD::clean_up_bulk_sync(
+    std::set<unsigned long> &loaded_predicates, unsigned long &total_sz) {
+  sync_to_persistent();
+  for (auto p : loaded_predicates) {
+    discard_in_memory_predicate(p);
+  }
+  loaded_predicates.clear();
+  total_sz = 0;
+}
+void PredicatesIndexCacheMD::full_sync_logs_and_memory_with_persistent() {
+  sync_to_persistent();
+  sync_logs_to_indexes();
+  update_logger->clean_append_log();
+}
