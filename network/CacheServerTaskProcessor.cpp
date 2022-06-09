@@ -125,10 +125,13 @@ WriteDataLock CacheServerTaskProcessor::acquire_write_lock() {
 }
 void CacheServerTaskProcessor::sync_to_persistent() {
   std::lock_guard lg(mutex);
-  cache.sync_in_memory_to_persistent();
-  sync_logs_to_indexes();
-  updates_logger.clean_append_log();
+  cache.get_pcm()
+      .get_predicates_index_cache()
+      .full_sync_logs_and_memory_with_persistent();
 }
 
 CacheServerTaskProcessor::~CacheServerTaskProcessor() {}
-void CacheServerTaskProcessor::sync_logs_to_indexes() {}
+
+void CacheServerTaskProcessor::sync_logs_to_indexes() {
+  cache.get_pcm().get_predicates_index_cache().sync_logs_to_indexes();
+}

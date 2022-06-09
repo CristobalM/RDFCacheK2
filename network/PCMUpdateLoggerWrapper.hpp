@@ -14,6 +14,9 @@ public:
   explicit PCMUpdateLoggerWrapper(UpdatesLogger &logger);
   void recover_predicate(unsigned long predicate_id) override;
   bool has_predicate_stored(uint64_t predicate_id) override;
+  void compact_logs() override;
+  std::vector<unsigned long> get_predicates() override;
+  void clean_append_log() override;
 };
 
 #endif // RDFCACHEK2_PCMUPDATELOGGERWRAPPER_HPP

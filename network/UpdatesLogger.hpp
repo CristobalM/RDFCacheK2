@@ -17,8 +17,6 @@
 #include <I_OStream.hpp>
 
 class UpdatesLogger {
-
-  static constexpr auto *LOGS_FILENAME = ".updates-logs.bin";
   std::unique_ptr<I_OStream> current_file_writer;
   std::unique_ptr<I_IStream> current_file_reader;
   I_DataMerger &data_merger;
@@ -48,8 +46,7 @@ public:
 
   void clean_append_log();
 
-  void for_each_predicate_offset(
-      const std::function<void(unsigned long, const std::vector<long> &)> &fun);
+  std::vector<unsigned long> get_predicates();
 
   void compact_logs();
 
@@ -57,8 +54,7 @@ public:
 
 private:
   static void log(std::vector<K2TreeUpdates> &k2tree_updates,
-                  offsets_map_t &offsets, I_OStream &trees_writer,
-                  I_OStream &offsets_writer);
+                  offsets_map_t &offsets, I_OStream &trees_writer);
   static void register_update_offset(offsets_map_t &offsets,
                                      unsigned long predicate_id,
                                      std::ostream &ofs);

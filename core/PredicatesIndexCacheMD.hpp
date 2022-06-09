@@ -77,8 +77,14 @@ public:
 
   PredicatesIndexCacheMD(const std::string &input_filename);
 
+  void sync_logs_to_indexes();
+
+  void full_sync_logs_and_memory_with_persistent();
+
 private:
   void sync_to_stream(std::ostream &os);
+  void clean_up_bulk_sync(std::set<unsigned long> &loaded_predicates,
+                          unsigned long &total_sz);
 };
 
 #endif /* _PREDICATES_INDEX_CACHE_MD_HPP_ */
