@@ -61,12 +61,11 @@ void UpdatesLogger::log(std::vector<K2TreeUpdates> &k2tree_updates,
 void UpdatesLogger::log(std::vector<K2TreeUpdates> &k2tree_updates) {
   current_file_reader = nullptr;
   if (!current_file_writer) {
-    current_file_writer =
-        logs_file_handler.get_writer(std::ios::binary);
+    current_file_writer = logs_file_handler.get_writer(std::ios::binary);
   }
 
   int starting_point = current_file_writer->get_ostream().tellp();
-  (void)  starting_point;
+  (void)starting_point;
 
   log(k2tree_updates, offsets_map, *current_file_writer);
   current_file_writer->flush();

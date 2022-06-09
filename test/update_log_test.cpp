@@ -342,7 +342,6 @@ TEST(update_log_test, test_update_unloaded_predicates_from_logs) {
   updates_logger.log(tree_updates_1);
   ASSERT_EQ(updates_logger.logs_number(), 1);
 
-
   ASSERT_TRUE(updates_logger.has_predicate_stored(predicate_id_1));
   ASSERT_TRUE(updates_logger.has_predicate_stored(predicate_id_2));
   ASSERT_EQ(k2tree.size(), size_tree);
@@ -375,7 +374,6 @@ TEST(update_log_test, test_update_unloaded_predicates_from_logs) {
   ASSERT_TRUE(
       pcm.get_predicates_index_cache().is_stored_in_main_index(predicate_id_2));
 
-
   K2TreeMixed k2tree3(config);
   K2TreeBulkOp op3(k2tree3);
   for (int i = 2 * size_tree; i < 3 * size_tree; i++) {
@@ -395,7 +393,6 @@ TEST(update_log_test, test_update_unloaded_predicates_from_logs) {
   updates_logger.log(updates);
   ASSERT_EQ(updates_logger.logs_number(), 2);
 
-
   pcm.get_predicates_index_cache().full_sync_logs_and_memory_with_persistent();
   ASSERT_EQ(updates_logger.logs_number(), 0);
 
@@ -411,5 +408,4 @@ TEST(update_log_test, test_update_unloaded_predicates_from_logs) {
   for (int i = size_tree; i < 3 * size_tree; i++) {
     ASSERT_TRUE(k2_after_sync.has(i + 1, i + 1));
   }
-
 }

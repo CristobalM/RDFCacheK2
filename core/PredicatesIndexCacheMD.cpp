@@ -321,7 +321,7 @@ void PredicatesIndexCacheMD::sync_to_persistent() {
 }
 
 void PredicatesIndexCacheMD::sync_logs_to_indexes() {
-  if(!update_logger) {
+  if (!update_logger) {
     throw std::runtime_error("no update logger available");
   }
   update_logger->compact_logs();
@@ -333,8 +333,7 @@ void PredicatesIndexCacheMD::sync_logs_to_indexes() {
 
   unsigned long total_sz = 0;
   for (auto p : logger_predicates) {
-    if (!has_predicate_active(p)
-    ) {
+    if (!has_predicate_active(p)) {
       // will automatically load updates from updates_logger
       auto fetched = fetch_k2tree(p);
       if (!fetched.exists())
