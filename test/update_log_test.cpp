@@ -408,4 +408,20 @@ TEST(update_log_test, test_update_unloaded_predicates_from_logs) {
   for (int i = size_tree; i < 3 * size_tree; i++) {
     ASSERT_TRUE(k2_after_sync.has(i + 1, i + 1));
   }
+
+  ASSERT_TRUE(
+      pcm.get_predicates_index_cache().has_predicate_active(predicate_id_1));
+  pcm.get_predicates_index_cache().discard_in_memory_predicate(predicate_id_1);
+  ASSERT_FALSE(
+      pcm.get_predicates_index_cache().has_predicate_active(predicate_id_1));
+  auto fetched_1_after_sync =
+      pcm.get_predicates_index_cache().fetch_k2tree(predicate_id_1);
+  ASSERT_TRUE(
+      pcm.get_predicates_index_cache().has_predicate_active(predicate_id_1));
+
+  ASSERT_TRUE(fetched_1_after_sync.exists());
+  auto &k2_1 = fetched_1_after_sync.get_mutable();
+  for (int i = 0; i < size_tree; i++) {
+    ASSERT_TRUE(k2_1.has(i + 1, i + 1));
+  }
 }
