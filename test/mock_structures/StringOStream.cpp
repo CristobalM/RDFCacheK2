@@ -4,7 +4,7 @@
 #include "StringOStream.hpp"
 
 StringOStream::StringOStream(std::string &data, std::ios::openmode openmode)
-    : data(data), oss(openmode) {}
+    : data(data), oss(data, openmode) {}
 
 StringOStream::~StringOStream() { internal_flush(); }
 

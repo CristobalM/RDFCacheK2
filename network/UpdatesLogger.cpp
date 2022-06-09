@@ -28,8 +28,7 @@ UpdatesLogger::UpdatesLogger(I_DataMerger &data_merger,
 }
 
 void UpdatesLogger::log(std::vector<K2TreeUpdates> &k2tree_updates,
-                        offsets_map_t &offsets, I_OStream &trees_writer,
-                        I_OStream &offsets_writer) {
+                        offsets_map_t &offsets, I_OStream &trees_writer) {
   auto &writer_real = trees_writer.get_ostream();
 
   write_u32(writer_real, k2tree_updates.size());
@@ -57,35 +56,36 @@ void UpdatesLogger::log(std::vector<K2TreeUpdates> &k2tree_updates,
       break;
     }
   }
-
-  trees_writer.flush();
-  dump_offsets_map(offsets, offsets_writer);
-  //
-  //  data_merger.merge_update(k2tree_updates);
-  //  total_updates++;
-  //  commit_total_updates();
 }
 
 void UpdatesLogger::log(std::vector<K2TreeUpdates> &k2tree_updates) {
   current_file_reader = nullptr;
   if (!current_file_writer) {
     current_file_writer =
-        logs_file_handler.get_writer(std::ios::binary | std::ios::app);
+        logs_file_handler.get_writer(std::ios::binary);
   }
 
-  auto ofs_temp = predicates_offsets_file_handler.get_writer_temp(
-      std::ios::binary | std::ios::trunc);
-  log(k2tree_updates, offsets_map, *current_file_writer, *ofs_temp);
+  int starting_point = current_file_writer->get_ostream().tellp();
+  (void)  starting_point;
 
-  dump_offsets_map(offsets_map, *ofs_temp);
-  data_merger.merge_update(k2tree_updates);
-  total_updates++;
-  commit_total_updates();
-  //
-  //  auto ofs_temp = predicates_offsets_file_handler.get_writer_temp(
-  //      std::ios::binary | std::ios::trunc);
-  //  dump_offsets_map(offsets_map, *ofs_temp);
-  predicates_offsets_file_handler.commit_temp_writer();
+  log(k2tree_updates, offsets_map, *current_file_writer);
+  current_file_writer->flush();
+
+  {
+    // offsets sync
+    auto ofs_temp = predicates_offsets_file_handler.get_writer_temp(
+        std::ios::binary | std::ios::trunc);
+    dump_offsets_map(offsets_map, *ofs_temp);
+    ofs_temp->flush();
+    predicates_offsets_file_handler.commit_temp_writer();
+  }
+
+  {
+    // updates sync
+    data_merger.merge_update(k2tree_updates);
+    total_updates++;
+    commit_total_updates();
+  }
 }
 
 void UpdatesLogger::recover(const std::vector<unsigned long> &predicates) {
@@ -184,6 +184,7 @@ void UpdatesLogger::dump_offsets_map() {
     auto ofs_temp = predicates_offsets_file_handler.get_writer_temp(
         std::ios::binary | std::ios::trunc);
     dump_offsets_map(offsets_map, *ofs_temp);
+    ofs_temp->flush();
     predicates_offsets_file_handler.commit_temp_writer();
   }
 }
@@ -319,6 +320,7 @@ void UpdatesLogger::clean_append_log() {
   metadata_rw_handler.clean();
   predicates_offsets_file_handler.clean();
   metadata_file_rw = metadata_rw_handler.get_reader_writer(std::ios::binary);
+  total_updates = 0;
 }
 
 std::unique_ptr<UpdatesLogger::PredicateUpdate>
@@ -358,26 +360,43 @@ void UpdatesLogger::compact_logs() {
   current_file_writer = nullptr;
 
   auto tmp_writer = logs_file_handler.get_writer_temp(std::ios::binary);
-  auto offsets_writer =
-      predicates_offsets_file_handler.get_writer_temp(std::ios::binary);
-  auto metadata_writer = metadata_rw_handler.get_writer_temp(std::ios::binary);
   offsets_map_t new_offsets;
   for (const auto &p : offsets_map) {
     auto compacted = compact_predicate(p.first);
     std::vector<K2TreeUpdates> updates = {
         K2TreeUpdates(compacted->predicate_id, compacted->add_update.get(),
                       compacted->del_update.get())};
-    log(updates, new_offsets, *tmp_writer, *offsets_writer);
+    log(updates, new_offsets, *tmp_writer);
   }
-  commit_total_updates(*metadata_writer, (int)offsets_map.size());
 
   current_file_reader = nullptr;
   current_file_writer = nullptr;
-  logs_file_handler.commit_temp_writer();
-  predicates_offsets_file_handler.commit_temp_writer();
-  metadata_rw_handler.commit_temp_writer();
-  total_updates = (int)new_offsets.size();
-  offsets_map = std::move(new_offsets);
+
+  {
+    // offsets sync
+    auto offsets_writer =
+        predicates_offsets_file_handler.get_writer_temp(std::ios::binary);
+    dump_offsets_map(new_offsets, *offsets_writer);
+    offsets_writer->flush();
+    predicates_offsets_file_handler.commit_temp_writer();
+    offsets_map = std::move(new_offsets);
+  }
+
+  {
+    // metadata sync
+    auto metadata_writer =
+        metadata_rw_handler.get_writer_temp(std::ios::binary);
+    commit_total_updates(*metadata_writer, (int)offsets_map.size());
+    metadata_writer->flush();
+    metadata_rw_handler.commit_temp_writer();
+    total_updates = (int)offsets_map.size();
+  }
+
+  {
+    // trees sync
+    tmp_writer->flush();
+    logs_file_handler.commit_temp_writer();
+  }
 }
 
 void UpdatesLogger::merge_update(
@@ -395,10 +414,10 @@ int UpdatesLogger::logs_number() { return total_updates; }
 std::vector<unsigned long> UpdatesLogger::get_predicates() {
   std::vector<unsigned long> out;
   out.reserve(offsets_map.size());
-  for(auto &it : offsets_map){
+  for (auto &it : offsets_map) {
     out.push_back(it.first);
   }
-  return  out;
+  return out;
 }
 
 void UpdatesLogger::PredicateUpdate::merge_with(

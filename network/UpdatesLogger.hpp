@@ -56,8 +56,7 @@ public:
 
 private:
   static void log(std::vector<K2TreeUpdates> &k2tree_updates,
-                  offsets_map_t &offsets, I_OStream &trees_writer,
-                  I_OStream &offsets_writer);
+                  offsets_map_t &offsets, I_OStream &trees_writer);
   static void register_update_offset(offsets_map_t &offsets,
                                      unsigned long predicate_id,
                                      std::ostream &ofs);
