@@ -333,25 +333,24 @@ void PredicatesIndexCacheMD::sync_logs_to_indexes() {
 
   unsigned long total_sz = 0;
   for (auto p : logger_predicates) {
-    if (!has_predicate_active(p)) {
-      // will automatically load updates from updates_logger
-      auto fetched = fetch_k2tree(p);
-      if (!fetched.exists())
-        continue;
+    // we are only interested on saving non-loaded indexes in this step
+    if (has_predicate_active(p))
+      continue;
+    // will automatically load updates from updates_logger
+    auto fetched = fetch_k2tree(p);
+    if (!fetched.exists())
+      continue;
 
-      loaded_predicates.insert(p);
+    loaded_predicates.insert(p);
 
-      auto meta = get_metadata_with_id(p);
-      total_sz += meta->tree_size_in_memory;
+    auto meta = get_metadata_with_id(p);
+    total_sz += meta->tree_size_in_memory;
 
-      if (total_sz >= threshold) {
-        clean_up_bulk_sync(loaded_predicates, total_sz);
-      }
-    }
+    if (total_sz >= threshold)
+      clean_up_bulk_sync(loaded_predicates, total_sz);
   }
-  if (total_sz > 0) {
+  if (total_sz > 0)
     clean_up_bulk_sync(loaded_predicates, total_sz);
-  }
 }
 void PredicatesIndexCacheMD::clean_up_bulk_sync(
     std::set<unsigned long> &loaded_predicates, unsigned long &total_sz) {

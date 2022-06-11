@@ -33,11 +33,12 @@ CacheServerTaskProcessor::CacheServerTaskProcessor(Cache &cache,
     : cache(cache), workers_count(workers_count),
       replacement_task_processor(cache),
       current_triples_streamers_channel_id(0), current_update_session_id(0),
-      pcm_merger(cache.get_pcm()),
+      fully_indexed_cache(cache.get_pcm()),
+      pcm_merger(cache.get_pcm(), fully_indexed_cache),
       updates_logger(pcm_merger, cache.get_log_file_handler(),
                      cache.get_log_offsets_file_handler(),
                      cache.get_log_metadata_file_handler()),
-      pcm_update_logger_wrapper(updates_logger), fully_indexed_cache(cache) {
+      pcm_update_logger_wrapper(updates_logger) {
   updates_logger.recover_all();
   cache.get_pcm().set_update_logger(&pcm_update_logger_wrapper);
 }

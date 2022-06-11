@@ -46,11 +46,11 @@ class CacheServerTaskProcessor : public TaskProcessor {
   std::unordered_map<int, std::unique_ptr<I_Updater>> updaters_sessions;
   int current_update_session_id;
 
+  FullyIndexedCache fully_indexed_cache;
   PCMMerger pcm_merger;
   UpdatesLogger updates_logger;
   PCMUpdateLoggerWrapper pcm_update_logger_wrapper;
 
-  FullyIndexedCache fully_indexed_cache;
 
 public:
   explicit CacheServerTaskProcessor(Cache &cache, uint8_t workers_count);

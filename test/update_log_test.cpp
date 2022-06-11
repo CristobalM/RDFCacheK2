@@ -75,7 +75,8 @@ TEST(update_log_test, test_fhmock_can_sync_log_to_main_storage) {
   }
 
   PredicatesCacheManager pcm(std::move(fh_pcm));
-  PCMMerger merger(pcm);
+  FullyIndexedCache fi_cache(pcm);
+  PCMMerger merger(pcm, fi_cache);
   UpdatesLogger updates_logger(merger, fh, fh_offsets, fh_metadata);
   PCMUpdateLoggerWrapper pcm_upate_wrapper(updates_logger);
   pcm.set_update_logger(&pcm_upate_wrapper);
@@ -135,7 +136,8 @@ TEST(update_log_test, test_can_compact_log_only_two_inserts) {
   }
 
   PredicatesCacheManager pcm(std::move(fh_pcm));
-  PCMMerger merger(pcm);
+  FullyIndexedCache fi_cache(pcm);
+  PCMMerger merger(pcm, fi_cache);
   UpdatesLogger updates_logger(merger, fh, fh_offsets, fh_metadata);
   PCMUpdateLoggerWrapper pcm_update_wrapper(updates_logger);
   pcm.set_update_logger(&pcm_update_wrapper);
@@ -226,7 +228,8 @@ TEST(update_log_test, test_can_compact_log_one_insert_one_delete) {
   }
 
   PredicatesCacheManager pcm(std::move(fh_pcm));
-  PCMMerger merger(pcm);
+  FullyIndexedCache fi_cache(pcm);
+  PCMMerger merger(pcm, fi_cache);
   UpdatesLogger updates_logger(merger, fh, fh_offsets, fh_metadata);
   PCMUpdateLoggerWrapper pcm_update_wrapper(updates_logger);
   pcm.set_update_logger(&pcm_update_wrapper);
@@ -314,9 +317,9 @@ TEST(update_log_test, test_update_unloaded_predicates_from_logs) {
     metadata_pcm.write_to_ostream(fh_writer->get_ostream());
     fh_writer->flush();
   }
-
   PredicatesCacheManager pcm(std::move(fh_pcm));
-  PCMMerger merger(pcm);
+  FullyIndexedCache fi_cache(pcm);
+  PCMMerger merger(pcm, fi_cache);
   UpdatesLogger updates_logger(merger, fh, fh_offsets, fh_metadata);
   PCMUpdateLoggerWrapper pcm_update_wrapper(updates_logger);
   pcm.set_update_logger(&pcm_update_wrapper);

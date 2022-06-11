@@ -16,16 +16,14 @@ void FullyIndexedCache::init_streamer_predicates(
     }
 
     auto metadata =
-        cache.get_pcm().get_predicates_index_cache().get_metadata_with_id(
-            predicate);
+        pcm.get_predicates_index_cache().get_metadata_with_id(predicate);
     if (metadata)
       cache_replacement.hit_key(predicate, metadata->tree_size_in_memory);
   }
 }
 
 bool FullyIndexedCache::should_cache(unsigned long predicate) {
-  auto fetch_result =
-      cache.get_pcm().get_predicates_index_cache().fetch_k2tree(predicate);
+  auto fetch_result = pcm.get_predicates_index_cache().fetch_k2tree(predicate);
   if (!fetch_result.exists())
     return false;
   static constexpr auto max_to_cache_sz = 10'000'000UL;
@@ -38,8 +36,9 @@ FullyIndexedCacheResponse FullyIndexedCache::get(unsigned long predicate_id) {
     return FullyIndexedCacheResponse(nullptr);
   return FullyIndexedCacheResponse(it->second.get());
 }
-FullyIndexedCache::FullyIndexedCache(Cache &cache)
-    : cache(cache), data_manager(cached_predicates_sources, cache),
+
+FullyIndexedCache::FullyIndexedCache(PredicatesCacheManager &pcm)
+    : pcm(pcm), data_manager(cached_predicates_sources, pcm),
       cache_replacement(1'000'000'000, &data_manager) {}
 
 void FullyIndexedCache::CacheDataManager::remove_key(unsigned long key) {
@@ -47,10 +46,17 @@ void FullyIndexedCache::CacheDataManager::remove_key(unsigned long key) {
 }
 
 void FullyIndexedCache::CacheDataManager::retrieve_key(unsigned long key) {
-  auto fetch_result =
-      cache.get_pcm().get_predicates_index_cache().fetch_k2tree(key);
+  auto fetch_result = pcm.get_predicates_index_cache().fetch_k2tree(key);
   cache_map[key] = std::make_unique<FullyIndexedPredicate>(fetch_result.get());
 }
 FullyIndexedCache::CacheDataManager::CacheDataManager(
-    FullyIndexedCache::cache_map_t &cache_map, Cache &cache)
-    : cache_map(cache_map), cache(cache) {}
+    FullyIndexedCache::cache_map_t &cache_map, PredicatesCacheManager &pcm)
+    : cache_map(cache_map), pcm(pcm) {}
+
+void FullyIndexedCache::resync_predicate(unsigned long predicate_id) {
+  // don't sync if it not currently loaded
+  if (cached_predicates_sources.find(predicate_id) ==
+      cached_predicates_sources.end())
+    return;
+  data_manager.retrieve_key(predicate_id);
+}
