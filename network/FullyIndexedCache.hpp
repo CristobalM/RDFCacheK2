@@ -5,9 +5,9 @@
 #ifndef RDFCACHEK2_FULLYINDEXEDCACHE_HPP
 #define RDFCACHEK2_FULLYINDEXEDCACHE_HPP
 
-#include "PredicatesCacheManager.hpp"
 #include "FullyIndexedCacheResponse.hpp"
 #include "I_CachedPredicateSource.hpp"
+#include "PredicatesCacheManager.hpp"
 #include "replacement/CacheReplacement.hpp"
 #include "replacement/LRUReplacementStrategy.hpp"
 #include <memory>

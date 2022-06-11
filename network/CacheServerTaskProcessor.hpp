@@ -51,7 +51,6 @@ class CacheServerTaskProcessor : public TaskProcessor {
   UpdatesLogger updates_logger;
   PCMUpdateLoggerWrapper pcm_update_logger_wrapper;
 
-
 public:
   explicit CacheServerTaskProcessor(Cache &cache, uint8_t workers_count);
 
