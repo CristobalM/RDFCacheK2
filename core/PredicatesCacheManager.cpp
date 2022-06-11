@@ -75,10 +75,6 @@ void PredicatesCacheManager::merge_op_tree(
     unsigned long predicate_id, K2TreeMixed &to_merge_k2tree,
     const std::function<void(K2TreeBulkOp &, unsigned long, unsigned long)> &op,
     bool create_if_doesnt_exists) {
-  if (predicates_index->has_predicate_stored(predicate_id) &&
-      !predicates_index->has_predicate_active(predicate_id)) {
-    return; // don't need to load yet
-  }
   if (!predicates_index->has_predicate_active(predicate_id)) {
     if (!create_if_doesnt_exists)
       return;

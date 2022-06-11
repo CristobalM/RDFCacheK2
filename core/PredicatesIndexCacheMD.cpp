@@ -66,6 +66,7 @@ PredicatesIndexCacheMD::fetch_k2tree(uint64_t predicate_index) {
   }
   if (!has_predicate_active(predicate_index) &&
       is_stored_in_updates_log(predicate_index)) {
+    add_predicate(predicate_index);
     update_logger->recover_predicate(predicate_index);
   }
   return PredicateFetchResult(true, predicates[predicate_index].get());
