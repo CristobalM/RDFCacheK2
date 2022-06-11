@@ -6,7 +6,6 @@
 #include "FileRWHandler.hpp"
 #include "NullScanner.hpp"
 
-
 // read/write constructors
 
 PredicatesCacheManager::PredicatesCacheManager(
@@ -30,8 +29,7 @@ PredicatesCacheManager::PredicatesCacheManager(
 PredicatesCacheManager::PredicatesCacheManager(const CacheArgs &cache_args)
     : PredicatesCacheManager(
           std::make_unique<FileRWHandler>(cache_args.index_filename),
-          UpdatesLoggerFilesManager(cache_args)) {
-}
+          UpdatesLoggerFilesManager(cache_args)) {}
 
 // read only constructors
 
@@ -46,9 +44,8 @@ PredicatesCacheManager::PredicatesCacheManager(
           std::move(index_file_handler))) {}
 
 PredicatesCacheManager::PredicatesCacheManager(
-              const std::string &index_filename)
+    const std::string &index_filename)
     : PredicatesCacheManager(std::make_unique<FileRWHandler>(index_filename)) {}
-
 
 //
 // PredicatesCacheManager::PredicatesCacheManager(
@@ -141,5 +138,7 @@ FullyIndexedCache &PredicatesCacheManager::get_fully_indexed_cache() {
   return fully_indexed_cache;
 }
 UpdatesLogger &PredicatesCacheManager::get_updates_logger() {
+  if (!updates_logger)
+    throw std::runtime_error("There is no updates_logger on read only mode");
   return *updates_logger;
 }
