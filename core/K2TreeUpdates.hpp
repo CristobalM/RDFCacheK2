@@ -5,7 +5,7 @@
 #ifndef RDFCACHEK2_K2TREEUPDATES_HPP
 #define RDFCACHEK2_K2TREEUPDATES_HPP
 
-#include <K2TreeMixed.hpp>
+#include "K2TreeMixed.hpp"
 
 struct K2TreeUpdates {
   enum UPDATE_KIND { INSERT_UPDATE = 0, DELETE_UPDATE, BOTH_UPDATE, NO_UPDATE };

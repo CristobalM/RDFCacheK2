@@ -6,7 +6,7 @@
 #define RDFCACHEK2_CACHEREPLACEMENTFACTORY_HPP
 
 #include "I_CacheReplacement.hpp"
-#include <I_DataManager.hpp>
+#include "I_DataManager.hpp"
 #include <memory>
 #include <mutex>
 class CacheReplacementFactory {

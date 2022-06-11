@@ -32,15 +32,8 @@ CacheServerTaskProcessor::CacheServerTaskProcessor(Cache &cache,
                                                    uint8_t workers_count)
     : cache(cache), workers_count(workers_count),
       replacement_task_processor(cache),
-      current_triples_streamers_channel_id(0), current_update_session_id(0),
-      fully_indexed_cache(cache.get_pcm()),
-      pcm_merger(cache.get_pcm(), fully_indexed_cache),
-      updates_logger(pcm_merger, cache.get_log_file_handler(),
-                     cache.get_log_offsets_file_handler(),
-                     cache.get_log_metadata_file_handler()),
-      pcm_update_logger_wrapper(updates_logger) {
-  updates_logger.recover_all();
-  cache.get_pcm().set_update_logger(&pcm_update_logger_wrapper);
+      current_triples_streamers_channel_id(0), current_update_session_id(0){
+
 }
 
 void CacheServerTaskProcessor::start_workers(
@@ -84,7 +77,7 @@ I_TRStreamer &CacheServerTaskProcessor::create_triples_streamer(
 
   auto streamer = std::make_unique<TripleMatchesPartStreamer>(
       current_triples_streamers_channel_id, std::move(loaded_predicates),
-      DEFAULT_THRESHOLD_PART_SZ, this, &cache, fully_indexed_cache);
+      DEFAULT_THRESHOLD_PART_SZ, this, &cache, cache.get_pcm().get_fully_indexed_cache());
   auto *ptr = streamer.get();
   triples_streamer_map[current_triples_streamers_channel_id] =
       std::move(streamer);
@@ -119,7 +112,7 @@ I_Updater &CacheServerTaskProcessor::get_updater(int updater_id) {
 void CacheServerTaskProcessor::log_updates(
     std::vector<K2TreeUpdates> &k2trees_updates) {
   // std::lock_guard lg(mutex);
-  updates_logger.log(k2trees_updates);
+  cache.get_pcm().get_updates_logger().log(k2trees_updates);
 }
 WriteDataLock CacheServerTaskProcessor::acquire_write_lock() {
   return WriteDataLock();

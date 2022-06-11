@@ -5,25 +5,30 @@
 #ifndef RDFCACHEK2_UPDATESLOGGER_HPP
 #define RDFCACHEK2_UPDATESLOGGER_HPP
 
-#include <functional>
+#include <memory>
 #include <map>
+#include <vector>
+#include <cstdint>
 #include <ostream>
 
 #include "I_DataMerger.hpp"
-#include "I_FileRWHandler.hpp"
+#include "UpdatesLoggerFilesManager.hpp"
+#include "I_OStream.hpp"
+#include "I_IStream.hpp"
 #include "I_IOStream.hpp"
 #include "K2TreeUpdates.hpp"
-#include <I_IStream.hpp>
-#include <I_OStream.hpp>
+#include "K2TreeMixed.hpp"
+#include "I_UpdateLoggerPCM.hpp"
 
-class UpdatesLogger {
+
+class UpdatesLogger : public I_UpdateLoggerPCM {
+  I_DataMerger &data_merger;
+  UpdatesLoggerFilesManager fm;
+
   std::unique_ptr<I_OStream> current_file_writer;
   std::unique_ptr<I_IStream> current_file_reader;
-  I_DataMerger &data_merger;
-  I_FileRWHandler &logs_file_handler;
-  I_FileRWHandler &predicates_offsets_file_handler;
-  I_FileRWHandler &metadata_rw_handler;
   std::unique_ptr<I_IOStream> metadata_file_rw;
+
 
   using offsets_map_t =
       std::map<unsigned long, std::unique_ptr<std::vector<long>>>;
@@ -33,24 +38,25 @@ class UpdatesLogger {
   int total_updates;
 
 public:
-  UpdatesLogger(I_DataMerger &data_merger, I_FileRWHandler &logs_file_handler,
-                I_FileRWHandler &predicates_offsets_file_handler,
-                I_FileRWHandler &metadata_rw_handler);
+  UpdatesLogger(I_DataMerger &data_merger,
+                UpdatesLoggerFilesManager &&files_manager);
   void recover(const std::vector<unsigned long> &predicates);
   void recover_all();
   void log(std::vector<K2TreeUpdates> &k2tree_updates);
 
-  void recover_predicate(unsigned long predicate_id);
+  void recover_predicate(unsigned long predicate_id) override;
 
-  bool has_predicate_stored(uint64_t predicate_id);
+  bool has_predicate_stored(uint64_t predicate_id) override;
 
-  void clean_append_log();
+  void clean_append_log() override;
 
-  std::vector<unsigned long> get_predicates();
+  std::vector<unsigned long> get_predicates() override;
 
-  void compact_logs();
+  void compact_logs() override;
 
   int logs_number();
+
+  UpdatesLoggerFilesManager &get_fh_manager();
 
 private:
   static void log(std::vector<K2TreeUpdates> &k2tree_updates,

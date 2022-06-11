@@ -7,6 +7,7 @@
 
 #include "replacement/I_CacheReplacement.hpp"
 struct CacheArgs {
+  std::string index_filename;
   unsigned long memory_budget_bytes;
   I_CacheReplacement::REPLACEMENT_STRATEGY replacement_strategy;
   std::string update_log_filename;

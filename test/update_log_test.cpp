@@ -2,17 +2,25 @@
 // Created by cristobal on 9/6/21.
 //
 
+#include "UpdatesLogger.hpp"
 #include <K2TreeBulkOp.hpp>
-#include <UpdatesLogger.hpp>
 #include <gtest/gtest.h>
 
-#include "PCMMerger.hpp"
-#include "PCMUpdateLoggerWrapper.hpp"
 #include "PredicatesCacheManager.hpp"
 #include "PredicatesIndexFileBuilder.hpp"
 #include "mock_structures/DataMergerMock.hpp"
 #include "mock_structures/FHMock.hpp"
 #include "mock_structures/StringIStream.hpp"
+
+static UpdatesLoggerFilesManager mock_fh_manager() {
+  std::string data;
+  std::string data_offsets;
+  std::string metadata;
+  auto fh = std::make_unique<FHMock>(data);
+  auto fh_offsets = std::make_unique<FHMock>(data_offsets);
+  auto fh_metadata = std::make_unique<FHMock>(metadata);
+  return {std::move(fh), std::move(fh_offsets), std::move(fh_metadata)};
+}
 
 TEST(update_log_test, test_data_merger_mock) {
   K2TreeConfig config;
@@ -20,13 +28,7 @@ TEST(update_log_test, test_data_merger_mock) {
   config.cut_depth = 10;
   config.max_node_count = 256;
   DataMergerMock data_merger(config);
-  std::string data;
-  std::string data_offsets;
-  std::string metadata;
-  FHMock fh(data);
-  FHMock fh_offsets(data_offsets);
-  FHMock fh_metadata(metadata);
-  UpdatesLogger updates_logger(data_merger, fh, fh_offsets, fh_metadata);
+  UpdatesLogger updates_logger(data_merger, mock_fh_manager());
 
   int predicate_id_1 = 123;
 
@@ -74,12 +76,7 @@ TEST(update_log_test, test_fhmock_can_sync_log_to_main_storage) {
     fh_writer->flush();
   }
 
-  PredicatesCacheManager pcm(std::move(fh_pcm));
-  FullyIndexedCache fi_cache(pcm);
-  PCMMerger merger(pcm, fi_cache);
-  UpdatesLogger updates_logger(merger, fh, fh_offsets, fh_metadata);
-  PCMUpdateLoggerWrapper pcm_upate_wrapper(updates_logger);
-  pcm.set_update_logger(&pcm_upate_wrapper);
+  PredicatesCacheManager pcm(std::move(fh_pcm), mock_fh_manager());
 
   int predicate_id_1 = 123;
 
@@ -91,9 +88,9 @@ TEST(update_log_test, test_fhmock_can_sync_log_to_main_storage) {
   }
   K2TreeUpdates tree_update_1(predicate_id_1, &k2tree, nullptr);
   std::vector<K2TreeUpdates> tree_updates = {tree_update_1};
-  updates_logger.log(tree_updates);
+  pcm.get_updates_logger().log(tree_updates);
 
-  ASSERT_TRUE(updates_logger.has_predicate_stored(predicate_id_1));
+  ASSERT_TRUE(pcm.get_updates_logger().has_predicate_stored(predicate_id_1));
   ASSERT_EQ(k2tree.size(), size_tree);
 
   auto fetched = pcm.get_predicates_index_cache().fetch_k2tree(predicate_id_1);
@@ -113,18 +110,19 @@ TEST(update_log_test, test_fhmock_can_sync_log_to_main_storage) {
       pcm.get_predicates_index_cache().is_stored_in_main_index(predicate_id_1));
 }
 
+
+static unsigned long read_stream_size(I_FileRWHandler &fh){
+  auto fh_reader = fh.get_reader(std::ios::binary);
+  auto &is = fh_reader->get_istream();
+  is.seekg(0, std::istream::end);
+  return is.tellg();
+}
+
 TEST(update_log_test, test_can_compact_log_only_two_inserts) {
   K2TreeConfig config;
   config.treedepth = 32;
   config.cut_depth = 10;
   config.max_node_count = 256;
-  std::string data_updates;
-  std::string data_offsets_updates;
-  std::string metadata_updates;
-  FHMock fh(data_updates);
-  FHMock fh_offsets(data_offsets_updates);
-  FHMock fh_metadata(metadata_updates);
-
   std::unique_ptr<I_FileRWHandler> fh_pcm{};
   {
     std::string cache_data;
@@ -135,12 +133,7 @@ TEST(update_log_test, test_can_compact_log_only_two_inserts) {
     fh_writer->flush();
   }
 
-  PredicatesCacheManager pcm(std::move(fh_pcm));
-  FullyIndexedCache fi_cache(pcm);
-  PCMMerger merger(pcm, fi_cache);
-  UpdatesLogger updates_logger(merger, fh, fh_offsets, fh_metadata);
-  PCMUpdateLoggerWrapper pcm_update_wrapper(updates_logger);
-  pcm.set_update_logger(&pcm_update_wrapper);
+  PredicatesCacheManager pcm(std::move(fh_pcm), mock_fh_manager());
 
   int predicate_id_1 = 123;
 
@@ -160,12 +153,16 @@ TEST(update_log_test, test_can_compact_log_only_two_inserts) {
   std::vector<K2TreeUpdates> tree_updates_1 = {tree_update_1};
   std::vector<K2TreeUpdates> tree_updates_2 = {tree_update_2};
 
-  auto size_0 = fh.data.size();
+  auto &fh = pcm.get_updates_logger().get_fh_manager().get_index_logs_fh();
+
+  auto size_0 = read_stream_size(fh);
+
+  auto &updates_logger = pcm.get_updates_logger();
 
   updates_logger.log(tree_updates_1);
-  auto size_1 = fh.data.size();
+  auto size_1 = read_stream_size(fh);
   updates_logger.log(tree_updates_2);
-  auto size_2 = fh.data.size();
+  auto size_2 = read_stream_size(fh);
 
   ASSERT_TRUE(updates_logger.has_predicate_stored(predicate_id_1));
   ASSERT_EQ(k2tree.size(), size_tree);
@@ -188,7 +185,7 @@ TEST(update_log_test, test_can_compact_log_only_two_inserts) {
 
   ASSERT_EQ(updates_logger.logs_number(), 2);
   updates_logger.compact_logs();
-  auto size_3 = fh.data.size();
+  auto size_3 =  read_stream_size(fh);
 
   ASSERT_EQ(updates_logger.logs_number(), 1);
 
@@ -201,7 +198,7 @@ TEST(update_log_test, test_can_compact_log_only_two_inserts) {
   // this should be idempotent
   updates_logger.compact_logs();
   ASSERT_EQ(updates_logger.logs_number(), 1);
-  auto size_last = fh.data.size();
+  auto size_last = read_stream_size(fh);
   ASSERT_EQ(size_last, size_3);
 }
 
@@ -210,12 +207,6 @@ TEST(update_log_test, test_can_compact_log_one_insert_one_delete) {
   config.treedepth = 32;
   config.cut_depth = 10;
   config.max_node_count = 256;
-  std::string data_updates;
-  std::string data_offsets_updates;
-  std::string metadata_updates;
-  FHMock fh(data_updates);
-  FHMock fh_offsets(data_offsets_updates);
-  FHMock fh_metadata(metadata_updates);
 
   std::unique_ptr<I_FileRWHandler> fh_pcm{};
   {
@@ -227,12 +218,8 @@ TEST(update_log_test, test_can_compact_log_one_insert_one_delete) {
     fh_writer->flush();
   }
 
-  PredicatesCacheManager pcm(std::move(fh_pcm));
-  FullyIndexedCache fi_cache(pcm);
-  PCMMerger merger(pcm, fi_cache);
-  UpdatesLogger updates_logger(merger, fh, fh_offsets, fh_metadata);
-  PCMUpdateLoggerWrapper pcm_update_wrapper(updates_logger);
-  pcm.set_update_logger(&pcm_update_wrapper);
+  PredicatesCacheManager pcm(std::move(fh_pcm), mock_fh_manager());
+  auto &updates_logger = pcm.get_updates_logger();
 
   int predicate_id_1 = 123;
 
@@ -251,13 +238,15 @@ TEST(update_log_test, test_can_compact_log_one_insert_one_delete) {
   K2TreeUpdates tree_update_2(predicate_id_1, nullptr, &k2tree2);
   std::vector<K2TreeUpdates> tree_updates_1 = {tree_update_1};
   std::vector<K2TreeUpdates> tree_updates_2 = {tree_update_2};
+  auto &fh = pcm.get_updates_logger().get_fh_manager().get_index_logs_fh();
 
-  auto size_0 = fh.data.size();
+
+  auto size_0 =  read_stream_size(fh);
 
   updates_logger.log(tree_updates_1);
-  auto size_1 = fh.data.size();
+  auto size_1 =  read_stream_size(fh);
   updates_logger.log(tree_updates_2);
-  auto size_2 = fh.data.size();
+  auto size_2 =  read_stream_size(fh);
 
   ASSERT_TRUE(updates_logger.has_predicate_stored(predicate_id_1));
   ASSERT_EQ(k2tree.size(), size_tree);
@@ -275,7 +264,7 @@ TEST(update_log_test, test_can_compact_log_one_insert_one_delete) {
 
   ASSERT_EQ(updates_logger.logs_number(), 2);
   updates_logger.compact_logs();
-  auto size_3 = fh.data.size();
+  auto size_3 =  read_stream_size(fh);
 
   ASSERT_EQ(updates_logger.logs_number(), 1);
 
@@ -301,12 +290,6 @@ TEST(update_log_test, test_update_unloaded_predicates_from_logs) {
   config.treedepth = 32;
   config.cut_depth = 10;
   config.max_node_count = 256;
-  std::string data_updates;
-  std::string data_offsets_updates;
-  std::string metadata_updates;
-  FHMock fh(data_updates);
-  FHMock fh_offsets(data_offsets_updates);
-  FHMock fh_metadata(metadata_updates);
 
   std::unique_ptr<I_FileRWHandler> fh_pcm{};
   {
@@ -317,12 +300,8 @@ TEST(update_log_test, test_update_unloaded_predicates_from_logs) {
     metadata_pcm.write_to_ostream(fh_writer->get_ostream());
     fh_writer->flush();
   }
-  PredicatesCacheManager pcm(std::move(fh_pcm));
-  FullyIndexedCache fi_cache(pcm);
-  PCMMerger merger(pcm, fi_cache);
-  UpdatesLogger updates_logger(merger, fh, fh_offsets, fh_metadata);
-  PCMUpdateLoggerWrapper pcm_update_wrapper(updates_logger);
-  pcm.set_update_logger(&pcm_update_wrapper);
+  PredicatesCacheManager pcm(std::move(fh_pcm), mock_fh_manager());
+  auto &updates_logger = pcm.get_updates_logger();
 
   int predicate_id_1 = 123;
   int predicate_id_2 = 333222;

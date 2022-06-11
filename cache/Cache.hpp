@@ -25,12 +25,6 @@ class Cache {
 
   I_CacheReplacement::REPLACEMENT_STRATEGY strategy_id;
 
-  std::string update_log_filename;
-
-  std::unique_ptr<I_FileRWHandler> file_rw_handler;
-  std::unique_ptr<I_FileRWHandler> file_offsets_rw_handler;
-  std::unique_ptr<I_FileRWHandler> file_metadata_rw_handler;
-
 public:
   Cache(std::shared_ptr<PredicatesCacheManager> predicates_cache_manager,
         const CacheArgs &args);
@@ -42,10 +36,6 @@ public:
   std::vector<unsigned long> extract_loaded_predicates_from_sequence(
       const std::vector<unsigned long> &input_predicates_ids);
 
-  I_FileRWHandler &get_log_file_handler();
-  I_FileRWHandler &get_log_offsets_file_handler();
-  I_FileRWHandler &get_log_metadata_file_handler();
-  void sync_in_memory_to_persistent();
 };
 
 #endif // RDFCACHEK2_CACHE_HPP

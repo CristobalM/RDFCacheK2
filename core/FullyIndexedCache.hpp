@@ -7,15 +7,14 @@
 
 #include "FullyIndexedCacheResponse.hpp"
 #include "I_CachedPredicateSource.hpp"
-#include "PredicatesCacheManager.hpp"
+#include "I_DataManager.hpp"
+#include "PredicatesIndexCacheMD.hpp"
 #include "replacement/CacheReplacement.hpp"
 #include "replacement/LRUReplacementStrategy.hpp"
-#include <memory>
-#include <unordered_map>
 
 class FullyIndexedCache {
 
-  PredicatesCacheManager &pcm;
+  PredicatesIndexCacheMD &pic;
 
   using cache_map_t =
       std::unordered_map<unsigned long,
@@ -25,10 +24,10 @@ class FullyIndexedCache {
 
   class CacheDataManager : public I_DataManager {
     cache_map_t &cache_map;
-    PredicatesCacheManager &pcm;
+    PredicatesIndexCacheMD &pic;
 
   public:
-    CacheDataManager(cache_map_t &cache_map, PredicatesCacheManager &pcm);
+    CacheDataManager(cache_map_t &cache_map, PredicatesIndexCacheMD &pic);
     void remove_key(unsigned long key) override;
     void retrieve_key(unsigned long key) override;
   };
@@ -38,7 +37,7 @@ class FullyIndexedCache {
   CacheReplacement<LRUReplacementStrategy> cache_replacement;
 
 public:
-  explicit FullyIndexedCache(PredicatesCacheManager &pcm);
+  explicit FullyIndexedCache(PredicatesIndexCacheMD &pic);
 
   void init_streamer_predicates(
       const std::vector<unsigned long> &streamer_predicates);
