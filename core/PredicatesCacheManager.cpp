@@ -13,7 +13,7 @@ PredicatesCacheManager::PredicatesCacheManager(
     std::unique_ptr<UpdatesLogger> &&update_logger)
     : predicates_index(std::move(predicates_index)),
       updates_logger(std::move(update_logger)),
-      fully_indexed_cache(*predicates_index) {
+      fully_indexed_cache(*this->predicates_index) {
   this->predicates_index->set_update_logger(this->updates_logger.get());
   updates_logger->recover_all();
 }

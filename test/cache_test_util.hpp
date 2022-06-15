@@ -21,4 +21,5 @@ void print_table_debug(
     std::unordered_map<unsigned long, std::string> &reverse_map,
     const std::vector<std::vector<RDFResource>> &translated_table);
 
+UpdatesLoggerFilesManager mock_fh_manager();
 #endif /* _CACHE_TEST_UTIL_HPP_ */

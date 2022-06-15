@@ -418,11 +418,11 @@ if (GTest_FOUND)
     target_link_libraries(memory_segment_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} pthread)
 
 
-    add_executable(update_log_test test/update_log_test.cpp)
+    add_executable(update_log_test test/update_log_test.cpp test/cache_test_util.cpp)
     target_link_libraries(update_log_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} MockStructureLib pthread)
 
 
-    add_executable(fully_indexed_cache_test test/fully_indexed_cache_test.cpp)
+    add_executable(fully_indexed_cache_test test/fully_indexed_cache_test.cpp test/cache_test_util.cpp)
     target_link_libraries(fully_indexed_cache_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} MockStructureLib pthread)
 
     add_executable(predicates_cache_manager_test test/predicates_cache_manager_test.cpp)

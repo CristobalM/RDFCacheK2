@@ -15,6 +15,7 @@ void FullyIndexedCache::init_streamer_predicates(
       continue;
     }
 
+    // TODO: FIX METADAATA NOT BEING UPDATED WITH INCOMING UPDATES
     auto metadata =
         pic.get_metadata_with_id(predicate);
     if (metadata)
