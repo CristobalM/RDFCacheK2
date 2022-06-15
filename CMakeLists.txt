@@ -412,7 +412,7 @@ if (GTest_FOUND)
     target_link_libraries(k2mixed_from_file ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} pthread)
 
     add_executable(cache_replacement_test test/cache_replacement_test.cpp test/cache_test_util.cpp)
-    target_link_libraries(cache_replacement_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} pthread)
+    target_link_libraries(cache_replacement_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} pthread MockStructureLib)
 
     add_executable(memory_segment_test test/memory_segment_test.cpp)
     target_link_libraries(memory_segment_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} pthread)
