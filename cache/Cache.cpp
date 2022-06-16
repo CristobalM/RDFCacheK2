@@ -18,15 +18,7 @@ Cache::Cache(std::shared_ptr<PredicatesCacheManager> predicates_cache_manager,
       cache_replacement(CacheReplacementFactory::create_cache_replacement(
           args.memory_budget_bytes, cache_manager.get(),
           args.replacement_strategy)),
-      strategy_id(args.replacement_strategy),
-      update_log_filename(args.update_log_filename),
-      file_rw_handler(std::make_unique<FileRWHandler>(update_log_filename)),
-      file_offsets_rw_handler(
-          std::make_unique<FileRWHandler>(update_log_filename + ".offsets")),
-      file_metadata_rw_handler(
-          std::make_unique<FileRWHandler>(update_log_filename + ".meta"))
-
-{}
+      strategy_id(args.replacement_strategy) {}
 
 PredicatesCacheManager &Cache::get_pcm() { return *cache_manager; }
 
@@ -47,14 +39,5 @@ std::vector<unsigned long> Cache::extract_loaded_predicates_from_sequence(
 
   return result;
 }
-I_FileRWHandler &Cache::get_log_file_handler() { return *file_rw_handler; }
-I_FileRWHandler &Cache::get_log_offsets_file_handler() {
-  return *file_offsets_rw_handler;
-}
-I_FileRWHandler &Cache::get_log_metadata_file_handler() {
-  return *file_metadata_rw_handler;
-}
+
 NodesSequence &Cache::get_nodes_sequence() { return *nodes_sequence; }
-void Cache::sync_in_memory_to_persistent() {
-  get_pcm().get_predicates_index_cache().sync_to_persistent();
-}

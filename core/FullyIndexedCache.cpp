@@ -15,18 +15,16 @@ void FullyIndexedCache::init_streamer_predicates(
       continue;
     }
 
-    auto metadata =
-        cache.get_pcm().get_predicates_index_cache().get_metadata_with_id(
-            predicate);
-    if (metadata)
-      cache_replacement.hit_key(predicate, metadata->tree_size_in_memory);
+    auto predicate_size = pic.fetch_k2tree(predicate).get().size();
+    // 25 bytes per point is the worst case scenario for 100k points (random
+    // distribution), so it works as an upper bound approximation
+    cache_replacement.hit_key(predicate, predicate_size * 25);
   }
 }
 
 bool FullyIndexedCache::should_cache(unsigned long predicate) {
-  auto fetch_result =
-      cache.get_pcm().get_predicates_index_cache().fetch_k2tree(predicate);
-  if (!fetch_result.exists())
+  auto fetch_result = pic.fetch_k2tree_if_loaded(predicate);
+  if (!fetch_result.loaded())
     return false;
   static constexpr auto max_to_cache_sz = 10'000'000UL;
   return fetch_result.get().size() < max_to_cache_sz;
@@ -38,8 +36,9 @@ FullyIndexedCacheResponse FullyIndexedCache::get(unsigned long predicate_id) {
     return FullyIndexedCacheResponse(nullptr);
   return FullyIndexedCacheResponse(it->second.get());
 }
-FullyIndexedCache::FullyIndexedCache(Cache &cache)
-    : cache(cache), data_manager(cached_predicates_sources, cache),
+
+FullyIndexedCache::FullyIndexedCache(PredicatesIndexCacheMD &pic)
+    : pic(pic), data_manager(cached_predicates_sources, pic),
       cache_replacement(1'000'000'000, &data_manager) {}
 
 void FullyIndexedCache::CacheDataManager::remove_key(unsigned long key) {
@@ -47,10 +46,17 @@ void FullyIndexedCache::CacheDataManager::remove_key(unsigned long key) {
 }
 
 void FullyIndexedCache::CacheDataManager::retrieve_key(unsigned long key) {
-  auto fetch_result =
-      cache.get_pcm().get_predicates_index_cache().fetch_k2tree(key);
+  auto fetch_result = pic.fetch_k2tree(key);
   cache_map[key] = std::make_unique<FullyIndexedPredicate>(fetch_result.get());
 }
 FullyIndexedCache::CacheDataManager::CacheDataManager(
-    FullyIndexedCache::cache_map_t &cache_map, Cache &cache)
-    : cache_map(cache_map), cache(cache) {}
+    FullyIndexedCache::cache_map_t &cache_map, PredicatesIndexCacheMD &pic)
+    : cache_map(cache_map), pic(pic) {}
+
+void FullyIndexedCache::resync_predicate(unsigned long predicate_id) {
+  // don't sync if it not currently loaded
+  if (cached_predicates_sources.find(predicate_id) ==
+      cached_predicates_sources.end())
+    return;
+  data_manager.retrieve_key(predicate_id);
+}

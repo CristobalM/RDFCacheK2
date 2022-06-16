@@ -3,30 +3,55 @@
 //
 
 #include "PredicatesCacheManager.hpp"
-#include "K2TreeBulkOp.hpp"
+#include "FileRWHandler.hpp"
 #include "NullScanner.hpp"
-#include <FileRWHandler.hpp>
-#include <chrono>
-#include <filesystem>
-#include <functional>
 
-namespace fs = std::filesystem;
+// read/write constructors
+
+PredicatesCacheManager::PredicatesCacheManager(
+    std::unique_ptr<PredicatesIndexCacheMD> &&predicates_index,
+    std::unique_ptr<UpdatesLogger> &&update_logger)
+    : predicates_index(std::move(predicates_index)),
+      updates_logger(std::move(update_logger)),
+      fully_indexed_cache(*this->predicates_index) {
+  this->predicates_index->set_update_logger(this->updates_logger.get());
+  updates_logger->recover_all();
+}
+
+PredicatesCacheManager::PredicatesCacheManager(
+    std::unique_ptr<I_FileRWHandler> &&index_file_handler,
+    UpdatesLoggerFilesManager &&updates_logger_fm)
+    : PredicatesCacheManager(std::make_unique<PredicatesIndexCacheMD>(
+                                 std::move(index_file_handler)),
+                             std::make_unique<UpdatesLogger>(
+                                 *this, std::move(updates_logger_fm))) {}
+
+PredicatesCacheManager::PredicatesCacheManager(const CacheArgs &cache_args)
+    : PredicatesCacheManager(
+          std::make_unique<FileRWHandler>(cache_args.index_filename),
+          UpdatesLoggerFilesManager(cache_args)) {}
+
+// read only constructors
 
 PredicatesCacheManager::PredicatesCacheManager(
     std::unique_ptr<PredicatesIndexCacheMD> &&predicates_index)
     : predicates_index(std::move(predicates_index)),
-      measured_time_sd_lookup(0) {}
+      fully_indexed_cache(*predicates_index) {}
 
 PredicatesCacheManager::PredicatesCacheManager(
-    std::unique_ptr<I_FileRWHandler> &&file_rwhandler)
-    : PredicatesCacheManager(
-          std::make_unique<PredicatesIndexCacheMD>(std::move(file_rwhandler))) {
-}
+    std::unique_ptr<I_FileRWHandler> &&index_file_handler)
+    : PredicatesCacheManager(std::make_unique<PredicatesIndexCacheMD>(
+          std::move(index_file_handler))) {}
 
 PredicatesCacheManager::PredicatesCacheManager(
-    const std::string &input_k2tree_filename)
-    : PredicatesCacheManager(
-          std::make_unique<FileRWHandler>(input_k2tree_filename)) {}
+    const std::string &index_filename)
+    : PredicatesCacheManager(std::make_unique<FileRWHandler>(index_filename)) {}
+
+//
+// PredicatesCacheManager::PredicatesCacheManager(
+//    const std::string &input_k2tree_filename)
+//    : PredicatesCacheManager(
+//          std::make_unique<FileRWHandler>(input_k2tree_filename)) {}
 
 PredicatesIndexCacheMD &PredicatesCacheManager::get_predicates_index_cache() {
   return *predicates_index;
@@ -81,6 +106,10 @@ void PredicatesCacheManager::merge_op_tree(
     predicates_index->add_predicate(predicate_id);
   }
   auto fetched = predicates_index->fetch_k2tree(predicate_id);
+  if (!fetched.exists()) // in the least it should've been added on
+                         // predicates_index->add_predicate
+    throw std::runtime_error("merge_op_tree: k2tree with predicate_id " +
+                             std::to_string(predicate_id) + " not found");
   auto &k2tree_active = fetched.get_mutable();
   K2TreeBulkOp bulk_op(k2tree_active);
   auto points_scanner = to_merge_k2tree.create_full_scanner();
@@ -89,6 +118,7 @@ void PredicatesCacheManager::merge_op_tree(
     op(bulk_op, point.first, point.second);
   }
   predicates_index->mark_dirty(predicate_id);
+  fully_indexed_cache.resync_predicate(predicate_id);
 }
 void PredicatesCacheManager::set_update_logger(
     I_UpdateLoggerPCM *input_update_logger) {
@@ -103,4 +133,12 @@ void PredicatesCacheManager::merge_update(std::vector<K2TreeUpdates> &updates) {
     if (update.k2tree_del)
       merge_delete_tree(update.predicate_id, *update.k2tree_del);
   }
+}
+FullyIndexedCache &PredicatesCacheManager::get_fully_indexed_cache() {
+  return fully_indexed_cache;
+}
+UpdatesLogger &PredicatesCacheManager::get_updates_logger() {
+  if (!updates_logger)
+    throw std::runtime_error("There is no updates_logger on read only mode");
+  return *updates_logger;
 }

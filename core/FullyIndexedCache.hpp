@@ -5,17 +5,16 @@
 #ifndef RDFCACHEK2_FULLYINDEXEDCACHE_HPP
 #define RDFCACHEK2_FULLYINDEXEDCACHE_HPP
 
-#include "Cache.hpp"
 #include "FullyIndexedCacheResponse.hpp"
 #include "I_CachedPredicateSource.hpp"
+#include "I_DataManager.hpp"
+#include "PredicatesIndexCacheMD.hpp"
 #include "replacement/CacheReplacement.hpp"
 #include "replacement/LRUReplacementStrategy.hpp"
-#include <memory>
-#include <unordered_map>
 
 class FullyIndexedCache {
 
-  Cache &cache;
+  PredicatesIndexCacheMD &pic;
 
   using cache_map_t =
       std::unordered_map<unsigned long,
@@ -25,10 +24,10 @@ class FullyIndexedCache {
 
   class CacheDataManager : public I_DataManager {
     cache_map_t &cache_map;
-    Cache &cache;
+    PredicatesIndexCacheMD &pic;
 
   public:
-    CacheDataManager(cache_map_t &cache_map, Cache &cache);
+    CacheDataManager(cache_map_t &cache_map, PredicatesIndexCacheMD &pic);
     void remove_key(unsigned long key) override;
     void retrieve_key(unsigned long key) override;
   };
@@ -38,7 +37,7 @@ class FullyIndexedCache {
   CacheReplacement<LRUReplacementStrategy> cache_replacement;
 
 public:
-  explicit FullyIndexedCache(Cache &cache);
+  explicit FullyIndexedCache(PredicatesIndexCacheMD &pic);
 
   void init_streamer_predicates(
       const std::vector<unsigned long> &streamer_predicates);
@@ -46,6 +45,7 @@ public:
   //  std::unique_ptr<I_CachedPredicateSource>
   //  make_cached_predicate_source(unsigned long predicate);
   FullyIndexedCacheResponse get(unsigned long predicate_id);
+  void resync_predicate(unsigned long predicate_id);
 };
 
 #endif // RDFCACHEK2_FULLYINDEXEDCACHE_HPP

@@ -40,7 +40,14 @@ int main(int argc, char **argv) {
 
   check_exists(parsed.index_file);
 
-  auto pcm = std::make_shared<PredicatesCacheManager>(parsed.index_file);
+  CacheArgs cache_args;
+  cache_args.index_filename = parsed.index_file;
+  cache_args.memory_budget_bytes = parsed.memory_budget_bytes;
+  cache_args.replacement_strategy = parsed.replacement_strategy;
+  cache_args.update_log_filename = parsed.update_log_filename;
+  cache_args.node_ids_filename = parsed.node_ids_file;
+
+  auto pcm = std::make_shared<PredicatesCacheManager>(cache_args);
 
   if (parsed.replacement_strategy ==
       I_CacheReplacement::REPLACEMENT_STRATEGY::NO_CACHING) {
@@ -53,12 +60,6 @@ int main(int argc, char **argv) {
     std::cout << "Done loading all predicates, took " << duration.count()
               << " seconds" << std::endl;
   }
-
-  CacheArgs cache_args;
-  cache_args.memory_budget_bytes = parsed.memory_budget_bytes;
-  cache_args.replacement_strategy = parsed.replacement_strategy;
-  cache_args.update_log_filename = parsed.update_log_filename;
-  cache_args.node_ids_filename = parsed.node_ids_file;
 
   Cache cache(pcm, cache_args);
 

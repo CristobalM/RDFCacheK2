@@ -8,23 +8,13 @@
 namespace fs = std::filesystem;
 
 UpdatesLogger::UpdatesLogger(I_DataMerger &data_merger,
-                             I_FileRWHandler &logs_file_handler,
-                             I_FileRWHandler &predicates_offsets_file_handler,
-                             I_FileRWHandler &metadata_rw_handler)
-    : data_merger(data_merger), logs_file_handler(logs_file_handler),
-      predicates_offsets_file_handler(predicates_offsets_file_handler),
-      metadata_rw_handler(metadata_rw_handler),
+                             UpdatesLoggerFilesManager &&files_manager)
+    : data_merger(data_merger), fm(std::move(files_manager)),
       metadata_file_rw(
-          metadata_rw_handler.get_reader_writer(std::ios::binary)) {
+          fm.get_metadata_fh().get_reader_writer(std::ios::binary)) {
   retrieve_offsets_map();
-
-  if (metadata_rw_handler.exists()) {
-    // auto reader = logs_file_handler.get_reader(std::ios::binary);
-    // total_updates = (int)read_u32(rw_metadata->get_ostream());
+  if (fm.get_metadata_fh().exists())
     total_updates = read_total_updates();
-  }
-  // TODO: unused for now, might want to remove it
-  (void)(this->metadata_rw_handler);
 }
 
 void UpdatesLogger::log(std::vector<K2TreeUpdates> &k2tree_updates,
@@ -61,7 +51,7 @@ void UpdatesLogger::log(std::vector<K2TreeUpdates> &k2tree_updates,
 void UpdatesLogger::log(std::vector<K2TreeUpdates> &k2tree_updates) {
   current_file_reader = nullptr;
   if (!current_file_writer) {
-    current_file_writer = logs_file_handler.get_writer(std::ios::binary);
+    current_file_writer = fm.get_index_logs_fh().get_writer(std::ios::binary);
   }
 
   int starting_point = current_file_writer->get_ostream().tellp();
@@ -72,11 +62,11 @@ void UpdatesLogger::log(std::vector<K2TreeUpdates> &k2tree_updates) {
 
   {
     // offsets sync
-    auto ofs_temp = predicates_offsets_file_handler.get_writer_temp(
-        std::ios::binary | std::ios::trunc);
+    auto ofs_temp =
+        fm.get_offsets_fh().get_writer_temp(std::ios::binary | std::ios::trunc);
     dump_offsets_map(offsets_map, *ofs_temp);
     ofs_temp->flush();
-    predicates_offsets_file_handler.commit_temp_writer();
+    fm.get_offsets_fh().commit_temp_writer();
   }
 
   {
@@ -104,11 +94,11 @@ void UpdatesLogger::recover_all() {
 }
 
 void UpdatesLogger::recover_all_data() {
-  if (!logs_file_handler.exists())
+  if (!fm.get_index_logs_fh().exists())
     return;
   // auto ifs_logs = logs_file_handler.get_reader(std::ios::binary);
   if (!current_file_reader) {
-    current_file_reader = logs_file_handler.get_reader(std::ios::binary);
+    current_file_reader = fm.get_index_logs_fh().get_reader(std::ios::binary);
   }
   for (int i = 0; i < total_updates; i++) {
     recover_single_update(*current_file_reader);
@@ -116,11 +106,11 @@ void UpdatesLogger::recover_all_data() {
 }
 
 void UpdatesLogger::recover_data(const std::vector<unsigned long> &predicates) {
-  if (!logs_file_handler.exists())
+  if (!fm.get_index_logs_fh().exists())
     return;
   // auto ifs_logs = logs_file_handler.get_reader(std::ios::binary);
   if (!current_file_reader) {
-    current_file_reader = logs_file_handler.get_reader(std::ios::binary);
+    current_file_reader = fm.get_index_logs_fh().get_reader(std::ios::binary);
   }
   for (auto predicate_id : predicates) {
     const auto &offsets = offsets_map[predicate_id];
@@ -141,9 +131,9 @@ void UpdatesLogger::recover_single_update(I_IStream &ifs) {
 }
 
 void UpdatesLogger::retrieve_offsets_map() {
-  if (!predicates_offsets_file_handler.exists())
+  if (!fm.get_offsets_fh().exists())
     return;
-  auto ifs = predicates_offsets_file_handler.get_reader(std::ios::binary);
+  auto ifs = fm.get_offsets_fh().get_reader(std::ios::binary);
   auto &ifs_real = ifs->get_istream();
   auto offsets_map_size = (int)read_u32(ifs_real);
   for (int i = 0; i < offsets_map_size; i++) {
@@ -180,11 +170,11 @@ void UpdatesLogger::dump_offsets_map() {
   if (offsets_map.empty())
     return;
   {
-    auto ofs_temp = predicates_offsets_file_handler.get_writer_temp(
-        std::ios::binary | std::ios::trunc);
+    auto ofs_temp =
+        fm.get_offsets_fh().get_writer_temp(std::ios::binary | std::ios::trunc);
     dump_offsets_map(offsets_map, *ofs_temp);
     ofs_temp->flush();
-    predicates_offsets_file_handler.commit_temp_writer();
+    fm.get_offsets_fh().commit_temp_writer();
   }
 }
 
@@ -254,14 +244,14 @@ void UpdatesLogger::register_update_offset(
  * @param predicate_id
  */
 void UpdatesLogger::recover_predicate(unsigned long predicate_id) {
-  if (!logs_file_handler.exists())
+  if (!fm.get_index_logs_fh().exists())
     return;
   if (current_file_writer) {
     current_file_writer->flush();
     current_file_writer = nullptr;
   }
   if (!current_file_reader) {
-    current_file_reader = logs_file_handler.get_reader(std::ios::binary);
+    current_file_reader = fm.get_index_logs_fh().get_reader(std::ios::binary);
   }
   const auto &offsets = offsets_map[predicate_id];
   for (auto offset : *offsets) {
@@ -315,10 +305,10 @@ void UpdatesLogger::clean_append_log() {
   if (metadata_file_rw)
     metadata_file_rw = nullptr;
   offsets_map.clear();
-  logs_file_handler.clean();
-  metadata_rw_handler.clean();
-  predicates_offsets_file_handler.clean();
-  metadata_file_rw = metadata_rw_handler.get_reader_writer(std::ios::binary);
+  fm.get_index_logs_fh().clean();
+  fm.get_metadata_fh().clean();
+  fm.get_offsets_fh().clean();
+  metadata_file_rw = fm.get_metadata_fh().get_reader_writer(std::ios::binary);
   total_updates = 0;
 }
 
@@ -328,7 +318,7 @@ UpdatesLogger::compact_predicate(unsigned long predicate_id) {
   if (it == offsets_map.end())
     return nullptr;
   if (!current_file_reader) {
-    current_file_reader = logs_file_handler.get_reader(std::ios::binary);
+    current_file_reader = fm.get_index_logs_fh().get_reader(std::ios::binary);
   }
 
   PredicateUpdate merged_updates;
@@ -358,7 +348,7 @@ void UpdatesLogger::compact_logs() {
   current_file_reader = nullptr;
   current_file_writer = nullptr;
 
-  auto tmp_writer = logs_file_handler.get_writer_temp(std::ios::binary);
+  auto tmp_writer = fm.get_index_logs_fh().get_writer_temp(std::ios::binary);
   offsets_map_t new_offsets;
   for (const auto &p : offsets_map) {
     auto compacted = compact_predicate(p.first);
@@ -373,28 +363,27 @@ void UpdatesLogger::compact_logs() {
 
   {
     // offsets sync
-    auto offsets_writer =
-        predicates_offsets_file_handler.get_writer_temp(std::ios::binary);
+    auto offsets_writer = fm.get_offsets_fh().get_writer_temp(std::ios::binary);
     dump_offsets_map(new_offsets, *offsets_writer);
     offsets_writer->flush();
-    predicates_offsets_file_handler.commit_temp_writer();
+    fm.get_offsets_fh().commit_temp_writer();
     offsets_map = std::move(new_offsets);
   }
 
   {
     // metadata sync
     auto metadata_writer =
-        metadata_rw_handler.get_writer_temp(std::ios::binary);
+        fm.get_metadata_fh().get_writer_temp(std::ios::binary);
     commit_total_updates(*metadata_writer, (int)offsets_map.size());
     metadata_writer->flush();
-    metadata_rw_handler.commit_temp_writer();
+    fm.get_metadata_fh().commit_temp_writer();
     total_updates = (int)offsets_map.size();
   }
 
   {
     // trees sync
     tmp_writer->flush();
-    logs_file_handler.commit_temp_writer();
+    fm.get_index_logs_fh().commit_temp_writer();
   }
 }
 
@@ -418,6 +407,7 @@ std::vector<unsigned long> UpdatesLogger::get_predicates() {
   }
   return out;
 }
+UpdatesLoggerFilesManager &UpdatesLogger::get_fh_manager() { return fm; }
 
 void UpdatesLogger::PredicateUpdate::merge_with(
     UpdatesLogger::PredicateUpdate &update) {

@@ -64,7 +64,40 @@ set(CORE_SOURCE_FILES
         core/NodeId.hpp
         core/InvalidStringSizeForNodeId.hpp
         core/TripleNodeId.cpp
-        core/TripleNodeId.hpp core/NodesSequence.cpp core/NodesSequence.hpp)
+        core/TripleNodeId.hpp
+        core/NodesSequence.cpp
+        core/NodesSequence.hpp
+
+        core/FullyIndexedPredicate.hpp
+        core/FullyIndexedPredicate.cpp
+        core/FullyIndexedCache.cpp
+        core/FullyIndexedCache.hpp
+        core/FullyIndexedCacheResponse.cpp
+        core/FullyIndexedCacheResponse.hpp
+
+        core/UpdatesLogger.cpp
+        core/UpdatesLogger.hpp
+        core/UpdatesLoggerFilesManager.cpp
+        core/UpdatesLoggerFilesManager.hpp
+
+        core/K2TreeUpdates.cpp
+        core/K2TreeUpdates.hpp
+
+
+        core/replacement/I_PQTraverse.hpp
+        core/replacement/CacheReplacement.cpp
+        core/replacement/CacheReplacement.hpp
+        core/replacement/CacheReplacementFactory.cpp
+        core/replacement/CacheReplacementFactory.hpp
+        core/replacement/FrequencyReplacementStrategy.cpp
+        core/replacement/FrequencyReplacementStrategy.hpp
+        core/replacement/I_CacheReplacement.hpp
+        core/replacement/I_ReplacementPriorityQueue.hpp
+        core/replacement/LRUReplacementStrategy.cpp
+        core/replacement/LRUReplacementStrategy.hpp
+        core/replacement/NoCachingReplacement.cpp
+        core/replacement/NoCachingReplacement.hpp
+        )
 
 
 set(NETWORK_SOURCE_FILES
@@ -87,21 +120,11 @@ set(NETWORK_SOURCE_FILES
         network/I_Updater.hpp
         network/UpdaterSession.cpp
         network/UpdaterSession.hpp
-        network/K2TreeUpdates.cpp
-        network/K2TreeUpdates.hpp
         network/WriteDataLock.cpp
         network/WriteDataLock.hpp
-        network/UpdatesLogger.cpp
-        network/UpdatesLogger.hpp
         network/I_DataMerger.hpp
-        network/PCMMerger.cpp
-        network/PCMMerger.hpp
-        network/PCMUpdateLoggerWrapper.cpp
-        network/PCMUpdateLoggerWrapper.hpp
 
         network/I_CachedPredicateSource.hpp
-        network/FullyIndexedPredicate.hpp
-        network/FullyIndexedPredicate.cpp
         network/StreamerFromCachedSource.hpp
         network/StreamerFromCachedSource.cpp
         network/CachedSourceScanner.hpp
@@ -111,12 +134,12 @@ set(NETWORK_SOURCE_FILES
         network/CachedSubjectScanner.cpp
         network/CachedObjectScanner.hpp
         network/CachedObjectScanner.cpp
-        network/FullyIndexedCache.cpp
-        network/FullyIndexedCache.hpp
-        network/FullyIndexedCacheResponse.cpp
-        network/FullyIndexedCacheResponse.hpp
+
         network/networking_utils.cpp
-        network/networking_utils.hpp network/InMemoryTreeMerger.cpp network/InMemoryTreeMerger.hpp)
+        network/networking_utils.hpp
+        network/InMemoryTreeMerger.cpp
+        network/InMemoryTreeMerger.hpp
+        )
 
 
 set(PROTO_MESSAGES
@@ -136,20 +159,6 @@ set(CACHE_SOURCES
         cache/Cache.hpp
         cache/Cache.cpp
         cache/CacheArgs.hpp
-        cache/replacement/I_PQTraverse.hpp
-        cache/replacement/CacheReplacement.cpp
-        cache/replacement/CacheReplacement.hpp
-        cache/replacement/CacheReplacementFactory.cpp
-        cache/replacement/CacheReplacementFactory.hpp
-        cache/replacement/FrequencyReplacementStrategy.cpp
-        cache/replacement/FrequencyReplacementStrategy.hpp
-        cache/replacement/I_CacheReplacement.hpp
-        cache/replacement/I_ReplacementPriorityQueue.hpp
-        cache/replacement/LRUReplacementStrategy.cpp
-        cache/replacement/LRUReplacementStrategy.hpp
-        cache/replacement/NoCachingReplacement.cpp
-        cache/replacement/NoCachingReplacement.hpp
-
         )
 
 
@@ -403,14 +412,18 @@ if (GTest_FOUND)
     target_link_libraries(k2mixed_from_file ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} pthread)
 
     add_executable(cache_replacement_test test/cache_replacement_test.cpp test/cache_test_util.cpp)
-    target_link_libraries(cache_replacement_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} pthread)
+    target_link_libraries(cache_replacement_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} pthread MockStructureLib)
 
     add_executable(memory_segment_test test/memory_segment_test.cpp)
     target_link_libraries(memory_segment_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} pthread)
 
 
-    add_executable(update_log_test test/update_log_test.cpp)
+    add_executable(update_log_test test/update_log_test.cpp test/cache_test_util.cpp)
     target_link_libraries(update_log_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} MockStructureLib pthread)
+
+
+    add_executable(fully_indexed_cache_test test/fully_indexed_cache_test.cpp test/cache_test_util.cpp)
+    target_link_libraries(fully_indexed_cache_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} MockStructureLib pthread)
 
     add_executable(predicates_cache_manager_test test/predicates_cache_manager_test.cpp)
     target_link_libraries(predicates_cache_manager_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} MockStructureLib pthread)
@@ -428,6 +441,7 @@ if (GTest_FOUND)
     add_test(NAME cache_replacement_test COMMAND ./cache_replacement_test)
     add_test(NAME memory_segment_test COMMAND ./memory_segment_test)
     add_test(NAME update_log_test COMMAND ./update_log_test)
+    add_test(NAME fully_indexed_cache_test COMMAND ./fully_indexed_cache_test)
     add_test(NAME predicates_cache_manager_test COMMAND ./predicates_cache_manager_test)
     add_test(NAME nodes_map_test COMMAND ./nodes_map_test)
 
@@ -491,3 +505,7 @@ target_link_libraries(compare_64_32_depths_performance_3 ${DEFAULT_LIBS})
 add_executable(lazy_scan_benchmark benchmarks/lazy_scan_benchmark.cpp)
 target_include_directories(lazy_scan_benchmark PUBLIC ${INCLUDES})
 target_link_libraries(lazy_scan_benchmark ${DEFAULT_LIBS})
+
+
+add_executable(points_size_relationship benchmarks/points_size_relationship.cpp)
+target_link_libraries(points_size_relationship ${BASE_LIBS})

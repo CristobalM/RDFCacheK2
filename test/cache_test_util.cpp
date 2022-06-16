@@ -1,5 +1,6 @@
 
 #include "cache_test_util.hpp"
+#include "mock_structures/FHMock.hpp"
 
 #include <filesystem>
 #include <fstream>
@@ -83,4 +84,14 @@ void print_table_debug(
   }
 
   std::cout << "total size: " << translated_table.size() << std::endl;
+}
+
+UpdatesLoggerFilesManager mock_fh_manager() {
+  std::string data;
+  std::string data_offsets;
+  std::string metadata;
+  auto fh = std::make_unique<FHMock>(data);
+  auto fh_offsets = std::make_unique<FHMock>(data_offsets);
+  auto fh_metadata = std::make_unique<FHMock>(metadata);
+  return {std::move(fh), std::move(fh_offsets), std::move(fh_metadata)};
 }

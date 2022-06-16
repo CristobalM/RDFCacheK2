@@ -6,6 +6,7 @@
 #define RDFCACHEK2_TRIPLEPATTERNMATCHINGSTREAMER_HPP
 
 #include "I_TRMatchingStreamer.hpp"
+#include "RDFTriple.hpp"
 #include <Cache.hpp>
 #include <sparql_tree.pb.h>
 class TriplePatternMatchingStreamer : public I_TRMatchingStreamer {

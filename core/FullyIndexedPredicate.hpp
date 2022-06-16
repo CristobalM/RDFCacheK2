@@ -7,6 +7,7 @@
 
 #include <set>
 #include <unordered_map>
+#include <vector>
 
 #include "I_CachedPredicateSource.hpp"
 #include "K2TreeMixed.hpp"
