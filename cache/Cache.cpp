@@ -18,8 +18,7 @@ Cache::Cache(std::shared_ptr<PredicatesCacheManager> predicates_cache_manager,
       cache_replacement(CacheReplacementFactory::create_cache_replacement(
           args.memory_budget_bytes, cache_manager.get(),
           args.replacement_strategy)),
-      strategy_id(args.replacement_strategy)
-{}
+      strategy_id(args.replacement_strategy) {}
 
 PredicatesCacheManager &Cache::get_pcm() { return *cache_manager; }
 

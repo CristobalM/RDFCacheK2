@@ -32,9 +32,7 @@ CacheServerTaskProcessor::CacheServerTaskProcessor(Cache &cache,
                                                    uint8_t workers_count)
     : cache(cache), workers_count(workers_count),
       replacement_task_processor(cache),
-      current_triples_streamers_channel_id(0), current_update_session_id(0){
-
-}
+      current_triples_streamers_channel_id(0), current_update_session_id(0) {}
 
 void CacheServerTaskProcessor::start_workers(
     TCPServerConnection<CacheServerTaskProcessor> &connection) {
@@ -77,7 +75,8 @@ I_TRStreamer &CacheServerTaskProcessor::create_triples_streamer(
 
   auto streamer = std::make_unique<TripleMatchesPartStreamer>(
       current_triples_streamers_channel_id, std::move(loaded_predicates),
-      DEFAULT_THRESHOLD_PART_SZ, this, &cache, cache.get_pcm().get_fully_indexed_cache());
+      DEFAULT_THRESHOLD_PART_SZ, this, &cache,
+      cache.get_pcm().get_fully_indexed_cache());
   auto *ptr = streamer.get();
   triples_streamer_map[current_triples_streamers_channel_id] =
       std::move(streamer);

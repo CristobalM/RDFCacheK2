@@ -5,21 +5,20 @@
 #ifndef RDFCACHEK2_UPDATESLOGGER_HPP
 #define RDFCACHEK2_UPDATESLOGGER_HPP
 
-#include <memory>
-#include <map>
-#include <vector>
 #include <cstdint>
+#include <map>
+#include <memory>
 #include <ostream>
+#include <vector>
 
 #include "I_DataMerger.hpp"
-#include "UpdatesLoggerFilesManager.hpp"
-#include "I_OStream.hpp"
-#include "I_IStream.hpp"
 #include "I_IOStream.hpp"
-#include "K2TreeUpdates.hpp"
-#include "K2TreeMixed.hpp"
+#include "I_IStream.hpp"
+#include "I_OStream.hpp"
 #include "I_UpdateLoggerPCM.hpp"
-
+#include "K2TreeMixed.hpp"
+#include "K2TreeUpdates.hpp"
+#include "UpdatesLoggerFilesManager.hpp"
 
 class UpdatesLogger : public I_UpdateLoggerPCM {
   I_DataMerger &data_merger;
@@ -28,7 +27,6 @@ class UpdatesLogger : public I_UpdateLoggerPCM {
   std::unique_ptr<I_OStream> current_file_writer;
   std::unique_ptr<I_IStream> current_file_reader;
   std::unique_ptr<I_IOStream> metadata_file_rw;
-
 
   using offsets_map_t =
       std::map<unsigned long, std::unique_ptr<std::vector<long>>>;
@@ -40,8 +38,7 @@ class UpdatesLogger : public I_UpdateLoggerPCM {
 public:
   UpdatesLogger(I_DataMerger &data_merger,
                 UpdatesLoggerFilesManager &&files_manager);
-  void recover(const std::vector<unsigned long> &predicates);
-  void recover_all();
+  void recover_all() override;
   void log(std::vector<K2TreeUpdates> &k2tree_updates);
 
   void recover_predicate(unsigned long predicate_id) override;
@@ -57,6 +54,8 @@ public:
   int logs_number();
 
   UpdatesLoggerFilesManager &get_fh_manager();
+
+  void recover(const std::vector<unsigned long> &predicates);
 
 private:
   static void log(std::vector<K2TreeUpdates> &k2tree_updates,

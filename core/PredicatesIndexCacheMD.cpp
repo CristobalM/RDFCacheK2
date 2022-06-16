@@ -246,56 +246,27 @@ void PredicatesIndexCacheMD::load_all_predicates() {
 
   size_t total_bytes = 0;
   auto &all_predicates = metadata.get_ids_vector();
-  if (all_predicates.empty())
-    return;
+
   for (auto predicate_id : all_predicates) {
     auto &md = metadata.get_map().at(predicate_id);
     total_bytes += md.tree_size_in_memory;
   }
   auto *mem_segment = MemoryManager::instance().new_memory_segment(total_bytes);
   full_memory_segment = mem_segment;
-  auto first_offset = metadata.get_map().at(all_predicates[0]).tree_offset;
-  is->seekg(first_offset);
+  if (!all_predicates.empty()) {
+    auto first_offset = metadata.get_map().at(all_predicates[0]).tree_offset;
+    is->seekg(first_offset);
+    predicates.reserve(all_predicates.size() +
+                       (unsigned long)((double)all_predicates.size() * .5));
+  }
 
-  predicates.reserve(all_predicates.size() +
-                     (unsigned long)((double)all_predicates.size() * .5));
   for (unsigned long predicate_id : all_predicates) {
-    // commented code kept for future debugging
-    /*
-    size_t end_pos;
-    auto next_it = std::next(it);
-    if (next_it == all_predicates.end()) {
-      auto curr = is->tellg();
-      is->seekg(0, std::ios::end);
-      end_pos = is->tellg();
-      is->seekg(curr);
-    } else {
-      if (!has_predicate_stored(*next_it))
-        throw std::runtime_error("predicate id " + std::to_string(*next_it) +
-                                 " in list but not on metadata map");
-      const auto &md = metadata.get_map().at(*next_it);
-      end_pos = md.tree_offset;
-    }
-    const auto &curr_md = metadata.get_map().at(*it);
-
-    auto raw_k2tree_sz = end_pos - curr_md.tree_offset;
-    std::vector<char> raw_k2tree(raw_k2tree_sz, 0);
-
-    is->read(raw_k2tree.data(),
-             static_cast<std::streamsize>(raw_k2tree.size()));
-
-    auto md5_calc = md5calc(raw_k2tree);
-
-    if (md5_calc != curr_md.k2tree_hash) {
-      throw std::runtime_error("hashes differ");
-    }
-
-    std::stringstream ss(std::string(raw_k2tree.begin(), raw_k2tree.end()));
-
-    raw_k2tree.clear();
-*/
     predicates[predicate_id] = std::make_unique<K2TreeMixed>(
         K2TreeMixed::read_from_istream(is->get_istream(), mem_segment));
+  }
+
+  if (update_logger) {
+    update_logger->recover_all();
   }
 }
 void PredicatesIndexCacheMD::set_update_logger(

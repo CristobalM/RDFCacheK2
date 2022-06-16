@@ -15,17 +15,16 @@ void FullyIndexedCache::init_streamer_predicates(
       continue;
     }
 
-    // TODO: FIX METADAATA NOT BEING UPDATED WITH INCOMING UPDATES
-    auto metadata =
-        pic.get_metadata_with_id(predicate);
-    if (metadata)
-      cache_replacement.hit_key(predicate, metadata->tree_size_in_memory);
+    auto predicate_size = pic.fetch_k2tree(predicate).get().size();
+    // 25 bytes per point is the worst case scenario for 100k points (random
+    // distribution), so it works as an upper bound approximation
+    cache_replacement.hit_key(predicate, predicate_size * 25);
   }
 }
 
 bool FullyIndexedCache::should_cache(unsigned long predicate) {
-  auto fetch_result = pic.fetch_k2tree(predicate);
-  if (!fetch_result.exists())
+  auto fetch_result = pic.fetch_k2tree_if_loaded(predicate);
+  if (!fetch_result.loaded())
     return false;
   static constexpr auto max_to_cache_sz = 10'000'000UL;
   return fetch_result.get().size() < max_to_cache_sz;

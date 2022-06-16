@@ -46,12 +46,10 @@ public:
   explicit PredicatesCacheManager(
       std::unique_ptr<PredicatesIndexCacheMD> &&predicates_index);
 
-
   explicit PredicatesCacheManager(
       std::unique_ptr<I_FileRWHandler> &&index_file_handler);
 
   explicit PredicatesCacheManager(const std::string &index_filename);
-
 
   PredicatesIndexCacheMD &get_predicates_index_cache();
   void load_all_predicates();

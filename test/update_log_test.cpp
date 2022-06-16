@@ -101,8 +101,7 @@ TEST(update_log_test, test_fhmock_can_sync_log_to_main_storage) {
       pcm.get_predicates_index_cache().is_stored_in_main_index(predicate_id_1));
 }
 
-
-static unsigned long read_stream_size(I_FileRWHandler &fh){
+static unsigned long read_stream_size(I_FileRWHandler &fh) {
   auto fh_reader = fh.get_reader(std::ios::binary);
   auto &is = fh_reader->get_istream();
   is.seekg(0, std::istream::end);
@@ -176,7 +175,7 @@ TEST(update_log_test, test_can_compact_log_only_two_inserts) {
 
   ASSERT_EQ(updates_logger.logs_number(), 2);
   updates_logger.compact_logs();
-  auto size_3 =  read_stream_size(fh);
+  auto size_3 = read_stream_size(fh);
 
   ASSERT_EQ(updates_logger.logs_number(), 1);
 
@@ -231,13 +230,12 @@ TEST(update_log_test, test_can_compact_log_one_insert_one_delete) {
   std::vector<K2TreeUpdates> tree_updates_2 = {tree_update_2};
   auto &fh = pcm.get_updates_logger().get_fh_manager().get_index_logs_fh();
 
-
-  auto size_0 =  read_stream_size(fh);
+  auto size_0 = read_stream_size(fh);
 
   updates_logger.log(tree_updates_1);
-  auto size_1 =  read_stream_size(fh);
+  auto size_1 = read_stream_size(fh);
   updates_logger.log(tree_updates_2);
-  auto size_2 =  read_stream_size(fh);
+  auto size_2 = read_stream_size(fh);
 
   ASSERT_TRUE(updates_logger.has_predicate_stored(predicate_id_1));
   ASSERT_EQ(k2tree.size(), size_tree);
@@ -255,7 +253,7 @@ TEST(update_log_test, test_can_compact_log_one_insert_one_delete) {
 
   ASSERT_EQ(updates_logger.logs_number(), 2);
   updates_logger.compact_logs();
-  auto size_3 =  read_stream_size(fh);
+  auto size_3 = read_stream_size(fh);
 
   ASSERT_EQ(updates_logger.logs_number(), 1);
 

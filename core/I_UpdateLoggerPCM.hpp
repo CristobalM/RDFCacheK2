@@ -15,6 +15,7 @@ public:
   virtual void compact_logs() = 0;
   virtual std::vector<unsigned long> get_predicates() = 0;
   virtual void clean_append_log() = 0;
+  virtual void recover_all() = 0;
 };
 
 #endif // RDFCACHEK2_I_UPDATELOGGERPCM_HPP

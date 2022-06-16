@@ -9,7 +9,7 @@
 #include "mock_structures/FHMock.hpp"
 #include <gtest/gtest.h>
 
-TEST(fully_indexed_cache, test_resynced_on_update){
+TEST(fully_indexed_cache, test_resynced_on_update) {
   K2TreeConfig config;
   config.treedepth = 32;
   config.cut_depth = 10;
@@ -46,13 +46,17 @@ TEST(fully_indexed_cache, test_resynced_on_update){
   std::vector<K2TreeUpdates> tree_updates_1 = {tree_update_1, tree_update_2};
 
   updates_logger.log(tree_updates_1);
+
+  // fully indexed needs that predicates are in memory
+  // and logging them doesn't do that automatically
+  pcm.load_all_predicates();
+
   std::vector<unsigned long> predicates = {predicate_id_1, predicate_id_2};
   pcm.get_fully_indexed_cache().init_streamer_predicates(predicates);
 
   auto fi_resp_1 = pcm.get_fully_indexed_cache().get(predicate_id_1);
   ASSERT_TRUE(fi_resp_1.exists());
   for (int i = 0; i < size_tree; i++) {
-    ASSERT_TRUE(fi_resp_1.get()->has(i+1, i+1));
+    ASSERT_TRUE(fi_resp_1.get()->has(i + 1, i + 1));
   }
-  
 }

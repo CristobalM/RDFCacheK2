@@ -95,4 +95,3 @@ UpdatesLoggerFilesManager mock_fh_manager() {
   auto fh_metadata = std::make_unique<FHMock>(metadata);
   return {std::move(fh), std::move(fh_offsets), std::move(fh_metadata)};
 }
-

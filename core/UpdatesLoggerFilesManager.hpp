@@ -14,19 +14,17 @@ class UpdatesLoggerFilesManager {
   std::unique_ptr<I_FileRWHandler> index_logs_fh;
   std::unique_ptr<I_FileRWHandler> offsets_fh;
   std::unique_ptr<I_FileRWHandler> metadata_fh;
-public:
 
-  UpdatesLoggerFilesManager(
-      std::unique_ptr<I_FileRWHandler> &&index_logs_fh,
-      std::unique_ptr<I_FileRWHandler> &&offsets_fh,
-      std::unique_ptr<I_FileRWHandler> &&metadata_fh
-  );
+public:
+  UpdatesLoggerFilesManager(std::unique_ptr<I_FileRWHandler> &&index_logs_fh,
+                            std::unique_ptr<I_FileRWHandler> &&offsets_fh,
+                            std::unique_ptr<I_FileRWHandler> &&metadata_fh);
 
   explicit UpdatesLoggerFilesManager(const CacheArgs &args);
 
-  I_FileRWHandler & get_index_logs_fh();
-  I_FileRWHandler & get_offsets_fh();
-  I_FileRWHandler & get_metadata_fh();
+  I_FileRWHandler &get_index_logs_fh();
+  I_FileRWHandler &get_offsets_fh();
+  I_FileRWHandler &get_metadata_fh();
 };
 
 #endif // RDFCACHEK2_UPDATESLOGGERFILESMANAGER_HPP

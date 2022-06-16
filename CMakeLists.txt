@@ -505,3 +505,7 @@ target_link_libraries(compare_64_32_depths_performance_3 ${DEFAULT_LIBS})
 add_executable(lazy_scan_benchmark benchmarks/lazy_scan_benchmark.cpp)
 target_include_directories(lazy_scan_benchmark PUBLIC ${INCLUDES})
 target_link_libraries(lazy_scan_benchmark ${DEFAULT_LIBS})
+
+
+add_executable(points_size_relationship benchmarks/points_size_relationship.cpp)
+target_link_libraries(points_size_relationship ${BASE_LIBS})
