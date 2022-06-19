@@ -2,10 +2,10 @@
 // Created by cristobal on 11-06-22.
 //
 #include "I_FileRWHandler.hpp"
-#include "K2TreeMixed.hpp"
-#include "PredicatesCacheManager.hpp"
-#include "PredicatesCacheMetadata.hpp"
 #include "cache_test_util.hpp"
+#include "k2tree/K2TreeMixed.hpp"
+#include "manager/PredicatesCacheManager.hpp"
+#include "manager/PredicatesCacheMetadata.hpp"
 #include "mock_structures/FHMock.hpp"
 #include <gtest/gtest.h>
 

@@ -3,8 +3,8 @@
 #include <stdexcept>
 #include <string>
 
-#include <K2TreeMixed.hpp>
-#include <PredicatesIndexCacheMD.hpp>
+#include "k2tree/K2TreeMixed.hpp"
+#include "manager/PredicatesIndexCacheMD.hpp"
 #include <iostream>
 #include <triple_external_sort.hpp>
 

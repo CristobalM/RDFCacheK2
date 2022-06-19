@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 
-#include <K2TreeBulkOp.hpp>
-#include <K2TreeMixed.hpp>
+#include "k2tree/K2TreeBulkOp.hpp"
+#include "k2tree/K2TreeMixed.hpp"
 #include <chrono>
 #include <google/protobuf/message_lite.h>
 #include <set>

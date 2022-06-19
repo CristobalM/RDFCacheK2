@@ -2,8 +2,8 @@
 // Created by cristobal on 17-11-21.
 //
 
-#include "NodesSequence.hpp"
 #include "mock_structures/StringIStream.hpp"
+#include "nodeids/NodesSequence.hpp"
 #include <gtest/gtest.h>
 #include <serialization_util.hpp>
 

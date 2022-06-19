@@ -2,8 +2,8 @@
 // Created by Cristobal Miranda, 2020
 //
 
+#include "server/CacheServer.hpp"
 #include <Cache.hpp>
-#include <CacheServer.hpp>
 
 int main() {
   Cache cache;

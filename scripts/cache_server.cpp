@@ -8,9 +8,9 @@
 #include <getopt.h>
 
 #include "CacheArgs.hpp"
+#include "manager/PredicatesCacheManager.hpp"
+#include "server/CacheServer.hpp"
 #include <Cache.hpp>
-#include <CacheServer.hpp>
-#include <PredicatesCacheManager.hpp>
 
 namespace fs = std::filesystem;
 

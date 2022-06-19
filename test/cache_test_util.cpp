@@ -6,8 +6,8 @@
 #include <fstream>
 #include <iostream>
 
-#include <K2TreeMixed.hpp>
-#include <PredicatesIndexFileBuilder.hpp>
+#include "builder/PredicatesIndexFileBuilder.hpp"
+#include "k2tree/K2TreeMixed.hpp"
 #include <serialization_util.hpp>
 
 void build_cache_test_file(const std::string &fname,
@@ -65,25 +65,6 @@ std::vector<TripleValue> build_initial_values_triples_vector(uint64_t size) {
 
 void build_cache_test_file(const std::string &fname) {
   build_cache_test_file(fname, {});
-}
-
-void print_table_debug(
-    ResultTable &table,
-    std::unordered_map<unsigned long, std::string> &reverse_map,
-    const std::vector<std::vector<RDFResource>> &translated_table) {
-  for (auto header : table.headers) {
-    std::cout << reverse_map[header] << "\t\t";
-  }
-  std::cout << std::endl;
-
-  for (auto &row : translated_table) {
-    for (auto &res : row) {
-      std::cout << res.value << "\t\t";
-    }
-    std::cout << std::endl;
-  }
-
-  std::cout << "total size: " << translated_table.size() << std::endl;
 }
 
 UpdatesLoggerFilesManager mock_fh_manager() {

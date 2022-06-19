@@ -9,8 +9,8 @@
 #include <unordered_map>
 #include <vector>
 
-#include <I_DataMerger.hpp>
-#include <K2TreeMixed.hpp>
+#include "k2tree/K2TreeMixed.hpp"
+#include "updating/I_DataMerger.hpp"
 
 struct DataMergerMock : public I_DataMerger {
 

@@ -6,8 +6,8 @@
 #define RDFCACHEK2_CACHEREPLACEMENT_HPP
 
 #include "I_CacheReplacement.hpp"
-#include "I_DataManager.hpp"
 #include "I_ReplacementPriorityQueue.hpp"
+#include "manager/I_DataManager.hpp"
 #include <cstddef>
 #include <map>
 #include <memory>

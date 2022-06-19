@@ -7,7 +7,7 @@
 #include <unordered_map>
 #include <vector>
 
-#include <K2Tree.hpp>
+#include "k2tree/K2TreeMixed.hpp"
 
 #include "fisher_yates.hpp"
 
@@ -76,7 +76,7 @@ BenchmarkResult space_benchmark_random_insertion_by_depth_and_node_count(
     unsigned long points_count, std::vector<unsigned long> &cols,
     std::vector<unsigned long> &rows) {
 
-  K2Tree k2tree(treedepth, node_count);
+  K2TreeMixed k2tree(treedepth, node_count);
 
   auto start = std::chrono::high_resolution_clock::now();
   unsigned long inserted_points = 0;

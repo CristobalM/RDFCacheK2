@@ -7,7 +7,7 @@
 #include <memory>
 #include <string>
 
-#include <PredicatesCacheManager.hpp>
+#include "manager/PredicatesCacheManager.hpp"
 
 #include <FileRWHandler.hpp>
 #include <exception>

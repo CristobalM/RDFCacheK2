@@ -4,8 +4,8 @@
 #include <stdexcept>
 #include <string>
 
-#include <K2TreeMixed.hpp>
-#include <PredicatesIndexFileBuilder.hpp>
+#include "builder/PredicatesIndexFileBuilder.hpp"
+#include "k2tree/K2TreeMixed.hpp"
 #include <iostream>
 
 namespace fs = std::filesystem;

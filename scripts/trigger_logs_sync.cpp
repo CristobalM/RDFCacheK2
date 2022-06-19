@@ -12,7 +12,7 @@
 #include <getopt.h>
 
 #include "hashing.hpp"
-#include "networking_utils.hpp"
+#include "messages/utils.hpp"
 #include "serialization_util.hpp"
 #include <message_type.pb.h>
 #include <request_msg.pb.h>

@@ -6,8 +6,8 @@
 #include <sstream>
 #include <vector>
 
-#include <K2TreeBulkOp.hpp>
-#include <K2TreeMixed.hpp>
+#include "k2tree/K2TreeBulkOp.hpp"
+#include "k2tree/K2TreeMixed.hpp"
 
 #include "fisher_yates.hpp"
 

@@ -1,9 +1,9 @@
 #include <gtest/gtest.h>
 
+#include "builder/PredicatesIndexFileBuilder.hpp"
+#include "k2tree/K2TreeBulkOp.hpp"
+#include "manager/PredicatesIndexCacheMD.hpp"
 #include "mock_structures/FHMock.hpp"
-#include <K2TreeBulkOp.hpp>
-#include <PredicatesIndexCacheMD.hpp>
-#include <PredicatesIndexFileBuilder.hpp>
 #include <google/protobuf/stubs/common.h>
 #include <serialization_util.hpp>
 #include <string>

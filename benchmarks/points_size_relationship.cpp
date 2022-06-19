@@ -2,7 +2,7 @@
 // Created by cristobal on 16-06-22.
 //
 
-#include "K2TreeMixed.hpp"
+#include "k2tree/K2TreeMixed.hpp"
 #include <iostream>
 #include <random>
 

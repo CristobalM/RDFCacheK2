@@ -2,8 +2,8 @@
 // Created by cristobal on 02-12-21.
 //
 
-#include <K2TreeMixed.hpp>
-#include <PredicatesCacheManager.hpp>
+#include "k2tree/K2TreeMixed.hpp"
+#include "manager/PredicatesCacheManager.hpp"
 #include <cstdlib>
 #include <filesystem>
 #include <iostream>

@@ -2,13 +2,13 @@
 // Created by cristobal on 9/6/21.
 //
 
-#include "UpdatesLogger.hpp"
-#include <K2TreeBulkOp.hpp>
+#include "k2tree/K2TreeBulkOp.hpp"
+#include "updating/UpdatesLogger.hpp"
 #include <gtest/gtest.h>
 
-#include "PredicatesCacheManager.hpp"
-#include "PredicatesIndexFileBuilder.hpp"
+#include "builder/PredicatesIndexFileBuilder.hpp"
 #include "cache_test_util.hpp"
+#include "manager/PredicatesCacheManager.hpp"
 #include "mock_structures/DataMergerMock.hpp"
 #include "mock_structures/FHMock.hpp"
 #include "mock_structures/StringIStream.hpp"

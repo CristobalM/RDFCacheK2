@@ -32,59 +32,48 @@ add_definitions(-DLIGHT_FIELDS)
 #set(CMAKE_LINKER_FLAGS_DEBUG "-fsanitize=address")
 
 
+
 set(CORE_SOURCE_FILES
-        core/K2Tree.cpp
-        core/PredicatesCacheMetadata.cpp
-        core/PredicatesIndexFileBuilder.cpp
-        core/PredicatesIndexCacheMD.cpp
-        core/PredicatesCacheManager.cpp
-        core/ResultTable.cpp
-        core/EmptyISDManager.cpp
-        core/block_serialization.cpp
-        core/K2TreeMixed.cpp
-        core/PredicateFetchResult.cpp
-        core/BandScanner.cpp
-        core/BandScanner.hpp
-        core/FullScanner.cpp
-        core/FullScanner.hpp
-        core/K2TreeScanner.hpp
-        core/EmptyScanner.cpp
-        core/EmptyScanner.hpp
-        core/block_stats.cpp
-        core/block_stats.hpp
-        core/K2QStateWrapper.cpp
-        core/K2QStateWrapper.hpp
-        core/K2TreeBulkOp.cpp
-        core/K2TreeBulkOp.hpp
-        core/I_DataManager.hpp
-        core/NullScanner.cpp
-        core/NullScanner.hpp
-        core/I_UpdateLoggerPCM.hpp
-        core/NodeId.cpp
-        core/NodeId.hpp
-        core/InvalidStringSizeForNodeId.hpp
-        core/TripleNodeId.cpp
-        core/TripleNodeId.hpp
-        core/NodesSequence.cpp
-        core/NodesSequence.hpp
+        core/builder/PredicatesIndexFileBuilder.cpp
+        core/fic/FullyIndexedCache.cpp
+        core/fic/FullyIndexedCache.hpp
+        core/fic/FullyIndexedCacheResponse.cpp
+        core/fic/FullyIndexedCacheResponse.hpp
+        core/fic/FullyIndexedPredicate.cpp
+        core/fic/FullyIndexedPredicate.hpp
+        core/fic/I_CachedPredicateSource.hpp
 
-        core/FullyIndexedPredicate.hpp
-        core/FullyIndexedPredicate.cpp
-        core/FullyIndexedCache.cpp
-        core/FullyIndexedCache.hpp
-        core/FullyIndexedCacheResponse.cpp
-        core/FullyIndexedCacheResponse.hpp
+        core/k2tree/BandScanner.cpp
+        core/k2tree/BandScanner.hpp
+        core/k2tree/EmptyScanner.cpp
+        core/k2tree/EmptyScanner.hpp
+        core/k2tree/FullScanner.cpp
+        core/k2tree/FullScanner.hpp
+        core/k2tree/K2QStateWrapper.cpp
+        core/k2tree/K2QStateWrapper.hpp
+        core/k2tree/K2TreeBulkOp.cpp
+        core/k2tree/K2TreeBulkOp.hpp
+        core/k2tree/K2TreeMixed.cpp
+        core/k2tree/K2TreeScanner.hpp
+        core/k2tree/NullScanner.cpp
+        core/k2tree/NullScanner.hpp
+        core/k2tree/block_serialization.cpp
+        core/k2tree/block_stats.cpp
+        core/k2tree/block_stats.hpp
 
-        core/UpdatesLogger.cpp
-        core/UpdatesLogger.hpp
-        core/UpdatesLoggerFilesManager.cpp
-        core/UpdatesLoggerFilesManager.hpp
+        core/manager/I_DataManager.hpp
+        core/manager/PredicateFetchResult.cpp
+        core/manager/PredicatesCacheManager.cpp
+        core/manager/PredicatesCacheMetadata.cpp
+        core/manager/PredicatesIndexCacheMD.cpp
 
-        core/K2TreeUpdates.cpp
-        core/K2TreeUpdates.hpp
+        core/nodeids/NodeId.cpp
+        core/nodeids/NodeId.hpp
+        core/nodeids/NodesSequence.cpp
+        core/nodeids/NodesSequence.hpp
+        core/nodeids/TripleNodeId.cpp
+        core/nodeids/TripleNodeId.hpp
 
-
-        core/replacement/I_PQTraverse.hpp
         core/replacement/CacheReplacement.cpp
         core/replacement/CacheReplacement.hpp
         core/replacement/CacheReplacementFactory.cpp
@@ -92,53 +81,60 @@ set(CORE_SOURCE_FILES
         core/replacement/FrequencyReplacementStrategy.cpp
         core/replacement/FrequencyReplacementStrategy.hpp
         core/replacement/I_CacheReplacement.hpp
+        core/replacement/I_PQTraverse.hpp
         core/replacement/I_ReplacementPriorityQueue.hpp
         core/replacement/LRUReplacementStrategy.cpp
         core/replacement/LRUReplacementStrategy.hpp
         core/replacement/NoCachingReplacement.cpp
         core/replacement/NoCachingReplacement.hpp
+
+        core/updating/I_DataMerger.hpp
+        core/updating/I_UpdateLoggerPCM.hpp
+        core/updating/K2TreeUpdates.cpp
+        core/updating/K2TreeUpdates.hpp
+        core/updating/UpdatesLogger.cpp
+        core/updating/UpdatesLogger.hpp
+        core/updating/UpdatesLoggerFilesManager.cpp
+        core/updating/UpdatesLoggerFilesManager.hpp
         )
 
 
 set(NETWORK_SOURCE_FILES
-        network/CacheServer.cpp
-        network/TCPServerConnection.cpp
-        network/ServerTask.cpp
-        network/CacheServerTaskProcessor.cpp
-        network/ServerWorker.cpp
-        network/Message.cpp
-        network/ReplacementTaskProcessor.cpp
-        network/ReplacementTaskProcessor.hpp
-        network/ReplacementTask.cpp
-        network/ReplacementTask.hpp
-        network/TripleMatchesPartStreamer.cpp
-        network/TripleMatchesPartStreamer.hpp
-        network/I_TRStreamer.hpp
-        network/I_TRMatchingStreamer.hpp
-        network/TriplePatternMatchingStreamer.cpp
-        network/TriplePatternMatchingStreamer.hpp
-        network/I_Updater.hpp
-        network/UpdaterSession.cpp
-        network/UpdaterSession.hpp
-        network/WriteDataLock.cpp
-        network/WriteDataLock.hpp
-        network/I_DataMerger.hpp
+        network/messages/Message.cpp
+        network/messages/utils.cpp
+        network/messages/utils.hpp
 
-        network/I_CachedPredicateSource.hpp
-        network/StreamerFromCachedSource.hpp
-        network/StreamerFromCachedSource.cpp
-        network/CachedSourceScanner.hpp
-        network/CachedSubjectObjectScanner.hpp
-        network/CachedSubjectObjectScanner.cpp
-        network/CachedSubjectScanner.hpp
-        network/CachedSubjectScanner.cpp
-        network/CachedObjectScanner.hpp
-        network/CachedObjectScanner.cpp
+        network/scanner/CachedObjectScanner.cpp
+        network/scanner/CachedObjectScanner.hpp
+        network/scanner/CachedSourceScanner.hpp
+        network/scanner/CachedSubjectObjectScanner.cpp
+        network/scanner/CachedSubjectObjectScanner.hpp
+        network/scanner/CachedSubjectScanner.cpp
+        network/scanner/CachedSubjectScanner.hpp
 
-        network/networking_utils.cpp
-        network/networking_utils.hpp
-        network/InMemoryTreeMerger.cpp
-        network/InMemoryTreeMerger.hpp
+        network/server/CacheServer.cpp
+        network/server/ServerWorker.cpp
+        network/server/conn/TCPServerConnection.cpp
+        network/server/replacement/ReplacementTask.cpp
+        network/server/replacement/ReplacementTask.hpp
+        network/server/replacement/ReplacementTaskProcessor.cpp
+        network/server/replacement/ReplacementTaskProcessor.hpp
+        network/server/session/Updater.hpp
+        network/server/session/UpdaterSession.cpp
+        network/server/session/UpdaterSession.hpp
+        network/server/tasks/CacheServerTaskProcessor.cpp
+        network/server/tasks/ServerTask.cpp
+        network/server/tasks/WriteDataLock.cpp
+        network/server/tasks/WriteDataLock.hpp
+        
+        network/streaming/I_TRMatchingStreamer.hpp
+        network/streaming/I_TRStreamer.hpp
+        network/streaming/StreamerFromCachedSource.cpp
+        network/streaming/StreamerFromCachedSource.hpp
+        network/streaming/TripleMatchesPartStreamer.cpp
+        network/streaming/TripleMatchesPartStreamer.hpp
+        network/streaming/TriplePatternMatchingStreamer.cpp
+        network/streaming/TriplePatternMatchingStreamer.hpp
         )
 
 
@@ -346,10 +342,6 @@ add_executable(traverse_k2tree_band scripts/traverse_k2tree_band.cpp)
 target_include_directories(traverse_k2tree_band PUBLIC ${INCLUDES})
 target_link_libraries(traverse_k2tree_band ${DEFAULT_LIBS})
 
-
-add_executable(k2tree_example example/k2tree_example.cpp)
-target_link_libraries(k2tree_example ${BASE_LIBS})
-
 add_executable(measure_serialization_time scripts/measure_serialization_time.cpp)
 target_include_directories(measure_serialization_time PUBLIC ${INCLUDES})
 target_link_libraries(measure_serialization_time ${DEFAULT_LIBS})
@@ -384,7 +376,9 @@ if (GTest_FOUND)
             test/mock_structures/StringOStream.cpp
             test/mock_structures/FHMock.hpp
             test/mock_structures/FHMock.cpp
-            test/mock_structures/StringIOStream.cpp test/mock_structures/StringIOStream.hpp)
+            test/mock_structures/StringIOStream.cpp
+            test/mock_structures/StringIOStream.hpp
+            )
 
     add_library(MockStructureLib STATIC ${MOCK_STRUCTURES})
     add_dependencies(MockStructureLib RDFCacheK2 Utils)

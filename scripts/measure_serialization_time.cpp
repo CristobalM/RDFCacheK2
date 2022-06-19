@@ -9,7 +9,7 @@
 #include <memory>
 #include <string>
 
-#include <PredicatesCacheManager.hpp>
+#include "manager/PredicatesCacheManager.hpp"
 
 struct parsed_options {
   std::string iris_file;

@@ -2,13 +2,11 @@
 // Created by Cristobal Miranda, 2020
 //
 
-#include <K2Tree.hpp>
-#include <K2TreeBulkOp.hpp>
-#include <K2TreeMixed.hpp>
+#include "k2tree/K2TreeBulkOp.hpp"
+#include "k2tree/K2TreeMixed.hpp"
 #include <algorithm>
 #include <google/protobuf/stubs/common.h>
 #include <gtest/gtest.h>
-#include <random>
 #include <sstream>
 
 using ul = unsigned long;
@@ -19,7 +17,7 @@ bool sort_pair(const std::pair<ul, ul> &lhs, const std::pair<ul, ul> &rhs) {
 }
 
 TEST(k2tree_serialization_custom, test1) {
-  K2Tree k2Tree(32, 128);
+  K2TreeMixed k2Tree(32, 128);
 
   int cols = 300;
   int rows = 300;
@@ -41,7 +39,7 @@ TEST(k2tree_serialization_custom, test1) {
 
   std::istringstream iss(serialized);
 
-  K2Tree other_k2tree = K2Tree::read_from_istream(iss);
+  K2TreeMixed other_k2tree = K2TreeMixed::read_from_istream(iss);
 
   auto second_points = other_k2tree.get_all_points();
   std::sort(second_points.begin(), second_points.end(), sort_pair);
@@ -75,9 +73,6 @@ TEST(k2tree_serialization_custom, test1) {
 
   ASSERT_FALSE(other_k2tree.has(1 << 30, 1 << 30))
       << "point (" << 1 << 30 << ", " << 1 << 30 << ") exists and shouldn't";
-
-  ASSERT_EQ(debug_validate_block_rec(k2Tree.get_root_block()), 0);
-  ASSERT_EQ(debug_validate_block_rec(other_k2tree.get_root_block()), 0);
 }
 
 TEST(k2tree_serialization_custom_mixed, test1) {

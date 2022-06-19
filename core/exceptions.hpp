@@ -22,4 +22,12 @@ public:
                            std::to_string(predicate_index)) {}
 };
 
+class InvalidStringSizeForNodeId : public std::runtime_error {
+public:
+  explicit InvalidStringSizeForNodeId(size_t given_size)
+      : std::runtime_error("Invalid string size for NodeId, size given: " +
+                           std::to_string(given_size)) {}
+};
+
+
 #endif // RDFCACHEK2_EXCEPT_HPP

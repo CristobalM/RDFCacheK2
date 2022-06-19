@@ -3,8 +3,8 @@
 #include <stdexcept>
 #include <string>
 
+#include "nodeids/NodesSequence.hpp"
 #include <FileIStream.hpp>
-#include <NodesSequence.hpp>
 #include <getopt.h>
 #include <serialization_util.hpp>
 #include <triple_external_sort.hpp>

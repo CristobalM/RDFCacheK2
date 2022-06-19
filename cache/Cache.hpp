@@ -9,9 +9,9 @@
 #include <mutex>
 #include <string>
 
+#include "manager/PredicatesCacheManager.hpp"
+#include "nodeids/NodesSequence.hpp"
 #include <I_FileRWHandler.hpp>
-#include <NodesSequence.hpp>
-#include <PredicatesCacheManager.hpp>
 #include <replacement/I_CacheReplacement.hpp>
 #include <request_msg.pb.h>
 

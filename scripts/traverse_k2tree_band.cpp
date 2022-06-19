@@ -4,10 +4,10 @@
 #include <stdexcept>
 #include <string>
 
+#include "k2tree/K2TreeBulkOp.hpp"
+#include "k2tree/K2TreeMixed.hpp"
+#include "manager/PredicatesIndexCacheMD.hpp"
 #include <FileRWHandler.hpp>
-#include <K2TreeBulkOp.hpp>
-#include <K2TreeMixed.hpp>
-#include <PredicatesIndexCacheMD.hpp>
 #include <set>
 #include <triple_external_sort.hpp>
 
