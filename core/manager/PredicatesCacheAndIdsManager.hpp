@@ -15,6 +15,9 @@ class PredicatesCacheAndIdsManager {
 public:
   PredicatesCacheAndIdsManager(std::unique_ptr<PredicatesCacheManager> &&pcm,
                                std::unique_ptr<NodeIdsManager> &&nis);
+
+  PredicatesCacheManager &get_pcm();
+  NodeIdsManager &get_nis();
 };
 } // namespace k2cache
 
