@@ -7,7 +7,7 @@
 #include <iostream>
 #include <sys/socket.h>
 #include <thread>
-
+namespace k2cache {
 bool read_nbytes_from_socket(int client_socket_fd, char *read_buffer,
                              size_t bytes_to_read) {
   std::size_t offset = 0;
@@ -34,3 +34,4 @@ bool read_nbytes_from_socket(int client_socket_fd, char *read_buffer,
     }
   }
 }
+} // namespace k2cache

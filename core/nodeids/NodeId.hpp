@@ -14,6 +14,7 @@
 
 #include "serialization_util.hpp"
 
+namespace k2cache {
 class NodeId {
 public:
   static constexpr size_t DATA_SIZE = 8;
@@ -33,5 +34,6 @@ private:
   static unsigned long string_to_ul(const std::string &input_string);
   unsigned long data;
 };
+} // namespace k2cache
 
 #endif // RDFCACHEK2_NODEID_HPP

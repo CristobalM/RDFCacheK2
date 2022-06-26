@@ -6,7 +6,7 @@
 #define ULConnectorWHeaderCustomSerialization_CUSTOM_SERIALIZATION_HPP
 
 #include <fstream>
-
+namespace k2cache {
 class ULConnectorWHeaderCustomSerialization {
   unsigned long value;
 
@@ -68,5 +68,5 @@ std::ostream &operator<<(std::ostream &os,
   write_u64(os, data.value);
   return os;
 }
-
+} // namespace k2cache
 #endif // ULConnectorWHeaderCustomSerialization_CUSTOM_SERIALIZATION_HPP

@@ -6,8 +6,10 @@
 
 #include "FileRWHandler.hpp"
 #include "MemoryManager.hpp"
+#include "PredicateFetchResult.hpp"
 #include "hashing.hpp"
 
+namespace k2cache {
 PredicatesIndexCacheMD::PredicatesIndexCacheMD(
     const std::string &input_filename)
     : PredicatesIndexCacheMD(std::make_unique<FileRWHandler>(input_filename)) {}
@@ -338,3 +340,4 @@ void PredicatesIndexCacheMD::full_sync_logs_and_memory_with_persistent() {
   sync_logs_to_indexes();
   update_logger->clean_append_log();
 }
+} // namespace k2cache

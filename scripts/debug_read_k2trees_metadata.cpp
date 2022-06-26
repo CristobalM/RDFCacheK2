@@ -9,6 +9,7 @@
 #include <FileRWHandler.hpp>
 
 namespace fs = std::filesystem;
+using namespace k2cache;
 
 struct parsed_options {
   std::string input_file;

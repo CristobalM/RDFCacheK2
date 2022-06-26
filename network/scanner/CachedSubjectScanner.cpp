@@ -3,6 +3,7 @@
 //
 
 #include "CachedSubjectScanner.hpp"
+namespace k2cache {
 CachedSubjectScanner::CachedSubjectScanner(
     I_CachedPredicateSource *cached_source, unsigned long object_value)
     : subjects(cached_source->get_subjects(object_value)), current_position(0),
@@ -13,3 +14,4 @@ bool CachedSubjectScanner::has_next() {
 std::pair<unsigned long, unsigned long> CachedSubjectScanner::next() {
   return {subjects[current_position++], object_value};
 }
+} // namespace k2cache

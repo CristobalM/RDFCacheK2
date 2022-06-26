@@ -7,6 +7,7 @@
 
 #include <cstddef>
 #include <mutex>
+namespace k2cache {
 class I_CacheReplacement {
 public:
   enum REPLACEMENT_STRATEGY { NO_CACHING = 0, LRU, FREQUENCY };
@@ -17,5 +18,6 @@ public:
   virtual void mark_ready(unsigned long key) = 0;
   virtual std::mutex &get_replacement_mutex() = 0;
 };
+} // namespace k2cache
 
 #endif // RDFCACHEK2_I_CACHEREPLACEMENT_HPP

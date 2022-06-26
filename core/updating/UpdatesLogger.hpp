@@ -20,6 +20,7 @@
 #include "UpdatesLoggerFilesManager.hpp"
 #include "k2tree/K2TreeMixed.hpp"
 
+namespace k2cache {
 class UpdatesLogger : public I_UpdateLoggerPCM {
   I_DataMerger &data_merger;
   UpdatesLoggerFilesManager fm;
@@ -90,5 +91,6 @@ private:
   std::unique_ptr<UpdatesLogger::PredicateUpdate>
   compact_predicate(unsigned long predicate_id);
 };
+} // namespace k2cache
 
 #endif // RDFCACHEK2_UPDATESLOGGER_HPP

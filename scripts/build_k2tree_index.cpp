@@ -9,7 +9,7 @@
 #include <iostream>
 
 namespace fs = std::filesystem;
-
+using namespace k2cache;
 struct parsed_options {
   std::string input_file;
   std::string output_file;

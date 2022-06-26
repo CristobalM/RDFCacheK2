@@ -5,9 +5,11 @@
 #ifndef RDFCACHEK2_I_DATAMERGER_HPP
 #define RDFCACHEK2_I_DATAMERGER_HPP
 
+#include "K2TreeUpdates.hpp"
 #include "k2tree/K2TreeMixed.hpp"
 #include "updating/K2TreeUpdates.hpp"
 
+namespace k2cache {
 class I_DataMerger {
 public:
   virtual ~I_DataMerger() = default;
@@ -18,5 +20,6 @@ public:
                                  K2TreeMixed &k2tree) = 0;
   virtual void merge_update(std::vector<K2TreeUpdates> &updates) = 0;
 };
+} // namespace k2cache
 
 #endif // RDFCACHEK2_I_DATAMERGER_HPP

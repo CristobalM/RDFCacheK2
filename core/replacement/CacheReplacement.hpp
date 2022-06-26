@@ -6,6 +6,7 @@
 #define RDFCACHEK2_CACHEREPLACEMENT_HPP
 
 #include "I_CacheReplacement.hpp"
+#include "I_PQTraverse.hpp"
 #include "I_ReplacementPriorityQueue.hpp"
 #include "manager/I_DataManager.hpp"
 #include <cstddef>
@@ -16,6 +17,7 @@
 #include <unordered_map>
 #include <vector>
 
+namespace k2cache {
 template <class CRStrategy> class CacheReplacement : public I_CacheReplacement {
   struct StrategyWrapper {
     CRStrategy &strategy;
@@ -73,5 +75,6 @@ public:
   bool is_using(unsigned long key);
   std::mutex &get_replacement_mutex() override;
 };
+} // namespace k2cache
 
 #endif // RDFCACHEK2_CACHEREPLACEMENT_HPP

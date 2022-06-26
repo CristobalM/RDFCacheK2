@@ -3,6 +3,7 @@
 //
 
 #include "ReplacementTaskProcessor.hpp"
+namespace k2cache {
 bool ReplacementTaskProcessor::tasks_available() {
   std::lock_guard lg(m);
   return !tasks.empty();
@@ -46,3 +47,4 @@ void ReplacementTaskProcessor::mark_ready(
     replacement.mark_ready(p);
   }
 }
+} // namespace k2cache

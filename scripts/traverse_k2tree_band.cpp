@@ -10,7 +10,7 @@
 #include <FileRWHandler.hpp>
 #include <set>
 #include <triple_external_sort.hpp>
-
+using namespace k2cache;
 namespace fs = std::filesystem;
 
 enum BandType { COL = 0, ROW };

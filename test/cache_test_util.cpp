@@ -10,6 +10,8 @@
 #include "k2tree/K2TreeMixed.hpp"
 #include <serialization_util.hpp>
 
+namespace k2cache {
+
 void build_cache_test_file(const std::string &fname,
                            std::vector<TripleValue> &data) {
   std::string plain_predicates_fname = fname + "plain_predicates_file.bin";
@@ -92,8 +94,6 @@ PredicatesCacheManager basic_pcm() {
     metadata_pcm.write_to_ostream(fh_writer->get_ostream());
     fh_writer->flush();
   }
-  return {
-      std::move(fh_pcm),
-      mock_fh_manager()
-  };
+  return {std::move(fh_pcm), mock_fh_manager()};
 }
+} // namespace k2cache

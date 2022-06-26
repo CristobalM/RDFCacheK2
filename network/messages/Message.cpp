@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "Message.hpp"
-
+namespace k2cache {
 Message::Message(uint32_t message_size)
     : message_size(message_size),
       buffer(std::make_unique<char[]>(message_size)) {}
@@ -26,3 +26,4 @@ void Message::deserialize() {
 }
 
 proto_msg::CacheRequest &Message::get_cache_request() { return *deserialized; }
+} // namespace k2cache

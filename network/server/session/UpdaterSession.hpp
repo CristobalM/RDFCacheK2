@@ -11,6 +11,7 @@
 #include "nodeids/TripleNodeId.hpp"
 #include "server/tasks/TaskProcessor.hpp"
 #include <unordered_map>
+namespace k2cache {
 class UpdaterSession : public Updater {
   TaskProcessor *task_processor;
   Cache *cache;
@@ -41,5 +42,5 @@ private:
   void log_updates();
   void do_commit_updates();
 };
-
+} // namespace k2cache
 #endif // RDFCACHEK2_UPDATERSESSION_HPP

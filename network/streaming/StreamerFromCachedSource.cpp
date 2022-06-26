@@ -8,6 +8,7 @@
 #include "scanner/CachedSubjectScanner.hpp"
 
 #include <utility>
+namespace k2cache {
 proto_msg::CacheResponse StreamerFromCachedSource::get_next_response() {
   proto_msg::CacheResponse cache_response;
   cache_response.set_response_type(
@@ -116,3 +117,4 @@ StreamerFromCachedSource::StreamerFromCachedSource(
   }
 }
 void StreamerFromCachedSource::set_finished() { finished = true; }
+} // namespace k2cache

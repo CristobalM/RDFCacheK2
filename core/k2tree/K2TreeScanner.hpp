@@ -7,6 +7,8 @@
 
 #include <utility>
 
+namespace k2cache {
+
 class K2TreeMixed;
 
 class K2TreeScanner {
@@ -25,5 +27,6 @@ public:
 
   virtual K2QStateWrapper &get_k2qw() = 0;
 };
+} // namespace k2cache
 
 #endif // RDFCACHEK2_K2TREESCANNER_HPP

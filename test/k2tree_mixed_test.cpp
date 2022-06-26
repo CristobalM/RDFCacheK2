@@ -5,10 +5,10 @@
 #include <chrono>
 #include <google/protobuf/message_lite.h>
 #include <set>
-#include <sstream>
 #include <utility>
 
 using namespace std::chrono_literals;
+using namespace k2cache;
 
 TEST(k2tree_mixed_tests, can_insert) {
   K2TreeMixed tree(10);

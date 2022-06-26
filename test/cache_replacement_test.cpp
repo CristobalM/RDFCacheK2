@@ -7,12 +7,15 @@
 #include <replacement/CacheReplacement.hpp>
 #include <replacement/FrequencyReplacementStrategy.hpp>
 #include <replacement/LRUReplacementStrategy.hpp>
-
+namespace k2cache {
 struct MockDataManager : public I_DataManager {
   std::set<unsigned long> keys;
   void remove_key(unsigned long key) override { keys.erase(key); }
   void retrieve_key(unsigned long key) override { keys.insert(key); }
 };
+} // namespace k2cache
+
+using namespace k2cache;
 
 TEST(cache_replacement_test, can_do_simple_lru_replacement_1_test) {
   MockDataManager mock_data_manager;

@@ -8,7 +8,7 @@
 #include "K2QStateWrapper.hpp"
 #include "K2TreeScanner.hpp"
 #include "k2node.h"
-
+namespace k2cache {
 class BandScanner : public K2TreeScanner {
 public:
   BandScanner(K2TreeMixed &k2tree, unsigned long band,
@@ -29,5 +29,5 @@ private:
   k2node_lazy_handler_report_band_t lazy_handler{};
   K2TreeMixed &k2tree;
 };
-
+} // namespace k2cache
 #endif // RDFCACHEK2_BANDSCANNER_HPP

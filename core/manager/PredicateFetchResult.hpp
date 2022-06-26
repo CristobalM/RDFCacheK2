@@ -7,6 +7,7 @@
 
 #include "k2tree/K2TreeMixed.hpp"
 
+namespace k2cache {
 class PredicateFetchResult {
   const bool does_exist;
   K2TreeMixed *result;
@@ -18,5 +19,6 @@ public:
   bool exists() const;
   bool loaded();
 };
+} // namespace k2cache
 
 #endif // RDFCACHEK2_PREDICATEFETCHRESULT_HPP

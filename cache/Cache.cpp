@@ -9,7 +9,7 @@
 #include "FileRWHandler.hpp"
 #include "replacement/CacheReplacement.hpp"
 #include "replacement/CacheReplacementFactory.hpp"
-
+namespace k2cache {
 Cache::Cache(std::shared_ptr<PredicatesCacheManager> predicates_cache_manager,
              const CacheArgs &args)
     : cache_manager(std::move(predicates_cache_manager)),
@@ -41,3 +41,4 @@ std::vector<unsigned long> Cache::extract_loaded_predicates_from_sequence(
 }
 
 NodesSequence &Cache::get_nodes_sequence() { return *nodes_sequence; }
+} // namespace k2cache

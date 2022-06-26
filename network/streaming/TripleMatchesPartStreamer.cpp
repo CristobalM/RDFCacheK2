@@ -8,7 +8,7 @@
 #include "TriplePatternMatchingStreamer.hpp"
 #include "fic/FullyIndexedPredicate.hpp"
 #include <map>
-
+namespace k2cache {
 TripleMatchesPartStreamer::TripleMatchesPartStreamer(
     int channel_id, std::vector<unsigned long> &&loaded_predicates,
     size_t threshold_part_size, TaskProcessor *task_processor, Cache *cache,
@@ -104,3 +104,4 @@ TripleMatchesPartStreamer::get_triple_pattern_streamer(int pattern_channel_id) {
 void TripleMatchesPartStreamer::init_cached_predicate_sources() {
   fully_indexed_cache.init_streamer_predicates(loaded_predicates);
 }
+} // namespace k2cache

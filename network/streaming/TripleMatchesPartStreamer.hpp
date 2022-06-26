@@ -11,6 +11,7 @@
 #include "k2tree/K2TreeScanner.hpp"
 #include "server/tasks/TaskProcessor.hpp"
 #include <mutex>
+namespace k2cache {
 class TripleMatchesPartStreamer : public I_TRStreamer {
   int channel_id;
   std::vector<unsigned long> loaded_predicates;
@@ -53,5 +54,5 @@ private:
   void set_finished();
   void init_cached_predicate_sources();
 };
-
+} // namespace k2cache
 #endif // RDFCACHEK2_TRIPLEMATCHESPARTSTREAMER_HPP

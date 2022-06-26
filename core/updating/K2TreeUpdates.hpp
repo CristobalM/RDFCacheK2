@@ -7,6 +7,7 @@
 
 #include "k2tree/K2TreeMixed.hpp"
 
+namespace k2cache {
 struct K2TreeUpdates {
   enum UPDATE_KIND { INSERT_UPDATE = 0, DELETE_UPDATE, BOTH_UPDATE, NO_UPDATE };
 
@@ -17,5 +18,6 @@ struct K2TreeUpdates {
                 K2TreeMixed *k2tree_del);
   UPDATE_KIND get_kind() const;
 };
+} // namespace k2cache
 
 #endif // RDFCACHEK2_K2TREEUPDATES_HPP

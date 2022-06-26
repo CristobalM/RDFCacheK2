@@ -11,7 +11,7 @@
 #include "response_msg.pb.h"
 #include <memory>
 #include <set>
-
+namespace k2cache {
 class ServerTask {
   int client_socket_fd;
   Cache &cache;
@@ -39,5 +39,6 @@ public:
   void process_update_triples_batch(Message &message);
   void process_sync_logs_with_indexes(const Message &);
 };
+} // namespace k2cache
 
 #endif // RDFCACHEK2_SERVERTASK_HPP

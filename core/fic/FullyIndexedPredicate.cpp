@@ -5,6 +5,7 @@
 #include <algorithm>
 
 #include "FullyIndexedPredicate.hpp"
+namespace k2cache {
 FullyIndexedPredicate::FullyIndexedPredicate(const K2TreeMixed &k2tree) {
   k2tree.scan_points(
       [](unsigned long col, unsigned long row, void *report_state) {
@@ -39,3 +40,4 @@ const std::set<unsigned long> &FullyIndexedPredicate::get_all_subjects() {
 const std::set<unsigned long> &FullyIndexedPredicate::get_all_objects() {
   return objects;
 }
+} // namespace k2cache

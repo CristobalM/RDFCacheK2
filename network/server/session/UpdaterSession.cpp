@@ -4,6 +4,8 @@
 
 #include "UpdaterSession.hpp"
 #include "updating/K2TreeUpdates.hpp"
+
+namespace k2cache {
 UpdaterSession::UpdaterSession(TaskProcessor *task_processor, Cache *cache)
     : task_processor(task_processor), cache(cache) {}
 
@@ -95,3 +97,4 @@ void UpdaterSession::log_updates() {
   task_processor->log_updates(k2tree_updates);
 }
 void UpdaterSession::do_commit_updates() { log_updates(); }
+} // namespace k2cache

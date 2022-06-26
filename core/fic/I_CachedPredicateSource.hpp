@@ -7,6 +7,7 @@
 
 #include <set>
 #include <vector>
+namespace k2cache {
 struct I_CachedPredicateSource {
   virtual ~I_CachedPredicateSource() = default;
 
@@ -18,5 +19,5 @@ struct I_CachedPredicateSource {
   virtual const std::set<unsigned long> &get_all_subjects() = 0;
   virtual const std::set<unsigned long> &get_all_objects() = 0;
 };
-
+} // namespace k2cache
 #endif // RDFCACHEK2_I_CACHEDPREDICATESOURCE_HPP

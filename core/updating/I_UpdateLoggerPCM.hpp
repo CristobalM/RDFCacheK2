@@ -7,6 +7,7 @@
 
 #include <vector>
 
+namespace k2cache {
 class I_UpdateLoggerPCM {
 public:
   virtual ~I_UpdateLoggerPCM() = default;
@@ -17,5 +18,6 @@ public:
   virtual void clean_append_log() = 0;
   virtual void recover_all() = 0;
 };
+} // namespace k2cache
 
 #endif // RDFCACHEK2_I_UPDATELOGGERPCM_HPP

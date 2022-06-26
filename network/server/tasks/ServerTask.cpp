@@ -16,13 +16,14 @@
 #include "response_msg.pb.h"
 
 #include "hashing.hpp"
+#include "messages/utils.hpp"
 #include "nodeids/NodeId.hpp"
 #include "nodeids/TripleNodeId.hpp"
 #include "serialization_util.hpp"
 
-#include "messages/utils.hpp"
-
 using namespace std::chrono_literals;
+
+namespace k2cache {
 
 ServerTask::ServerTask(int client_socket_fd, Cache &cache,
                        TaskProcessor &task_processor)
@@ -314,3 +315,4 @@ void ServerTask::process_sync_logs_with_indexes(const Message &) {
   cache_response.set_response_type(proto_msg::SYNC_LOGS_WITH_INDEXES_RESPONSE);
   send_response(cache_response);
 }
+} // namespace k2cache

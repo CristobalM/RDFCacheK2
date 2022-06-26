@@ -6,9 +6,9 @@
 
 #include "serialization_util.hpp"
 
-#include "exceptions.hpp"
 #include "NodeId.hpp"
-
+#include "exceptions.hpp"
+namespace k2cache {
 NodeId::NodeId(const std::string &input_string)
     : data(string_to_ul(input_string)) {}
 
@@ -38,3 +38,4 @@ std::istream &operator>>(std::istream &is, NodeId &data) {
   return is;
 }
 NodeId::NodeId() : data(0) {}
+} // namespace k2cache

@@ -5,8 +5,8 @@
 #include "I_FileRWHandler.hpp"
 #include "cache_test_util.hpp"
 #include <gtest/gtest.h>
-
-//TEST(node_ids_dyn_mapper_test, can_map_big_ids_to_smaller){
+using namespace k2cache;
+// TEST(node_ids_dyn_mapper_test, can_map_big_ids_to_smaller){
 //  auto pcm = basic_pcm();
 //  auto updater = pcm.get_updater();
 //  static constexpr auto total_points = 10000UL;

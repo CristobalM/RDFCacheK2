@@ -11,6 +11,7 @@
 #include <string>
 
 #include "CacheArgs.hpp"
+#include "I_DataManager.hpp"
 #include "I_FileRWHandler.hpp"
 #include "PredicatesIndexCacheMD.hpp"
 #include "fic/FullyIndexedCache.hpp"
@@ -24,6 +25,7 @@
 #include "updating/UpdatesLogger.hpp"
 #include "updating/UpdatesLoggerFilesManager.hpp"
 
+namespace k2cache {
 class PredicatesCacheManager : public I_DataManager, public I_DataMerger {
   std::unique_ptr<PredicatesIndexCacheMD> predicates_index;
   std::unique_ptr<UpdatesLogger> updates_logger;
@@ -81,5 +83,6 @@ private:
                                               unsigned long)> &op,
                      bool create_if_doesnt_exists);
 };
+} // namespace k2cache
 
 #endif // RDFCACHEK2_PREDICATESCACHEMANAGER_HPP

@@ -19,7 +19,7 @@
 #include "server/session/Updater.hpp"
 #include "streaming/I_TRStreamer.hpp"
 #include "updating/UpdatesLogger.hpp"
-
+namespace k2cache {
 class CacheServerTaskProcessor : public TaskProcessor {
   using worker_t = ServerWorker<CacheServerTaskProcessor>;
 
@@ -72,5 +72,6 @@ public:
   void sync_to_persistent() override;
   void sync_logs_to_indexes();
 };
+} // namespace k2cache
 
 #endif // RDFCACHEK2_CACHESERVERTASKPROCESSOR_HPP

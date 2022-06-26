@@ -12,6 +12,8 @@
 #include <FileRWHandler.hpp>
 #include <exception>
 
+using namespace k2cache;
+
 struct parsed_options {
   std::string iris_file;
   std::string blanks_file;

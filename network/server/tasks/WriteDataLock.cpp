@@ -3,3 +3,4 @@
 //
 
 #include "WriteDataLock.hpp"
+namespace k2cache {}

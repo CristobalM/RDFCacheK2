@@ -3,6 +3,8 @@
 //
 
 #include "LRUReplacementStrategy.hpp"
+#include "I_ReplacementPriorityQueue.hpp"
+namespace k2cache {
 
 LRUReplacementStrategy::LRUReplacementStrategy() : low(0), high(0) {}
 void LRUReplacementStrategy::hit_key(unsigned long key) {
@@ -46,3 +48,4 @@ bool LRUReplacementStrategy::should_hit_without_retrieval(
     unsigned long, I_ReplacementPriorityQueue &) {
   return false;
 }
+} // namespace k2cache

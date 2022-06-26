@@ -7,6 +7,7 @@
 
 #include "k2tree/K2TreeMixed.hpp"
 #include <google/protobuf/stubs/common.h>
+using namespace k2cache;
 
 using pairs_set = std::set<std::pair<unsigned long, unsigned long>>;
 

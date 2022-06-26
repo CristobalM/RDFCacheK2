@@ -5,7 +5,7 @@
 #include "ServerWorker.hpp"
 #include "server/replacement/ReplacementTaskProcessor.hpp"
 #include "server/tasks/CacheServerTaskProcessor.hpp"
-
+namespace k2cache {
 template <class TaskProcessor> void ServerWorker<TaskProcessor>::start() {
   thread = std::make_unique<std::thread>(&self_t::main_loop, this);
 }
@@ -54,3 +54,4 @@ template <class TaskProcessor> void ServerWorker<TaskProcessor>::pause() {
 
 template class ServerWorker<CacheServerTaskProcessor>;
 template class ServerWorker<ReplacementTaskProcessor>;
+} // namespace k2cache

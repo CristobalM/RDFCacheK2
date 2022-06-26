@@ -8,7 +8,7 @@
 #include <condition_variable>
 #include <mutex>
 #include <thread>
-
+namespace k2cache {
 template <class TaskProcessor> class ServerWorker {
   std::condition_variable cv;
   std::mutex m;
@@ -31,5 +31,6 @@ public:
 private:
   void main_loop();
 };
+} // namespace k2cache
 
 #endif // RDFCACHEK2_SERVERWORKER_HPP

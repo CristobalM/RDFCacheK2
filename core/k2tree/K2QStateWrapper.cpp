@@ -3,6 +3,7 @@
 //
 
 #include "K2QStateWrapper.hpp"
+namespace k2cache {
 K2QStateWrapper::K2QStateWrapper(uint32_t tree_depth, uint32_t cut_depth,
                                  uint32_t max_nodes_count)
     : st({}) {
@@ -27,3 +28,4 @@ K2QStateWrapper &K2QStateWrapper::operator=(K2QStateWrapper &&other) noexcept {
   return *this;
 }
 void K2QStateWrapper::set_no_destruct() { no_destruct = true; }
+} // namespace k2cache

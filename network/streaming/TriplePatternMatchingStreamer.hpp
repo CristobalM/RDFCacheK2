@@ -9,6 +9,7 @@
 #include "k2tree/RDFTriple.hpp"
 #include <Cache.hpp>
 #include <sparql_tree.pb.h>
+namespace k2cache {
 class TriplePatternMatchingStreamer : public I_TRMatchingStreamer {
 
   int channel_id;
@@ -43,5 +44,5 @@ public:
   void set_finished();
   proto_msg::CacheResponse timeout_proto_response();
 };
-
+} // namespace k2cache
 #endif // RDFCACHEK2_TRIPLEPATTERNMATCHINGSTREAMER_HPP

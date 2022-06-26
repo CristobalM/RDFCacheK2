@@ -6,6 +6,7 @@ extern "C" {
 
 #include "block_serialization.hpp"
 #include "serialization_util.hpp"
+namespace k2cache {
 
 k2tree_data read_tree_from_istream(std::istream &is) {
   uint16_t max_node_count = read_u16(is);
@@ -252,3 +253,4 @@ k2tree_data read_tree_from_istream(std::istream &is,
   out.treedepth = treedepth;
   return out;
 }
+} // namespace k2cache

@@ -7,6 +7,7 @@
 #include "StringIStream.hpp"
 #include "StringOStream.hpp"
 
+namespace k2cache {
 FHMock::FHMock(std::string data) : data(std::move(data)) {}
 
 std::unique_ptr<I_OStream> FHMock::get_writer(std::ios::openmode) {
@@ -32,3 +33,4 @@ void FHMock::clean() {
   data = "";
   temp_data = "";
 }
+} // namespace k2cache

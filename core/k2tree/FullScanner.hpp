@@ -8,6 +8,7 @@
 #include "K2QStateWrapper.hpp"
 #include "K2TreeScanner.hpp"
 #include "k2node.h"
+namespace k2cache {
 class FullScanner : public K2TreeScanner {
 public:
   explicit FullScanner(K2TreeMixed &k2tree);
@@ -25,5 +26,5 @@ private:
   k2node_lazy_handler_naive_scan_t lazy_handler{};
   K2TreeMixed &k2tree;
 };
-
+} // namespace k2cache
 #endif // RDFCACHEK2_FULLSCANNER_HPP

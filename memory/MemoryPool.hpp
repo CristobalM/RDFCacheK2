@@ -11,6 +11,7 @@
 #include <stdexcept>
 #include <vector>
 
+namespace k2cache {
 template <class T> class MemoryPool {
   using buffer_t = T[];
 
@@ -131,5 +132,5 @@ private:
     throw std::runtime_error("Couldn't find pointer in buffers");
   }
 };
-
+} // namespace k2cache
 #endif // RDFCACHEK2_MEMORYPOOL_HPP

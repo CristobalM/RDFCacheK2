@@ -8,6 +8,7 @@
 #include "I_IStream.hpp"
 #include <vector>
 
+namespace k2cache {
 class NodesSequence {
   std::vector<long> values;
 
@@ -23,5 +24,6 @@ public:
   static NodesSequence from_input_stream(I_IStream &input_stream);
   static NodesSequence from_file(const std::string &file_name);
 };
+} // namespace k2cache
 
 #endif // RDFCACHEK2_NODESSEQUENCE_HPP

@@ -5,6 +5,7 @@
 #include "PredicatesCacheManager.hpp"
 #include "FileRWHandler.hpp"
 #include "k2tree/NullScanner.hpp"
+namespace k2cache {
 
 // read/write constructors
 
@@ -142,3 +143,4 @@ UpdatesLogger &PredicatesCacheManager::get_updates_logger() {
     throw std::runtime_error("There is no updates_logger on read only mode");
   return *updates_logger;
 }
+} // namespace k2cache

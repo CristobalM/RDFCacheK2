@@ -4,7 +4,7 @@
 
 #include "server/CacheServer.hpp"
 #include <Cache.hpp>
-
+using namespace k2cache;
 int main() {
   Cache cache;
   CacheServer cacheServer(cache, 8909, 1);

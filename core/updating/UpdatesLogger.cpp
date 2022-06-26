@@ -3,7 +3,12 @@
 //
 #include <filesystem>
 
+#include "I_DataMerger.hpp"
+#include "K2TreeUpdates.hpp"
 #include "UpdatesLogger.hpp"
+#include "UpdatesLoggerFilesManager.hpp"
+
+namespace k2cache {
 
 namespace fs = std::filesystem;
 
@@ -443,3 +448,4 @@ void UpdatesLogger::PredicateUpdate::merge_with(
     }
   }
 }
+} // namespace k2cache

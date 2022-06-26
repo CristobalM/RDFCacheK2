@@ -3,6 +3,7 @@
 //
 
 #include "StringIStream.hpp"
+namespace k2cache {
 
 StringIStream::StringIStream(std::string &data, std::ios::openmode openmode)
     : data(data), iss(data, openmode) {}
@@ -17,3 +18,4 @@ StringIStream::operator bool() const {
   return iss.operator bool() && !iss.eof() && iss.good();
 }
 std::streampos StringIStream::tellg() { return iss.tellg(); }
+} // namespace k2cache

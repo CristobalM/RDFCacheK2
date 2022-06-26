@@ -96,7 +96,7 @@ set(CORE_SOURCE_FILES
         core/updating/UpdatesLogger.hpp
         core/updating/UpdatesLoggerFilesManager.cpp
         core/updating/UpdatesLoggerFilesManager.hpp
-        )
+        core/nodeids/NodeIdsManager.cpp core/nodeids/NodeIdsManager.hpp core/manager/PredicatesCacheAndIdsManager.cpp core/manager/PredicatesCacheAndIdsManager.hpp)
 
 
 set(NETWORK_SOURCE_FILES

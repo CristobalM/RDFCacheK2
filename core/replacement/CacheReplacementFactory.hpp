@@ -9,6 +9,7 @@
 #include "manager/I_DataManager.hpp"
 #include <memory>
 #include <mutex>
+namespace k2cache {
 class CacheReplacementFactory {
 public:
   static std::unique_ptr<I_CacheReplacement>
@@ -16,5 +17,6 @@ public:
                            I_DataManager *cache_data_manager,
                            I_CacheReplacement::REPLACEMENT_STRATEGY strategy);
 };
+} // namespace k2cache
 
 #endif // RDFCACHEK2_CACHEREPLACEMENTFACTORY_HPP

@@ -3,6 +3,7 @@
 //
 
 #include "ReplacementTask.hpp"
+namespace k2cache {
 void ReplacementTask::process() {
   auto &replacement = cache.get_replacement();
   for (auto p : *predicates) {
@@ -14,3 +15,4 @@ void ReplacementTask::process() {
 ReplacementTask::ReplacementTask(
     Cache &cache, std::shared_ptr<const std::vector<unsigned long>> predicates)
     : cache(cache), predicates(std::move(predicates)) {}
+} // namespace k2cache

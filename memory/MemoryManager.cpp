@@ -11,6 +11,7 @@ extern "C" {
 
 #include "MemoryManager.hpp"
 
+namespace k2cache {
 MemoryManager::MemoryManager() : m(std::make_unique<std::mutex>()) {}
 
 MemoryManager &MemoryManager::instance() { return _instance; }
@@ -54,6 +55,11 @@ MemoryManager &MemoryManager::operator=(MemoryManager &&other) noexcept {
   this->m = std::move(other.m);
   return *this;
 }
+
+MemoryManager MemoryManager::_instance;
+} // namespace k2cache
+
+using namespace k2cache;
 
 struct block *k2tree_alloc_block(void) {
   return new struct block;
@@ -111,5 +117,3 @@ void k2tree_free_k2node(struct k2node *node) {
   else
     delete node;
 }
-
-MemoryManager MemoryManager::_instance;

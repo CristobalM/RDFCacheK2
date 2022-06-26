@@ -3,6 +3,7 @@
 //
 
 #include "CachedSubjectObjectScanner.hpp"
+namespace k2cache {
 bool CachedSubjectObjectScanner::has_next() {
   while (current_active_element_position >= active_right_elements->size() &&
          base_set_it != base_set.end()) {
@@ -39,5 +40,5 @@ const std::vector<unsigned long> *
 CachedSubjectObjectScanner::get_active_elements() {
   return left_right_dir ? &cached_source->get_objects(current_base_element)
                         : &cached_source->get_subjects(current_base_element);
-  ;
 }
+} // namespace k2cache

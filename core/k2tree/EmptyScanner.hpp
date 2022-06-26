@@ -7,7 +7,7 @@
 
 #include "k2tree/K2QStateWrapper.hpp"
 #include "k2tree/K2TreeScanner.hpp"
-
+namespace k2cache {
 class EmptyScanner : public K2TreeScanner {
 public:
   explicit EmptyScanner(K2TreeMixed &k2tree);
@@ -22,5 +22,5 @@ private:
   K2QStateWrapper stw;
   K2TreeMixed &k2tree;
 };
-
+} // namespace k2cache
 #endif // RDFCACHEK2_EMPTYSCANNER_HPP

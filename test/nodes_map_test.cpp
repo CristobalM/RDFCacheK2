@@ -7,6 +7,8 @@
 #include <gtest/gtest.h>
 #include <serialization_util.hpp>
 
+using namespace k2cache;
+
 TEST(NodesMapSuite, CanGetNodesIdCorrectly) {
   std::stringstream ss;
 

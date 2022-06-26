@@ -8,7 +8,7 @@
 #include "request_msg.pb.h"
 #include <cstdint>
 #include <memory>
-
+namespace k2cache {
 class Message {
   uint32_t message_size;
   /**
@@ -38,5 +38,5 @@ private:
   Message(const Message &);
   Message &operator=(const Message &);
 };
-
+} // namespace k2cache
 #endif // RDFCACHEK2_MESSAGE_HPP

@@ -10,6 +10,7 @@
 #include <memory>
 #include <mutex>
 #include <queue>
+namespace k2cache {
 class ReplacementTaskProcessor {
   using worker_t = ServerWorker<ReplacementTaskProcessor>;
   std::mutex m;
@@ -26,5 +27,5 @@ public:
   void mark_used(const std::vector<unsigned long> &predicates);
   void mark_ready(const std::vector<unsigned long> &predicates_in_use);
 };
-
+} // namespace k2cache
 #endif // RDFCACHEK2_REPLACEMENTTASKPROCESSOR_HPP

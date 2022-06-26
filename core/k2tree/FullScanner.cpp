@@ -9,7 +9,7 @@ extern "C" {
 
 #include "FullScanner.hpp"
 #include "K2TreeMixed.hpp"
-
+namespace k2cache {
 bool FullScanner::has_next() {
   return static_cast<bool>(lazy_handler.has_next);
 }
@@ -35,3 +35,4 @@ unsigned long FullScanner::get_band_value() {
   throw std::runtime_error("Not band");
 }
 K2QStateWrapper &FullScanner::get_k2qw() { return stw; }
+} // namespace k2cache

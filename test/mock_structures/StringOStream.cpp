@@ -3,6 +3,7 @@
 //
 #include "StringOStream.hpp"
 
+namespace k2cache {
 StringOStream::StringOStream(std::string &data, std::ios::openmode openmode)
     : data(data), oss(data, openmode) {}
 
@@ -17,3 +18,4 @@ void StringOStream::seekp(std::streamoff offset, std::ios_base::seekdir way) {
   oss.seekp(offset, way);
 }
 std::streampos StringOStream::tellp() { return oss.tellp(); }
+} // namespace k2cache

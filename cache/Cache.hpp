@@ -17,6 +17,7 @@
 
 #include "CacheArgs.hpp"
 
+namespace k2cache {
 class Cache {
   std::shared_ptr<PredicatesCacheManager> cache_manager;
   std::unique_ptr<NodesSequence> nodes_sequence;
@@ -36,5 +37,6 @@ public:
   std::vector<unsigned long> extract_loaded_predicates_from_sequence(
       const std::vector<unsigned long> &input_predicates_ids);
 };
+} // namespace k2cache
 
 #endif // RDFCACHEK2_CACHE_HPP

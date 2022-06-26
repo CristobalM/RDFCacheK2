@@ -13,6 +13,7 @@
 #include <Cache.hpp>
 
 namespace fs = std::filesystem;
+using namespace k2cache;
 
 struct parsed_options {
   std::string index_file;

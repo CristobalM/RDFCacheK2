@@ -9,6 +9,8 @@
 #include "mock_structures/FHMock.hpp"
 #include <gtest/gtest.h>
 
+using namespace k2cache;
+
 TEST(fully_indexed_cache, test_resynced_on_update_unloaded) {
   K2TreeConfig config;
   config.treedepth = 32;

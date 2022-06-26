@@ -15,6 +15,7 @@
 #include "k2tree/K2TreeMixed.hpp"
 #include "updating/I_UpdateLoggerPCM.hpp"
 
+namespace k2cache {
 class PredicatesIndexCacheMD {
   std::unique_ptr<I_FileRWHandler> file_handler;
   std::unique_ptr<I_IStream> is;
@@ -86,5 +87,6 @@ private:
   void clean_up_bulk_sync(std::set<unsigned long> &loaded_predicates,
                           unsigned long &total_sz);
 };
+} // namespace k2cache
 
 #endif /* _PREDICATES_INDEX_CACHE_MD_HPP_ */

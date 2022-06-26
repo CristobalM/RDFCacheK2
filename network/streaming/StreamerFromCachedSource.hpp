@@ -9,6 +9,7 @@
 #include "I_TRMatchingStreamer.hpp"
 #include "fic/I_CachedPredicateSource.hpp"
 #include "scanner/CachedSourceScanner.hpp"
+namespace k2cache {
 class StreamerFromCachedSource : public I_TRMatchingStreamer {
   I_CachedPredicateSource *cached_source;
   int channel_id;
@@ -41,5 +42,6 @@ public:
   bool all_sent() override;
   void set_finished();
 };
+} // namespace k2cache
 
 #endif // RDFCACHEK2_STREAMERFROMCACHEDSOURCE_HPP

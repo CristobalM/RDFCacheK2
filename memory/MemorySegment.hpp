@@ -7,6 +7,7 @@
 
 #include <cstddef>
 #include <memory>
+namespace k2cache {
 class MemorySegment {
   std::unique_ptr<uint8_t[]> data;
   size_t size_bytes;
@@ -19,5 +20,5 @@ public:
   void free_memory(void *ptr);
   void *get_first_address();
 };
-
+} // namespace k2cache
 #endif // RDFCACHEK2_MEMORYSEGMENT_HPP

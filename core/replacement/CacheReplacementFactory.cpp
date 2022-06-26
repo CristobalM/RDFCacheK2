@@ -6,9 +6,11 @@
 
 #include "CacheReplacement.hpp"
 #include "FrequencyReplacementStrategy.hpp"
+#include "I_CacheReplacement.hpp"
 #include "LRUReplacementStrategy.hpp"
 #include "NoCachingReplacement.hpp"
 
+namespace k2cache {
 std::unique_ptr<I_CacheReplacement>
 CacheReplacementFactory::create_cache_replacement(
     unsigned long max_size_bytes, I_DataManager *cache_data_manager,
@@ -25,3 +27,4 @@ CacheReplacementFactory::create_cache_replacement(
     return std::make_unique<NoCachingReplacement>();
   }
 }
+} // namespace k2cache

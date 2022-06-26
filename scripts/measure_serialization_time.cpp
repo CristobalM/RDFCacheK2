@@ -6,10 +6,11 @@
 #include <filesystem>
 #include <getopt.h>
 #include <iostream>
-#include <memory>
 #include <string>
 
 #include "manager/PredicatesCacheManager.hpp"
+
+using namespace k2cache;
 
 struct parsed_options {
   std::string iris_file;

@@ -4,11 +4,13 @@
 
 #include "CacheReplacement.hpp"
 #include "FrequencyReplacementStrategy.hpp"
+#include "I_PQTraverse.hpp"
 #include "LRUReplacementStrategy.hpp"
 #include <iostream>
 #include <memory>
 #include <stdexcept>
 
+namespace k2cache {
 template <class CRStrategy>
 CacheReplacement<CRStrategy>::CacheReplacement(size_t max_size_allowed,
                                                I_DataManager *data_manager)
@@ -176,3 +178,4 @@ CacheReplacement<CRStrategy>::CRPQTraverse::CRPQTraverse(
 
 template class CacheReplacement<LRUReplacementStrategy>;
 template class CacheReplacement<FrequencyReplacementStrategy>;
+} // namespace k2cache

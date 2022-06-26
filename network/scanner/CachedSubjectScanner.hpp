@@ -10,6 +10,7 @@
 #include <array>
 #include <utility>
 #include <vector>
+namespace k2cache {
 class CachedSubjectScanner : public CachedSourceScanner {
 
   const std::vector<unsigned long> &subjects;
@@ -22,5 +23,5 @@ public:
   bool has_next() override;
   std::pair<unsigned long, unsigned long> next() override;
 };
-
+} // namespace k2cache
 #endif // RDFCACHEK2_CACHEDSUBJECTSCANNER_HPP

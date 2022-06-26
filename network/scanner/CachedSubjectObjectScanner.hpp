@@ -8,6 +8,7 @@
 #include "CachedSourceScanner.hpp"
 #include "fic/I_CachedPredicateSource.hpp"
 #include <array>
+namespace k2cache {
 class CachedSubjectObjectScanner : public CachedSourceScanner {
   //  static constexpr unsigned long buf_sz = 4096;
   //  std::array<unsigned long, buf_sz> buf{};
@@ -36,5 +37,6 @@ private:
   void check_active_elements();
   const std::vector<unsigned long> *get_active_elements();
 };
+} // namespace k2cache
 
 #endif // RDFCACHEK2_CACHEDSUBJECTOBJECTSCANNER_HPP

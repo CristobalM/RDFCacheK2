@@ -13,6 +13,8 @@
 #include "mock_structures/FHMock.hpp"
 #include "mock_structures/StringIStream.hpp"
 
+using namespace k2cache;
+
 TEST(update_log_test, test_data_merger_mock) {
   K2TreeConfig config;
   config.treedepth = 32;

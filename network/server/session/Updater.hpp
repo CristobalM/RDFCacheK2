@@ -7,6 +7,7 @@
 
 #include "nodeids/NodeId.hpp"
 #include "nodeids/TripleNodeId.hpp"
+namespace k2cache {
 class Updater {
 public:
   virtual ~Updater() = default;
@@ -21,5 +22,5 @@ public:
   }
   virtual void commit_updates() = 0;
 };
-
+} // namespace k2cache
 #endif // RDFCACHEK2_UPDATER_HPP

@@ -4,6 +4,8 @@
 
 #include "UpdatesLoggerFilesManager.hpp"
 #include "FileRWHandler.hpp"
+namespace k2cache {
+
 UpdatesLoggerFilesManager::UpdatesLoggerFilesManager(
     std::unique_ptr<I_FileRWHandler> &&index_logs_fh,
     std::unique_ptr<I_FileRWHandler> &&offsets_fh,
@@ -26,3 +28,4 @@ I_FileRWHandler &UpdatesLoggerFilesManager::get_offsets_fh() {
 I_FileRWHandler &UpdatesLoggerFilesManager::get_metadata_fh() {
   return *metadata_fh;
 }
+} // namespace k2cache

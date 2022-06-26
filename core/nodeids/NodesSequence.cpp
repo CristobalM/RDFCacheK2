@@ -6,7 +6,7 @@
 #include "FileIStream.hpp"
 #include "serialization_util.hpp"
 #include <stdexcept>
-
+namespace k2cache {
 long NodesSequence::get_id(long value) {
   auto it = std::lower_bound(values.begin(), values.end(), value);
   if (it == values.end())
@@ -39,3 +39,4 @@ NodesSequence NodesSequence::from_file(const std::string &file_name) {
   FileIStream file_istream(file_name, std::ios::binary | std::ios::in);
   return from_input_stream(file_istream);
 }
+} // namespace k2cache

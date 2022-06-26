@@ -12,7 +12,7 @@
 #include "ServerWorker.hpp"
 #include "server/conn/TCPServerConnection.hpp"
 #include "server/tasks/CacheServerTaskProcessor.hpp"
-
+namespace k2cache {
 class CacheServer {
   uint16_t port;
   CacheServerTaskProcessor task_processor;
@@ -30,5 +30,5 @@ public:
 private:
   void main_thread_op();
 };
-
+} // namespace k2cache
 #endif // RDFCACHEK2_CACHESERVER_HPP

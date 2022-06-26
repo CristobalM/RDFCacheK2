@@ -7,7 +7,7 @@
 #include "streaming/TripleMatchesPartStreamer.hpp"
 
 #include <iostream>
-
+namespace k2cache {
 void CacheServerTaskProcessor::process_request(int client_socket_fd) {
   auto server_task_uptr =
       std::make_unique<ServerTask>(client_socket_fd, cache, *this);
@@ -128,3 +128,4 @@ CacheServerTaskProcessor::~CacheServerTaskProcessor() {}
 void CacheServerTaskProcessor::sync_logs_to_indexes() {
   cache.get_pcm().get_predicates_index_cache().sync_logs_to_indexes();
 }
+} // namespace k2cache

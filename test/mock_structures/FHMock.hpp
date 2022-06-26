@@ -13,6 +13,7 @@
 #include <I_IStream.hpp>
 #include <I_OStream.hpp>
 
+namespace k2cache {
 struct FHMock : public I_FileRWHandler {
   std::string data;
   std::string temp_data;
@@ -28,5 +29,6 @@ struct FHMock : public I_FileRWHandler {
   get_reader_writer(std::ios::openmode openmode) override;
   void clean() override;
 };
+} // namespace k2cache
 
 #endif // RDFCACHEK2_FHMOCK_HPP

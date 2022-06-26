@@ -8,8 +8,9 @@
 #include <filesystem>
 #include <iostream>
 
-void run_benchmarks(PredicatesCacheManager &pcm);
+using namespace k2cache;
 namespace fs = std::filesystem;
+void run_benchmarks(PredicatesCacheManager &pcm);
 
 int main(int argc, char *argv[]) {
   if (argc != 2) {

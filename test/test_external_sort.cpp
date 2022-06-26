@@ -5,7 +5,6 @@
 #include <google/protobuf/message_lite.h>
 #include <serialization_util.hpp>
 #include <triple_external_sort.hpp>
-
 struct Comparator {
 
   bool operator()(const TripleValue &lhs, const TripleValue &rhs) {

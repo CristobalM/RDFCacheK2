@@ -12,6 +12,7 @@
 #include "replacement/CacheReplacement.hpp"
 #include "replacement/LRUReplacementStrategy.hpp"
 
+namespace k2cache {
 class FullyIndexedCache {
 
   PredicatesIndexCacheMD &pic;
@@ -47,5 +48,5 @@ public:
   FullyIndexedCacheResponse get(unsigned long predicate_id);
   void resync_predicate(unsigned long predicate_id);
 };
-
+} // namespace k2cache
 #endif // RDFCACHEK2_FULLYINDEXEDCACHE_HPP

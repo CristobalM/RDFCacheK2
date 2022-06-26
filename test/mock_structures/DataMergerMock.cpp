@@ -4,6 +4,7 @@
 
 #include "DataMergerMock.hpp"
 
+namespace k2cache {
 DataMergerMock::DataMergerMock(K2TreeConfig config) : config(config) {}
 
 void DataMergerMock::merge_add_tree(unsigned long predicate_id,
@@ -56,3 +57,4 @@ void DataMergerMock::merge_update(std::vector<K2TreeUpdates> &updates) {
       merge_delete_tree(update.predicate_id, *update.k2tree_del);
   }
 }
+} // namespace k2cache

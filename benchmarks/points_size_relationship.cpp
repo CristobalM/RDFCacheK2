@@ -5,7 +5,7 @@
 #include "k2tree/K2TreeMixed.hpp"
 #include <iostream>
 #include <random>
-
+using namespace k2cache;
 static long random_generate(long start, long end) {
   static std::random_device rd;
   static std::mt19937 gen(rd());

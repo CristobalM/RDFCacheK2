@@ -5,7 +5,7 @@
 #include "TriplePatternMatchingStreamer.hpp"
 
 #include <utility>
-
+namespace k2cache {
 TriplePatternMatchingStreamer::TriplePatternMatchingStreamer(
     int channel_id, int pattern_channel_id,
     proto_msg::TripleNodeIdEnc triple_pattern_node, Cache *cache,
@@ -133,3 +133,4 @@ TriplePatternMatchingStreamer::timeout_proto_response() {
   result.mutable_error_response();
   return result;
 }
+} // namespace k2cache

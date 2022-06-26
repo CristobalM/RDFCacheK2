@@ -3,7 +3,7 @@
 //
 
 #include "block_stats.hpp"
-
+namespace k2cache {
 void block_rec_occup_ratio_count(struct block *b, K2TreeStats &k2tree_stats) {
   k2tree_stats.allocated_u32s += b->container_size;
   k2tree_stats.nodes_count += b->nodes_count;
@@ -19,3 +19,4 @@ void block_rec_occup_ratio_count(struct block *b, K2TreeStats &k2tree_stats) {
     block_rec_occup_ratio_count(child_block, k2tree_stats);
   }
 }
+} // namespace k2cache
