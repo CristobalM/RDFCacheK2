@@ -3,17 +3,17 @@
 //
 #include <filesystem>
 
-#include "I_DataMerger.hpp"
+#include "DataMerger.hpp"
 #include "K2TreeUpdates.hpp"
-#include "UpdatesLogger.hpp"
 #include "UpdatesLoggerFilesManager.hpp"
+#include "UpdatesLoggerImpl.hpp"
 
 namespace k2cache {
 
 namespace fs = std::filesystem;
 
-UpdatesLogger::UpdatesLogger(I_DataMerger &data_merger,
-                             UpdatesLoggerFilesManager &&files_manager)
+UpdatesLoggerImpl::UpdatesLoggerImpl(DataMerger &data_merger,
+                                     UpdatesLoggerFilesManager &&files_manager)
     : data_merger(data_merger), fm(std::move(files_manager)),
       metadata_file_rw(
           fm.get_metadata_fh().get_reader_writer(std::ios::binary)) {
@@ -22,8 +22,8 @@ UpdatesLogger::UpdatesLogger(I_DataMerger &data_merger,
     total_updates = read_total_updates();
 }
 
-void UpdatesLogger::log(std::vector<K2TreeUpdates> &k2tree_updates,
-                        offsets_map_t &offsets, I_OStream &trees_writer) {
+void UpdatesLoggerImpl::log(std::vector<K2TreeUpdates> &k2tree_updates,
+                            offsets_map_t &offsets, I_OStream &trees_writer) {
   auto &writer_real = trees_writer.get_ostream();
 
   write_u32(writer_real, k2tree_updates.size());
@@ -53,7 +53,7 @@ void UpdatesLogger::log(std::vector<K2TreeUpdates> &k2tree_updates,
   }
 }
 
-void UpdatesLogger::log(std::vector<K2TreeUpdates> &k2tree_updates) {
+void UpdatesLoggerImpl::log(std::vector<K2TreeUpdates> &k2tree_updates) {
   current_file_reader = nullptr;
   if (!current_file_writer) {
     current_file_writer = fm.get_index_logs_fh().get_writer(std::ios::binary);
@@ -82,7 +82,7 @@ void UpdatesLogger::log(std::vector<K2TreeUpdates> &k2tree_updates) {
   }
 }
 
-void UpdatesLogger::recover(const std::vector<unsigned long> &predicates) {
+void UpdatesLoggerImpl::recover(const std::vector<unsigned long> &predicates) {
   if (current_file_writer) {
     current_file_writer->flush();
     current_file_writer = nullptr; // close file if it's open
@@ -90,7 +90,7 @@ void UpdatesLogger::recover(const std::vector<unsigned long> &predicates) {
   recover_data(predicates);
 }
 
-void UpdatesLogger::recover_all() {
+void UpdatesLoggerImpl::recover_all() {
   if (current_file_writer) {
     current_file_writer->flush();
     current_file_writer = nullptr; // close file if it's open
@@ -98,7 +98,7 @@ void UpdatesLogger::recover_all() {
   recover_all_data();
 }
 
-void UpdatesLogger::recover_all_data() {
+void UpdatesLoggerImpl::recover_all_data() {
   if (!fm.get_index_logs_fh().exists())
     return;
   // auto ifs_logs = logs_file_handler.get_reader(std::ios::binary);
@@ -110,7 +110,8 @@ void UpdatesLogger::recover_all_data() {
   }
 }
 
-void UpdatesLogger::recover_data(const std::vector<unsigned long> &predicates) {
+void UpdatesLoggerImpl::recover_data(
+    const std::vector<unsigned long> &predicates) {
   if (!fm.get_index_logs_fh().exists())
     return;
   // auto ifs_logs = logs_file_handler.get_reader(std::ios::binary);
@@ -127,7 +128,7 @@ void UpdatesLogger::recover_data(const std::vector<unsigned long> &predicates) {
   }
 }
 
-void UpdatesLogger::recover_single_update(I_IStream &ifs) {
+void UpdatesLoggerImpl::recover_single_update(I_IStream &ifs) {
   auto updates_amount = static_cast<size_t>(read_u32(ifs.get_istream()));
   for (size_t i = 0; i < updates_amount; i++) {
     auto updates = recover_single_predicate_update(ifs);
@@ -135,7 +136,7 @@ void UpdatesLogger::recover_single_update(I_IStream &ifs) {
   }
 }
 
-void UpdatesLogger::retrieve_offsets_map() {
+void UpdatesLoggerImpl::retrieve_offsets_map() {
   if (!fm.get_offsets_fh().exists())
     return;
   auto ifs = fm.get_offsets_fh().get_reader(std::ios::binary);
@@ -153,8 +154,8 @@ void UpdatesLogger::retrieve_offsets_map() {
   }
 }
 
-void UpdatesLogger::dump_offsets_map(UpdatesLogger::offsets_map_t &_offsets_map,
-                                     I_OStream &offsets_file) {
+void UpdatesLoggerImpl::dump_offsets_map(
+    UpdatesLoggerImpl::offsets_map_t &_offsets_map, I_OStream &offsets_file) {
   if (_offsets_map.empty())
     return;
 
@@ -171,7 +172,7 @@ void UpdatesLogger::dump_offsets_map(UpdatesLogger::offsets_map_t &_offsets_map,
   }
 }
 
-void UpdatesLogger::dump_offsets_map() {
+void UpdatesLoggerImpl::dump_offsets_map() {
   if (offsets_map.empty())
     return;
   {
@@ -183,8 +184,8 @@ void UpdatesLogger::dump_offsets_map() {
   }
 }
 
-UpdatesLogger::PredicateUpdate
-UpdatesLogger::recover_single_predicate_update(I_IStream &ifs) {
+UpdatesLoggerImpl::PredicateUpdate
+UpdatesLoggerImpl::recover_single_predicate_update(I_IStream &ifs) {
   auto &ifs_real = ifs.get_istream();
   auto predicate_id = static_cast<unsigned long>(read_u64(ifs_real));
   auto update_kind =
@@ -225,13 +226,13 @@ UpdatesLogger::recover_single_predicate_update(I_IStream &ifs) {
  * @param predicate_id Will act as key for the mapping
  * @param ofs The output stream from which to get the current offset
  */
-void UpdatesLogger::register_update_offset(unsigned long predicate_id,
-                                           std::ostream &ofs) {
+void UpdatesLoggerImpl::register_update_offset(unsigned long predicate_id,
+                                               std::ostream &ofs) {
   register_update_offset(offsets_map, predicate_id, ofs);
 }
 
-void UpdatesLogger::register_update_offset(
-    UpdatesLogger::offsets_map_t &offsets, unsigned long predicate_id,
+void UpdatesLoggerImpl::register_update_offset(
+    UpdatesLoggerImpl::offsets_map_t &offsets, unsigned long predicate_id,
     std::ostream &ofs) {
   auto offset = ofs.tellp();
   auto it = offsets.find(predicate_id);
@@ -248,7 +249,7 @@ void UpdatesLogger::register_update_offset(
  * Recovers a predicate's data from file log into memory
  * @param predicate_id
  */
-void UpdatesLogger::recover_predicate(unsigned long predicate_id) {
+void UpdatesLoggerImpl::recover_predicate(unsigned long predicate_id) {
   if (!fm.get_index_logs_fh().exists())
     return;
   if (current_file_writer) {
@@ -266,11 +267,11 @@ void UpdatesLogger::recover_predicate(unsigned long predicate_id) {
   }
 }
 
-bool UpdatesLogger::has_predicate_stored(uint64_t predicate_id) {
+bool UpdatesLoggerImpl::has_predicate_stored(uint64_t predicate_id) {
   return offsets_map.find(predicate_id) != offsets_map.end();
 }
 
-int UpdatesLogger::read_total_updates() {
+int UpdatesLoggerImpl::read_total_updates() {
   auto last_offset = metadata_file_rw->tellg();
   metadata_file_rw->seekg(0, std::ios::beg);
   auto result = (int)read_u32(metadata_file_rw->get_istream());
@@ -280,7 +281,7 @@ int UpdatesLogger::read_total_updates() {
   return result;
 }
 
-void UpdatesLogger::commit_total_updates() {
+void UpdatesLoggerImpl::commit_total_updates() {
   commit_total_updates(*metadata_file_rw, total_updates);
   //  auto last_offset = metadata_file_rw->tellp();
   //  metadata_file_rw->seekp(0, std::ios::beg);
@@ -291,8 +292,8 @@ void UpdatesLogger::commit_total_updates() {
   //  metadata_file_rw->flush();
 }
 
-void UpdatesLogger::commit_total_updates(I_OStream &_metadata_file_rw,
-                                         int _total_updates) {
+void UpdatesLoggerImpl::commit_total_updates(I_OStream &_metadata_file_rw,
+                                             int _total_updates) {
   auto last_offset = _metadata_file_rw.tellp();
   _metadata_file_rw.seekp(0, std::ios::beg);
   write_u32(_metadata_file_rw.get_ostream(), _total_updates);
@@ -302,7 +303,7 @@ void UpdatesLogger::commit_total_updates(I_OStream &_metadata_file_rw,
   _metadata_file_rw.flush();
 }
 
-void UpdatesLogger::clean_append_log() {
+void UpdatesLoggerImpl::clean_append_log() {
   if (current_file_writer)
     current_file_writer = nullptr;
   if (current_file_reader)
@@ -317,8 +318,8 @@ void UpdatesLogger::clean_append_log() {
   total_updates = 0;
 }
 
-std::unique_ptr<UpdatesLogger::PredicateUpdate>
-UpdatesLogger::compact_predicate(unsigned long predicate_id) {
+std::unique_ptr<UpdatesLoggerImpl::PredicateUpdate>
+UpdatesLoggerImpl::compact_predicate(unsigned long predicate_id) {
   auto it = offsets_map.find(predicate_id);
   if (it == offsets_map.end())
     return nullptr;
@@ -349,7 +350,7 @@ UpdatesLogger::compact_predicate(unsigned long predicate_id) {
   return std::make_unique<PredicateUpdate>(std::move(merged_updates));
 }
 
-void UpdatesLogger::compact_logs() {
+void UpdatesLoggerImpl::compact_logs() {
   current_file_reader = nullptr;
   current_file_writer = nullptr;
 
@@ -392,8 +393,8 @@ void UpdatesLogger::compact_logs() {
   }
 }
 
-void UpdatesLogger::merge_update(
-    UpdatesLogger::PredicateUpdate &predicate_update) {
+void UpdatesLoggerImpl::merge_update(
+    UpdatesLoggerImpl::PredicateUpdate &predicate_update) {
   if (predicate_update.add_update)
     data_merger.merge_add_tree(predicate_update.predicate_id,
                                *predicate_update.add_update);
@@ -402,9 +403,9 @@ void UpdatesLogger::merge_update(
                                   *predicate_update.del_update);
 }
 
-int UpdatesLogger::logs_number() { return total_updates; }
+int UpdatesLoggerImpl::logs_number() { return total_updates; }
 
-std::vector<unsigned long> UpdatesLogger::get_predicates() {
+std::vector<unsigned long> UpdatesLoggerImpl::get_predicates() {
   std::vector<unsigned long> out;
   out.reserve(offsets_map.size());
   for (auto &it : offsets_map) {
@@ -412,10 +413,10 @@ std::vector<unsigned long> UpdatesLogger::get_predicates() {
   }
   return out;
 }
-UpdatesLoggerFilesManager &UpdatesLogger::get_fh_manager() { return fm; }
+UpdatesLoggerFilesManager &UpdatesLoggerImpl::get_fh_manager() { return fm; }
 
-void UpdatesLogger::PredicateUpdate::merge_with(
-    UpdatesLogger::PredicateUpdate &update) {
+void UpdatesLoggerImpl::PredicateUpdate::merge_with(
+    UpdatesLoggerImpl::PredicateUpdate &update) {
   if (!update.add_update && !update.del_update)
     return;
 

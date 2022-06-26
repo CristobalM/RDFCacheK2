@@ -13,7 +13,7 @@
 #include "PredicateFetchResult.hpp"
 #include "PredicatesCacheMetadata.hpp"
 #include "k2tree/K2TreeMixed.hpp"
-#include "updating/I_UpdateLoggerPCM.hpp"
+#include "updating/UpdatesLogger.hpp"
 
 namespace k2cache {
 class PredicatesIndexCacheMD {
@@ -39,7 +39,7 @@ private:
 
   MemorySegment *full_memory_segment;
 
-  I_UpdateLoggerPCM *update_logger;
+  UpdatesLogger *update_logger;
 
 public:
   explicit PredicatesIndexCacheMD(
@@ -68,7 +68,7 @@ public:
   const PredicateMetadata *get_metadata_with_id(uint64_t predicate_id);
   void load_all_predicates();
 
-  void set_update_logger(I_UpdateLoggerPCM *input_update_logger);
+  void set_update_logger(UpdatesLogger *input_update_logger);
 
   bool is_stored_in_main_index(uint64_t predicate_id);
   bool is_stored_in_updates_log(uint64_t predicate_id);

@@ -272,7 +272,7 @@ void PredicatesIndexCacheMD::load_all_predicates() {
   }
 }
 void PredicatesIndexCacheMD::set_update_logger(
-    I_UpdateLoggerPCM *input_update_logger) {
+    UpdatesLogger *input_update_logger) {
   update_logger = input_update_logger;
 }
 bool PredicatesIndexCacheMD::is_stored_in_main_index(uint64_t predicate_id) {

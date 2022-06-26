@@ -6,7 +6,7 @@
 #define RDFCACHEK2_CACHEREPLACEMENTFACTORY_HPP
 
 #include "I_CacheReplacement.hpp"
-#include "manager/I_DataManager.hpp"
+#include "manager/DataManager.hpp"
 #include <memory>
 #include <mutex>
 namespace k2cache {
@@ -14,7 +14,7 @@ class CacheReplacementFactory {
 public:
   static std::unique_ptr<I_CacheReplacement>
   create_cache_replacement(unsigned long max_size_bytes,
-                           I_DataManager *cache_data_manager,
+                           DataManager *cache_data_manager,
                            I_CacheReplacement::REPLACEMENT_STRATEGY strategy);
 };
 } // namespace k2cache

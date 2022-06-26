@@ -10,10 +10,10 @@
 #include <vector>
 
 #include "k2tree/K2TreeMixed.hpp"
-#include "updating/I_DataMerger.hpp"
+#include "updating/DataMerger.hpp"
 
 namespace k2cache {
-struct DataMergerMock : public I_DataMerger {
+struct DataMergerMock : public DataMerger {
 
   K2TreeConfig config;
   explicit DataMergerMock(K2TreeConfig config);

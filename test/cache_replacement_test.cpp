@@ -2,13 +2,13 @@
 // Created by cristobal on 04-08-21.
 //
 
-#include "manager/I_DataManager.hpp"
+#include "manager/DataManager.hpp"
 #include <gtest/gtest.h>
 #include <replacement/CacheReplacement.hpp>
 #include <replacement/FrequencyReplacementStrategy.hpp>
 #include <replacement/LRUReplacementStrategy.hpp>
 namespace k2cache {
-struct MockDataManager : public I_DataManager {
+struct MockDataManager : public DataManager {
   std::set<unsigned long> keys;
   void remove_key(unsigned long key) override { keys.erase(key); }
   void retrieve_key(unsigned long key) override { keys.insert(key); }

@@ -61,7 +61,7 @@ set(CORE_SOURCE_FILES
         core/k2tree/block_stats.cpp
         core/k2tree/block_stats.hpp
 
-        core/manager/I_DataManager.hpp
+        core/manager/DataManager.hpp
         core/manager/PredicateFetchResult.cpp
         core/manager/PredicatesCacheManagerImpl.cpp
         core/manager/PredicatesCacheMetadata.cpp
@@ -88,12 +88,12 @@ set(CORE_SOURCE_FILES
         core/replacement/NoCachingReplacement.cpp
         core/replacement/NoCachingReplacement.hpp
 
-        core/updating/I_DataMerger.hpp
-        core/updating/I_UpdateLoggerPCM.hpp
+        core/updating/DataMerger.hpp
+        core/updating/UpdatesLogger.hpp
         core/updating/K2TreeUpdates.cpp
         core/updating/K2TreeUpdates.hpp
-        core/updating/UpdatesLogger.cpp
-        core/updating/UpdatesLogger.hpp
+        core/updating/UpdatesLoggerImpl.cpp
+        core/updating/UpdatesLoggerImpl.hpp
         core/updating/UpdatesLoggerFilesManager.cpp
         core/updating/UpdatesLoggerFilesManager.hpp
         core/nodeids/NodeIdsManager.cpp core/nodeids/NodeIdsManager.hpp core/manager/PredicatesCacheAndIdsManager.cpp core/manager/PredicatesCacheAndIdsManager.hpp core/manager/PredicatesCacheManager.hpp core/manager/PCMFactory.cpp core/manager/PCMFactory.hpp)

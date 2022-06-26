@@ -7,7 +7,7 @@
 
 #include "FullyIndexedCacheResponse.hpp"
 #include "I_CachedPredicateSource.hpp"
-#include "manager/I_DataManager.hpp"
+#include "manager/DataManager.hpp"
 #include "manager/PredicatesIndexCacheMD.hpp"
 #include "replacement/CacheReplacement.hpp"
 #include "replacement/LRUReplacementStrategy.hpp"
@@ -23,7 +23,7 @@ class FullyIndexedCache {
 
   cache_map_t cached_predicates_sources;
 
-  class CacheDataManager : public I_DataManager {
+  class CacheDataManager : public DataManager {
     cache_map_t &cache_map;
     PredicatesIndexCacheMD &pic;
 

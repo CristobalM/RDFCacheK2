@@ -18,7 +18,6 @@
 #include "server/replacement/ReplacementTaskProcessor.hpp"
 #include "server/session/Updater.hpp"
 #include "streaming/I_TRStreamer.hpp"
-#include "updating/UpdatesLogger.hpp"
 namespace k2cache {
 class CacheServerTaskProcessor : public TaskProcessor {
   using worker_t = ServerWorker<CacheServerTaskProcessor>;

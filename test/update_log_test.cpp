@@ -3,7 +3,6 @@
 //
 
 #include "k2tree/K2TreeBulkOp.hpp"
-#include "updating/UpdatesLogger.hpp"
 #include <gtest/gtest.h>
 
 #include "builder/PredicatesIndexFileBuilder.hpp"
@@ -12,6 +11,7 @@
 #include "mock_structures/DataMergerMock.hpp"
 #include "mock_structures/FHMock.hpp"
 #include "mock_structures/StringIStream.hpp"
+#include "updating/UpdatesLoggerImpl.hpp"
 
 using namespace k2cache;
 
@@ -21,7 +21,7 @@ TEST(update_log_test, test_data_merger_mock) {
   config.cut_depth = 10;
   config.max_node_count = 256;
   DataMergerMock data_merger(config);
-  UpdatesLogger updates_logger(data_merger, mock_fh_manager());
+  UpdatesLoggerImpl updates_logger(data_merger, mock_fh_manager());
 
   int predicate_id_1 = 123;
 

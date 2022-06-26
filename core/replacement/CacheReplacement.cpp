@@ -13,7 +13,7 @@
 namespace k2cache {
 template <class CRStrategy>
 CacheReplacement<CRStrategy>::CacheReplacement(size_t max_size_allowed,
-                                               I_DataManager *data_manager)
+                                               DataManager *data_manager)
     : priority_set(StrategyWrapper(strategy)),
       cr_priority_queue(priority_set, space_map),
       max_size_allowed(max_size_allowed), size_used(0),

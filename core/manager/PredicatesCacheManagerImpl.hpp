@@ -11,7 +11,7 @@
 #include <string>
 
 #include "CacheArgs.hpp"
-#include "I_DataManager.hpp"
+#include "DataManager.hpp"
 #include "I_FileRWHandler.hpp"
 #include "PredicatesCacheManager.hpp"
 #include "PredicatesIndexCacheMD.hpp"
@@ -19,9 +19,8 @@
 #include "k2tree/K2TreeBulkOp.hpp"
 #include "k2tree/K2TreeMixed.hpp"
 #include "k2tree/K2TreeScanner.hpp"
-#include "manager/I_DataManager.hpp"
-#include "updating/I_DataMerger.hpp"
-#include "updating/I_UpdateLoggerPCM.hpp"
+#include "manager/DataManager.hpp"
+#include "updating/DataMerger.hpp"
 #include "updating/K2TreeUpdates.hpp"
 #include "updating/UpdatesLogger.hpp"
 #include "updating/UpdatesLoggerFilesManager.hpp"
@@ -43,17 +42,9 @@ public:
       std::unique_ptr<I_FileRWHandler> &&index_file_handler,
       UpdatesLoggerFilesManager &&updates_logger_fm);
 
-  explicit PredicatesCacheManagerImpl(const CacheArgs &cache_args);
-
-  // read only constructors
-
+  // read only constructor
   explicit PredicatesCacheManagerImpl(
       std::unique_ptr<PredicatesIndexCacheMD> &&predicates_index);
-
-  explicit PredicatesCacheManagerImpl(
-      std::unique_ptr<I_FileRWHandler> &&index_file_handler);
-
-  explicit PredicatesCacheManagerImpl(const std::string &index_filename);
 
   PredicatesIndexCacheMD &get_predicates_index_cache() override;
   void load_all_predicates() override;
@@ -68,8 +59,6 @@ public:
 
   void merge_delete_tree(unsigned long predicate_id,
                          K2TreeMixed &k2tree) override;
-
-  void set_update_logger(I_UpdateLoggerPCM *input_update_logger);
 
   void merge_update(std::vector<K2TreeUpdates> &updates) override;
 

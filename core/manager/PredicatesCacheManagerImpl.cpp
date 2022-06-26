@@ -5,6 +5,7 @@
 #include "PredicatesCacheManagerImpl.hpp"
 #include "FileRWHandler.hpp"
 #include "k2tree/NullScanner.hpp"
+#include "updating/UpdatesLoggerImpl.hpp"
 namespace k2cache {
 
 // read/write constructors
@@ -24,14 +25,8 @@ PredicatesCacheManagerImpl::PredicatesCacheManagerImpl(
     UpdatesLoggerFilesManager &&updates_logger_fm)
     : PredicatesCacheManagerImpl(std::make_unique<PredicatesIndexCacheMD>(
                                      std::move(index_file_handler)),
-                                 std::make_unique<UpdatesLogger>(
+                                 std::make_unique<UpdatesLoggerImpl>(
                                      *this, std::move(updates_logger_fm))) {}
-
-PredicatesCacheManagerImpl::PredicatesCacheManagerImpl(
-    const CacheArgs &cache_args)
-    : PredicatesCacheManagerImpl(
-          std::make_unique<FileRWHandler>(cache_args.index_filename),
-          UpdatesLoggerFilesManager(cache_args)) {}
 
 // read only constructors
 
@@ -39,22 +34,6 @@ PredicatesCacheManagerImpl::PredicatesCacheManagerImpl(
     std::unique_ptr<PredicatesIndexCacheMD> &&predicates_index)
     : predicates_index(std::move(predicates_index)),
       fully_indexed_cache(*predicates_index) {}
-
-PredicatesCacheManagerImpl::PredicatesCacheManagerImpl(
-    std::unique_ptr<I_FileRWHandler> &&index_file_handler)
-    : PredicatesCacheManagerImpl(std::make_unique<PredicatesIndexCacheMD>(
-          std::move(index_file_handler))) {}
-
-PredicatesCacheManagerImpl::PredicatesCacheManagerImpl(
-    const std::string &index_filename)
-    : PredicatesCacheManagerImpl(
-          std::make_unique<FileRWHandler>(index_filename)) {}
-
-//
-// PredicatesCacheManagerImpl::PredicatesCacheManagerImpl(
-//    const std::string &input_k2tree_filename)
-//    : PredicatesCacheManagerImpl(
-//          std::make_unique<FileRWHandler>(input_k2tree_filename)) {}
 
 PredicatesIndexCacheMD &
 PredicatesCacheManagerImpl::get_predicates_index_cache() {
@@ -125,10 +104,7 @@ void PredicatesCacheManagerImpl::merge_op_tree(
   predicates_index->mark_dirty(predicate_id);
   fully_indexed_cache.resync_predicate(predicate_id);
 }
-void PredicatesCacheManagerImpl::set_update_logger(
-    I_UpdateLoggerPCM *input_update_logger) {
-  predicates_index->set_update_logger(input_update_logger);
-}
+
 void PredicatesCacheManagerImpl::merge_update(
     std::vector<K2TreeUpdates> &updates) {
   for (auto &update : updates) {
