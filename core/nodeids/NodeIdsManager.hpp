@@ -5,6 +5,7 @@
 #ifndef RDFCACHEK2_NODEIDSMANAGER_HPP
 #define RDFCACHEK2_NODEIDSMANAGER_HPP
 
+#include "CacheArgs.hpp"
 #include "I_FileRWHandler.hpp"
 #include "NodesSequence.hpp"
 #include <memory>
@@ -19,6 +20,10 @@ class NodeIdsManager {
 public:
   NodeIdsManager(std::unique_ptr<I_FileRWHandler> &&plain_ni_fh,
                  std::unique_ptr<I_FileRWHandler> &&mapped_ni_fh);
+
+  explicit NodeIdsManager(const CacheArgs &args);
+
+  NodesSequence &get_nodes_sequence();
 };
 } // namespace k2cache
 

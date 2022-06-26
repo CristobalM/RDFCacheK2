@@ -13,6 +13,7 @@ struct CacheArgs {
   I_CacheReplacement::REPLACEMENT_STRATEGY replacement_strategy;
   std::string update_log_filename;
   std::string node_ids_filename;
+  std::string mapped_node_ids_filename;
 };
 } // namespace k2cache
 

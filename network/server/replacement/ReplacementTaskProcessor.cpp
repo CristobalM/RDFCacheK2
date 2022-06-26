@@ -27,7 +27,7 @@ void ReplacementTaskProcessor::add_task(
   notify();
 }
 
-ReplacementTaskProcessor::ReplacementTaskProcessor(Cache &cache)
+ReplacementTaskProcessor::ReplacementTaskProcessor(CacheContainer &cache)
     : cache(cache) {
   worker = std::make_unique<worker_t>(*this);
 }

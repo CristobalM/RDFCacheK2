@@ -5,7 +5,7 @@
 #ifndef RDFCACHEK2_SERVERTASK_HPP
 #define RDFCACHEK2_SERVERTASK_HPP
 
-#include "Cache.hpp"
+#include "CacheContainer.hpp"
 #include "TaskProcessor.hpp"
 #include "messages/Message.hpp"
 #include "response_msg.pb.h"
@@ -14,16 +14,17 @@
 namespace k2cache {
 class ServerTask {
   int client_socket_fd;
-  Cache &cache;
+  CacheContainer &cache;
   TaskProcessor &task_processor;
 
 public:
-  ServerTask(int client_socket_fd, Cache &cache, TaskProcessor &task_processor);
+  ServerTask(int client_socket_fd, CacheContainer &cache,
+             TaskProcessor &task_processor);
 
   void process();
 
   int get_client_socket_fd();
-  Cache &get_cache();
+  CacheContainer &get_cache();
 
   void send_invalid_response();
 

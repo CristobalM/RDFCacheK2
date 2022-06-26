@@ -11,8 +11,8 @@
 namespace k2cache {
 TripleMatchesPartStreamer::TripleMatchesPartStreamer(
     int channel_id, std::vector<unsigned long> &&loaded_predicates,
-    size_t threshold_part_size, TaskProcessor *task_processor, Cache *cache,
-    FullyIndexedCache &fully_indexed_cache)
+    size_t threshold_part_size, TaskProcessor *task_processor,
+    CacheContainer *cache, FullyIndexedCache &fully_indexed_cache)
     : channel_id(channel_id), loaded_predicates(std::move(loaded_predicates)),
       threshold_part_size(threshold_part_size), cache(cache),
       task_processor(task_processor), current_pattern_channel_id(0),

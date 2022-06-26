@@ -5,7 +5,7 @@
 #ifndef RDFCACHEK2_STREAMERFROMCACHEDSOURCE_HPP
 #define RDFCACHEK2_STREAMERFROMCACHEDSOURCE_HPP
 
-#include "Cache.hpp"
+#include "CacheContainer.hpp"
 #include "I_TRMatchingStreamer.hpp"
 #include "fic/I_CachedPredicateSource.hpp"
 #include "scanner/CachedSourceScanner.hpp"
@@ -15,7 +15,7 @@ class StreamerFromCachedSource : public I_TRMatchingStreamer {
   int channel_id;
   int pattern_channel_id;
   const proto_msg::TripleNodeIdEnc triple_pattern_node;
-  Cache *cache;
+  CacheContainer *cache;
   unsigned long threshold_part_size;
   bool finished;
   bool first;
@@ -34,7 +34,7 @@ public:
   explicit StreamerFromCachedSource(
       I_CachedPredicateSource *cached_source, int channel_id,
       int current_pattern_channel_id,
-      proto_msg::TripleNodeIdEnc triple_pattern_node, Cache *cache,
+      proto_msg::TripleNodeIdEnc triple_pattern_node, CacheContainer *cache,
       unsigned long threshold_part_size);
   proto_msg::CacheResponse get_next_response() override;
   int get_pattern_channel_id() override;

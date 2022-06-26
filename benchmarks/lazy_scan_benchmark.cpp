@@ -2,7 +2,7 @@
 // Created by cristobal on 02-12-21.
 //
 
-#include "k2tree/K2TreeMixed.hpp"
+#include "manager/PCMFactory.hpp"
 #include "manager/PredicatesCacheManager.hpp"
 #include <cstdlib>
 #include <filesystem>
@@ -27,7 +27,7 @@ int main(int argc, char *argv[]) {
     exit(1);
   }
 
-  auto pcm = std::make_shared<PredicatesCacheManager>(k2tree_path);
+  auto pcm = PCMFactory::create(k2tree_path);
 
   run_benchmarks(*pcm);
 }

@@ -8,7 +8,7 @@
 #include <memory>
 #include <thread>
 
-#include "Cache.hpp"
+#include "CacheContainer.hpp"
 #include "ServerWorker.hpp"
 #include "server/conn/TCPServerConnection.hpp"
 #include "server/tasks/CacheServerTaskProcessor.hpp"
@@ -22,7 +22,8 @@ class CacheServer {
   std::unique_ptr<connection_t> connection;
 
 public:
-  explicit CacheServer(Cache &cache, uint16_t port, uint8_t workers_count);
+  explicit CacheServer(CacheContainer &cache, uint16_t port,
+                       uint8_t workers_count);
 
   void start();
   void stop();

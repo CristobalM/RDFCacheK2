@@ -3,11 +3,11 @@
 #include "mock_structures/FHMock.hpp"
 
 #include <filesystem>
-#include <fstream>
 #include <iostream>
 
 #include "builder/PredicatesIndexFileBuilder.hpp"
 #include "k2tree/K2TreeMixed.hpp"
+#include "manager/PCMFactory.hpp"
 #include <serialization_util.hpp>
 
 namespace k2cache {
@@ -79,7 +79,7 @@ UpdatesLoggerFilesManager mock_fh_manager() {
   return {std::move(fh), std::move(fh_offsets), std::move(fh_metadata)};
 }
 
-PredicatesCacheManager basic_pcm() {
+std::unique_ptr<PredicatesCacheManager> basic_pcm() {
   K2TreeConfig config;
   config.treedepth = 32;
   config.cut_depth = 10;
@@ -94,6 +94,6 @@ PredicatesCacheManager basic_pcm() {
     metadata_pcm.write_to_ostream(fh_writer->get_ostream());
     fh_writer->flush();
   }
-  return {std::move(fh_pcm), mock_fh_manager()};
+  return PCMFactory::create(std::move(fh_pcm), mock_fh_manager());
 }
 } // namespace k2cache

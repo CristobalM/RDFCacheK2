@@ -5,7 +5,7 @@
 #ifndef RDFCACHEK2_TRIPLEMATCHESPARTSTREAMER_HPP
 #define RDFCACHEK2_TRIPLEMATCHESPARTSTREAMER_HPP
 
-#include "Cache.hpp"
+#include "CacheContainer.hpp"
 #include "I_TRStreamer.hpp"
 #include "fic/FullyIndexedCache.hpp"
 #include "k2tree/K2TreeScanner.hpp"
@@ -16,7 +16,7 @@ class TripleMatchesPartStreamer : public I_TRStreamer {
   int channel_id;
   std::vector<unsigned long> loaded_predicates;
   size_t threshold_part_size;
-  Cache *cache;
+  CacheContainer *cache;
   TaskProcessor *task_processor;
 
   int current_pattern_channel_id;
@@ -33,7 +33,8 @@ public:
   TripleMatchesPartStreamer(int channel_id,
                             std::vector<unsigned long> &&loaded_predicates,
                             size_t threshold_part_size,
-                            TaskProcessor *task_processor, Cache *cache,
+                            TaskProcessor *task_processor,
+                            CacheContainer *cache,
                             FullyIndexedCache &fully_indexed_cache);
 
   const std::vector<unsigned long> &get_predicates_in_use() override;

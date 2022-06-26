@@ -1,16 +1,13 @@
 #include <algorithm>
 #include <filesystem>
-#include <fstream>
-#include <memory>
 #include <stdexcept>
 #include <string>
 
 #include <getopt.h>
 
 #include "CacheArgs.hpp"
-#include "manager/PredicatesCacheManager.hpp"
+#include "CacheContainerFactory.hpp"
 #include "server/CacheServer.hpp"
-#include <Cache.hpp>
 
 namespace fs = std::filesystem;
 using namespace k2cache;
@@ -18,6 +15,8 @@ using namespace k2cache;
 struct parsed_options {
   std::string index_file;
   std::string node_ids_file;
+  std::string mapped_node_ids_filename;
+
   unsigned long memory_budget_bytes;
   int port;
   int workers_count;
@@ -27,7 +26,7 @@ struct parsed_options {
   std::string update_log_filename;
 };
 
-parsed_options parse_cmline(int argc, char **argv);
+parsed_options parse_cmd_line(int argc, char **argv);
 
 void check_exists(const std::string &fname) {
   if (!fs::exists(fname)) {
@@ -37,7 +36,7 @@ void check_exists(const std::string &fname) {
 
 int main(int argc, char **argv) {
 
-  auto parsed = parse_cmline(argc, argv);
+  auto parsed = parse_cmd_line(argc, argv);
 
   check_exists(parsed.index_file);
 
@@ -47,32 +46,20 @@ int main(int argc, char **argv) {
   cache_args.replacement_strategy = parsed.replacement_strategy;
   cache_args.update_log_filename = parsed.update_log_filename;
   cache_args.node_ids_filename = parsed.node_ids_file;
+  cache_args.mapped_node_ids_filename = parsed.mapped_node_ids_filename;
 
-  auto pcm = std::make_shared<PredicatesCacheManager>(cache_args);
+  auto cache = CacheContainerFactory::create(cache_args);
 
-  if (parsed.replacement_strategy ==
-      I_CacheReplacement::REPLACEMENT_STRATEGY::NO_CACHING) {
-    std::cout << "Loading all predicates..." << std::endl;
-    auto start = std::chrono::high_resolution_clock::now();
-    pcm->load_all_predicates();
-    auto end = std::chrono::high_resolution_clock::now();
-    auto duration =
-        std::chrono::duration_cast<std::chrono::seconds>(end - start);
-    std::cout << "Done loading all predicates, took " << duration.count()
-              << " seconds" << std::endl;
-  }
-
-  Cache cache(pcm, cache_args);
-
-  CacheServer server(cache, parsed.port, parsed.workers_count);
+  CacheServer server(*cache, parsed.port, parsed.workers_count);
   server.start();
 }
 
-parsed_options parse_cmline(int argc, char **argv) {
-  const char short_options[] = "I:N:O:m:p:w:R:U:";
+parsed_options parse_cmd_line(int argc, char **argv) {
+  const char short_options[] = "I:N:M:O:m:p:w:R:U:";
   struct option long_options[] = {
       {"index-file", required_argument, nullptr, 'I'},
       {"node-ids-file", required_argument, nullptr, 'N'},
+      {"mapped-node-ids-file", required_argument, nullptr, 'M'},
       {"memory-budget", required_argument, nullptr, 'm'},
       {"port", required_argument, nullptr, 'p'},
       {"workers", required_argument, nullptr, 'w'},
@@ -84,6 +71,7 @@ parsed_options parse_cmline(int argc, char **argv) {
 
   bool has_index = false;
   bool has_node_ids = false;
+  bool has_mapped_node_ids = false;
   bool has_memory_budget = false;
   bool has_port = false;
   bool has_workers = false;
@@ -104,6 +92,10 @@ parsed_options parse_cmline(int argc, char **argv) {
     case 'N':
       out.node_ids_file = optarg;
       has_node_ids = true;
+      break;
+    case 'M':
+      out.mapped_node_ids_filename = optarg;
+      has_mapped_node_ids = true;
       break;
     case 'm':
       out.memory_budget_bytes = std::stoul(std::string(optarg));
@@ -147,6 +139,8 @@ parsed_options parse_cmline(int argc, char **argv) {
     throw std::runtime_error("index-file (I) argument is required");
   if (!has_node_ids)
     throw std::runtime_error("node-ids-file (N) argument is required");
+  if (!has_mapped_node_ids)
+    throw std::runtime_error("mapped-node-ids-file (M) argument is required");
   if (!has_memory_budget)
     throw std::runtime_error("memory-budget (m) argument is required");
   if (!has_port)

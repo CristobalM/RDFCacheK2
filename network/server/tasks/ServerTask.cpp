@@ -25,7 +25,7 @@ using namespace std::chrono_literals;
 
 namespace k2cache {
 
-ServerTask::ServerTask(int client_socket_fd, Cache &cache,
+ServerTask::ServerTask(int client_socket_fd, CacheContainer &cache,
                        TaskProcessor &task_processor)
     : client_socket_fd(client_socket_fd), cache(cache),
       task_processor(task_processor) {}
@@ -134,7 +134,7 @@ void ServerTask::process() {
 
 int ServerTask::get_client_socket_fd() { return client_socket_fd; }
 
-Cache &ServerTask::get_cache() { return cache; }
+CacheContainer &ServerTask::get_cache() { return cache; }
 
 void ServerTask::send_invalid_response() {
   std::cout << "invalid query... aborting" << std::endl;

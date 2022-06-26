@@ -16,7 +16,7 @@ struct parsed_options {
   int workers;
 };
 
-parsed_options parse_cmline(int argc, char **argv);
+parsed_options parse_cmd_line(int argc, char **argv);
 unsigned long get_mem_total();
 
 struct Comparator {
@@ -27,7 +27,7 @@ struct Comparator {
 };
 
 int main(int argc, char **argv) {
-  auto parsed = parse_cmline(argc, argv);
+  auto parsed = parse_cmd_line(argc, argv);
 
   std::cout << "given options:\n"
             << "workers: " << parsed.workers << "\n"
@@ -41,7 +41,7 @@ int main(int argc, char **argv) {
                         Comparator());
 }
 
-parsed_options parse_cmline(int argc, char **argv) {
+parsed_options parse_cmd_line(int argc, char **argv) {
   const char short_options[] = "i:o:t::m::w::";
   struct option long_options[] = {
       {"input-file", required_argument, nullptr, 'i'},

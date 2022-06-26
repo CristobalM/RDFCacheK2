@@ -63,7 +63,7 @@ set(CORE_SOURCE_FILES
 
         core/manager/I_DataManager.hpp
         core/manager/PredicateFetchResult.cpp
-        core/manager/PredicatesCacheManager.cpp
+        core/manager/PredicatesCacheManagerImpl.cpp
         core/manager/PredicatesCacheMetadata.cpp
         core/manager/PredicatesIndexCacheMD.cpp
 
@@ -96,7 +96,7 @@ set(CORE_SOURCE_FILES
         core/updating/UpdatesLogger.hpp
         core/updating/UpdatesLoggerFilesManager.cpp
         core/updating/UpdatesLoggerFilesManager.hpp
-        core/nodeids/NodeIdsManager.cpp core/nodeids/NodeIdsManager.hpp core/manager/PredicatesCacheAndIdsManager.cpp core/manager/PredicatesCacheAndIdsManager.hpp)
+        core/nodeids/NodeIdsManager.cpp core/nodeids/NodeIdsManager.hpp core/manager/PredicatesCacheAndIdsManager.cpp core/manager/PredicatesCacheAndIdsManager.hpp core/manager/PredicatesCacheManager.hpp core/manager/PCMFactory.cpp core/manager/PCMFactory.hpp)
 
 
 set(NETWORK_SOURCE_FILES
@@ -152,8 +152,11 @@ set(MEMORY_SOURCES
         memory/MemorySegment.cpp memory/MemorySegment.hpp memory/OutOfMemoryException.cpp memory/OutOfMemoryException.hpp)
 
 set(CACHE_SOURCES
-        cache/Cache.hpp
-        cache/Cache.cpp
+        cache/CacheContainer.hpp
+        cache/CacheContainerImpl.hpp
+        cache/CacheContainerImpl.cpp
+        cache/CacheContainerFactory.cpp
+        cache/CacheContainerFactory.hpp
         cache/CacheArgs.hpp
         )
 
@@ -418,9 +421,6 @@ if (GTest_FOUND)
 
     add_executable(fully_indexed_cache_test test/fully_indexed_cache_test.cpp test/cache_test_util.cpp)
     target_link_libraries(fully_indexed_cache_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} MockStructureLib pthread)
-
-    add_executable(predicates_cache_manager_test test/predicates_cache_manager_test.cpp)
-    target_link_libraries(predicates_cache_manager_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} MockStructureLib pthread)
 
     add_executable(nodes_map_test test/nodes_map_test.cpp)
     target_link_libraries(nodes_map_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} MockStructureLib pthread)

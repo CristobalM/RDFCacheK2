@@ -28,7 +28,7 @@ std::unique_ptr<ServerTask> CacheServerTaskProcessor::get_server_task() {
   return server_task_uptr;
 }
 
-CacheServerTaskProcessor::CacheServerTaskProcessor(Cache &cache,
+CacheServerTaskProcessor::CacheServerTaskProcessor(CacheContainer &cache,
                                                    uint8_t workers_count)
     : cache(cache), workers_count(workers_count),
       replacement_task_processor(cache),

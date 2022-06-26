@@ -13,12 +13,12 @@ struct parsed_options {
   std::string output_file;
 };
 
-parsed_options parse_cmline(int argc, char **argv);
+parsed_options parse_cmd_line(int argc, char **argv);
 
 namespace fs = std::filesystem;
 
 int main(int argc, char **argv) {
-  auto parsed = parse_cmline(argc, argv);
+  auto parsed = parse_cmd_line(argc, argv);
 
   std::ifstream ifs(parsed.input_file, std::ios::in | std::ios::binary);
   std::ofstream ofs(parsed.output_file, std::ios::out | std::ios::trunc);
@@ -34,7 +34,7 @@ int main(int argc, char **argv) {
   return 0;
 }
 
-parsed_options parse_cmline(int argc, char **argv) {
+parsed_options parse_cmd_line(int argc, char **argv) {
   const char short_options[] = "i:o:";
   struct option long_options[] = {
       {"input-file", required_argument, nullptr, 'i'},

@@ -16,6 +16,7 @@ void CacheServer::stop() { connection->stop(); }
 
 void CacheServer::main_thread_op() { connection->start(); }
 
-CacheServer::CacheServer(Cache &cache, uint16_t port, uint8_t workers_count)
+CacheServer::CacheServer(CacheContainer &cache, uint16_t port,
+                         uint8_t workers_count)
     : port(port), task_processor(cache, workers_count) {}
 } // namespace k2cache

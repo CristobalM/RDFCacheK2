@@ -13,6 +13,7 @@ void ReplacementTask::process() {
 }
 
 ReplacementTask::ReplacementTask(
-    Cache &cache, std::shared_ptr<const std::vector<unsigned long>> predicates)
+    CacheContainer &cache,
+    std::shared_ptr<const std::vector<unsigned long>> predicates)
     : cache(cache), predicates(std::move(predicates)) {}
 } // namespace k2cache

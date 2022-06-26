@@ -5,7 +5,7 @@
 #ifndef RDFCACHEK2_UPDATERSESSION_HPP
 #define RDFCACHEK2_UPDATERSESSION_HPP
 
-#include "Cache.hpp"
+#include "CacheContainer.hpp"
 #include "Updater.hpp"
 #include "k2tree/K2TreeBulkOp.hpp"
 #include "nodeids/TripleNodeId.hpp"
@@ -14,7 +14,7 @@
 namespace k2cache {
 class UpdaterSession : public Updater {
   TaskProcessor *task_processor;
-  Cache *cache;
+  CacheContainer *cache;
 
   using tree_update_pair_t =
       std::pair<std::unique_ptr<K2TreeMixed>, std::unique_ptr<K2TreeBulkOp>>;
@@ -25,7 +25,7 @@ class UpdaterSession : public Updater {
   tmap_t removed_triples;
 
 public:
-  UpdaterSession(TaskProcessor *task_processor, Cache *cache);
+  UpdaterSession(TaskProcessor *task_processor, CacheContainer *cache);
 
   void add_triple(TripleNodeId &rdf_triple_resource) override;
   void delete_triple(TripleNodeId &rdf_triple_resource) override;

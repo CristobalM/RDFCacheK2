@@ -2,13 +2,12 @@
 // Created by cristobal on 29-08-21.
 //
 
+#include "manager/PCMFactory.hpp"
 #include <chrono>
 #include <filesystem>
 #include <getopt.h>
 #include <iostream>
 #include <string>
-
-#include "manager/PredicatesCacheManager.hpp"
 
 using namespace k2cache;
 
@@ -21,16 +20,16 @@ struct parsed_options {
   std::string tmp_serialization_file;
 };
 
-parsed_options parse_cmline(int argc, char **argv);
+parsed_options parse_cmd_line(int argc, char **argv);
 
 void print_help();
 
 int main(int argc, char **argv) {
-  parsed_options parsed = parse_cmline(argc, argv);
+  parsed_options parsed = parse_cmd_line(argc, argv);
 
-  PredicatesCacheManager pcm(parsed.k2trees_file);
+  auto pcm = PCMFactory::create(parsed.k2trees_file);
 
-  auto &predicates_index = pcm.get_predicates_index_cache();
+  auto &predicates_index = pcm->get_predicates_index_cache();
   const auto &predicates_ids = predicates_index.get_predicates_ids();
 
   std::ofstream ofs(parsed.output_file, std::ios::out | std::ios::trunc);
@@ -61,7 +60,7 @@ int main(int argc, char **argv) {
   return 0;
 }
 
-parsed_options parse_cmline(int argc, char **argv) {
+parsed_options parse_cmd_line(int argc, char **argv) {
   const char short_options[] = "i:b:l:k:o:T:";
   struct option long_options[] = {
       {"iris-file", required_argument, nullptr, 'i'},
