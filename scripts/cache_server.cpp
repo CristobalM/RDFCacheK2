@@ -39,6 +39,7 @@ int main(int argc, char **argv) {
   auto parsed = parse_cmd_line(argc, argv);
 
   check_exists(parsed.index_file);
+  check_exists(parsed.node_ids_file);
 
   CacheArgs cache_args;
   cache_args.index_filename = parsed.index_file;
