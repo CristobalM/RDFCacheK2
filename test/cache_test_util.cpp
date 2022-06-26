@@ -76,3 +76,24 @@ UpdatesLoggerFilesManager mock_fh_manager() {
   auto fh_metadata = std::make_unique<FHMock>(metadata);
   return {std::move(fh), std::move(fh_offsets), std::move(fh_metadata)};
 }
+
+PredicatesCacheManager basic_pcm() {
+  K2TreeConfig config;
+  config.treedepth = 32;
+  config.cut_depth = 10;
+  config.max_node_count = 256;
+
+  std::unique_ptr<I_FileRWHandler> fh_pcm{};
+  {
+    std::string cache_data;
+    fh_pcm = std::make_unique<FHMock>(cache_data);
+    auto fh_writer = fh_pcm->get_writer(std::ios::out | std::ios::binary);
+    PredicatesCacheMetadata metadata_pcm(config);
+    metadata_pcm.write_to_ostream(fh_writer->get_ostream());
+    fh_writer->flush();
+  }
+  return {
+      std::move(fh_pcm),
+      mock_fh_manager()
+  };
+}

@@ -4,10 +4,8 @@
 
 #include <MemoryManager.hpp>
 #include <OutOfMemoryException.hpp>
-#include <filesystem>
 #include <google/protobuf/message_lite.h>
 #include <gtest/gtest.h>
-#include <memory>
 
 TEST(memory_segment_test, test1) {
   const int total_values = 100;

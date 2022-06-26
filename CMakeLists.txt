@@ -425,6 +425,9 @@ if (GTest_FOUND)
     add_executable(nodes_map_test test/nodes_map_test.cpp)
     target_link_libraries(nodes_map_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} MockStructureLib pthread)
 
+    add_executable(node_ids_dyn_mapper_test test/node_ids_dyn_mapper_test.cpp test/cache_test_util.cpp)
+    target_link_libraries(node_ids_dyn_mapper_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} MockStructureLib pthread)
+
 
     add_test(NAME serialization_test COMMAND ./serialization_test)
     add_test(NAME k2tree_serialization_test COMMAND ./k2tree_serialization_test)
@@ -438,6 +441,7 @@ if (GTest_FOUND)
     add_test(NAME fully_indexed_cache_test COMMAND ./fully_indexed_cache_test)
     add_test(NAME predicates_cache_manager_test COMMAND ./predicates_cache_manager_test)
     add_test(NAME nodes_map_test COMMAND ./nodes_map_test)
+    add_test(NAME node_ids_dyn_mapper_test COMMAND ./node_ids_dyn_mapper_test)
 
     # K2 Tree Tests
 

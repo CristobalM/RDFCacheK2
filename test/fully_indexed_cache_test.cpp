@@ -111,8 +111,6 @@ TEST(fully_indexed_cache, test_resynced_on_update_loaded) {
     ASSERT_TRUE(fi_resp_1.get()->has(i + 1, i + 1));
   }
 
-  //
-
   K2TreeMixed k2tree3(config);
   K2TreeBulkOp op3(k2tree);
   for (int i = 0; i < size_tree; i++) {
