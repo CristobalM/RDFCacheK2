@@ -40,7 +40,7 @@ public:
   UpdatesLoggerImpl(DataMerger &data_merger,
                     UpdatesLoggerFilesManager &&files_manager);
   void recover_all() override;
-  void log(std::vector<K2TreeUpdates> &k2tree_updates);
+  void log(std::vector<K2TreeUpdates> &k2tree_updates) override;
 
   void recover_predicate(unsigned long predicate_id) override;
 
@@ -52,9 +52,9 @@ public:
 
   void compact_logs() override;
 
-  int logs_number();
+  int logs_number() override;
 
-  UpdatesLoggerFilesManager &get_fh_manager();
+  UpdatesLoggerFilesManager &get_fh_manager() override;
 
   void recover(const std::vector<unsigned long> &predicates);
 

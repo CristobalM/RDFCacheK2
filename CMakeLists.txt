@@ -439,7 +439,6 @@ if (GTest_FOUND)
     add_test(NAME memory_segment_test COMMAND ./memory_segment_test)
     add_test(NAME update_log_test COMMAND ./update_log_test)
     add_test(NAME fully_indexed_cache_test COMMAND ./fully_indexed_cache_test)
-    add_test(NAME predicates_cache_manager_test COMMAND ./predicates_cache_manager_test)
     add_test(NAME nodes_map_test COMMAND ./nodes_map_test)
     add_test(NAME node_ids_dyn_mapper_test COMMAND ./node_ids_dyn_mapper_test)
 
