@@ -34,6 +34,7 @@ public:
   I_CacheReplacement::REPLACEMENT_STRATEGY get_strategy_id() override;
   std::vector<unsigned long> extract_loaded_predicates_from_sequence(
       const std::vector<unsigned long> &input_predicates_ids) override;
+  NodeIdsManager &get_nodes_ids_manager() override;
 };
 } // namespace k2cache
 

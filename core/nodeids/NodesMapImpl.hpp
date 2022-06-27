@@ -1,0 +1,23 @@
+//
+// Created by cristobal on 26-06-22.
+//
+
+#ifndef RDFCACHEK2_NODESMAPIMPL_HPP
+#define RDFCACHEK2_NODESMAPIMPL_HPP
+#include "I_IStream.hpp"
+#include "I_OStream.hpp"
+#include "NodesMap.hpp"
+#include <map>
+#include <memory>
+namespace k2cache {
+class NodesMapImpl : public NodesMap {
+  std::map<long, long> imap;
+
+public:
+  explicit NodesMapImpl(std::map<long, long> &&imap);
+  void serialize(I_OStream &os) override;
+  int impl_id() override;
+  long get_id(long real_id) override;
+};
+} // namespace k2cache
+#endif // RDFCACHEK2_NODESMAPIMPL_HPP

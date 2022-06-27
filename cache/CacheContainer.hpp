@@ -5,6 +5,7 @@
 #ifndef RDFCACHEK2_CACHECONTAINER_HPP
 #define RDFCACHEK2_CACHECONTAINER_HPP
 #include "manager/PredicatesCacheManager.hpp"
+#include "nodeids/NodeIdsManager.hpp"
 #include "nodeids/NodesSequence.hpp"
 #include "replacement/I_CacheReplacement.hpp"
 
@@ -17,6 +18,7 @@ struct CacheContainer {
   virtual I_CacheReplacement::REPLACEMENT_STRATEGY get_strategy_id() = 0;
   virtual std::vector<unsigned long> extract_loaded_predicates_from_sequence(
       const std::vector<unsigned long> &input_predicates_ids) = 0;
+  virtual NodeIdsManager &get_nodes_ids_manager() = 0;
 };
 } // namespace k2cache
 

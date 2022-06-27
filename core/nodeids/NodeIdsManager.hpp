@@ -10,6 +10,7 @@ class NodesSequence;
 struct NodeIdsManager {
   virtual ~NodeIdsManager() = default;
   virtual NodesSequence &get_nodes_sequence() = 0;
+  virtual long get_id(long real_id) = 0;
 };
 } // namespace k2cache
 

@@ -85,14 +85,15 @@ int TriplePatternMatchingStreamer::get_channel_id() { return channel_id; }
 bool TriplePatternMatchingStreamer::all_sent() { return finished; }
 
 void TriplePatternMatchingStreamer::initialize_scanner() {
+  auto &nis = cache->get_nodes_ids_manager();
+
   subject_variable =
       (long)triple_pattern_node.subject().encoded_data() == NODE_ANY;
   object_variable =
       (long)triple_pattern_node.object().encoded_data() == NODE_ANY;
 
   auto predicate_id = triple_pattern_node.predicate().encoded_data();
-  auto predicate_id_translated =
-      (unsigned long)cache->get_nodes_sequence().get_id((long)predicate_id);
+  auto predicate_id_translated = nis.get_id((long)predicate_id);
 
   auto fetch_result =
       cache->get_pcm().get_predicates_index_cache().fetch_k2tree(
@@ -108,14 +109,12 @@ void TriplePatternMatchingStreamer::initialize_scanner() {
     k2tree_scanner = k2tree.create_full_scanner();
   } else if (subject_variable) {
     auto object_id = triple_pattern_node.object().encoded_data();
-    auto object_id_translated =
-        (unsigned long)cache->get_nodes_sequence().get_id((long)object_id);
+    auto object_id_translated = nis.get_id((long)object_id);
     k2tree_scanner = k2tree.create_band_scanner(
         object_id_translated, K2TreeScanner::BandType::ROW_BAND_TYPE);
   } else if (object_variable) {
     auto subject_id = triple_pattern_node.subject().encoded_data();
-    auto subject_id_translated =
-        (unsigned long)cache->get_nodes_sequence().get_id((long)subject_id);
+    auto subject_id_translated = nis.get_id((long)subject_id);
     k2tree_scanner = k2tree.create_band_scanner(
         subject_id_translated, K2TreeScanner::BandType::COLUMN_BAND_TYPE);
   } else {

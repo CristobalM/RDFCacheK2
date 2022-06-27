@@ -57,5 +57,8 @@ CacheContainerImpl::extract_loaded_predicates_from_sequence(
 NodesSequence &CacheContainerImpl::get_nodes_sequence() {
   return pcim->get_nis().get_nodes_sequence();
 }
+NodeIdsManager &CacheContainerImpl::get_nodes_ids_manager() {
+  return pcim->get_nis();
+}
 
 } // namespace k2cache

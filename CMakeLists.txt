@@ -96,7 +96,7 @@ set(CORE_SOURCE_FILES
         core/updating/UpdatesLoggerImpl.hpp
         core/updating/UpdatesLoggerFilesManager.cpp
         core/updating/UpdatesLoggerFilesManager.hpp
-        core/nodeids/NodeIdsManagerImpl.cpp core/nodeids/NodeIdsManagerImpl.hpp core/manager/PredicatesCacheAndIdsManager.cpp core/manager/PredicatesCacheAndIdsManager.hpp core/manager/PredicatesCacheManager.hpp core/manager/PCMFactory.cpp core/manager/PCMFactory.hpp core/nodeids/NodeIdsManager.hpp core/nodeids/NodeIdsManagerFactory.cpp core/nodeids/NodeIdsManagerFactory.hpp)
+        core/nodeids/NodeIdsManagerImpl.cpp core/nodeids/NodeIdsManagerImpl.hpp core/manager/PredicatesCacheAndIdsManager.cpp core/manager/PredicatesCacheAndIdsManager.hpp core/manager/PredicatesCacheManager.hpp core/manager/PCMFactory.cpp core/manager/PCMFactory.hpp core/nodeids/NodeIdsManager.hpp core/nodeids/NodeIdsManagerFactory.cpp core/nodeids/NodeIdsManagerFactory.hpp core/nodeids/NodesMap.hpp core/nodeids/NodesMapImpl.cpp core/nodeids/NodesMapImpl.hpp core/nodeids/NodesMapFactory.cpp core/nodeids/NodesMapFactory.hpp core/nodeids/node_ids_constants.hpp)
 
 
 set(NETWORK_SOURCE_FILES
