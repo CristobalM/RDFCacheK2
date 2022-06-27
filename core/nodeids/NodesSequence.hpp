@@ -5,10 +5,11 @@
 #ifndef RDFCACHEK2_NODESSEQUENCE_HPP
 #define RDFCACHEK2_NODESSEQUENCE_HPP
 
-#include "I_IStream.hpp"
+#include <string>
 #include <vector>
 
 namespace k2cache {
+struct I_IStream;
 class NodesSequence {
   std::vector<long> values;
 

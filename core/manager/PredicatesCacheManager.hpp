@@ -10,6 +10,7 @@
 #include "updating/DataMerger.hpp"
 
 namespace k2cache {
+
 struct PredicatesCacheManager : public DataManager, public DataMerger {
   virtual unsigned long get_predicate_size(unsigned long predicate_id) = 0;
   virtual void load_all_predicates() = 0;

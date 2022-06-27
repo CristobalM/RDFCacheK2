@@ -4,7 +4,7 @@
 #include <array>
 #include <string>
 #include <vector>
-
+namespace k2cache {
 std::array<char, 16> md5calc(const std::string &input);
 std::array<char, 16> md5calc(const std::vector<char> &input);
 std::string md5_human_readable(const std::array<char, 16> &digest);
@@ -40,5 +40,5 @@ std::array<char, 64> sha512calc(const std::vector<char> &input);
 std::string sha512_human_readable(const std::array<char, 64> &digest);
 std::string sha512_human_readable_lowercase(const std::array<char, 64> &digest);
 std::string sha512_human_readable_lowercase(const std::string &input);
-
+} // namespace k2cache
 #endif /* RDFCACHEK2__HASHING_HPP_ */

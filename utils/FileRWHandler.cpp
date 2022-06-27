@@ -4,12 +4,14 @@
 
 #include <filesystem>
 #include <fstream>
+#include <memory>
 
 #include "FileIOStream.hpp"
 #include "FileIStream.hpp"
 #include "FileOStream.hpp"
 #include "FileRWHandler.hpp"
 
+namespace k2cache {
 namespace fs = std::filesystem;
 
 std::unique_ptr<I_OStream>
@@ -39,3 +41,4 @@ FileRWHandler::get_reader_writer(std::ios::openmode openmode) {
   return std::make_unique<FileIOStream>(filename, openmode);
 }
 void FileRWHandler::clean() { std::remove(filename.c_str()); }
+} // namespace k2cache

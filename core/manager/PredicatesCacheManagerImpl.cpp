@@ -3,9 +3,11 @@
 //
 
 #include "PredicatesCacheManagerImpl.hpp"
+
 #include "FileRWHandler.hpp"
 #include "k2tree/NullScanner.hpp"
 #include "updating/UpdatesLoggerImpl.hpp"
+
 namespace k2cache {
 
 // read/write constructors

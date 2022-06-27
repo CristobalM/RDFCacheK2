@@ -4,14 +4,14 @@
 
 #include "CacheContainerImpl.hpp"
 #include "manager/PCMFactory.hpp"
+#include "nodeids/NodeIdsManagerFactory.hpp"
 #include "replacement/CacheReplacement.hpp"
 #include "replacement/CacheReplacementFactory.hpp"
 
 namespace k2cache {
-
 CacheContainerImpl::CacheContainerImpl(const CacheArgs &args)
     : pcim(std::make_unique<PredicatesCacheAndIdsManager>(
-          PCMFactory::create(args), std::make_unique<NodeIdsManager>(args))),
+          PCMFactory::create(args), NodeIdsManagerFactory::create(args))),
       cache_replacement(CacheReplacementFactory::create_cache_replacement(
           args.memory_budget_bytes, &pcim->get_pcm(),
           args.replacement_strategy)),

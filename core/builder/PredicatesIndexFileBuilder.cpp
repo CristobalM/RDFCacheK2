@@ -4,7 +4,6 @@
 #include "k2tree/K2TreeMixed.hpp"
 #include "serialization_util.hpp"
 #include "triple_external_sort.hpp"
-#include <iostream>
 #include <set>
 #include <stdexcept>
 #include <unordered_map>

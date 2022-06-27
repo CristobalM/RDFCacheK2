@@ -9,8 +9,8 @@
 #include <memory>
 namespace k2cache {
 class PredicatesCacheAndIdsManager {
-  std::unique_ptr<PredicatesCacheManager> &&pcm;
-  std::unique_ptr<NodeIdsManager> &&nis;
+  std::unique_ptr<PredicatesCacheManager> pcm;
+  std::unique_ptr<NodeIdsManager> nis;
 
 public:
   PredicatesCacheAndIdsManager(std::unique_ptr<PredicatesCacheManager> &&pcm,

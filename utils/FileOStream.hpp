@@ -9,6 +9,7 @@
 #include <fstream>
 #include <ios>
 #include <string>
+namespace k2cache {
 
 class FileOStream : public I_OStream {
   std::ofstream ofs;
@@ -20,5 +21,5 @@ public:
   void seekp(std::streamoff offset, std::ios_base::seekdir way) override;
   std::streampos tellp() override;
 };
-
+} // namespace k2cache
 #endif // RDFCACHEK2_FILEOSTREAM_HPP

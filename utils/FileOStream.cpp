@@ -3,6 +3,8 @@
 //
 
 #include "FileOStream.hpp"
+namespace k2cache {
+
 void FileOStream::flush() { ofs.flush(); }
 FileOStream::FileOStream(const std::string &filename,
                          std::ios::openmode openmode)
@@ -12,3 +14,4 @@ void FileOStream::seekp(std::streamoff offset, std::ios_base::seekdir way) {
   ofs.seekp(offset, way);
 }
 std::streampos FileOStream::tellp() { return ofs.tellp(); }
+} // namespace k2cache

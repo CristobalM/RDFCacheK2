@@ -9,7 +9,7 @@
 #include <memory>
 
 #include "serialization_util.hpp"
-
+namespace k2cache {
 void write_u16(std::ostream &output_stream, uint16_t value) {
   value = htons(value);
   output_stream.write(reinterpret_cast<char *>(&value), sizeof(uint16_t));
@@ -64,3 +64,4 @@ std::unique_ptr<uint32_t[]> read_u32_array(std::istream &input_stream,
   }
   return out;
 }
+} // namespace k2cache
