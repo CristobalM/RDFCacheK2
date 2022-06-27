@@ -23,7 +23,6 @@ public:
   long get_value(long position);
 
   static NodesSequence from_input_stream(I_IStream &input_stream);
-  static NodesSequence from_file(const std::string &file_name);
 };
 } // namespace k2cache
 
