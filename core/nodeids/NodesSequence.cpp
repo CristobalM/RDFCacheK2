@@ -4,21 +4,22 @@
 
 #include "NodesSequence.hpp"
 #include "FileIStream.hpp"
+#include "node_ids_constants.hpp"
 #include "serialization_util.hpp"
 #include <stdexcept>
 namespace k2cache {
 long NodesSequence::get_id(long value) {
   auto it = std::lower_bound(values.begin(), values.end(), value);
   if (it == values.end())
-    return NOT_FOUND;
+    return NOT_FOUND_NODEID;
   if (*it != value)
-    return NOT_FOUND;
+    return NOT_FOUND_NODEID;
   return it - values.begin();
 }
 
-long NodesSequence::get_value(long position) {
+long NodesSequence::get_real_id(long position) {
   if (position >= (long)values.size())
-    return NOT_FOUND;
+    return NOT_FOUND_NODEID;
   return values[position];
 }
 

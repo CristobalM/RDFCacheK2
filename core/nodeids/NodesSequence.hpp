@@ -14,13 +14,11 @@ class NodesSequence {
   std::vector<long> values;
 
 public:
-  static constexpr long NOT_FOUND = -1;
-
   explicit NodesSequence(std::vector<long> &&values);
 
   long get_id(long value);
 
-  long get_value(long position);
+  long get_real_id(long position);
 
   static NodesSequence from_input_stream(I_IStream &input_stream);
 };

@@ -7,6 +7,7 @@
 #include "I_IStream.hpp"
 #include "NodesMapFactory.hpp"
 #include "NodesSequence.hpp"
+#include "node_ids_constants.hpp"
 
 namespace k2cache {
 NodeIdsManagerImpl::NodeIdsManagerImpl(
@@ -25,9 +26,15 @@ NodesSequence &NodeIdsManagerImpl::get_nodes_sequence() {
 }
 long NodeIdsManagerImpl::get_id(long real_id) {
   auto plain_id = nodes_sequence->get_id(real_id);
-  if (plain_id != NodesSequence::NOT_FOUND)
+  if (plain_id != NOT_FOUND_NODEID)
     return plain_id;
   return nodes_map->get_id(real_id);
+}
+long NodeIdsManagerImpl::get_real_id(long mapped_id) {
+  auto from_seq = nodes_sequence->get_real_id(mapped_id);
+  if (from_seq != NOT_FOUND_NODEID)
+    return from_seq;
+  return nodes_map->get_real_id(mapped_id);
 }
 
 } // namespace k2cache

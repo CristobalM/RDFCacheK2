@@ -44,7 +44,7 @@ proto_msg::CacheResponse TriplePatternMatchingStreamer::get_next_response() {
 
   stream_response->set_has_exact_response(false);
 
-  auto &nodes_sequence = cache->get_nodes_sequence();
+  auto &nis = cache->get_nodes_ids_manager();
 
   while (k2tree_scanner->has_next()) {
     auto matching_pair_so = k2tree_scanner->next();
@@ -52,15 +52,13 @@ proto_msg::CacheResponse TriplePatternMatchingStreamer::get_next_response() {
     if (subject_variable) {
       acc_size += sizeof(unsigned long);
       auto *s_match = matching_values->mutable_single_match()->Add();
-      auto original_value =
-          nodes_sequence.get_value((long)matching_pair_so.first);
+      auto original_value = nis.get_real_id((long)matching_pair_so.first);
       s_match->set_encoded_data(original_value);
     }
     if (object_variable) {
       acc_size += sizeof(unsigned long);
       auto *s_match = matching_values->mutable_single_match()->Add();
-      auto original_value =
-          nodes_sequence.get_value((long)matching_pair_so.second);
+      auto original_value = nis.get_real_id((long)matching_pair_so.second);
       s_match->set_encoded_data(original_value);
     }
 

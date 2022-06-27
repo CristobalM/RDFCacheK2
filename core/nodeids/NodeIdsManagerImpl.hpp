@@ -25,6 +25,7 @@ public:
 
   NodesSequence &get_nodes_sequence() override;
   long get_id(long real_id) override;
+  long get_real_id(long mapped_id) override;
 };
 } // namespace k2cache
 

@@ -11,6 +11,7 @@ struct NodesMap {
   virtual ~NodesMap() = default;
 
   virtual long get_id(long real_id) = 0;
+  virtual long get_real_id(long id) = 0;
 
   virtual void serialize(I_OStream &os) = 0;
 

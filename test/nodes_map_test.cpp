@@ -4,6 +4,7 @@
 
 #include "mock_structures/StringIStream.hpp"
 #include "nodeids/NodesSequence.hpp"
+#include "nodeids/node_ids_constants.hpp"
 #include <gtest/gtest.h>
 #include <serialization_util.hpp>
 
@@ -25,7 +26,7 @@ TEST(NodesMapSuite, CanGetNodesIdCorrectly) {
     auto id = nodes_sequence.get_id(value);
     ASSERT_EQ(id, i);
 
-    auto extracted_value = nodes_sequence.get_value(i);
+    auto extracted_value = nodes_sequence.get_real_id(i);
     ASSERT_EQ(extracted_value, value);
   }
 }
@@ -44,9 +45,9 @@ TEST(NodesMapSuite, NotFoundFailGraciously) {
   for (long i = 0; i < 100000; i++) {
     auto value = (i + 1) * 100 + 1;
     auto id = nodes_sequence.get_id(value);
-    ASSERT_EQ(id, NodesSequence::NOT_FOUND);
-    auto extracted_value = nodes_sequence.get_value(i + 100000);
-    ASSERT_EQ(extracted_value, NodesSequence::NOT_FOUND);
+    ASSERT_EQ(id, NOT_FOUND_NODEID);
+    auto extracted_value = nodes_sequence.get_real_id(i + 100000);
+    ASSERT_EQ(extracted_value, NOT_FOUND_NODEID);
   }
 }
 
@@ -61,7 +62,7 @@ TEST(NodesMapSuite, CanDeserialize) {
   StringIStream sis(data, std::ios::binary | std::ios::in);
   auto nodes_sequence = NodesSequence::from_input_stream(sis);
   for (long i = 0; i < nodes_number; i++) {
-    auto value = nodes_sequence.get_value(i);
+    auto value = nodes_sequence.get_real_id(i);
     ASSERT_EQ(value, i);
   }
 }

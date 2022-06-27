@@ -29,7 +29,6 @@ public:
   explicit CacheContainerImpl(const CacheArgs &args);
 
   PredicatesCacheManager &get_pcm() override;
-  NodesSequence &get_nodes_sequence() override;
   I_CacheReplacement &get_replacement() override;
   I_CacheReplacement::REPLACEMENT_STRATEGY get_strategy_id() override;
   std::vector<unsigned long> extract_loaded_predicates_from_sequence(

@@ -37,7 +37,7 @@ proto_msg::CacheResponse StreamerFromCachedSource::get_next_response() {
 
   stream_response->set_has_exact_response(false);
 
-  auto &nodes_sequence = cache->get_nodes_sequence();
+  auto &nis = cache->get_nodes_ids_manager();
 
   while (cached_source_scanner->has_next()) {
     auto matching_pair_so = cached_source_scanner->next();
@@ -45,15 +45,13 @@ proto_msg::CacheResponse StreamerFromCachedSource::get_next_response() {
     if (subject_variable) {
       acc_size += sizeof(unsigned long);
       auto *s_match = matching_values->mutable_single_match()->Add();
-      auto original_value =
-          nodes_sequence.get_value((long)matching_pair_so.first);
+      auto original_value = nis.get_real_id((long)matching_pair_so.first);
       s_match->set_encoded_data(original_value);
     }
     if (object_variable) {
       acc_size += sizeof(unsigned long);
       auto *s_match = matching_values->mutable_single_match()->Add();
-      auto original_value =
-          nodes_sequence.get_value((long)matching_pair_so.second);
+      auto original_value = nis.get_real_id((long)matching_pair_so.second);
       s_match->set_encoded_data(original_value);
     }
 
@@ -88,20 +86,22 @@ StreamerFromCachedSource::StreamerFromCachedSource(
       threshold_part_size(threshold_part_size), finished(false), first(true) {
 
   subject_variable =
-      (long)triple_pattern_node.subject().encoded_data() == NODE_ANY;
+      (long)this->triple_pattern_node.subject().encoded_data() == NODE_ANY;
   object_variable =
-      (long)triple_pattern_node.object().encoded_data() == NODE_ANY;
+      (long)this->triple_pattern_node.object().encoded_data() == NODE_ANY;
 
   translated_subject = -1;
   translated_object = -1;
 
+  auto &nis = cache->get_nodes_ids_manager();
+
   if (!subject_variable)
-    translated_subject = cache->get_nodes_sequence().get_id(
-        (long)triple_pattern_node.subject().encoded_data());
+    translated_subject =
+        nis.get_id((long)this->triple_pattern_node.subject().encoded_data());
 
   if (!object_variable)
-    translated_object = cache->get_nodes_sequence().get_id(
-        (long)triple_pattern_node.object().encoded_data());
+    translated_object =
+        nis.get_id((long)this->triple_pattern_node.object().encoded_data());
 
   if (subject_variable && object_variable) {
     cached_source_scanner =

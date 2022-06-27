@@ -73,7 +73,7 @@ TripleMatchesPartStreamer::start_streaming_matching_triples(
 
   auto predicate_id = triple_pattern.predicate().encoded_data();
   auto predicate_id_translated =
-      (unsigned long)cache->get_nodes_sequence().get_id((long)predicate_id);
+      (unsigned long)cache->get_nodes_ids_manager().get_id((long)predicate_id);
   auto fic_response = fully_indexed_cache.get(predicate_id_translated);
   if (fic_response.exists()) {
     streamer = std::make_unique<StreamerFromCachedSource>(

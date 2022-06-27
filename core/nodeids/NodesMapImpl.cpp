@@ -8,7 +8,11 @@
 namespace k2cache {
 
 NodesMapImpl::NodesMapImpl(std::map<long, long> &&imap)
-    : imap(std::move(imap)) {}
+    : imap(std::move(imap)) {
+  for (auto p : this->imap) {
+    rev_map[p.second] = p.first;
+  }
+}
 void NodesMapImpl::serialize(I_OStream &os) {
   auto &osr = os.get_ostream();
   write_u32(osr, impl_id());
@@ -25,4 +29,5 @@ long NodesMapImpl::get_id(long real_id) {
     return NOT_FOUND_NODEID;
   return it->second;
 }
+long NodesMapImpl::get_real_id(long id) { return rev_map[id]; }
 } // namespace k2cache

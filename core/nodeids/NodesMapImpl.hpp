@@ -12,12 +12,14 @@
 namespace k2cache {
 class NodesMapImpl : public NodesMap {
   std::map<long, long> imap;
+  std::map<long, long> rev_map;
 
 public:
   explicit NodesMapImpl(std::map<long, long> &&imap);
   void serialize(I_OStream &os) override;
   int impl_id() override;
   long get_id(long real_id) override;
+  long get_real_id(long id) override;
 };
 } // namespace k2cache
 #endif // RDFCACHEK2_NODESMAPIMPL_HPP
