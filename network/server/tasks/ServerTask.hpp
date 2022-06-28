@@ -9,22 +9,21 @@
 #include "TaskProcessor.hpp"
 #include "messages/Message.hpp"
 #include "response_msg.pb.h"
+#include "server/ClientReqHandler.hpp"
 #include <memory>
 #include <set>
 namespace k2cache {
 class ServerTask {
-  int client_socket_fd;
+//  int client_socket_fd;
+ClientReqHandler &net_server;
   CacheContainer &cache;
   TaskProcessor &task_processor;
 
 public:
-  ServerTask(int client_socket_fd, CacheContainer &cache,
+  ServerTask(ClientReqHandler &net_server, CacheContainer &cache,
              TaskProcessor &task_processor);
 
   void process();
-
-  int get_client_socket_fd();
-  CacheContainer &get_cache();
 
   void send_invalid_response();
 

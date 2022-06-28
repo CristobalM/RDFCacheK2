@@ -12,6 +12,7 @@
 #include "server/tasks/TaskProcessor.hpp"
 #include <unordered_map>
 namespace k2cache {
+
 class UpdaterSession : public Updater {
   TaskProcessor *task_processor;
   CacheContainer *cache;
@@ -24,6 +25,8 @@ class UpdaterSession : public Updater {
   tmap_t added_triples;
   tmap_t removed_triples;
 
+  static K2TreeConfig get_initial_update_k2tree_config();
+  K2TreeConfig updater_k2tree_config;
 public:
   UpdaterSession(TaskProcessor *task_processor, CacheContainer *cache);
 

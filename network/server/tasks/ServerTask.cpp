@@ -4,10 +4,8 @@
 
 #include <condition_variable>
 #include <iostream>
-#include <netinet/in.h>
 #include <set>
 #include <sstream>
-#include <sys/socket.h>
 #include <thread>
 
 #include "ServerTask.hpp"
@@ -16,7 +14,6 @@
 #include "response_msg.pb.h"
 
 #include "hashing.hpp"
-#include "messages/utils.hpp"
 #include "nodeids/NodeId.hpp"
 #include "nodeids/TripleNodeId.hpp"
 #include "serialization_util.hpp"
@@ -25,65 +22,15 @@ using namespace std::chrono_literals;
 
 namespace k2cache {
 
-ServerTask::ServerTask(int client_socket_fd, CacheContainer &cache,
+ServerTask::ServerTask(ClientReqHandler &net_server, CacheContainer &cache,
                        TaskProcessor &task_processor)
-    : client_socket_fd(client_socket_fd), cache(cache),
-      task_processor(task_processor) {}
-
-bool read_nbytes_from_socket(int client_socket_fd, char *read_buffer,
-                             size_t bytes_to_read) {
-  std::size_t offset = 0;
-  for (;;) {
-    ssize_t bytes_read = recv(client_socket_fd, read_buffer + offset,
-                              bytes_to_read - offset, MSG_WAITALL);
-    if (bytes_read < 0) {
-      if (errno != EINTR) {
-        std::cerr << "IO Error while reading from socket" << std::endl;
-        return false;
-      }
-    } else if (bytes_read == 0) {
-      if (offset == 0) {
-        std::cerr << "Unexpected end of stream with offset 0" << std::endl;
-        return false;
-      } else {
-        std::cerr << "Unexpected end of stream" << std::endl;
-        return false;
-      }
-    } else if (offset + bytes_read == bytes_to_read) {
-      return true;
-    } else {
-      offset += bytes_read;
-    }
-  }
-}
+    : net_server(net_server), cache(cache), task_processor(task_processor) {}
 
 void ServerTask::process() {
-
   for (;;) {
-    uint32_t msg_size = 0;
+    auto message = net_server.get_next_message();
 
-    bool was_read = read_nbytes_from_socket(client_socket_fd,
-                                            reinterpret_cast<char *>(&msg_size),
-                                            sizeof(msg_size));
-    if (!was_read) {
-      std::cerr << "Error while reading msg_size data from connection"
-                << std::endl;
-      return;
-    }
-
-    msg_size = ntohl(msg_size);
-    Message message(msg_size);
-
-    was_read = read_nbytes_from_socket(client_socket_fd, message.get_buffer(),
-                                       message.get_size());
-    if (!was_read) {
-      std::cerr << "Error while reading data from connection" << std::endl;
-      return;
-    }
-
-    message.deserialize();
-
-    switch (message.request_type()) {
+    switch (message->request_type()) {
     case proto_msg::MessageType::CONNECTION_END:
       std::cout << "Request of type CONNECTION_END" << std::endl;
       process_connection_end();
@@ -91,38 +38,38 @@ void ServerTask::process() {
     case proto_msg::MessageType::CACHE_REQUEST_SEPARATE_PREDICATES:
       std::cout << "Request of type CACHE_REQUEST_SEPARATE_PREDICATES"
                 << std::endl;
-      process_predicates_lock_for_triple_stream(message);
+      process_predicates_lock_for_triple_stream(*message);
       break;
     case proto_msg::MessageType::STREAM_REQUEST_TRIPLE_PATTERN:
-      process_stream_request_triple_pattern(message);
+      process_stream_request_triple_pattern(*message);
       break;
     case proto_msg::MessageType::STREAM_CONTINUE_TRIPLE_PATTERN:
-      process_stream_continue_triple_pattern(message);
+      process_stream_continue_triple_pattern(*message);
       break;
     case proto_msg::MessageType::DONE_WITH_PREDICATES_NOTIFY:
       std::cout << "Request of type DONE_WITH_PREDICATES_NOTIFY" << std::endl;
-      process_done_with_predicates_notify(message);
+      process_done_with_predicates_notify(*message);
       break;
     case proto_msg::MessageType::CACHE_REQUEST_START_UPDATE_TRIPLES:
       std::cout << "Request of type CACHE_REQUEST_START_UPDATE_TRIPLES"
                 << std::endl;
-      process_request_start_update_triples(message);
+      process_request_start_update_triples(*message);
       break;
 
     case proto_msg::MessageType::CACHE_DONE_UPDATE_TRIPLES:
       std::cout << "Request of type CACHE_DONE_UPDATE_TRIPLES" << std::endl;
-      process_done_update_triples(message);
+      process_done_update_triples(*message);
       break;
 
     case proto_msg::MessageType::TRIPLES_UPDATE_BATCH:
       std::cout << "Request of type TRIPLES_UPDATE_BATCH" << std::endl;
-      process_update_triples_batch(message);
+      process_update_triples_batch(*message);
       break;
 
     case proto_msg::MessageType::SYNC_LOGS_WITH_INDEXES_REQUEST:
       std::cout << "Request of type SYNC_LOGS_WITH_INDEXES_REQUEST"
                 << std::endl;
-      process_sync_logs_with_indexes(message);
+      process_sync_logs_with_indexes(*message);
       break;
 
     default:
@@ -131,10 +78,6 @@ void ServerTask::process() {
     }
   }
 }
-
-int ServerTask::get_client_socket_fd() { return client_socket_fd; }
-
-CacheContainer &ServerTask::get_cache() { return cache; }
 
 void ServerTask::send_invalid_response() {
   std::cout << "invalid query... aborting" << std::endl;
@@ -159,7 +102,7 @@ void ServerTask::send_response(proto_msg::CacheResponse &cache_response) {
 
   auto result = ss.str();
   std::cout << "sending result of " << result.size() << " bytes" << std::endl;
-  send(client_socket_fd, result.data(), result.size() * sizeof(char), 0);
+  net_server.send_response(result);
 }
 void ServerTask::process_connection_end() {
   proto_msg::CacheResponse cache_response;

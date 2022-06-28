@@ -8,7 +8,8 @@
 namespace k2cache {
 UpdaterSession::UpdaterSession(TaskProcessor *task_processor,
                                CacheContainer *cache)
-    : task_processor(task_processor), cache(cache) {}
+    : task_processor(task_processor), cache(cache),
+      updater_k2tree_config(get_initial_update_k2tree_config()) {}
 
 void UpdaterSession::commit_updates() {
   auto write_lock = task_processor->acquire_write_lock();
@@ -42,7 +43,8 @@ K2TreeBulkOp &UpdaterSession::get_tree_inserter(TripleNodeId &triple_resource) {
   return get_tree_bulk_op(added_triples, triple_resource);
 }
 K2TreeConfig UpdaterSession::get_config() {
-  return cache->get_pcm().get_predicates_index_cache().get_config();
+  //  return cache->get_pcm().get_predicates_index_cache().get_config();
+  return updater_k2tree_config;
 }
 
 K2TreeBulkOp &UpdaterSession::get_tree_bulk_op(tmap_t &map_src,
@@ -98,4 +100,12 @@ void UpdaterSession::log_updates() {
   task_processor->log_updates(k2tree_updates);
 }
 void UpdaterSession::do_commit_updates() { log_updates(); }
+K2TreeConfig UpdaterSession::get_initial_update_k2tree_config() {
+  K2TreeConfig config{};
+  config.cut_depth = 0;
+  config.max_node_count = 1024;
+  config.treedepth = 64;
+  return config;
+}
+
 } // namespace k2cache

@@ -135,7 +135,7 @@ set(NETWORK_SOURCE_FILES
         network/streaming/TripleMatchesPartStreamer.hpp
         network/streaming/TriplePatternMatchingStreamer.cpp
         network/streaming/TriplePatternMatchingStreamer.hpp
-        )
+        network/server/ClientReqHandler.hpp network/server/ClientReqHandlerImpl.cpp network/server/ClientReqHandlerImpl.hpp)
 
 
 set(PROTO_MESSAGES
