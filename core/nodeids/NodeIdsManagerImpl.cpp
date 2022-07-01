@@ -21,9 +21,6 @@ NodeIdsManagerImpl::NodeIdsManagerImpl(
       nodes_map(NodesMapFactory::from_input_stream(
           *this->mapped_ni_fh->get_reader(std::ios::binary))) {}
 
-NodesSequence &NodeIdsManagerImpl::get_nodes_sequence() {
-  return *nodes_sequence;
-}
 long NodeIdsManagerImpl::get_id(long real_id) {
   auto plain_id = nodes_sequence->get_id(real_id);
   if (plain_id != NOT_FOUND_NODEID)

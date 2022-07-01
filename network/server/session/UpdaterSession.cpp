@@ -18,7 +18,6 @@ void UpdaterSession::commit_updates() {
 }
 
 void UpdaterSession::add_triple(TripleNodeId &rdf_triple_resource) {
-
   auto &tree_inserter = get_tree_inserter(rdf_triple_resource);
   auto subject_id = rdf_triple_resource.subject.get_raw();
   auto object_id = rdf_triple_resource.object.get_raw();

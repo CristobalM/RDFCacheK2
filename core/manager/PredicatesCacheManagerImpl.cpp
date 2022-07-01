@@ -14,9 +14,11 @@ namespace k2cache {
 
 PredicatesCacheManagerImpl::PredicatesCacheManagerImpl(
     std::unique_ptr<PredicatesIndexCacheMD> &&predicates_index,
-    std::unique_ptr<UpdatesLogger> &&update_logger)
+    std::unique_ptr<UpdatesLogger> &&update_logger,
+    std::unique_ptr<NodeIdsManager> &&nis)
     : predicates_index(std::move(predicates_index)),
       updates_logger(std::move(update_logger)),
+      nis(std::move(nis)),
       fully_indexed_cache(*this->predicates_index) {
   this->predicates_index->set_update_logger(this->updates_logger.get());
   updates_logger->recover_all();
@@ -24,18 +26,23 @@ PredicatesCacheManagerImpl::PredicatesCacheManagerImpl(
 
 PredicatesCacheManagerImpl::PredicatesCacheManagerImpl(
     std::unique_ptr<I_FileRWHandler> &&index_file_handler,
-    UpdatesLoggerFilesManager &&updates_logger_fm)
+    UpdatesLoggerFilesManager &&updates_logger_fm,
+    std::unique_ptr<NodeIdsManager> &&nis)
     : PredicatesCacheManagerImpl(std::make_unique<PredicatesIndexCacheMD>(
                                      std::move(index_file_handler)),
                                  std::make_unique<UpdatesLoggerImpl>(
-                                     *this, std::move(updates_logger_fm))) {}
+                                     *this, std::move(updates_logger_fm)),
+                                 std::move(nis)) {}
 
 // read only constructors
 
 PredicatesCacheManagerImpl::PredicatesCacheManagerImpl(
-    std::unique_ptr<PredicatesIndexCacheMD> &&predicates_index)
+    std::unique_ptr<PredicatesIndexCacheMD> &&predicates_index,
+    std::unique_ptr<NodeIdsManager> &&nis)
     : predicates_index(std::move(predicates_index)),
-      fully_indexed_cache(*predicates_index) {}
+      nis(std::move(nis)),
+      fully_indexed_cache(*predicates_index)
+{}
 
 PredicatesIndexCacheMD &
 PredicatesCacheManagerImpl::get_predicates_index_cache() {
@@ -125,5 +132,8 @@ UpdatesLogger &PredicatesCacheManagerImpl::get_updates_logger() {
   if (!updates_logger)
     throw std::runtime_error("There is no updates_logger on read only mode");
   return *updates_logger;
+}
+NodeIdsManager &PredicatesCacheManagerImpl::get_nodes_ids_manager() {
+  return *nis;
 }
 } // namespace k2cache

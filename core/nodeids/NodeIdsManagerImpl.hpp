@@ -23,7 +23,6 @@ public:
   NodeIdsManagerImpl(std::unique_ptr<I_FileRWHandler> &&plain_ni_fh,
                      std::unique_ptr<I_FileRWHandler> &&mapped_ni_fh);
 
-  NodesSequence &get_nodes_sequence() override;
   long get_id(long real_id) override;
   long get_real_id(long mapped_id) override;
 };

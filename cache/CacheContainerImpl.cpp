@@ -10,17 +10,16 @@
 
 namespace k2cache {
 CacheContainerImpl::CacheContainerImpl(const CacheArgs &args)
-    : pcim(std::make_unique<PredicatesCacheAndIdsManager>(
-          PCMFactory::create(args), NodeIdsManagerFactory::create(args))),
+    : pcm( PCMFactory::create(args)),
       cache_replacement(CacheReplacementFactory::create_cache_replacement(
-          args.memory_budget_bytes, &pcim->get_pcm(),
+          args.memory_budget_bytes, this->pcm.get(),
           args.replacement_strategy)),
       strategy_id(args.replacement_strategy) {
   if (args.replacement_strategy ==
       I_CacheReplacement::REPLACEMENT_STRATEGY::NO_CACHING) {
     std::cout << "Loading all predicates..." << std::endl;
     auto start = std::chrono::high_resolution_clock::now();
-    pcim->get_pcm().load_all_predicates();
+    this->pcm->load_all_predicates();
     auto end = std::chrono::high_resolution_clock::now();
     auto duration =
         std::chrono::duration_cast<std::chrono::seconds>(end - start);
@@ -30,7 +29,7 @@ CacheContainerImpl::CacheContainerImpl(const CacheArgs &args)
 }
 
 PredicatesCacheManager &CacheContainerImpl::get_pcm() {
-  return pcim->get_pcm();
+  return *pcm;
 }
 
 I_CacheReplacement &CacheContainerImpl::get_replacement() {
@@ -44,7 +43,7 @@ std::vector<unsigned long>
 CacheContainerImpl::extract_loaded_predicates_from_sequence(
     const std::vector<unsigned long> &input_predicates_ids) {
   std::vector<unsigned long> result;
-  auto &predicates_index_cache = pcim->get_pcm().get_predicates_index_cache();
+  auto &predicates_index_cache = pcm->get_predicates_index_cache();
 
   for (auto current_predicate_id : input_predicates_ids) {
     if (predicates_index_cache.has_predicate_active(current_predicate_id))
@@ -53,8 +52,9 @@ CacheContainerImpl::extract_loaded_predicates_from_sequence(
 
   return result;
 }
+
 NodeIdsManager &CacheContainerImpl::get_nodes_ids_manager() {
-  return pcim->get_nis();
+  return pcm->get_nodes_ids_manager();
 }
 
 } // namespace k2cache

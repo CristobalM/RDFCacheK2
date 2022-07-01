@@ -7,6 +7,7 @@
 
 #include "fic/FullyIndexedCache.hpp"
 #include "manager/DataManager.hpp"
+#include "nodeids/NodeIdsManager.hpp"
 #include "updating/DataMerger.hpp"
 
 namespace k2cache {
@@ -18,6 +19,7 @@ struct PredicatesCacheManager : public DataManager, public DataMerger {
   virtual UpdatesLogger &get_updates_logger() = 0;
   virtual PredicatesIndexCacheMD &get_predicates_index_cache() = 0;
   virtual std::unique_ptr<K2TreeScanner> create_null_k2tree_scanner() = 0;
+  virtual NodeIdsManager &get_nodes_ids_manager() = 0;
 };
 } // namespace k2cache
 

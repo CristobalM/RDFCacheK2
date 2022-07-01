@@ -17,11 +17,10 @@
 
 #include "CacheArgs.hpp"
 #include "CacheContainer.hpp"
-#include "manager/PredicatesCacheAndIdsManager.hpp"
 
 namespace k2cache {
 class CacheContainerImpl : public CacheContainer {
-  std::unique_ptr<PredicatesCacheAndIdsManager> pcim;
+  std::unique_ptr<PredicatesCacheManager> pcm;
   std::unique_ptr<I_CacheReplacement> cache_replacement;
   I_CacheReplacement::REPLACEMENT_STRATEGY strategy_id;
 
