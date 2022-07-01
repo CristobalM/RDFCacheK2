@@ -22,13 +22,13 @@ using namespace std::chrono_literals;
 
 namespace k2cache {
 
-ServerTask::ServerTask(ClientReqHandler &net_server, CacheContainer &cache,
+ServerTask::ServerTask(std::unique_ptr<ClientReqHandler> &&req_handler, CacheContainer &cache,
                        TaskProcessor &task_processor)
-    : net_server(net_server), cache(cache), task_processor(task_processor) {}
+    : req_handler(std::move(req_handler)), cache(cache), task_processor(task_processor) {}
 
 void ServerTask::process() {
   for (;;) {
-    auto message = net_server.get_next_message();
+    auto message = req_handler->get_next_message();
 
     switch (message->request_type()) {
     case proto_msg::MessageType::CONNECTION_END:
@@ -102,7 +102,7 @@ void ServerTask::send_response(proto_msg::CacheResponse &cache_response) {
 
   auto result = ss.str();
   std::cout << "sending result of " << result.size() << " bytes" << std::endl;
-  net_server.send_response(result);
+  req_handler->send_response(result);
 }
 void ServerTask::process_connection_end() {
   proto_msg::CacheResponse cache_response;

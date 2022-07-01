@@ -3,14 +3,16 @@
 //
 
 #include "CacheServerTaskProcessor.hpp"
+#include "server/ClientReqHandlerImpl.hpp"
 #include "server/session/UpdaterSession.hpp"
 #include "streaming/TripleMatchesPartStreamer.hpp"
 
 #include <iostream>
 namespace k2cache {
 void CacheServerTaskProcessor::process_request(int client_socket_fd) {
-  auto server_task_uptr =
-      std::make_unique<ServerTask>(client_socket_fd, cache, *this);
+
+  auto server_task_uptr = std::make_unique<ServerTask>(
+      std::make_unique<ClientReqHandlerImpl>(client_socket_fd), cache, *this);
 
   std::lock_guard<std::mutex> lock_guard(mutex);
   server_tasks.push(std::move(server_task_uptr));
