@@ -33,5 +33,11 @@ long NodeIdsManagerImpl::get_real_id(long mapped_id) {
     return from_seq;
   return nodes_map->get_real_id(mapped_id);
 }
+long NodeIdsManagerImpl::get_id_or_create(long real_id) {
+  auto mapped_id = get_id(real_id);
+  if(mapped_id != NOT_FOUND_NODEID) return mapped_id;
+
+
+}
 
 } // namespace k2cache

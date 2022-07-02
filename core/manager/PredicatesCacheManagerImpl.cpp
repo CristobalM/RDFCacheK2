@@ -93,6 +93,7 @@ void PredicatesCacheManagerImpl::merge_op_tree(
     unsigned long predicate_id, K2TreeMixed &to_merge_k2tree,
     const std::function<void(K2TreeBulkOp &, unsigned long, unsigned long)> &op,
     bool create_if_doesnt_exists) {
+  auto mapped_predicate_id = nis->get_id_or_create((long)predicate_id);
   if (!predicates_index->has_predicate_active(predicate_id)) {
     if (!create_if_doesnt_exists)
       return;
