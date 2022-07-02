@@ -36,4 +36,6 @@ NodesSequence NodesSequence::from_input_stream(I_IStream &input_stream) {
   }
   return NodesSequence(std::move(data));
 }
+long NodesSequence::get_last_assigned() { return (long)values.size() - 1; }
+
 } // namespace k2cache

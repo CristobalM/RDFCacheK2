@@ -24,6 +24,7 @@ struct parsed_options {
   I_CacheReplacement::REPLACEMENT_STRATEGY replacement_strategy;
 
   std::string update_log_filename;
+  std::string node_ids_logs_filename;
 };
 
 parsed_options parse_cmd_line(int argc, char **argv);
@@ -56,11 +57,12 @@ int main(int argc, char **argv) {
 }
 
 parsed_options parse_cmd_line(int argc, char **argv) {
-  const char short_options[] = "I:N:M:O:m:p:w:R:U:";
+  const char short_options[] = "I:N:M:L:O:m:p:w:R:U:";
   struct option long_options[] = {
       {"index-file", required_argument, nullptr, 'I'},
       {"node-ids-file", required_argument, nullptr, 'N'},
       {"mapped-node-ids-file", required_argument, nullptr, 'M'},
+      {"node-ids-logs-file", required_argument, nullptr, 'L'},
       {"memory-budget", required_argument, nullptr, 'm'},
       {"port", required_argument, nullptr, 'p'},
       {"workers", required_argument, nullptr, 'w'},
@@ -73,6 +75,7 @@ parsed_options parse_cmd_line(int argc, char **argv) {
   bool has_index = false;
   bool has_node_ids = false;
   bool has_mapped_node_ids = false;
+  bool has_node_ids_logs = false;
   bool has_memory_budget = false;
   bool has_port = false;
   bool has_workers = false;
@@ -97,6 +100,10 @@ parsed_options parse_cmd_line(int argc, char **argv) {
     case 'M':
       out.mapped_node_ids_filename = optarg;
       has_mapped_node_ids = true;
+      break;
+    case 'L':
+      out.node_ids_logs_filename = optarg;
+      has_node_ids_logs = true;
       break;
     case 'm':
       out.memory_budget_bytes = std::stoul(std::string(optarg));
@@ -142,6 +149,8 @@ parsed_options parse_cmd_line(int argc, char **argv) {
     throw std::runtime_error("node-ids-file (N) argument is required");
   if (!has_mapped_node_ids)
     throw std::runtime_error("mapped-node-ids-file (M) argument is required");
+  if (!has_node_ids_logs)
+    throw std::runtime_error("node-ids-logs-file (L) argument is required");
   if (!has_memory_budget)
     throw std::runtime_error("memory-budget (m) argument is required");
   if (!has_port)

@@ -20,6 +20,10 @@ public:
   int impl_id() override;
   long get_id(long real_id) override;
   long get_real_id(long id) override;
+  long get_last_assigned() override;
+  void add(long real_id, long mapped_id) override;
+  void restore(std::unique_ptr<I_IStream> &&log_istream,
+               std::unique_ptr<I_IStream> &&counter_istream) override;
 };
 } // namespace k2cache
 #endif // RDFCACHEK2_NODESMAPIMPL_HPP

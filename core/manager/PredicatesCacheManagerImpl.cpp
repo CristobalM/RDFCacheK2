@@ -94,25 +94,27 @@ void PredicatesCacheManagerImpl::merge_op_tree(
     const std::function<void(K2TreeBulkOp &, unsigned long, unsigned long)> &op,
     bool create_if_doesnt_exists) {
   auto mapped_predicate_id = nis->get_id_or_create((long)predicate_id);
-  if (!predicates_index->has_predicate_active(predicate_id)) {
+  if (!predicates_index->has_predicate_active(mapped_predicate_id)) {
     if (!create_if_doesnt_exists)
       return;
-    predicates_index->add_predicate(predicate_id);
+    predicates_index->add_predicate(mapped_predicate_id);
   }
-  auto fetched = predicates_index->fetch_k2tree(predicate_id);
+  auto fetched = predicates_index->fetch_k2tree(mapped_predicate_id);
   if (!fetched.exists()) // in the least it should've been added on
                          // predicates_index->add_predicate
     throw std::runtime_error("merge_op_tree: k2tree with predicate_id " +
-                             std::to_string(predicate_id) + " not found");
+                             std::to_string(predicate_id) + " not found (" + std::to_string(mapped_predicate_id) + ")");
   auto &k2tree_active = fetched.get_mutable();
   K2TreeBulkOp bulk_op(k2tree_active);
   auto points_scanner = to_merge_k2tree.create_full_scanner();
   while (points_scanner->has_next()) {
     auto point = points_scanner->next();
-    op(bulk_op, point.first, point.second);
+    auto first = nis->get_id_or_create((long)point.first);
+    auto second = nis->get_id_or_create((long)point.second);
+    op(bulk_op, first, second);
   }
-  predicates_index->mark_dirty(predicate_id);
-  fully_indexed_cache.resync_predicate(predicate_id);
+  predicates_index->mark_dirty(mapped_predicate_id);
+  fully_indexed_cache.resync_predicate(mapped_predicate_id);
 }
 
 void PredicatesCacheManagerImpl::merge_update(

@@ -14,7 +14,9 @@ struct NodeIdsManagerFactory {
   static std::unique_ptr<NodeIdsManager> create(const CacheArgs &args);
   static std::unique_ptr<NodeIdsManager>
   create(std::unique_ptr<I_FileRWHandler> &&plain_ni_fh,
-         std::unique_ptr<I_FileRWHandler> &&mapped_ni_fh);
+         std::unique_ptr<I_FileRWHandler> &&mapped_ni_fh,
+         std::unique_ptr<I_FileRWHandler> &&logs_fh,
+         std::unique_ptr<I_FileRWHandler> &&logs_counter_fh);
 };
 } // namespace k2cache
 

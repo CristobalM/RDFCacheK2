@@ -17,8 +17,9 @@ public:
   explicit NodesSequence(std::vector<long> &&values);
 
   long get_id(long value);
-
   long get_real_id(long position);
+
+  long get_last_assigned();
 
   static NodesSequence from_input_stream(I_IStream &input_stream);
 };
