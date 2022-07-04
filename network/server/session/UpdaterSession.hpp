@@ -25,7 +25,6 @@ class UpdaterSession : public Updater {
   tmap_t added_triples;
   tmap_t removed_triples;
 
-  static K2TreeConfig get_initial_update_k2tree_config();
   K2TreeConfig updater_k2tree_config;
 public:
   UpdaterSession(TaskProcessor *task_processor, CacheContainer *cache);
@@ -33,6 +32,7 @@ public:
   void add_triple(TripleNodeId &rdf_triple_resource) override;
   void delete_triple(TripleNodeId &rdf_triple_resource) override;
   void commit_updates() override;
+  static K2TreeConfig get_initial_update_k2tree_config();
 
 private:
   K2TreeBulkOp &get_tree_inserter(TripleNodeId &triple_resource);

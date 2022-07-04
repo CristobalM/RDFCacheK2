@@ -8,6 +8,8 @@
 #include "builder/PredicatesIndexFileBuilder.hpp"
 #include "k2tree/K2TreeMixed.hpp"
 #include "manager/PCMFactory.hpp"
+#include "nodeids/NodeIdsManagerFactory.hpp"
+#include "nodeids/NodeIdsManagerIdentity.hpp"
 #include <serialization_util.hpp>
 
 namespace k2cache {
@@ -80,20 +82,40 @@ UpdatesLoggerFilesManager mock_fh_manager() {
 }
 
 std::unique_ptr<PredicatesCacheManager> basic_pcm() {
-  K2TreeConfig config;
+  return basic_pcm(std::make_unique<NodeIdsManagerIdentity>());
+}
+std::unique_ptr<PredicatesCacheManager>
+basic_pcm(std::unique_ptr<NodeIdsManager> &&nis) {
+  K2TreeConfig config{};
   config.treedepth = 32;
   config.cut_depth = 10;
   config.max_node_count = 256;
 
   std::unique_ptr<I_FileRWHandler> fh_pcm{};
   {
-    std::string cache_data;
-    fh_pcm = std::make_unique<FHMock>(cache_data);
+    fh_pcm = mock_fh();
     auto fh_writer = fh_pcm->get_writer(std::ios::out | std::ios::binary);
     PredicatesCacheMetadata metadata_pcm(config);
     metadata_pcm.write_to_ostream(fh_writer->get_ostream());
     fh_writer->flush();
   }
-  return PCMFactory::create(std::move(fh_pcm), mock_fh_manager());
+  return PCMFactory::create(std::move(fh_pcm), mock_fh_manager(),
+                            std::move(nis));
+}
+std::unique_ptr<NodeIdsManager> mock_nis() {
+  auto plain_fh = mock_fh();
+  auto mapped_fh = mock_fh();
+  auto logs_fh = mock_fh();
+  auto logs_counter_fh = mock_fh();
+  return NodeIdsManagerFactory::create(
+      std::move(plain_fh),
+      std::move(mapped_fh),
+      std::move(logs_fh),
+      std::move(logs_counter_fh)
+      );
+}
+std::unique_ptr<FHMock> mock_fh() {
+  std::string data;
+  return  std::make_unique<FHMock>(data);
 }
 } // namespace k2cache

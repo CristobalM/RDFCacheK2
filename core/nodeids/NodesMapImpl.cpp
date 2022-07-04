@@ -30,7 +30,10 @@ long NodesMapImpl::get_id(long real_id) {
   return it->second;
 }
 long NodesMapImpl::get_real_id(long id) { return rev_map[id]; }
-long NodesMapImpl::get_last_assigned() { return rev_map.rbegin()->first; }
+long NodesMapImpl::get_last_assigned() {
+  if(rev_map.empty()) return NOT_FOUND_NODEID;
+  return rev_map.rbegin()->first;
+}
 void NodesMapImpl::add(long real_id, long mapped_id) {
   imap[real_id] = mapped_id;
   rev_map[mapped_id] = real_id;
