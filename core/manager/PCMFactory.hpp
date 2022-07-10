@@ -8,7 +8,6 @@
 #include "CacheArgs.hpp"
 #include "I_FileRWHandler.hpp"
 #include "PredicatesCacheManager.hpp"
-#include "nodeids/NodeIdsManager.hpp"
 #include "updating/UpdatesLoggerFilesManager.hpp"
 #include <memory>
 #include <string>
@@ -18,25 +17,16 @@ struct PCMFactory {
   static std::unique_ptr<PredicatesCacheManager>
   create(std::unique_ptr<I_FileRWHandler> &&index_file_handler,
          UpdatesLoggerFilesManager &&updates_logger_fm);
-  static std::unique_ptr<PredicatesCacheManager>
-  create(std::unique_ptr<I_FileRWHandler> &&index_file_handler);
 
   static std::unique_ptr<PredicatesCacheManager>
-  create(std::unique_ptr<I_FileRWHandler> &&index_file_handler,
-         UpdatesLoggerFilesManager &&updates_logger_fm,
-         std::unique_ptr<NodeIdsManager> &&nis);
-  static std::unique_ptr<PredicatesCacheManager>
-  create(std::unique_ptr<I_FileRWHandler> &&index_file_handler,
-         std::unique_ptr<NodeIdsManager> &&nis);
+  create(std::unique_ptr<I_FileRWHandler> &&index_file_handler);
 
   static std::unique_ptr<PredicatesCacheManager>
   create(const CacheArgs &cache_args);
 
   static std::unique_ptr<PredicatesCacheManager>
-  create(const std::string &location, std::unique_ptr<NodeIdsManager> &&nis);
-
-  static std::unique_ptr<PredicatesCacheManager>
   create(const std::string &location);
+
 
 };
 } // namespace k2cache

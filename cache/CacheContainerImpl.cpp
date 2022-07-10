@@ -9,24 +9,6 @@
 #include "replacement/CacheReplacementFactory.hpp"
 
 namespace k2cache {
-CacheContainerImpl::CacheContainerImpl(const CacheArgs &args)
-    : pcm( PCMFactory::create(args)),
-      cache_replacement(CacheReplacementFactory::create_cache_replacement(
-          args.memory_budget_bytes, this->pcm.get(),
-          args.replacement_strategy)),
-      strategy_id(args.replacement_strategy) {
-  if (args.replacement_strategy ==
-      I_CacheReplacement::REPLACEMENT_STRATEGY::NO_CACHING) {
-    std::cout << "Loading all predicates..." << std::endl;
-    auto start = std::chrono::high_resolution_clock::now();
-    this->pcm->load_all_predicates();
-    auto end = std::chrono::high_resolution_clock::now();
-    auto duration =
-        std::chrono::duration_cast<std::chrono::seconds>(end - start);
-    std::cout << "Done loading all predicates, took " << duration.count()
-              << " seconds" << std::endl;
-  }
-}
 
 PredicatesCacheManager &CacheContainerImpl::get_pcm() {
   return *pcm;
@@ -54,7 +36,19 @@ CacheContainerImpl::extract_loaded_predicates_from_sequence(
 }
 
 NodeIdsManager &CacheContainerImpl::get_nodes_ids_manager() {
-  return pcm->get_nodes_ids_manager();
+  return *nis;
 }
+
+CacheContainerImpl::CacheContainerImpl(
+    std::unique_ptr<PredicatesCacheManager> &&pcm,
+    std::unique_ptr<NodeIdsManager> &&nis,
+    std::unique_ptr<I_CacheReplacement> &&cache_replacement,
+    I_CacheReplacement::REPLACEMENT_STRATEGY strategy_id)
+:
+ pcm(std::move(pcm)),
+ nis(std::move(nis)),
+ cache_replacement(std::move(cache_replacement)),
+ strategy_id(strategy_id)
+{}
 
 } // namespace k2cache

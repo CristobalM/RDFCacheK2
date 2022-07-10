@@ -381,10 +381,12 @@ if (GTest_FOUND)
             test/mock_structures/FHMock.cpp
             test/mock_structures/StringIOStream.cpp
             test/mock_structures/StringIOStream.hpp
+            test/mock_structures/TestingTaskProcessor.cpp
+            test/mock_structures/TestingTaskProcessor.hpp
             )
 
     add_library(MockStructureLib STATIC ${MOCK_STRUCTURES})
-    add_dependencies(MockStructureLib RDFCacheK2 Utils)
+    add_dependencies(MockStructureLib RDFCacheK2 RDFCacheK2_Network RDFCacheK2_Cache Utils)
 
     include_directories(${GTEST_INCLUDE_DIRS})
     add_executable(serialization_test test/serialization_tests.cpp)
@@ -426,7 +428,7 @@ if (GTest_FOUND)
     target_link_libraries(nodes_map_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} MockStructureLib pthread)
 
     add_executable(node_ids_dyn_mapper_test test/node_ids_dyn_mapper_test.cpp test/cache_test_util.cpp)
-    target_link_libraries(node_ids_dyn_mapper_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} MockStructureLib pthread)
+    target_link_libraries(node_ids_dyn_mapper_test MockStructureLib ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES}  pthread)
 
 
     add_test(NAME serialization_test COMMAND ./serialization_test)

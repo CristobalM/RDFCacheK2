@@ -14,17 +14,17 @@
 #include "response_msg.pb.h"
 
 #include "hashing.hpp"
-#include "nodeids/NodeId.hpp"
-#include "nodeids/TripleNodeId.hpp"
+#include "messages/utils.hpp"
 #include "serialization_util.hpp"
 
 using namespace std::chrono_literals;
 
 namespace k2cache {
 
-ServerTask::ServerTask(std::unique_ptr<ClientReqHandler> &&req_handler, CacheContainer &cache,
-                       TaskProcessor &task_processor)
-    : req_handler(std::move(req_handler)), cache(cache), task_processor(task_processor) {}
+ServerTask::ServerTask(std::unique_ptr<ClientReqHandler> &&req_handler,
+                       CacheContainer &cache, TaskProcessor &task_processor)
+    : req_handler(std::move(req_handler)), cache(cache),
+      task_processor(task_processor) {}
 
 void ServerTask::process() {
   for (;;) {
@@ -173,7 +173,8 @@ void ServerTask::process_stream_request_triple_pattern(Message &message) {
   auto channel_id = s_req.channel_id();
   auto &triples_streamer = task_processor.get_triple_streamer(channel_id);
   auto &triple_pattern_streamer =
-      triples_streamer.start_streaming_matching_triples(s_req.triple_node());
+      triples_streamer.start_streaming_matching_triples(
+          proto_triple_to_internal(s_req.triple_node()));
   auto cache_response = triple_pattern_streamer.get_next_response();
   send_response(cache_response);
   if (triple_pattern_streamer.all_sent()) {
@@ -233,17 +234,10 @@ void ServerTask::process_update_triples_batch(Message &message) {
   const auto &triples_to_delete = req.triples_to_delete();
 
   for (const auto &triple_proto : triples_to_add) {
-
-    updater.add_triple(
-        TripleNodeId(NodeId(triple_proto.subject().encoded_data()),
-                     NodeId(triple_proto.predicate().encoded_data()),
-                     NodeId(triple_proto.object().encoded_data())));
+    updater.add_triple(proto_triple_to_internal(triple_proto));
   }
   for (const auto &triple_proto : triples_to_delete) {
-    updater.delete_triple(
-        TripleNodeId(NodeId(triple_proto.subject().encoded_data()),
-                     NodeId(triple_proto.predicate().encoded_data()),
-                     NodeId(triple_proto.object().encoded_data())));
+    updater.delete_triple(proto_triple_to_internal(triple_proto));
   }
 
   proto_msg::CacheResponse cache_response;

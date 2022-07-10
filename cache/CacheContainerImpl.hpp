@@ -15,17 +15,22 @@
 #include <replacement/I_CacheReplacement.hpp>
 #include <request_msg.pb.h>
 
-#include "CacheArgs.hpp"
 #include "CacheContainer.hpp"
 
 namespace k2cache {
 class CacheContainerImpl : public CacheContainer {
   std::unique_ptr<PredicatesCacheManager> pcm;
+  std::unique_ptr<NodeIdsManager> nis;
   std::unique_ptr<I_CacheReplacement> cache_replacement;
   I_CacheReplacement::REPLACEMENT_STRATEGY strategy_id;
 
 public:
-  explicit CacheContainerImpl(const CacheArgs &args);
+  CacheContainerImpl(
+      std::unique_ptr<PredicatesCacheManager> &&pcm,
+      std::unique_ptr<NodeIdsManager> &&nis,
+      std::unique_ptr<I_CacheReplacement> &&cache_replacement,
+      I_CacheReplacement::REPLACEMENT_STRATEGY strategy_id
+  );
 
   PredicatesCacheManager &get_pcm() override;
   I_CacheReplacement &get_replacement() override;

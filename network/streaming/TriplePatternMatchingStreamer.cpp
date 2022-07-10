@@ -4,14 +4,13 @@
 
 #include "TriplePatternMatchingStreamer.hpp"
 
-#include <utility>
 namespace k2cache {
 TriplePatternMatchingStreamer::TriplePatternMatchingStreamer(
     int channel_id, int pattern_channel_id,
-    proto_msg::TripleNodeIdEnc triple_pattern_node, CacheContainer *cache,
+    const TripleNodeId &triple_pattern_node, CacheContainer *cache,
     unsigned long threshold_part_size)
     : channel_id(channel_id), pattern_channel_id(pattern_channel_id),
-      triple_pattern_node(std::move(triple_pattern_node)), cache(cache),
+      triple_pattern_node(triple_pattern_node), cache(cache),
       threshold_part_size(threshold_part_size), first(true), finished(false) {
   initialize_scanner();
 }
@@ -34,8 +33,8 @@ proto_msg::CacheResponse TriplePatternMatchingStreamer::get_next_response() {
   if (!subject_variable && !object_variable) {
     stream_response->set_last_result(true);
     set_finished();
-    auto subject_id = triple_pattern_node.subject().encoded_data();
-    auto object_id = triple_pattern_node.object().encoded_data();
+    auto subject_id = triple_pattern_node.subject.get_value();
+    auto object_id = triple_pattern_node.object.get_value();
     stream_response->set_has_exact_response(true);
     stream_response->set_exact_response(
         k2tree_scanner->get_tree().has(subject_id, object_id));
@@ -86,11 +85,11 @@ void TriplePatternMatchingStreamer::initialize_scanner() {
   auto &nis = cache->get_nodes_ids_manager();
 
   subject_variable =
-      (long)triple_pattern_node.subject().encoded_data() == NODE_ANY;
+      (long)triple_pattern_node.subject.is_any();
   object_variable =
-      (long)triple_pattern_node.object().encoded_data() == NODE_ANY;
+      (long)triple_pattern_node.object.is_any();
 
-  auto predicate_id = triple_pattern_node.predicate().encoded_data();
+  auto predicate_id = triple_pattern_node.predicate.get_value();
   auto predicate_id_translated = nis.get_id((long)predicate_id);
 
   auto fetch_result =
@@ -106,12 +105,12 @@ void TriplePatternMatchingStreamer::initialize_scanner() {
   if (subject_variable && object_variable) {
     k2tree_scanner = k2tree.create_full_scanner();
   } else if (subject_variable) {
-    auto object_id = triple_pattern_node.object().encoded_data();
+    auto object_id = triple_pattern_node.object.get_value();
     auto object_id_translated = nis.get_id((long)object_id);
     k2tree_scanner = k2tree.create_band_scanner(
         object_id_translated, K2TreeScanner::BandType::ROW_BAND_TYPE);
   } else if (object_variable) {
-    auto subject_id = triple_pattern_node.subject().encoded_data();
+    auto subject_id = triple_pattern_node.subject.get_value();
     auto subject_id_translated = nis.get_id((long)subject_id);
     k2tree_scanner = k2tree.create_band_scanner(
         subject_id_translated, K2TreeScanner::BandType::COLUMN_BAND_TYPE);

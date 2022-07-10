@@ -30,7 +30,7 @@ namespace k2cache {
 class PredicatesCacheManagerImpl : public PredicatesCacheManager {
   std::unique_ptr<PredicatesIndexCacheMD> predicates_index;
   std::unique_ptr<UpdatesLogger> updates_logger;
-  std::unique_ptr<NodeIdsManager> nis;
+//  std::unique_ptr<NodeIdsManager> nis;
 
   FullyIndexedCache fully_indexed_cache;
 
@@ -38,18 +38,16 @@ public:
   // read/write constructors
   PredicatesCacheManagerImpl(
       std::unique_ptr<PredicatesIndexCacheMD> &&predicates_index,
-      std::unique_ptr<UpdatesLogger> &&update_logger,
-      std::unique_ptr<NodeIdsManager> &&nis);
+      std::unique_ptr<UpdatesLogger> &&update_logger);
+//      std::unique_ptr<NodeIdsManager> &&nis);
 
   PredicatesCacheManagerImpl(
       std::unique_ptr<I_FileRWHandler> &&index_file_handler,
-      UpdatesLoggerFilesManager &&updates_logger_fm,
-      std::unique_ptr<NodeIdsManager> &&nis);
+      UpdatesLoggerFilesManager &&updates_logger_fm);
 
   // read only constructor
   PredicatesCacheManagerImpl(
-      std::unique_ptr<PredicatesIndexCacheMD> &&predicates_index,
-      std::unique_ptr<NodeIdsManager> &&nis);
+      std::unique_ptr<PredicatesIndexCacheMD> &&predicates_index);
 
   PredicatesIndexCacheMD &get_predicates_index_cache() override;
   void load_all_predicates() override;
@@ -73,7 +71,6 @@ public:
   FullyIndexedCache &get_fully_indexed_cache() override;
 
   UpdatesLogger &get_updates_logger() override;
-  NodeIdsManager &get_nodes_ids_manager() override;
 
 private:
   void merge_op_tree(unsigned long predicate_id, K2TreeMixed &to_merge_k2tree,

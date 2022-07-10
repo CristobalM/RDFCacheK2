@@ -67,11 +67,11 @@ TripleMatchesPartStreamer::get_loaded_predicates_response() {
 }
 I_TRMatchingStreamer &
 TripleMatchesPartStreamer::start_streaming_matching_triples(
-    const proto_msg::TripleNodeIdEnc &triple_pattern) {
+    const TripleNodeId &triple_pattern) {
 
   std::unique_ptr<I_TRMatchingStreamer> streamer;
 
-  auto predicate_id = triple_pattern.predicate().encoded_data();
+  auto predicate_id = triple_pattern.predicate.get_value();
   auto predicate_id_translated =
       (unsigned long)cache->get_nodes_ids_manager().get_id((long)predicate_id);
   auto fic_response = fully_indexed_cache.get(predicate_id_translated);

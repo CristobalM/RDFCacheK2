@@ -5,6 +5,7 @@
 #include <filesystem>
 #include <iostream>
 
+#include "CacheContainerImpl.hpp"
 #include "builder/PredicatesIndexFileBuilder.hpp"
 #include "k2tree/K2TreeMixed.hpp"
 #include "manager/PCMFactory.hpp"
@@ -82,10 +83,6 @@ UpdatesLoggerFilesManager mock_fh_manager() {
 }
 
 std::unique_ptr<PredicatesCacheManager> basic_pcm() {
-  return basic_pcm(std::make_unique<NodeIdsManagerIdentity>());
-}
-std::unique_ptr<PredicatesCacheManager>
-basic_pcm(std::unique_ptr<NodeIdsManager> &&nis) {
   K2TreeConfig config{};
   config.treedepth = 32;
   config.cut_depth = 10;
@@ -99,23 +96,44 @@ basic_pcm(std::unique_ptr<NodeIdsManager> &&nis) {
     metadata_pcm.write_to_ostream(fh_writer->get_ostream());
     fh_writer->flush();
   }
-  return PCMFactory::create(std::move(fh_pcm), mock_fh_manager(),
-                            std::move(nis));
+  return PCMFactory::create(std::move(fh_pcm), mock_fh_manager());
 }
 std::unique_ptr<NodeIdsManager> mock_nis() {
   auto plain_fh = mock_fh();
   auto mapped_fh = mock_fh();
   auto logs_fh = mock_fh();
   auto logs_counter_fh = mock_fh();
-  return NodeIdsManagerFactory::create(
-      std::move(plain_fh),
-      std::move(mapped_fh),
-      std::move(logs_fh),
-      std::move(logs_counter_fh)
-      );
+  return NodeIdsManagerFactory::create(std::move(plain_fh),
+                                       std::move(mapped_fh), std::move(logs_fh),
+                                       std::move(logs_counter_fh));
 }
 std::unique_ptr<FHMock> mock_fh() {
   std::string data;
-  return  std::make_unique<FHMock>(data);
+  return std::make_unique<FHMock>(data);
 }
+
+std::unique_ptr<CacheContainer> mock_cache_container() {
+  return std::make_unique<CacheContainerImpl>(
+      basic_pcm(), mock_nis(), nullptr,
+      I_CacheReplacement::REPLACEMENT_STRATEGY::NO_CACHING);
+}
+std::vector<TripleNodeId>
+read_all_from_streamer(I_TRMatchingStreamer &streamer, long predicate_id) {
+  std::vector<TripleNodeId> result;
+  auto response = streamer.get_next_response();
+  auto &msg = response.stream_of_triples_matching_pattern_response();
+  for (auto i = 0; i < msg.matching_values_size(); i++) {
+    auto &curr = msg.matching_values(i);
+    if (curr.single_match_size() != 2) {
+      throw std::runtime_error("unexpected size, expecting 2, but was = " +
+                               std::to_string(curr.single_match_size()));
+    }
+
+    result.emplace_back(NodeId((long)curr.single_match(0).encoded_data()),
+                        NodeId(predicate_id),
+                        NodeId((long)curr.single_match(1).encoded_data()));
+  }
+  return result;
+}
+
 } // namespace k2cache

@@ -11,6 +11,7 @@
 #include "k2tree/K2TreeScanner.hpp"
 #include "server/tasks/TaskProcessor.hpp"
 #include <mutex>
+#include <memory>
 namespace k2cache {
 class TripleMatchesPartStreamer : public I_TRStreamer {
   int channel_id;
@@ -42,8 +43,8 @@ public:
   proto_msg::CacheResponse get_loaded_predicates_response() override;
 
   ~TripleMatchesPartStreamer() override;
-  I_TRMatchingStreamer &start_streaming_matching_triples(
-      const proto_msg::TripleNodeIdEnc &triple_pattern) override;
+  I_TRMatchingStreamer &
+  start_streaming_matching_triples(const TripleNodeId &triple_pattern) override;
   void clean_pattern_streamer(int pattern_channel_id) override;
   bool is_done() override;
   I_TRMatchingStreamer &
