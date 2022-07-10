@@ -30,7 +30,7 @@ namespace k2cache {
 class PredicatesCacheManagerImpl : public PredicatesCacheManager {
   std::unique_ptr<PredicatesIndexCacheMD> predicates_index;
   std::unique_ptr<UpdatesLogger> updates_logger;
-//  std::unique_ptr<NodeIdsManager> nis;
+  //  std::unique_ptr<NodeIdsManager> nis;
 
   FullyIndexedCache fully_indexed_cache;
 
@@ -39,7 +39,7 @@ public:
   PredicatesCacheManagerImpl(
       std::unique_ptr<PredicatesIndexCacheMD> &&predicates_index,
       std::unique_ptr<UpdatesLogger> &&update_logger);
-//      std::unique_ptr<NodeIdsManager> &&nis);
+  //      std::unique_ptr<NodeIdsManager> &&nis);
 
   PredicatesCacheManagerImpl(
       std::unique_ptr<I_FileRWHandler> &&index_file_handler,

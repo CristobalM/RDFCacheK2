@@ -26,6 +26,7 @@ class UpdaterSession : public Updater {
   tmap_t removed_triples;
 
   K2TreeConfig updater_k2tree_config;
+
 public:
   UpdaterSession(TaskProcessor *task_processor, CacheContainer *cache);
 

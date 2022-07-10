@@ -21,8 +21,10 @@ void UpdaterSession::add_triple(TripleNodeId &rdf_triple_resource) {
   auto &tree_inserter = get_tree_inserter(rdf_triple_resource);
   auto subject_id = rdf_triple_resource.subject.get_value();
   auto object_id = rdf_triple_resource.object.get_value();
-  auto mapped_subject = cache->get_nodes_ids_manager().get_id_or_create((long)subject_id);
-  auto mapped_object = cache->get_nodes_ids_manager().get_id_or_create((long)object_id);
+  auto mapped_subject =
+      cache->get_nodes_ids_manager().get_id_or_create((long)subject_id);
+  auto mapped_object =
+      cache->get_nodes_ids_manager().get_id_or_create((long)object_id);
   tree_inserter.insert(mapped_subject, mapped_object);
 }
 void UpdaterSession::delete_triple(TripleNodeId &rdf_triple_resource) {
@@ -36,9 +38,12 @@ void UpdaterSession::delete_triple(TripleNodeId &rdf_triple_resource) {
   if (object_id == 0)
     return;
 
-  auto mapped_subject = cache->get_nodes_ids_manager().get_id_or_create((long)subject_id);
-  auto mapped_predicate = cache->get_nodes_ids_manager().get_id_or_create((long)predicate_id);
-  auto mapped_object = cache->get_nodes_ids_manager().get_id_or_create((long)object_id);
+  auto mapped_subject =
+      cache->get_nodes_ids_manager().get_id_or_create((long)subject_id);
+  auto mapped_predicate =
+      cache->get_nodes_ids_manager().get_id_or_create((long)predicate_id);
+  auto mapped_object =
+      cache->get_nodes_ids_manager().get_id_or_create((long)object_id);
 
   auto &tree_deleter = get_tree_deleter(mapped_predicate);
   tree_deleter.insert(mapped_subject, mapped_object);
@@ -55,7 +60,8 @@ K2TreeConfig UpdaterSession::get_config() {
 K2TreeBulkOp &UpdaterSession::get_tree_bulk_op(tmap_t &map_src,
                                                TripleNodeId &triple_resource) {
   unsigned long predicate_id = triple_resource.predicate.get_value();
-  auto mapped_predicate = cache->get_nodes_ids_manager().get_id_or_create((long)predicate_id);
+  auto mapped_predicate =
+      cache->get_nodes_ids_manager().get_id_or_create((long)predicate_id);
   return get_tree_bulk_op_id(map_src, mapped_predicate);
 }
 

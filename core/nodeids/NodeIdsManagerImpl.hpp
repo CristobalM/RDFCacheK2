@@ -27,12 +27,12 @@ class NodeIdsManagerImpl : public NodeIdsManager {
   std::unique_ptr<I_OStream> counter_writer;
 
   long logs_number;
+
 public:
   NodeIdsManagerImpl(std::unique_ptr<I_FileRWHandler> &&plain_ni_fh,
                      std::unique_ptr<I_FileRWHandler> &&mapped_ni_fh,
                      std::unique_ptr<I_FileRWHandler> &&log_fh,
-                     std::unique_ptr<I_FileRWHandler> &&log_fh_counter
-                     );
+                     std::unique_ptr<I_FileRWHandler> &&log_fh_counter);
 
   long get_id(long real_id) override;
   long get_real_id(long mapped_id) override;

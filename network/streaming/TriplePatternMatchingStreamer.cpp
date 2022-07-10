@@ -84,10 +84,8 @@ bool TriplePatternMatchingStreamer::all_sent() { return finished; }
 void TriplePatternMatchingStreamer::initialize_scanner() {
   auto &nis = cache->get_nodes_ids_manager();
 
-  subject_variable =
-      (long)triple_pattern_node.subject.is_any();
-  object_variable =
-      (long)triple_pattern_node.object.is_any();
+  subject_variable = (long)triple_pattern_node.subject.is_any();
+  object_variable = (long)triple_pattern_node.object.is_any();
 
   auto predicate_id = triple_pattern_node.predicate.get_value();
   auto predicate_id_translated = nis.get_id((long)predicate_id);

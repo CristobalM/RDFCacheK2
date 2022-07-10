@@ -76,9 +76,8 @@ int StreamerFromCachedSource::get_channel_id() { return channel_id; }
 bool StreamerFromCachedSource::all_sent() { return finished; }
 StreamerFromCachedSource::StreamerFromCachedSource(
     I_CachedPredicateSource *cached_source, int channel_id,
-    int current_pattern_channel_id,
-    const TripleNodeId &triple_pattern_node, CacheContainer *cache,
-    unsigned long threshold_part_size)
+    int current_pattern_channel_id, const TripleNodeId &triple_pattern_node,
+    CacheContainer *cache, unsigned long threshold_part_size)
     : cached_source(cached_source), channel_id(channel_id),
       pattern_channel_id(current_pattern_channel_id),
       triple_pattern_node(triple_pattern_node), cache(cache),

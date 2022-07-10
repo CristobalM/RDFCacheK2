@@ -10,9 +10,7 @@
 
 namespace k2cache {
 
-PredicatesCacheManager &CacheContainerImpl::get_pcm() {
-  return *pcm;
-}
+PredicatesCacheManager &CacheContainerImpl::get_pcm() { return *pcm; }
 
 I_CacheReplacement &CacheContainerImpl::get_replacement() {
   return *cache_replacement;
@@ -35,20 +33,15 @@ CacheContainerImpl::extract_loaded_predicates_from_sequence(
   return result;
 }
 
-NodeIdsManager &CacheContainerImpl::get_nodes_ids_manager() {
-  return *nis;
-}
+NodeIdsManager &CacheContainerImpl::get_nodes_ids_manager() { return *nis; }
 
 CacheContainerImpl::CacheContainerImpl(
     std::unique_ptr<PredicatesCacheManager> &&pcm,
     std::unique_ptr<NodeIdsManager> &&nis,
     std::unique_ptr<I_CacheReplacement> &&cache_replacement,
     I_CacheReplacement::REPLACEMENT_STRATEGY strategy_id)
-:
- pcm(std::move(pcm)),
- nis(std::move(nis)),
- cache_replacement(std::move(cache_replacement)),
- strategy_id(strategy_id)
-{}
+    : pcm(std::move(pcm)), nis(std::move(nis)),
+      cache_replacement(std::move(cache_replacement)),
+      strategy_id(strategy_id) {}
 
 } // namespace k2cache

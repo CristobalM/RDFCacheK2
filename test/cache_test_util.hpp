@@ -24,10 +24,10 @@ std::vector<TripleValue> build_initial_values_triples_vector(uint64_t size);
 UpdatesLoggerFilesManager mock_fh_manager();
 std::unique_ptr<PredicatesCacheManager> basic_pcm();
 
-
 std::unique_ptr<NodeIdsManager> mock_nis();
 std::unique_ptr<FHMock> mock_fh();
 std::unique_ptr<CacheContainer> mock_cache_container();
-std::vector<TripleNodeId> read_all_from_streamer(I_TRMatchingStreamer &streamer, long predicate_id);
+std::vector<TripleNodeId> read_all_from_streamer(I_TRMatchingStreamer &streamer,
+                                                 long predicate_id);
 } // namespace k2cache
 #endif /* _CACHE_TEST_UTIL_HPP_ */

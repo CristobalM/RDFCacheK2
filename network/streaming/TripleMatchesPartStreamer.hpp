@@ -10,8 +10,8 @@
 #include "fic/FullyIndexedCache.hpp"
 #include "k2tree/K2TreeScanner.hpp"
 #include "server/tasks/TaskProcessor.hpp"
-#include <mutex>
 #include <memory>
+#include <mutex>
 namespace k2cache {
 class TripleMatchesPartStreamer : public I_TRStreamer {
   int channel_id;

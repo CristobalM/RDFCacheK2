@@ -25,12 +25,10 @@ class CacheContainerImpl : public CacheContainer {
   I_CacheReplacement::REPLACEMENT_STRATEGY strategy_id;
 
 public:
-  CacheContainerImpl(
-      std::unique_ptr<PredicatesCacheManager> &&pcm,
-      std::unique_ptr<NodeIdsManager> &&nis,
-      std::unique_ptr<I_CacheReplacement> &&cache_replacement,
-      I_CacheReplacement::REPLACEMENT_STRATEGY strategy_id
-  );
+  CacheContainerImpl(std::unique_ptr<PredicatesCacheManager> &&pcm,
+                     std::unique_ptr<NodeIdsManager> &&nis,
+                     std::unique_ptr<I_CacheReplacement> &&cache_replacement,
+                     I_CacheReplacement::REPLACEMENT_STRATEGY strategy_id);
 
   PredicatesCacheManager &get_pcm() override;
   I_CacheReplacement &get_replacement() override;

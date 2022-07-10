@@ -5,13 +5,12 @@
 #ifndef RDFCACHEK2_TESTINGTASKPROCESSOR_HPP
 #define RDFCACHEK2_TESTINGTASKPROCESSOR_HPP
 
-#include <server/tasks/TaskProcessor.hpp>
 #include <CacheContainer.hpp>
-#include <unordered_map>
 #include <memory>
-#include <vector>
+#include <server/tasks/TaskProcessor.hpp>
 #include <streaming/I_TRStreamer.hpp>
-
+#include <unordered_map>
+#include <vector>
 
 namespace k2cache {
 class TestingTaskProcessor : public TaskProcessor {
@@ -39,7 +38,6 @@ public:
   WriteDataLock acquire_write_lock() override;
   void sync_to_persistent() override;
 };
-}
-
+} // namespace k2cache
 
 #endif // RDFCACHEK2_TESTINGTASKPROCESSOR_HPP

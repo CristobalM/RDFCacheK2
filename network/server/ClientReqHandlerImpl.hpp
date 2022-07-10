@@ -8,6 +8,7 @@
 namespace k2cache {
 class ClientReqHandlerImpl : public ClientReqHandler {
   int client_socket_fd;
+
 public:
   explicit ClientReqHandlerImpl(int client_socket_fd);
   std::unique_ptr<Message> get_next_message() override;

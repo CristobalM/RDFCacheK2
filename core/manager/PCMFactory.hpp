@@ -26,8 +26,6 @@ struct PCMFactory {
 
   static std::unique_ptr<PredicatesCacheManager>
   create(const std::string &location);
-
-
 };
 } // namespace k2cache
 #endif // RDFCACHEK2_PCMFACTORY_HPP

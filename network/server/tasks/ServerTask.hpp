@@ -14,14 +14,14 @@
 #include <set>
 namespace k2cache {
 class ServerTask {
-//  int client_socket_fd;
+  //  int client_socket_fd;
   std::unique_ptr<ClientReqHandler> req_handler;
   CacheContainer &cache;
   TaskProcessor &task_processor;
 
 public:
-  ServerTask(std::unique_ptr<ClientReqHandler> &&req_handler, CacheContainer &cache,
-             TaskProcessor &task_processor);
+  ServerTask(std::unique_ptr<ClientReqHandler> &&req_handler,
+             CacheContainer &cache, TaskProcessor &task_processor);
 
   void process();
 

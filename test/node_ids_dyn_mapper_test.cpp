@@ -56,14 +56,16 @@ TEST(node_ids_dyn_mapper_test, can_map_big_ids_to_smaller) {
   session.commit_updates();
 
   auto &triple_streamer = tp.create_triples_streamer({predicate_id});
-  auto &streamer =triple_streamer.start_streaming_matching_triples(TripleNodeId(
-      NodeId::create_any(), NodeId((long)predicate_id), NodeId::create_any()));
-  auto streamer_data = read_all_from_streamer(streamer,(long) predicate_id);
-  std::sort(streamer_data.begin(), streamer_data.end(), [](const TripleNodeId &lhs, const TripleNodeId &rhs){
-    return lhs.subject.get_value() < rhs.subject.get_value();
-  });
+  auto &streamer = triple_streamer.start_streaming_matching_triples(
+      TripleNodeId(NodeId::create_any(), NodeId((long)predicate_id),
+                   NodeId::create_any()));
+  auto streamer_data = read_all_from_streamer(streamer, (long)predicate_id);
+  std::sort(streamer_data.begin(), streamer_data.end(),
+            [](const TripleNodeId &lhs, const TripleNodeId &rhs) {
+              return lhs.subject.get_value() < rhs.subject.get_value();
+            });
   ASSERT_EQ(total_points, streamer_data.size());
-  for(auto i = 0UL; i < total_points; i++){
+  for (auto i = 0UL; i < total_points; i++) {
     auto j = i + 1;
     ASSERT_EQ(j, streamer_data[i].subject.get_value());
     ASSERT_EQ(j, streamer_data[i].object.get_value());

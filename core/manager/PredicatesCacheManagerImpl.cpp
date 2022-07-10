@@ -35,8 +35,7 @@ PredicatesCacheManagerImpl::PredicatesCacheManagerImpl(
 PredicatesCacheManagerImpl::PredicatesCacheManagerImpl(
     std::unique_ptr<PredicatesIndexCacheMD> &&predicates_index)
     : predicates_index(std::move(predicates_index)),
-      fully_indexed_cache(*predicates_index)
-{}
+      fully_indexed_cache(*predicates_index) {}
 
 PredicatesIndexCacheMD &
 PredicatesCacheManagerImpl::get_predicates_index_cache() {

@@ -117,8 +117,8 @@ std::unique_ptr<CacheContainer> mock_cache_container() {
       basic_pcm(), mock_nis(), nullptr,
       I_CacheReplacement::REPLACEMENT_STRATEGY::NO_CACHING);
 }
-std::vector<TripleNodeId>
-read_all_from_streamer(I_TRMatchingStreamer &streamer, long predicate_id) {
+std::vector<TripleNodeId> read_all_from_streamer(I_TRMatchingStreamer &streamer,
+                                                 long predicate_id) {
   std::vector<TripleNodeId> result;
   auto response = streamer.get_next_response();
   auto &msg = response.stream_of_triples_matching_pattern_response();

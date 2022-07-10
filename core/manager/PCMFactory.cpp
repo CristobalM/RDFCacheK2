@@ -14,7 +14,6 @@ PCMFactory::create(std::unique_ptr<I_FileRWHandler> &&index_file_handler,
       std::move(index_file_handler), std::move(updates_logger_fm));
 }
 
-
 std::unique_ptr<PredicatesCacheManager>
 PCMFactory::create(std::unique_ptr<I_FileRWHandler> &&index_file_handler) {
   return std::make_unique<PredicatesCacheManagerImpl>(
