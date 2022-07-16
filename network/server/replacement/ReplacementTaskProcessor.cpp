@@ -3,6 +3,7 @@
 //
 
 #include "ReplacementTaskProcessor.hpp"
+namespace k2cache {
 bool ReplacementTaskProcessor::tasks_available() {
   std::lock_guard lg(m);
   return !tasks.empty();
@@ -26,7 +27,7 @@ void ReplacementTaskProcessor::add_task(
   notify();
 }
 
-ReplacementTaskProcessor::ReplacementTaskProcessor(Cache &cache)
+ReplacementTaskProcessor::ReplacementTaskProcessor(CacheContainer &cache)
     : cache(cache) {
   worker = std::make_unique<worker_t>(*this);
 }
@@ -46,3 +47,4 @@ void ReplacementTaskProcessor::mark_ready(
     replacement.mark_ready(p);
   }
 }
+} // namespace k2cache

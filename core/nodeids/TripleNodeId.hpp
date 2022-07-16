@@ -7,11 +7,13 @@
 
 #include "NodeId.hpp"
 
+namespace k2cache {
 struct TripleNodeId {
   NodeId subject;
   NodeId predicate;
   NodeId object;
   TripleNodeId(NodeId subject, NodeId predicate, NodeId object);
 };
+} // namespace k2cache
 
 #endif // RDFCACHEK2_TRIPLENODEID_HPP

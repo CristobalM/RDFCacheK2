@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "k2tree/K2TreeMixed.hpp"
+namespace k2cache {
 struct PredicateMetadata {
   uint64_t predicate_id;
   uint64_t tree_offset;
@@ -41,5 +42,6 @@ public:
 
   void write_to_ostream(std::ostream &os);
 };
+} // namespace k2cache
 
 #endif /* _PREDICATES_CACHE_METADATA_HPP_ */

@@ -7,16 +7,17 @@
 
 #include "I_TRMatchingStreamer.hpp"
 #include "k2tree/RDFTriple.hpp"
-#include <Cache.hpp>
-#include <sparql_tree.pb.h>
+#include "nodeids/TripleNodeId.hpp"
+#include <CacheContainer.hpp>
+namespace k2cache {
 class TriplePatternMatchingStreamer : public I_TRMatchingStreamer {
 
   int channel_id;
   int pattern_channel_id;
 
-  proto_msg::TripleNodeIdEnc triple_pattern_node;
+  TripleNodeId triple_pattern_node;
 
-  Cache *cache;
+  CacheContainer *cache;
   unsigned long threshold_part_size;
 
   bool first;
@@ -27,12 +28,10 @@ class TriplePatternMatchingStreamer : public I_TRMatchingStreamer {
 
   bool finished;
 
-  static constexpr long NODE_ANY = -9;
-
 public:
   TriplePatternMatchingStreamer(int channel_id, int pattern_channel_id,
-                                proto_msg::TripleNodeIdEnc triple_pattern_node,
-                                Cache *cache,
+                                const TripleNodeId &triple_pattern_node,
+                                CacheContainer *cache,
                                 unsigned long threshold_part_size);
   proto_msg::CacheResponse get_next_response() override;
   int get_pattern_channel_id() override;
@@ -43,5 +42,5 @@ public:
   void set_finished();
   proto_msg::CacheResponse timeout_proto_response();
 };
-
+} // namespace k2cache
 #endif // RDFCACHEK2_TRIPLEPATTERNMATCHINGSTREAMER_HPP

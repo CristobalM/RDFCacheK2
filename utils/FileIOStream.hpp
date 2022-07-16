@@ -10,6 +10,7 @@
 #include <string>
 
 #include "I_IOStream.hpp"
+namespace k2cache {
 class FileIOStream : public I_IOStream {
   std::fstream fs;
 
@@ -25,5 +26,5 @@ public:
   void flush() override;
   explicit operator bool() const override;
 };
-
+} // namespace k2cache
 #endif // RDFCACHEK2_FILEIOSTREAM_HPP

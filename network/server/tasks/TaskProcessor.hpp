@@ -13,6 +13,7 @@
 #include <set>
 #include <utility>
 
+namespace k2cache {
 class TaskProcessor {
 public:
   virtual ~TaskProcessor() = default;
@@ -33,5 +34,6 @@ public:
   virtual WriteDataLock acquire_write_lock() = 0;
   virtual void sync_to_persistent() = 0;
 };
+} // namespace k2cache
 
 #endif // RDFCACHEK2_TASKPROCESSOR_HPP

@@ -17,6 +17,7 @@
 #include <message_type.pb.h>
 #include <request_msg.pb.h>
 #include <response_msg.pb.h>
+using namespace k2cache;
 
 struct parsed_options {
   std::string hostname;

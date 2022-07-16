@@ -7,6 +7,7 @@
 #include <istream>
 #include <ostream>
 
+namespace k2cache {
 class PredicatesIndexFileBuilder {
 
 public:
@@ -18,5 +19,6 @@ public:
   build_debug(std::istream &input_file, std::ostream &output_file,
               std::iostream &tmp_stream, K2TreeConfig config, bool slow_check);
 };
+} // namespace k2cache
 
 #endif /* _PREDICATES_INDEX_FILE_BUILDER_HPP_ */

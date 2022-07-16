@@ -9,7 +9,7 @@
 #include <iostream>
 
 namespace fs = std::filesystem;
-
+using namespace k2cache;
 struct parsed_options {
   std::string input_file;
   std::string output_file;
@@ -18,10 +18,10 @@ struct parsed_options {
   uint32_t tree_depth;
 };
 
-parsed_options parse_cmline(int argc, char **argv);
+parsed_options parse_cmd_line(int argc, char **argv);
 
 int main(int argc, char **argv) {
-  auto parsed = parse_cmline(argc, argv);
+  auto parsed = parse_cmd_line(argc, argv);
 
   if (!fs::exists(parsed.input_file)) {
     throw std::runtime_error("Not found file " + parsed.input_file);
@@ -49,7 +49,7 @@ int main(int argc, char **argv) {
   return 0;
 }
 
-parsed_options parse_cmline(int argc, char **argv) {
+parsed_options parse_cmd_line(int argc, char **argv) {
   const char short_options[] = "i:o:N:C:T:";
   struct option long_options[] = {
       {"input-file", required_argument, nullptr, 'i'},

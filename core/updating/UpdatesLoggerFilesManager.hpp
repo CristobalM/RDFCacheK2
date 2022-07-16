@@ -10,6 +10,7 @@
 #include "CacheArgs.hpp"
 #include "I_FileRWHandler.hpp"
 
+namespace k2cache {
 class UpdatesLoggerFilesManager {
   std::unique_ptr<I_FileRWHandler> index_logs_fh;
   std::unique_ptr<I_FileRWHandler> offsets_fh;
@@ -26,5 +27,6 @@ public:
   I_FileRWHandler &get_offsets_fh();
   I_FileRWHandler &get_metadata_fh();
 };
+} // namespace k2cache
 
 #endif // RDFCACHEK2_UPDATESLOGGERFILESMANAGER_HPP

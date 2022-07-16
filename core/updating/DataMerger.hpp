@@ -2,15 +2,17 @@
 // Created by cristobal on 06-09-21.
 //
 
-#ifndef RDFCACHEK2_I_DATAMERGER_HPP
-#define RDFCACHEK2_I_DATAMERGER_HPP
+#ifndef RDFCACHEK2_DATAMERGER_HPP
+#define RDFCACHEK2_DATAMERGER_HPP
 
+#include "K2TreeUpdates.hpp"
 #include "k2tree/K2TreeMixed.hpp"
 #include "updating/K2TreeUpdates.hpp"
 
-class I_DataMerger {
+namespace k2cache {
+class DataMerger {
 public:
-  virtual ~I_DataMerger() = default;
+  virtual ~DataMerger() = default;
 
   virtual void merge_add_tree(unsigned long predicate_id,
                               K2TreeMixed &k2tree) = 0;
@@ -18,5 +20,6 @@ public:
                                  K2TreeMixed &k2tree) = 0;
   virtual void merge_update(std::vector<K2TreeUpdates> &updates) = 0;
 };
+} // namespace k2cache
 
-#endif // RDFCACHEK2_I_DATAMERGER_HPP
+#endif // RDFCACHEK2_DATAMERGER_HPP

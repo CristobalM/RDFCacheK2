@@ -10,7 +10,7 @@
 #include <string>
 
 #include "request_msg.pb.h"
-
+namespace k2cache {
 struct RDFTriple {
   uint64_t subject;
   uint64_t predicate;
@@ -121,5 +121,5 @@ struct RDFTripleResource {
       : subject(triple_node.subject()), predicate(triple_node.predicate()),
         object(triple_node.object()) {}
 };
-
+} // namespace k2cache
 #endif // RDFCACHEK2_RDFTRIPLE_HPP

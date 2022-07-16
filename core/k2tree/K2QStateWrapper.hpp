@@ -11,6 +11,7 @@ extern "C" {
 
 #include <cstdint>
 
+namespace k2cache {
 class K2QStateWrapper {
   struct k2qstate st;
 
@@ -31,5 +32,5 @@ public:
 private:
   void set_no_destruct();
 };
-
+} // namespace k2cache
 #endif // RDFCACHEK2_K2QSTATEWRAPPER_HPP

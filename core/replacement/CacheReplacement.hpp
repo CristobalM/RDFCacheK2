@@ -6,8 +6,9 @@
 #define RDFCACHEK2_CACHEREPLACEMENT_HPP
 
 #include "I_CacheReplacement.hpp"
+#include "I_PQTraverse.hpp"
 #include "I_ReplacementPriorityQueue.hpp"
-#include "manager/I_DataManager.hpp"
+#include "manager/DataManager.hpp"
 #include <cstddef>
 #include <map>
 #include <memory>
@@ -16,6 +17,7 @@
 #include <unordered_map>
 #include <vector>
 
+namespace k2cache {
 template <class CRStrategy> class CacheReplacement : public I_CacheReplacement {
   struct StrategyWrapper {
     CRStrategy &strategy;
@@ -56,14 +58,14 @@ template <class CRStrategy> class CacheReplacement : public I_CacheReplacement {
   size_t max_size_allowed;
   size_t size_used;
 
-  I_DataManager *data_manager;
+  DataManager *data_manager;
 
   std::map<unsigned long, int> in_use;
 
   std::mutex m;
 
 public:
-  CacheReplacement(size_t max_size_allowed, I_DataManager *data_manager);
+  CacheReplacement(size_t max_size_allowed, DataManager *data_manager);
 
   // returns true if the key can be allocated else returns false
   bool hit_key(unsigned long key, size_t space_required) override;
@@ -73,5 +75,6 @@ public:
   bool is_using(unsigned long key);
   std::mutex &get_replacement_mutex() override;
 };
+} // namespace k2cache
 
 #endif // RDFCACHEK2_CACHEREPLACEMENT_HPP

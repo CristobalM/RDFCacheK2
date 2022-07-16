@@ -7,6 +7,7 @@
 
 #include <I_FileRWHandler.hpp>
 #include <memory>
+namespace k2cache {
 class FileRWHandler : public I_FileRWHandler {
   std::string filename;
 
@@ -22,5 +23,5 @@ public:
   get_reader_writer(std::ios::openmode openmode) override;
   void clean() override;
 };
-
+} // namespace k2cache
 #endif // RDFCACHEK2_FILERWHANDLER_HPP

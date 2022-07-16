@@ -3,7 +3,7 @@
 //
 
 #include "FileIStream.hpp"
-
+namespace k2cache {
 void FileIStream::seekg(std::streamoff offset, std::ios_base::seekdir way) {
   ifs.seekg(offset, way);
 }
@@ -13,3 +13,4 @@ FileIStream::FileIStream(const std::string &filename,
                          std::ios::openmode openmode)
     : ifs(filename, openmode) {}
 std::streampos FileIStream::tellg() { return ifs.tellg(); }
+} // namespace k2cache

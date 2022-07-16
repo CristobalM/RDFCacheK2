@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.14)
 project(RDFCacheK2)
-set(CMAKE_VERBOSE_MAKEFILE ON)
+#set(CMAKE_VERBOSE_MAKEFILE ON)
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -61,9 +61,9 @@ set(CORE_SOURCE_FILES
         core/k2tree/block_stats.cpp
         core/k2tree/block_stats.hpp
 
-        core/manager/I_DataManager.hpp
+        core/manager/DataManager.hpp
         core/manager/PredicateFetchResult.cpp
-        core/manager/PredicatesCacheManager.cpp
+        core/manager/PredicatesCacheManagerImpl.cpp
         core/manager/PredicatesCacheMetadata.cpp
         core/manager/PredicatesIndexCacheMD.cpp
 
@@ -88,15 +88,15 @@ set(CORE_SOURCE_FILES
         core/replacement/NoCachingReplacement.cpp
         core/replacement/NoCachingReplacement.hpp
 
-        core/updating/I_DataMerger.hpp
-        core/updating/I_UpdateLoggerPCM.hpp
+        core/updating/DataMerger.hpp
+        core/updating/UpdatesLogger.hpp
         core/updating/K2TreeUpdates.cpp
         core/updating/K2TreeUpdates.hpp
-        core/updating/UpdatesLogger.cpp
-        core/updating/UpdatesLogger.hpp
+        core/updating/UpdatesLoggerImpl.cpp
+        core/updating/UpdatesLoggerImpl.hpp
         core/updating/UpdatesLoggerFilesManager.cpp
         core/updating/UpdatesLoggerFilesManager.hpp
-        )
+        core/nodeids/NodeIdsManagerImpl.cpp core/nodeids/NodeIdsManagerImpl.hpp core/manager/PredicatesCacheManager.hpp core/manager/PCMFactory.cpp core/manager/PCMFactory.hpp core/nodeids/NodeIdsManager.hpp core/nodeids/NodeIdsManagerFactory.cpp core/nodeids/NodeIdsManagerFactory.hpp core/nodeids/NodesMap.hpp core/nodeids/NodesMapImpl.cpp core/nodeids/NodesMapImpl.hpp core/nodeids/NodesMapFactory.cpp core/nodeids/NodesMapFactory.hpp core/nodeids/node_ids_constants.hpp core/nodeids/NodeIdsManagerIdentity.cpp core/nodeids/NodeIdsManagerIdentity.hpp)
 
 
 set(NETWORK_SOURCE_FILES
@@ -135,7 +135,7 @@ set(NETWORK_SOURCE_FILES
         network/streaming/TripleMatchesPartStreamer.hpp
         network/streaming/TriplePatternMatchingStreamer.cpp
         network/streaming/TriplePatternMatchingStreamer.hpp
-        )
+        network/server/ClientReqHandler.hpp network/server/ClientReqHandlerImpl.cpp network/server/ClientReqHandlerImpl.hpp)
 
 
 set(PROTO_MESSAGES
@@ -152,8 +152,11 @@ set(MEMORY_SOURCES
         memory/MemorySegment.cpp memory/MemorySegment.hpp memory/OutOfMemoryException.cpp memory/OutOfMemoryException.hpp)
 
 set(CACHE_SOURCES
-        cache/Cache.hpp
-        cache/Cache.cpp
+        cache/CacheContainer.hpp
+        cache/CacheContainerImpl.hpp
+        cache/CacheContainerImpl.cpp
+        cache/CacheContainerFactory.cpp
+        cache/CacheContainerFactory.hpp
         cache/CacheArgs.hpp
         )
 
@@ -378,10 +381,12 @@ if (GTest_FOUND)
             test/mock_structures/FHMock.cpp
             test/mock_structures/StringIOStream.cpp
             test/mock_structures/StringIOStream.hpp
+            test/mock_structures/TestingTaskProcessor.cpp
+            test/mock_structures/TestingTaskProcessor.hpp
             )
 
     add_library(MockStructureLib STATIC ${MOCK_STRUCTURES})
-    add_dependencies(MockStructureLib RDFCacheK2 Utils)
+    add_dependencies(MockStructureLib RDFCacheK2 RDFCacheK2_Network RDFCacheK2_Cache Utils)
 
     include_directories(${GTEST_INCLUDE_DIRS})
     add_executable(serialization_test test/serialization_tests.cpp)
@@ -419,11 +424,11 @@ if (GTest_FOUND)
     add_executable(fully_indexed_cache_test test/fully_indexed_cache_test.cpp test/cache_test_util.cpp)
     target_link_libraries(fully_indexed_cache_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} MockStructureLib pthread)
 
-    add_executable(predicates_cache_manager_test test/predicates_cache_manager_test.cpp)
-    target_link_libraries(predicates_cache_manager_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} MockStructureLib pthread)
-
     add_executable(nodes_map_test test/nodes_map_test.cpp)
     target_link_libraries(nodes_map_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} MockStructureLib pthread)
+
+    add_executable(node_ids_dyn_mapper_test test/node_ids_dyn_mapper_test.cpp test/cache_test_util.cpp)
+    target_link_libraries(node_ids_dyn_mapper_test MockStructureLib ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES}  pthread)
 
 
     add_test(NAME serialization_test COMMAND ./serialization_test)
@@ -436,8 +441,8 @@ if (GTest_FOUND)
     add_test(NAME memory_segment_test COMMAND ./memory_segment_test)
     add_test(NAME update_log_test COMMAND ./update_log_test)
     add_test(NAME fully_indexed_cache_test COMMAND ./fully_indexed_cache_test)
-    add_test(NAME predicates_cache_manager_test COMMAND ./predicates_cache_manager_test)
     add_test(NAME nodes_map_test COMMAND ./nodes_map_test)
+    add_test(NAME node_ids_dyn_mapper_test COMMAND ./node_ids_dyn_mapper_test)
 
     # K2 Tree Tests
 

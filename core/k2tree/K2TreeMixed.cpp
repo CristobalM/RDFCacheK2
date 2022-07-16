@@ -12,6 +12,7 @@
 #include "K2TreeScanner.hpp"
 #include "block_stats.hpp"
 
+namespace k2cache {
 K2TreeMixed::K2TreeMixed(uint32_t treedepth)
     : K2TreeMixed(treedepth, MAX_NODES_IN_BLOCK) {}
 
@@ -544,3 +545,4 @@ k2node *deserialize_k2node_tree(std::istream &is,
 
   return node;
 }
+} // namespace k2cache

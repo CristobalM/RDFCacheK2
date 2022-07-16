@@ -7,6 +7,7 @@
 
 #include "CachedSourceScanner.hpp"
 #include "fic/I_CachedPredicateSource.hpp"
+namespace k2cache {
 class CachedObjectScanner : public CachedSourceScanner {
 
   const std::vector<unsigned long> &objects;
@@ -19,5 +20,5 @@ public:
   bool has_next() override;
   std::pair<unsigned long, unsigned long> next() override;
 };
-
+} // namespace k2cache
 #endif // RDFCACHEK2_CACHEDOBJECTSCANNER_HPP

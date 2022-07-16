@@ -4,6 +4,7 @@
 
 #include "MemorySegment.hpp"
 #include "OutOfMemoryException.hpp"
+namespace k2cache {
 MemorySegment::MemorySegment(size_t size_bytes)
     : data(std::make_unique<uint8_t[]>(size_bytes)), size_bytes(size_bytes),
       byte_position(0) {}
@@ -23,3 +24,4 @@ void MemorySegment::free_memory(void *) {
   // do nothing for now
 }
 void *MemorySegment::get_first_address() { return data.get(); }
+} // namespace k2cache

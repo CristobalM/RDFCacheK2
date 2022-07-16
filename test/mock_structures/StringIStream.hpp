@@ -11,7 +11,7 @@
 #include <string>
 
 #include <I_IStream.hpp>
-
+namespace k2cache {
 struct StringIStream : public I_IStream {
   std::string data;
   std::istringstream iss;
@@ -23,5 +23,6 @@ public:
   std::istream &get_istream() override;
   std::streampos tellg() override;
 };
+} // namespace k2cache
 
 #endif // RDFCACHEK2_STRINGISTREAM_HPP

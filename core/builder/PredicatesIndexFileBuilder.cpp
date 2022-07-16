@@ -4,11 +4,10 @@
 #include "k2tree/K2TreeMixed.hpp"
 #include "serialization_util.hpp"
 #include "triple_external_sort.hpp"
-#include <iostream>
 #include <set>
 #include <stdexcept>
 #include <unordered_map>
-
+namespace k2cache {
 static void write_ktree_with_size(std::iostream &ios, K2TreeMixed &k2tree) {
   std::stringstream ss;
   auto stats = k2tree.k2tree_stats();
@@ -232,3 +231,4 @@ PredicatesCacheMetadata PredicatesIndexFileBuilder::build_debug(
   return PredicatesCacheMetadata(std::move(metadata_map),
                                  std::move(predicates_ids), config);
 }
+} // namespace k2cache

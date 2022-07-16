@@ -3,6 +3,7 @@
 //
 
 #include "K2TreeUpdates.hpp"
+namespace k2cache {
 K2TreeUpdates::K2TreeUpdates(unsigned long predicate_id,
                              K2TreeMixed *k2tree_add, K2TreeMixed *k2tree_del)
 
@@ -18,3 +19,4 @@ K2TreeUpdates::UPDATE_KIND K2TreeUpdates::get_kind() const {
   }
   return NO_UPDATE;
 }
+} // namespace k2cache

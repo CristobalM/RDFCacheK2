@@ -8,7 +8,7 @@
 #include "I_IStream.hpp"
 #include <fstream>
 #include <ios>
-
+namespace k2cache {
 class FileIStream : public I_IStream {
   std::ifstream ifs;
 
@@ -22,5 +22,5 @@ public:
 
 public:
 };
-
+} // namespace k2cache
 #endif // RDFCACHEK2_FILEISTREAM_HPP

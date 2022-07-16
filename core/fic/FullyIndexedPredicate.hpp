@@ -12,6 +12,7 @@
 #include "I_CachedPredicateSource.hpp"
 #include "k2tree/K2TreeMixed.hpp"
 
+namespace k2cache {
 // This is a very space-expensive structure, optimized only for speed
 class FullyIndexedPredicate : public I_CachedPredicateSource {
   std::unordered_map<unsigned long, std::vector<unsigned long>>
@@ -31,5 +32,6 @@ public:
   const std::set<unsigned long> &get_all_subjects() override;
   const std::set<unsigned long> &get_all_objects() override;
 };
+} // namespace k2cache
 
 #endif // RDFCACHEK2_FULLYINDEXEDPREDICATE_HPP

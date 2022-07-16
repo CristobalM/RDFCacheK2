@@ -1,6 +1,7 @@
 #include "PredicatesCacheMetadata.hpp"
 #include "serialization_util.hpp"
 
+namespace k2cache {
 void PredicateMetadata::write_to_ostream(std::ostream &os) {
   write_u64(os, predicate_id);
   write_u64(os, tree_offset);
@@ -63,3 +64,4 @@ void PredicatesCacheMetadata::write_to_ostream(std::ostream &os) {
     metadata.write_to_ostream(os);
   }
 }
+} // namespace k2cache

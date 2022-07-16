@@ -14,5 +14,7 @@ extern "C" {
 }
 
 #include "k2tree_stats.hpp"
+namespace k2cache {
 void block_rec_occup_ratio_count(struct block *b, K2TreeStats &k2tree_stats);
+}
 #endif // RDFCACHEK2_BLOCK_STATS_HPP

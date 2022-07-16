@@ -21,7 +21,7 @@
 #include "serialization_util.hpp"
 
 namespace fs = std::filesystem;
-
+namespace k2cache {
 // TODO: refactor to use external-sort library and delete this file
 struct TripleValue {
   uint64_t first{};
@@ -393,5 +393,5 @@ void external_sort_triples(const std::string &input_filename,
   }
   fs::rename(current_filenames[0], output_filename);
 }
-
+} // namespace k2cache
 #endif /* _TRIPLE_EXTERNAL_SORT_HPP_ */

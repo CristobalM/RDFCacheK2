@@ -9,6 +9,7 @@
 #include <sstream>
 
 #include <I_IOStream.hpp>
+namespace k2cache {
 class StringIOStream : public I_IOStream {
   std::string &data;
   std::stringstream ss;
@@ -25,5 +26,6 @@ public:
   std::istream &get_istream() override;
   std::ostream &get_ostream() override;
 };
+} // namespace k2cache
 
 #endif // RDFCACHEK2_STRINGIOSTREAM_HPP

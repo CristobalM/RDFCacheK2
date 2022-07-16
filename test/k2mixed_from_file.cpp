@@ -34,7 +34,7 @@ SOFTWARE.
 #include <string>
 #include <utility>
 #include <vector>
-
+using namespace k2cache;
 class K2MixedFromFileFixture : public ::testing::Test {
 
 protected:

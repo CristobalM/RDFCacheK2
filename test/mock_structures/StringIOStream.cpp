@@ -3,6 +3,7 @@
 //
 
 #include "StringIOStream.hpp"
+namespace k2cache {
 void StringIOStream::seekg(std::streamoff offset, std::ios_base::seekdir way) {
   ss.seekg(offset, way);
 }
@@ -20,3 +21,4 @@ void StringIOStream::flush() { data = ss.str(); }
 StringIOStream::operator bool() const { return ss.operator bool(); }
 std::istream &StringIOStream::get_istream() { return ss; }
 std::ostream &StringIOStream::get_ostream() { return ss; }
+} // namespace k2cache

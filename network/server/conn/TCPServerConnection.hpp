@@ -8,7 +8,7 @@
 #include <cstdint>
 #include <mutex>
 #include <vector>
-
+namespace k2cache {
 template <class TCPServerTaskProcessor> class TCPServerConnection {
   int server_fd;
   uint16_t port;
@@ -30,5 +30,6 @@ private:
   bool is_running();
   void set_running(bool value);
 };
+} // namespace k2cache
 
 #endif // RDFCACHEK2_TCPSERVERCONNECTION_HPP

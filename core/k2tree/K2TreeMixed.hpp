@@ -19,6 +19,9 @@ extern "C" {
 }
 
 struct k2node;
+
+namespace k2cache {
+
 class K2TreeScanner;
 
 struct K2TreeConfig {
@@ -127,5 +130,5 @@ public:
 private:
   void clean_up();
 };
-
+} // namespace k2cache
 #endif

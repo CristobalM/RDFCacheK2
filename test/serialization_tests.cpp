@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 #include <random>
 #include <serialization_util.hpp>
-
+using namespace k2cache;
 TEST(u64_network_host, test_one) {
   std::random_device rd;
 

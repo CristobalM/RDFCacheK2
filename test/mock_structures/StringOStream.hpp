@@ -11,6 +11,7 @@
 #include <string>
 
 #include <I_OStream.hpp>
+namespace k2cache {
 
 struct StringOStream : public I_OStream {
   std::string &data;
@@ -27,5 +28,5 @@ public:
 private:
   void internal_flush();
 };
-
+} // namespace k2cache
 #endif // RDFCACHEK2_STRINGOSTREAM_HPP

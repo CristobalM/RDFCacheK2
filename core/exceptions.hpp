@@ -8,6 +8,7 @@
 #include <stdexcept>
 #include <string>
 
+namespace k2cache {
 class PredicateNotFound : std::runtime_error {
 public:
   explicit PredicateNotFound(const ulong predicate_index)
@@ -28,6 +29,6 @@ public:
       : std::runtime_error("Invalid string size for NodeId, size given: " +
                            std::to_string(given_size)) {}
 };
-
+} // namespace k2cache
 
 #endif // RDFCACHEK2_EXCEPT_HPP

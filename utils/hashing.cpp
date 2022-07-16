@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <openssl/md5.h>
 #include <openssl/sha.h>
-
+namespace k2cache {
 std::array<char, 16> md5calc(const std::string &input) {
   std::array<char, 16> result;
 
@@ -339,3 +339,4 @@ std::string sha512_human_readable_lowercase(const std::string &input) {
   auto digest = sha512calc(input);
   return sha512_human_readable_lowercase(digest);
 }
+} // namespace k2cache

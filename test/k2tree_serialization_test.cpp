@@ -9,6 +9,7 @@
 #include <gtest/gtest.h>
 #include <sstream>
 
+using namespace k2cache;
 using ul = unsigned long;
 bool sort_pair(const std::pair<ul, ul> &lhs, const std::pair<ul, ul> &rhs) {
   if (lhs.first != rhs.first)

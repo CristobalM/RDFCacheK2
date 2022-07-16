@@ -8,6 +8,7 @@
 #include <getopt.h>
 #include <serialization_util.hpp>
 #include <triple_external_sort.hpp>
+using namespace k2cache;
 
 struct parsed_options {
   std::string input_file;
@@ -15,12 +16,12 @@ struct parsed_options {
   std::string nodes_sequence_file;
 };
 
-parsed_options parse_cmline(int argc, char **argv);
+parsed_options parse_cmd_line(int argc, char **argv);
 
 namespace fs = std::filesystem;
 
 int main(int argc, char **argv) {
-  auto parsed = parse_cmline(argc, argv);
+  auto parsed = parse_cmd_line(argc, argv);
 
   if (!fs::exists(parsed.input_file)) {
     std::cerr << "file does not exist (input_file): " << parsed.input_file
@@ -60,7 +61,7 @@ int main(int argc, char **argv) {
   }
 }
 
-parsed_options parse_cmline(int argc, char **argv) {
+parsed_options parse_cmd_line(int argc, char **argv) {
   const char short_options[] = "i:o:n:";
   struct option long_options[] = {
       {"input-file", required_argument, nullptr, 'i'},

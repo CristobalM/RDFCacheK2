@@ -5,7 +5,7 @@
 #ifndef RDFCACHEK2_I_TRMATCHINGSTREAMER_HPP
 #define RDFCACHEK2_I_TRMATCHINGSTREAMER_HPP
 #include "response_msg.pb.h"
-
+namespace k2cache {
 class I_TRMatchingStreamer {
 public:
   virtual proto_msg::CacheResponse get_next_response() = 0;
@@ -15,5 +15,5 @@ public:
 
   virtual ~I_TRMatchingStreamer() = default;
 };
-
+} // namespace k2cache
 #endif // RDFCACHEK2_I_TRMATCHINGSTREAMER_HPP

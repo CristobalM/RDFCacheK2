@@ -8,6 +8,7 @@
 #include "K2QStateWrapper.hpp"
 #include "K2TreeMixed.hpp"
 #include "K2TreeScanner.hpp"
+namespace k2cache {
 class NullScanner : public K2TreeScanner {
 public:
   bool has_next() override;
@@ -18,5 +19,5 @@ public:
   K2QStateWrapper &get_k2qw() override;
   ~NullScanner() override;
 };
-
+} // namespace k2cache
 #endif // RDFCACHEK2_NULLSCANNER_HPP

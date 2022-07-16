@@ -7,6 +7,8 @@
 
 #include <fstream>
 
+namespace k2cache {
+
 class ULHeaderIOHandlerCustomSerialization {
 public:
   class Reader {
@@ -51,5 +53,5 @@ public:
     }
   };
 };
-
+} // namespace k2cache
 #endif // ULHEADERIOHANDLER_CUSTOM_SERIALIZATION_HPP

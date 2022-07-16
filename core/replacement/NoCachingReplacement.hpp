@@ -6,6 +6,7 @@
 #define RDFCACHEK2_NOCACHINGREPLACEMENT_HPP
 
 #include "I_CacheReplacement.hpp"
+namespace k2cache {
 class NoCachingReplacement : public I_CacheReplacement {
   std::mutex m;
 
@@ -15,5 +16,6 @@ public:
   void mark_ready(unsigned long key) override;
   std::mutex &get_replacement_mutex() override;
 };
+} // namespace k2cache
 
 #endif // RDFCACHEK2_NOCACHINGREPLACEMENT_HPP

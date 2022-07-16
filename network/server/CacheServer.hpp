@@ -8,11 +8,11 @@
 #include <memory>
 #include <thread>
 
-#include "Cache.hpp"
+#include "CacheContainer.hpp"
 #include "ServerWorker.hpp"
 #include "server/conn/TCPServerConnection.hpp"
 #include "server/tasks/CacheServerTaskProcessor.hpp"
-
+namespace k2cache {
 class CacheServer {
   uint16_t port;
   CacheServerTaskProcessor task_processor;
@@ -22,7 +22,8 @@ class CacheServer {
   std::unique_ptr<connection_t> connection;
 
 public:
-  explicit CacheServer(Cache &cache, uint16_t port, uint8_t workers_count);
+  explicit CacheServer(CacheContainer &cache, uint16_t port,
+                       uint8_t workers_count);
 
   void start();
   void stop();
@@ -30,5 +31,5 @@ public:
 private:
   void main_thread_op();
 };
-
+} // namespace k2cache
 #endif // RDFCACHEK2_CACHESERVER_HPP

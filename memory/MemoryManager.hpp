@@ -23,7 +23,7 @@ extern "C" {
 #include <mutex>
 #include <set>
 #include <string>
-
+namespace k2cache {
 class MemoryManager {
 
   std::unique_ptr<std::mutex> m;
@@ -53,5 +53,5 @@ public:
 
   void free_segment(MemorySegment *memory_segment);
 };
-
+} // namespace k2cache
 #endif // RDFCACHEK2_MEMORYMANAGER_HPP

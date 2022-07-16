@@ -3,6 +3,9 @@
 //
 
 #include "FrequencyReplacementStrategy.hpp"
+#include "I_ReplacementPriorityQueue.hpp"
+
+namespace k2cache {
 FrequencyReplacementStrategy::FrequencyReplacementStrategy() = default;
 
 void FrequencyReplacementStrategy::hit_key(unsigned long key) {
@@ -51,3 +54,4 @@ bool FrequencyReplacementStrategy::should_hit_without_retrieval(
     unsigned long, I_ReplacementPriorityQueue &) {
   return true;
 }
+} // namespace k2cache

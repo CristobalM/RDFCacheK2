@@ -3,14 +3,17 @@
 //
 #include "I_FileRWHandler.hpp"
 #include "cache_test_util.hpp"
+#include "k2tree/K2TreeBulkOp.hpp"
 #include "k2tree/K2TreeMixed.hpp"
-#include "manager/PredicatesCacheManager.hpp"
+#include "manager/PCMFactory.hpp"
 #include "manager/PredicatesCacheMetadata.hpp"
 #include "mock_structures/FHMock.hpp"
 #include <gtest/gtest.h>
 
+using namespace k2cache;
+
 TEST(fully_indexed_cache, test_resynced_on_update_unloaded) {
-  K2TreeConfig config;
+  K2TreeConfig config{};
   config.treedepth = 32;
   config.cut_depth = 10;
   config.max_node_count = 256;
@@ -24,8 +27,8 @@ TEST(fully_indexed_cache, test_resynced_on_update_unloaded) {
     metadata_pcm.write_to_ostream(fh_writer->get_ostream());
     fh_writer->flush();
   }
-  PredicatesCacheManager pcm(std::move(fh_pcm), mock_fh_manager());
-  auto &updates_logger = pcm.get_updates_logger();
+  auto pcm = PCMFactory::create(std::move(fh_pcm), mock_fh_manager());
+  auto &updates_logger = pcm->get_updates_logger();
 
   unsigned long predicate_id_1 = 123;
   unsigned long predicate_id_2 = 333222;
@@ -49,19 +52,19 @@ TEST(fully_indexed_cache, test_resynced_on_update_unloaded) {
 
   // fully indexed needs that predicates are in memory
   // and logging them doesn't do that automatically
-  pcm.load_all_predicates();
+  pcm->load_all_predicates();
 
   std::vector<unsigned long> predicates = {predicate_id_1, predicate_id_2};
-  pcm.get_fully_indexed_cache().init_streamer_predicates(predicates);
+  pcm->get_fully_indexed_cache().init_streamer_predicates(predicates);
 
-  auto fi_resp_1 = pcm.get_fully_indexed_cache().get(predicate_id_1);
+  auto fi_resp_1 = pcm->get_fully_indexed_cache().get(predicate_id_1);
   ASSERT_TRUE(fi_resp_1.exists());
   for (int i = 0; i < size_tree; i++) {
     ASSERT_TRUE(fi_resp_1.get()->has(i + 1, i + 1));
   }
 }
 TEST(fully_indexed_cache, test_resynced_on_update_loaded) {
-  K2TreeConfig config;
+  K2TreeConfig config{};
   config.treedepth = 32;
   config.cut_depth = 10;
   config.max_node_count = 256;
@@ -75,8 +78,8 @@ TEST(fully_indexed_cache, test_resynced_on_update_loaded) {
     metadata_pcm.write_to_ostream(fh_writer->get_ostream());
     fh_writer->flush();
   }
-  PredicatesCacheManager pcm(std::move(fh_pcm), mock_fh_manager());
-  auto &updates_logger = pcm.get_updates_logger();
+  auto pcm = PCMFactory::create(std::move(fh_pcm), mock_fh_manager());
+  auto &updates_logger = pcm->get_updates_logger();
 
   unsigned long predicate_id_1 = 123;
   unsigned long predicate_id_2 = 333222;
@@ -100,18 +103,16 @@ TEST(fully_indexed_cache, test_resynced_on_update_loaded) {
 
   // fully indexed needs that predicates are in memory
   // and logging them doesn't do that automatically
-  pcm.load_all_predicates();
+  pcm->load_all_predicates();
 
   std::vector<unsigned long> predicates = {predicate_id_1, predicate_id_2};
-  pcm.get_fully_indexed_cache().init_streamer_predicates(predicates);
+  pcm->get_fully_indexed_cache().init_streamer_predicates(predicates);
 
-  auto fi_resp_1 = pcm.get_fully_indexed_cache().get(predicate_id_1);
+  auto fi_resp_1 = pcm->get_fully_indexed_cache().get(predicate_id_1);
   ASSERT_TRUE(fi_resp_1.exists());
   for (int i = 0; i < size_tree; i++) {
     ASSERT_TRUE(fi_resp_1.get()->has(i + 1, i + 1));
   }
-
-  //
 
   K2TreeMixed k2tree3(config);
   K2TreeBulkOp op3(k2tree);
@@ -123,7 +124,7 @@ TEST(fully_indexed_cache, test_resynced_on_update_loaded) {
 
   updates_logger.log(tree_updates_2);
 
-  auto fi_resp_2 = pcm.get_fully_indexed_cache().get(predicate_id_2);
+  auto fi_resp_2 = pcm->get_fully_indexed_cache().get(predicate_id_2);
   for (int i = 0; i < size_tree; i++) {
     ASSERT_TRUE(fi_resp_2.get()->has(size_tree + i + 1, size_tree + i + 1));
   }

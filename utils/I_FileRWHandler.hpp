@@ -10,6 +10,7 @@
 #include "I_OStream.hpp"
 #include <iostream>
 #include <memory>
+namespace k2cache {
 class I_FileRWHandler {
 public:
   virtual ~I_FileRWHandler() = default;
@@ -26,5 +27,5 @@ public:
   get_reader_writer(std::ios::openmode openmode) = 0;
   virtual void clean() = 0;
 };
-
+} // namespace k2cache
 #endif // RDFCACHEK2_I_FILERWHANDLER_HPP

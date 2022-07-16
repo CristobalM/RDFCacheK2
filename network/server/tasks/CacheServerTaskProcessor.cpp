@@ -3,14 +3,16 @@
 //
 
 #include "CacheServerTaskProcessor.hpp"
+#include "server/ClientReqHandlerImpl.hpp"
 #include "server/session/UpdaterSession.hpp"
 #include "streaming/TripleMatchesPartStreamer.hpp"
 
 #include <iostream>
-
+namespace k2cache {
 void CacheServerTaskProcessor::process_request(int client_socket_fd) {
-  auto server_task_uptr =
-      std::make_unique<ServerTask>(client_socket_fd, cache, *this);
+
+  auto server_task_uptr = std::make_unique<ServerTask>(
+      std::make_unique<ClientReqHandlerImpl>(client_socket_fd), cache, *this);
 
   std::lock_guard<std::mutex> lock_guard(mutex);
   server_tasks.push(std::move(server_task_uptr));
@@ -28,7 +30,7 @@ std::unique_ptr<ServerTask> CacheServerTaskProcessor::get_server_task() {
   return server_task_uptr;
 }
 
-CacheServerTaskProcessor::CacheServerTaskProcessor(Cache &cache,
+CacheServerTaskProcessor::CacheServerTaskProcessor(CacheContainer &cache,
                                                    uint8_t workers_count)
     : cache(cache), workers_count(workers_count),
       replacement_task_processor(cache),
@@ -128,3 +130,4 @@ CacheServerTaskProcessor::~CacheServerTaskProcessor() {}
 void CacheServerTaskProcessor::sync_logs_to_indexes() {
   cache.get_pcm().get_predicates_index_cache().sync_logs_to_indexes();
 }
+} // namespace k2cache

@@ -10,9 +10,10 @@
 #include <vector>
 
 #include "k2tree/K2TreeMixed.hpp"
-#include "updating/I_DataMerger.hpp"
+#include "updating/DataMerger.hpp"
 
-struct DataMergerMock : public I_DataMerger {
+namespace k2cache {
+struct DataMergerMock : public DataMerger {
 
   K2TreeConfig config;
   explicit DataMergerMock(K2TreeConfig config);
@@ -26,5 +27,6 @@ struct DataMergerMock : public I_DataMerger {
   void drop();
   void merge_update(std::vector<K2TreeUpdates> &updates) override;
 };
+} // namespace k2cache
 
 #endif // RDFCACHEK2_DATAMERGERMOCK_HPP

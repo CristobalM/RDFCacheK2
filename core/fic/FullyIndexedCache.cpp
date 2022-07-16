@@ -7,6 +7,7 @@
 
 #include <iostream>
 
+namespace k2cache {
 void FullyIndexedCache::init_streamer_predicates(
     const std::vector<unsigned long> &streamer_predicates) {
   for (auto predicate : streamer_predicates) {
@@ -60,3 +61,4 @@ void FullyIndexedCache::resync_predicate(unsigned long predicate_id) {
     return;
   data_manager.retrieve_key(predicate_id);
 }
+} // namespace k2cache

@@ -8,6 +8,7 @@
 #include "I_ReplacementPriorityQueue.hpp"
 #include <map>
 
+namespace k2cache {
 class FrequencyReplacementStrategy {
 
   std::map<unsigned long, long> frequency_map;
@@ -28,5 +29,6 @@ public:
   bool should_hit_without_retrieval(unsigned long key,
                                     I_ReplacementPriorityQueue &pq);
 };
+} // namespace k2cache
 
 #endif // RDFCACHEK2_FREQUENCYREPLACEMENTSTRATEGY_HPP

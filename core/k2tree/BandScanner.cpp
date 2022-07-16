@@ -9,7 +9,7 @@ extern "C" {
 
 #include "BandScanner.hpp"
 #include "K2TreeMixed.hpp"
-
+namespace k2cache {
 bool BandScanner::has_next() {
   return static_cast<bool>(lazy_handler.has_next);
 }
@@ -39,3 +39,4 @@ void BandScanner::reset_scan() { k2node_report_band_reset(&lazy_handler); }
 K2TreeMixed &BandScanner::get_tree() { return k2tree; }
 unsigned long BandScanner::get_band_value() { return band; }
 K2QStateWrapper &BandScanner::get_k2qw() { return stw; }
+} // namespace k2cache

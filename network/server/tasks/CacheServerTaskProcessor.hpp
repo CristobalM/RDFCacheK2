@@ -5,7 +5,7 @@
 #ifndef RDFCACHEK2_CACHESERVERTASKPROCESSOR_HPP
 #define RDFCACHEK2_CACHESERVERTASKPROCESSOR_HPP
 
-#include "Cache.hpp"
+#include "CacheContainer.hpp"
 #include <memory>
 #include <mutex>
 #include <queue>
@@ -18,14 +18,13 @@
 #include "server/replacement/ReplacementTaskProcessor.hpp"
 #include "server/session/Updater.hpp"
 #include "streaming/I_TRStreamer.hpp"
-#include "updating/UpdatesLogger.hpp"
-
+namespace k2cache {
 class CacheServerTaskProcessor : public TaskProcessor {
   using worker_t = ServerWorker<CacheServerTaskProcessor>;
 
   std::queue<std::unique_ptr<ServerTask>> server_tasks;
   std::mutex mutex;
-  Cache &cache;
+  CacheContainer &cache;
   uint8_t workers_count;
   std::vector<std::unique_ptr<worker_t>> workers;
 
@@ -44,7 +43,8 @@ class CacheServerTaskProcessor : public TaskProcessor {
   int current_update_session_id;
 
 public:
-  explicit CacheServerTaskProcessor(Cache &cache, uint8_t workers_count);
+  explicit CacheServerTaskProcessor(CacheContainer &cache,
+                                    uint8_t workers_count);
 
   void process_request(int client_socket_fd);
 
@@ -72,5 +72,6 @@ public:
   void sync_to_persistent() override;
   void sync_logs_to_indexes();
 };
+} // namespace k2cache
 
 #endif // RDFCACHEK2_CACHESERVERTASKPROCESSOR_HPP

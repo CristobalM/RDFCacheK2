@@ -13,7 +13,7 @@
 #include "exception/CantEstablishSocketException.hpp"
 #include "exception/CantStartListeningException.hpp"
 #include "server/tasks/CacheServerTaskProcessor.hpp"
-
+namespace k2cache {
 template <class TCPServerTaskProcessor>
 TCPServerConnection<TCPServerTaskProcessor>::TCPServerConnection(
     uint16_t port, TCPServerTaskProcessor &task_processor)
@@ -84,3 +84,4 @@ void TCPServerConnection<TCPServerTaskProcessor>::set_running(bool value) {
 }
 
 template class TCPServerConnection<CacheServerTaskProcessor>;
+} // namespace k2cache

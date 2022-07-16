@@ -5,6 +5,7 @@
 #include <stdexcept>
 
 #include "NullScanner.hpp"
+namespace k2cache {
 bool NullScanner::has_next() { return false; }
 std::pair<unsigned long, unsigned long> NullScanner::next() {
   throw std::runtime_error("null scanner");
@@ -20,3 +21,4 @@ K2QStateWrapper &NullScanner::get_k2qw() {
   throw std::runtime_error("empty scanner");
 }
 NullScanner::~NullScanner() {}
+} // namespace k2cache

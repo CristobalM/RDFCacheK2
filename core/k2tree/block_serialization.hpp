@@ -6,8 +6,9 @@
 #include <istream>
 #include <list>
 #include <ostream>
-
 struct block;
+
+namespace k2cache {
 
 struct k2tree_data {
   struct block root;
@@ -31,4 +32,5 @@ bool same_block_frontiers(const struct block *lhs, const struct block *rhs);
 
 k2tree_data read_tree_from_istream(std::istream &is,
                                    MemorySegment *memory_segment);
+} // namespace k2cache
 #endif

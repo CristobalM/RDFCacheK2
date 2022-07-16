@@ -9,7 +9,7 @@
 #include <string>
 #include <triple_external_sort.hpp>
 #include <utility>
-
+using namespace k2cache;
 static std::pair<PredicatesIndexCacheMD, unsigned long> build_picmd() {
 
   K2TreeConfig config;

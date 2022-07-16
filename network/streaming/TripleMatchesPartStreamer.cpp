@@ -8,11 +8,11 @@
 #include "TriplePatternMatchingStreamer.hpp"
 #include "fic/FullyIndexedPredicate.hpp"
 #include <map>
-
+namespace k2cache {
 TripleMatchesPartStreamer::TripleMatchesPartStreamer(
     int channel_id, std::vector<unsigned long> &&loaded_predicates,
-    size_t threshold_part_size, TaskProcessor *task_processor, Cache *cache,
-    FullyIndexedCache &fully_indexed_cache)
+    size_t threshold_part_size, TaskProcessor *task_processor,
+    CacheContainer *cache, FullyIndexedCache &fully_indexed_cache)
     : channel_id(channel_id), loaded_predicates(std::move(loaded_predicates)),
       threshold_part_size(threshold_part_size), cache(cache),
       task_processor(task_processor), current_pattern_channel_id(0),
@@ -67,13 +67,13 @@ TripleMatchesPartStreamer::get_loaded_predicates_response() {
 }
 I_TRMatchingStreamer &
 TripleMatchesPartStreamer::start_streaming_matching_triples(
-    const proto_msg::TripleNodeIdEnc &triple_pattern) {
+    const TripleNodeId &triple_pattern) {
 
   std::unique_ptr<I_TRMatchingStreamer> streamer;
 
-  auto predicate_id = triple_pattern.predicate().encoded_data();
+  auto predicate_id = triple_pattern.predicate.get_value();
   auto predicate_id_translated =
-      (unsigned long)cache->get_nodes_sequence().get_id((long)predicate_id);
+      (unsigned long)cache->get_nodes_ids_manager().get_id((long)predicate_id);
   auto fic_response = fully_indexed_cache.get(predicate_id_translated);
   if (fic_response.exists()) {
     streamer = std::make_unique<StreamerFromCachedSource>(
@@ -104,3 +104,4 @@ TripleMatchesPartStreamer::get_triple_pattern_streamer(int pattern_channel_id) {
 void TripleMatchesPartStreamer::init_cached_predicate_sources() {
   fully_indexed_cache.init_streamer_predicates(loaded_predicates);
 }
+} // namespace k2cache

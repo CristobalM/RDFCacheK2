@@ -4,11 +4,9 @@
 
 #include <MemoryManager.hpp>
 #include <OutOfMemoryException.hpp>
-#include <filesystem>
 #include <google/protobuf/message_lite.h>
 #include <gtest/gtest.h>
-#include <memory>
-
+using namespace k2cache;
 TEST(memory_segment_test, test1) {
   const int total_values = 100;
   const size_t required_sz = sizeof(int) * total_values;

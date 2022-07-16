@@ -6,6 +6,7 @@
 #define RDFCACHEK2_K2TREEBULKOP_HPP
 
 #include "K2TreeMixed.hpp"
+namespace k2cache {
 class K2TreeBulkOp {
   K2TreeMixed &k2tree;
   K2QStateWrapper stw;
@@ -18,5 +19,5 @@ public:
   K2QStateWrapper &get_stw();
   K2TreeMixed &get_tree();
 };
-
+} // namespace k2cache
 #endif // RDFCACHEK2_K2TREEBULKOP_HPP
