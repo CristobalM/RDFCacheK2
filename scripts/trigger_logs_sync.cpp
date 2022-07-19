@@ -70,8 +70,8 @@ int connect_to_server(const parsed_options &options) {
 parsed_options read_server_options(int argc, char **argv) {
   const char short_options[] = "h:p:";
   struct option long_options[] = {
-      {"hostname", required_argument, nullptr, 'i'},
-      {"port", required_argument, nullptr, 'o'},
+      {"hostname", required_argument, nullptr, 'h'},
+      {"port", required_argument, nullptr, 'p'},
   };
 
   int opt, opt_index;

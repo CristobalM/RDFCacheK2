@@ -49,6 +49,7 @@ int main(int argc, char **argv) {
   cache_args.update_log_filename = parsed.update_log_filename;
   cache_args.node_ids_filename = parsed.node_ids_file;
   cache_args.mapped_node_ids_filename = parsed.mapped_node_ids_filename;
+  cache_args.node_ids_logs_filename = parsed.node_ids_logs_filename;
 
   auto cache = CacheContainerFactory::create(cache_args);
 
