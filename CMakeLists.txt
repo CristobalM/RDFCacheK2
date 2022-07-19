@@ -404,7 +404,7 @@ if (GTest_FOUND)
     add_executable(test_external_sort test/test_external_sort.cpp)
     target_link_libraries(test_external_sort ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} pthread)
 
-    add_executable(predicates_metadata_serialization_test test/predicates_metadata_serialization_test.cpp)
+    add_executable(predicates_metadata_serialization_test test/predicates_metadata_serialization_test.cpp test/cache_test_util.cpp)
     target_link_libraries(predicates_metadata_serialization_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} pthread MockStructureLib)
 
     add_executable(k2mixed_from_file test/k2mixed_from_file.cpp)

@@ -15,6 +15,7 @@
 
 using namespace k2cache;
 
+
 TEST(update_log_test, test_data_merger_mock) {
   K2TreeConfig config;
   config.treedepth = 32;
@@ -400,3 +401,25 @@ TEST(update_log_test, test_update_unloaded_predicates_from_logs) {
     ASSERT_TRUE(k2_1.has(i + 1, i + 1));
   }
 }
+
+//TEST(update_log_test, logging_after_existing_compact_indexation){
+//  K2TreeConfig config;
+//  config.treedepth = 32;
+//  config.cut_depth = 10;
+//  config.max_node_count = 256;
+//  auto pred1 = 12323UL;
+//  auto sz = 1000UL;
+//  auto cpd = build_pred_data_sz(config, pred1, sz);
+//
+//
+//  auto pred2 = 5433UL;
+//  K2TreeMixed k2tree(config);
+//  K2TreeBulkOp op(k2tree);
+//  int size_tree = 10000;
+//  for (int i = 0; i < size_tree; i++) {
+//    op.insert(i + 1, i + 1);
+//  }
+//  K2TreeUpdates tree_update_1(predicate_id_1, &k2tree, nullptr);
+//  K2TreeUpdates tree_update_2(predicate_id_2, &k2tree2, nullptr);
+//  std::vector<K2TreeUpdates> tree_updates_1 = {tree_update_1, tree_update_2};
+//}
