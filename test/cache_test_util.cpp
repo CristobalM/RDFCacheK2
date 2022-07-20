@@ -136,4 +136,61 @@ std::vector<TripleNodeId> read_all_from_streamer(I_TRMatchingStreamer &streamer,
   return result;
 }
 
+CreatedPredData build_pred_data_sz(K2TreeConfig config,
+                                    unsigned long predicate_id,
+                                    unsigned long sz) {
+  struct my_pair_str : public PairStream {
+    unsigned long sz = 0;
+    unsigned long pred = 0;
+    unsigned long i = 1;
+    unsigned long j = 1;
+    bool has_next() override { return i <= sz && j < 10;}
+    std::pair<long, long> next() override {
+      auto out = std::make_pair(i, j);
+      j++;
+      if(j == 10){
+        i++;
+        j = i;
+      }
+      return out;
+    }
+  };
+
+  my_pair_str mps;
+  mps.sz = sz;
+  mps.pred = predicate_id;
+  return build_pred_data(config, predicate_id, mps);
+}
+
+CreatedPredData build_pred_data(K2TreeConfig config, unsigned long predicate_id,
+                                PairStream &pair_stream) {
+  std::stringstream ss;
+  auto out = std::make_unique<std::stringstream>();
+  std::stringstream tmp;
+  write_u64(ss, 0);
+  auto sz = 0L;
+  while (pair_stream.has_next()) {
+    const auto &p = pair_stream.next();
+    TripleValue(p.first, predicate_id, p.second).write_to_file(ss);
+    sz++;
+  }
+  ss.seekg(0);
+  auto curr = ss.tellp();
+  ss.seekp(0);
+  write_u64(ss, sz);
+  ss.seekp(curr);
+
+  out->seekp(0);
+
+  PredicatesIndexFileBuilder::build(ss, *out, tmp, config);
+
+  CreatedPredData cpd(out->str());
+  return cpd;
+}
+
+std::unique_ptr<PredicatesIndexCacheMD> CreatedPredData::get_picmd() {
+  auto frw_handler = std::make_unique<FHMock>(raw_str);
+  return std::make_unique<PredicatesIndexCacheMD>(std::move(frw_handler));
+}
+CreatedPredData::CreatedPredData(std::string raw_str) : raw_str(std::move(raw_str)) {}
 } // namespace k2cache

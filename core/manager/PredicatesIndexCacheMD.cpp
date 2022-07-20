@@ -317,8 +317,7 @@ void PredicatesIndexCacheMD::sync_logs_to_indexes() {
 
     loaded_predicates.insert(p);
 
-    auto meta = get_metadata_with_id(p);
-    total_sz += meta->tree_size_in_memory;
+    total_sz += fetched.get().measure_in_memory_size().total_bytes;
 
     if (total_sz >= threshold)
       clean_up_bulk_sync(loaded_predicates, total_sz);

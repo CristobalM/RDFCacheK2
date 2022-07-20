@@ -29,5 +29,24 @@ std::unique_ptr<FHMock> mock_fh();
 std::unique_ptr<CacheContainer> mock_cache_container();
 std::vector<TripleNodeId> read_all_from_streamer(I_TRMatchingStreamer &streamer,
                                                  long predicate_id);
+
+struct CreatedPredData{
+  const std::string raw_str;
+  std::unique_ptr<PredicatesIndexCacheMD>  get_picmd();
+  explicit CreatedPredData(std::string raw_str);
+};
+
+CreatedPredData build_pred_data_sz(K2TreeConfig config, unsigned long predicate_id, unsigned long sz);
+
+
+struct PairStream{
+  virtual ~PairStream() =  default;
+  virtual bool has_next() = 0;
+  virtual std::pair<long,long> next() = 0;
+};
+
+CreatedPredData
+build_pred_data(K2TreeConfig config, unsigned long predicate_id, PairStream &pair_stream);
+
 } // namespace k2cache
 #endif /* _CACHE_TEST_UTIL_HPP_ */
