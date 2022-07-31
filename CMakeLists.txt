@@ -508,3 +508,10 @@ target_link_libraries(lazy_scan_benchmark ${DEFAULT_LIBS})
 
 add_executable(points_size_relationship benchmarks/points_size_relationship.cpp)
 target_link_libraries(points_size_relationship ${BASE_LIBS})
+
+
+add_executable(build_from_raw_points experiments/build_from_raw_points.cpp)
+target_link_libraries(build_from_raw_points ${DEFAULT_LIBS})
+
+add_executable(deserialize_k2tree experiments/deserialize_k2tree.cpp)
+target_link_libraries(deserialize_k2tree ${DEFAULT_LIBS})

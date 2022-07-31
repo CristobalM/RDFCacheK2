@@ -66,36 +66,36 @@ build_picmd_single_predicate(unsigned long predicate_id) {
 
 static std::pair<std::unique_ptr<PredicatesIndexCacheMD>, unsigned long>
 build_picmd_2(unsigned long predicate_id) {
-      K2TreeConfig config;
-      config.cut_depth = 10;
-      config.max_node_count = 256;
-      config.treedepth = 32;
-      const auto sz = 10000UL;
-    auto cpd = build_pred_data_sz(config, predicate_id, sz);
-    return {cpd.get_picmd(), sz};
-//  K2TreeConfig config;
-//  config.cut_depth = 10;
-//  config.max_node_count = 256;
-//  config.treedepth = 32;
-//
-//  std::stringstream ss;
-//  auto out = std::make_unique<std::stringstream>();
-//  std::stringstream tmp;
-//  unsigned long sz = 10000;
-//  write_u64(ss, sz * 10);
-//  for (unsigned long i = 1; i <= sz; i++) {
-//    for (unsigned long j = i; j < 10; j++) {
-//      TripleValue(i, predicate_id, j).write_to_file(ss);
-//    }
-//  }
-//  ss.seekg(0);
-//  out->seekp(0);
-//
-//  PredicatesIndexFileBuilder::build(ss, *out, tmp, config);
-//
-//  auto frw_handler = std::make_unique<FHMock>(out->str());
-//
-//  return {PredicatesIndexCacheMD(std::move(frw_handler)), sz};
+  K2TreeConfig config;
+  config.cut_depth = 10;
+  config.max_node_count = 256;
+  config.treedepth = 32;
+  const auto sz = 10000UL;
+  auto cpd = build_pred_data_sz(config, predicate_id, sz);
+  return {cpd.get_picmd(), sz};
+  //  K2TreeConfig config;
+  //  config.cut_depth = 10;
+  //  config.max_node_count = 256;
+  //  config.treedepth = 32;
+  //
+  //  std::stringstream ss;
+  //  auto out = std::make_unique<std::stringstream>();
+  //  std::stringstream tmp;
+  //  unsigned long sz = 10000;
+  //  write_u64(ss, sz * 10);
+  //  for (unsigned long i = 1; i <= sz; i++) {
+  //    for (unsigned long j = i; j < 10; j++) {
+  //      TripleValue(i, predicate_id, j).write_to_file(ss);
+  //    }
+  //  }
+  //  ss.seekg(0);
+  //  out->seekp(0);
+  //
+  //  PredicatesIndexFileBuilder::build(ss, *out, tmp, config);
+  //
+  //  auto frw_handler = std::make_unique<FHMock>(out->str());
+  //
+  //  return {PredicatesIndexCacheMD(std::move(frw_handler)), sz};
 }
 
 TEST(predicates_metadata_serialization, same_k2tree_as_non_serialized) {

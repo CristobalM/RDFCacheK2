@@ -137,18 +137,18 @@ std::vector<TripleNodeId> read_all_from_streamer(I_TRMatchingStreamer &streamer,
 }
 
 CreatedPredData build_pred_data_sz(K2TreeConfig config,
-                                    unsigned long predicate_id,
-                                    unsigned long sz) {
+                                   unsigned long predicate_id,
+                                   unsigned long sz) {
   struct my_pair_str : public PairStream {
     unsigned long sz = 0;
     unsigned long pred = 0;
     unsigned long i = 1;
     unsigned long j = 1;
-    bool has_next() override { return i <= sz && j < 10;}
+    bool has_next() override { return i <= sz && j < 10; }
     std::pair<long, long> next() override {
       auto out = std::make_pair(i, j);
       j++;
-      if(j == 10){
+      if (j == 10) {
         i++;
         j = i;
       }
@@ -192,5 +192,6 @@ std::unique_ptr<PredicatesIndexCacheMD> CreatedPredData::get_picmd() {
   auto frw_handler = std::make_unique<FHMock>(raw_str);
   return std::make_unique<PredicatesIndexCacheMD>(std::move(frw_handler));
 }
-CreatedPredData::CreatedPredData(std::string raw_str) : raw_str(std::move(raw_str)) {}
+CreatedPredData::CreatedPredData(std::string raw_str)
+    : raw_str(std::move(raw_str)) {}
 } // namespace k2cache

@@ -15,7 +15,6 @@
 
 using namespace k2cache;
 
-
 TEST(update_log_test, test_data_merger_mock) {
   K2TreeConfig config;
   config.treedepth = 32;
@@ -402,7 +401,7 @@ TEST(update_log_test, test_update_unloaded_predicates_from_logs) {
   }
 }
 
-//TEST(update_log_test, logging_after_existing_compact_indexation){
+// TEST(update_log_test, logging_after_existing_compact_indexation){
 //  K2TreeConfig config;
 //  config.treedepth = 32;
 //  config.cut_depth = 10;
