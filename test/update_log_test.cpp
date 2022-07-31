@@ -21,7 +21,8 @@ TEST(update_log_test, test_data_merger_mock) {
   config.cut_depth = 10;
   config.max_node_count = 256;
   DataMergerMock data_merger(config);
-  UpdatesLoggerImpl updates_logger(data_merger, mock_fh_manager());
+  PCMDataHolders h;
+  UpdatesLoggerImpl updates_logger(data_merger, mock_fh_manager(h));
 
   int predicate_id_1 = 123;
 
@@ -59,17 +60,16 @@ TEST(update_log_test, test_fhmock_can_sync_log_to_main_storage) {
   FHMock fh_offsets(data_offsets_updates);
   FHMock fh_metadata(metadata_updates);
 
+  DataHolders h;
   std::unique_ptr<I_FileRWHandler> fh_pcm{};
   {
-    std::string cache_data;
-    fh_pcm = std::make_unique<FHMock>(cache_data);
+    fh_pcm = std::make_unique<FHMock>(h.pcm_h.data);
     auto fh_writer = fh_pcm->get_writer(std::ios::out | std::ios::binary);
     PredicatesCacheMetadata metadata_pcm(config);
     metadata_pcm.write_to_ostream(fh_writer->get_ostream());
     fh_writer->flush();
   }
-
-  auto pcm = PCMFactory::create(std::move(fh_pcm), mock_fh_manager());
+  auto pcm = PCMFactory::create(std::move(fh_pcm), mock_fh_manager(h.pcm_h));
 
   int predicate_id_1 = 123;
 
@@ -116,16 +116,17 @@ TEST(update_log_test, test_can_compact_log_only_two_inserts) {
   config.cut_depth = 10;
   config.max_node_count = 256;
   std::unique_ptr<I_FileRWHandler> fh_pcm{};
+  DataHolders h1;
   {
-    std::string cache_data;
-    fh_pcm = std::make_unique<FHMock>(cache_data);
+    fh_pcm = std::make_unique<FHMock>(h1.pcm_h.data);
     auto fh_writer = fh_pcm->get_writer(std::ios::out | std::ios::binary);
     PredicatesCacheMetadata metadata_pcm(config);
     metadata_pcm.write_to_ostream(fh_writer->get_ostream());
     fh_writer->flush();
   }
+  DataHolders h2;
 
-  auto pcm = PCMFactory::create(std::move(fh_pcm), mock_fh_manager());
+  auto pcm = PCMFactory::create(std::move(fh_pcm), mock_fh_manager(h2.pcm_h));
 
   int predicate_id_1 = 123;
 
@@ -201,16 +202,16 @@ TEST(update_log_test, test_can_compact_log_one_insert_one_delete) {
   config.max_node_count = 256;
 
   std::unique_ptr<I_FileRWHandler> fh_pcm{};
+  DataHolders h1;
   {
-    std::string cache_data;
-    fh_pcm = std::make_unique<FHMock>(cache_data);
+    fh_pcm = std::make_unique<FHMock>(h1.pcm_h.data);
     auto fh_writer = fh_pcm->get_writer(std::ios::out | std::ios::binary);
     PredicatesCacheMetadata metadata_pcm(config);
     metadata_pcm.write_to_ostream(fh_writer->get_ostream());
     fh_writer->flush();
   }
-
-  auto pcm = PCMFactory::create(std::move(fh_pcm), mock_fh_manager());
+  DataHolders h2;
+  auto pcm = PCMFactory::create(std::move(fh_pcm), mock_fh_manager(h2.pcm_h));
 
   auto &updates_logger = pcm->get_updates_logger();
 
@@ -284,15 +285,16 @@ TEST(update_log_test, test_update_unloaded_predicates_from_logs) {
   config.max_node_count = 256;
 
   std::unique_ptr<I_FileRWHandler> fh_pcm{};
+  DataHolders h1;
   {
-    std::string cache_data;
-    fh_pcm = std::make_unique<FHMock>(cache_data);
+    fh_pcm = std::make_unique<FHMock>(h1.pcm_h.data);
     auto fh_writer = fh_pcm->get_writer(std::ios::out | std::ios::binary);
     PredicatesCacheMetadata metadata_pcm(config);
     metadata_pcm.write_to_ostream(fh_writer->get_ostream());
     fh_writer->flush();
   }
-  auto pcm = PCMFactory::create(std::move(fh_pcm), mock_fh_manager());
+  DataHolders h2;
+  auto pcm = PCMFactory::create(std::move(fh_pcm), mock_fh_manager(h2.pcm_h));
   auto &updates_logger = pcm->get_updates_logger();
 
   int predicate_id_1 = 123;

@@ -10,7 +10,8 @@
 #include <triple_external_sort.hpp>
 #include <utility>
 using namespace k2cache;
-static std::pair<PredicatesIndexCacheMD, unsigned long> build_picmd() {
+static std::pair<PredicatesIndexCacheMD, unsigned long>
+build_picmd(DataHolders &h) {
 
   K2TreeConfig config;
   config.cut_depth = 10;
@@ -18,7 +19,8 @@ static std::pair<PredicatesIndexCacheMD, unsigned long> build_picmd() {
   config.treedepth = 32;
 
   std::stringstream ss;
-  auto out = std::make_unique<std::stringstream>();
+
+  std::stringstream out;
   std::stringstream tmp;
   unsigned long sz = 10000;
   write_u64(ss, 3 * sz);
@@ -28,16 +30,18 @@ static std::pair<PredicatesIndexCacheMD, unsigned long> build_picmd() {
     TripleValue(i + 2, i, i + 2).write_to_file(ss);
   }
   ss.seekg(0);
-  out->seekp(0);
+  out.seekp(0);
 
-  PredicatesIndexFileBuilder::build(ss, *out, tmp, config);
+  PredicatesIndexFileBuilder::build(ss, out, tmp, config);
 
-  auto frw_handler = std::make_unique<FHMock>(out->str());
+  h.pcm_h.data = out.str();
+
+  auto frw_handler = std::make_unique<FHMock>(h.pcm_h.data);
 
   return {PredicatesIndexCacheMD(std::move(frw_handler)), sz};
 }
 static std::pair<PredicatesIndexCacheMD, unsigned long>
-build_picmd_single_predicate(unsigned long predicate_id) {
+build_picmd_single_predicate(unsigned long predicate_id, DataHolders &h) {
 
   K2TreeConfig config;
   config.cut_depth = 10;
@@ -45,7 +49,7 @@ build_picmd_single_predicate(unsigned long predicate_id) {
   config.treedepth = 32;
 
   std::stringstream ss;
-  auto out = std::make_unique<std::stringstream>();
+  std::stringstream out;
   std::stringstream tmp;
   unsigned long sz = 10000;
   write_u64(ss, 3 * sz);
@@ -55,11 +59,13 @@ build_picmd_single_predicate(unsigned long predicate_id) {
     TripleValue(i + 2, predicate_id, i + 2).write_to_file(ss);
   }
   ss.seekg(0);
-  out->seekp(0);
+  out.seekp(0);
 
-  PredicatesIndexFileBuilder::build(ss, *out, tmp, config);
+  PredicatesIndexFileBuilder::build(ss, out, tmp, config);
 
-  auto frw_handler = std::make_unique<FHMock>(out->str());
+  h.pcm_h.data = out.str();
+
+  auto frw_handler = std::make_unique<FHMock>(h.pcm_h.data);
 
   return {PredicatesIndexCacheMD(std::move(frw_handler)), sz};
 }
@@ -135,8 +141,8 @@ TEST(predicates_metadata_serialization, same_k2tree_as_non_serialized) {
 }
 
 TEST(predicates_metadata_serialization, can_create_save_and_retrieve) {
-
-  auto [pc, sz] = build_picmd();
+  DataHolders h;
+  auto [pc, sz] = build_picmd(h);
 
   auto &metadata = pc.get_metadata();
   ASSERT_EQ(metadata.get_predicates_count(), sz);
@@ -180,7 +186,8 @@ TEST(predicates_metadata_serialization, can_create_save_and_retrieve) {
 }
 
 TEST(predicates_metadata_serialization, can_sync_with_external) {
-  auto [pc, sz] = build_picmd();
+  DataHolders h;
+  auto [pc, sz] = build_picmd(h);
 
   for (unsigned long i = 20'000; i < 30'000; i++) {
     pc.insert_point(i, i, i);
@@ -209,7 +216,8 @@ TEST(predicates_metadata_serialization, can_sync_with_external) {
 
 TEST(predicates_metadata_serialization, can_store_predicate_size_in_memory) {
   unsigned long predicate_id = 12345;
-  auto [pc, sz] = build_picmd_single_predicate(predicate_id);
+  DataHolders h;
+  auto [pc, sz] = build_picmd_single_predicate(predicate_id, h);
   auto fetched = pc.fetch_k2tree(predicate_id);
   auto &k2tree = fetched.get_mutable();
 

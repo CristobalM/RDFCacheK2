@@ -19,15 +19,16 @@ TEST(fully_indexed_cache, test_resynced_on_update_unloaded) {
   config.max_node_count = 256;
 
   std::unique_ptr<I_FileRWHandler> fh_pcm{};
+  DataHolders h1;
   {
-    std::string cache_data;
-    fh_pcm = std::make_unique<FHMock>(cache_data);
+    fh_pcm = std::make_unique<FHMock>(h1.pcm_h.data);
     auto fh_writer = fh_pcm->get_writer(std::ios::out | std::ios::binary);
     PredicatesCacheMetadata metadata_pcm(config);
     metadata_pcm.write_to_ostream(fh_writer->get_ostream());
     fh_writer->flush();
   }
-  auto pcm = PCMFactory::create(std::move(fh_pcm), mock_fh_manager());
+  DataHolders h2;
+  auto pcm = PCMFactory::create(std::move(fh_pcm), mock_fh_manager(h2.pcm_h));
   auto &updates_logger = pcm->get_updates_logger();
 
   unsigned long predicate_id_1 = 123;
@@ -70,15 +71,16 @@ TEST(fully_indexed_cache, test_resynced_on_update_loaded) {
   config.max_node_count = 256;
 
   std::unique_ptr<I_FileRWHandler> fh_pcm{};
+  DataHolders h1;
   {
-    std::string cache_data;
-    fh_pcm = std::make_unique<FHMock>(cache_data);
+    fh_pcm = std::make_unique<FHMock>(h1.pcm_h.data);
     auto fh_writer = fh_pcm->get_writer(std::ios::out | std::ios::binary);
     PredicatesCacheMetadata metadata_pcm(config);
     metadata_pcm.write_to_ostream(fh_writer->get_ostream());
     fh_writer->flush();
   }
-  auto pcm = PCMFactory::create(std::move(fh_pcm), mock_fh_manager());
+  DataHolders h2;
+  auto pcm = PCMFactory::create(std::move(fh_pcm), mock_fh_manager(h2.pcm_h));
   auto &updates_logger = pcm->get_updates_logger();
 
   unsigned long predicate_id_1 = 123;

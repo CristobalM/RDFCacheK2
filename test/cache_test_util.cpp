@@ -72,17 +72,14 @@ void build_cache_test_file(const std::string &fname) {
   build_cache_test_file(fname, {});
 }
 
-UpdatesLoggerFilesManager mock_fh_manager() {
-  std::string data;
-  std::string data_offsets;
-  std::string metadata;
-  auto fh = std::make_unique<FHMock>(data);
-  auto fh_offsets = std::make_unique<FHMock>(data_offsets);
-  auto fh_metadata = std::make_unique<FHMock>(metadata);
+UpdatesLoggerFilesManager mock_fh_manager(PCMDataHolders &h) {
+  auto fh = std::make_unique<FHMock>(h.data);
+  auto fh_offsets = std::make_unique<FHMock>(h.offsets);
+  auto fh_metadata = std::make_unique<FHMock>(h.metadata);
   return {std::move(fh), std::move(fh_offsets), std::move(fh_metadata)};
 }
 
-std::unique_ptr<PredicatesCacheManager> basic_pcm() {
+std::unique_ptr<PredicatesCacheManager> basic_pcm(DataHolders &h) {
   K2TreeConfig config{};
   config.treedepth = 32;
   config.cut_depth = 10;
@@ -90,31 +87,34 @@ std::unique_ptr<PredicatesCacheManager> basic_pcm() {
 
   std::unique_ptr<I_FileRWHandler> fh_pcm{};
   {
-    fh_pcm = mock_fh();
+    auto *plain_ptr = &h.nim_h.plain;
+    (void)plain_ptr;
+    fh_pcm = mock_fh(h.nim_h.plain);
     auto fh_writer = fh_pcm->get_writer(std::ios::out | std::ios::binary);
     PredicatesCacheMetadata metadata_pcm(config);
     metadata_pcm.write_to_ostream(fh_writer->get_ostream());
     fh_writer->flush();
   }
-  return PCMFactory::create(std::move(fh_pcm), mock_fh_manager());
+  auto *plain_ptr = &h.nim_h.plain;
+  (void)plain_ptr;
+  return PCMFactory::create(std::move(fh_pcm), mock_fh_manager(h.pcm_h));
 }
-std::unique_ptr<NodeIdsManager> mock_nis() {
-  auto plain_fh = mock_fh();
-  auto mapped_fh = mock_fh();
-  auto logs_fh = mock_fh();
-  auto logs_counter_fh = mock_fh();
+std::unique_ptr<NodeIdsManager> mock_nis(NIMDataHolders &holders) {
+  auto plain_fh = mock_fh(holders.plain);
+  auto mapped_fh = mock_fh(holders.mapped);
+  auto logs_fh = mock_fh(holders.logs);
+  auto logs_counter_fh = mock_fh(holders.logs_counter);
   return NodeIdsManagerFactory::create(std::move(plain_fh),
                                        std::move(mapped_fh), std::move(logs_fh),
                                        std::move(logs_counter_fh));
 }
-std::unique_ptr<FHMock> mock_fh() {
-  std::string data;
+std::unique_ptr<FHMock> mock_fh(std::string &data) {
   return std::make_unique<FHMock>(data);
 }
 
-std::unique_ptr<CacheContainer> mock_cache_container() {
+std::unique_ptr<CacheContainer> mock_cache_container(DataHolders &holders) {
   return std::make_unique<CacheContainerImpl>(
-      basic_pcm(), mock_nis(), nullptr,
+      basic_pcm(holders), mock_nis(holders.nim_h), nullptr,
       I_CacheReplacement::REPLACEMENT_STRATEGY::NO_CACHING);
 }
 std::vector<TripleNodeId> read_all_from_streamer(I_TRMatchingStreamer &streamer,

@@ -13,7 +13,8 @@
 using namespace k2cache;
 
 TEST(node_ids_dyn_mapper_test, can_map_big_ids_to_smaller) {
-  auto cache_container = mock_cache_container();
+  DataHolders holders;
+  auto cache_container = mock_cache_container(holders);
   TestingTaskProcessor tp(*cache_container);
   UpdaterSession session(&tp, cache_container.get());
   static constexpr auto total_points = 10000UL;

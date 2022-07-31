@@ -14,6 +14,25 @@
 #include <triple_external_sort.hpp>
 
 namespace k2cache {
+
+struct NIMDataHolders {
+  std::string plain;
+  std::string mapped;
+  std::string logs;
+  std::string logs_counter;
+};
+
+struct PCMDataHolders {
+  std::string data;
+  std::string offsets;
+  std::string metadata;
+};
+
+struct DataHolders {
+  NIMDataHolders nim_h;
+  PCMDataHolders pcm_h;
+};
+
 void build_cache_test_file(const std::string &fname,
                            std::vector<TripleValue> &data);
 void build_cache_test_file(const std::string &fname,
@@ -21,17 +40,17 @@ void build_cache_test_file(const std::string &fname,
 void build_cache_test_file(const std::string &fname);
 std::vector<TripleValue> build_initial_values_triples_vector(uint64_t size);
 
-UpdatesLoggerFilesManager mock_fh_manager();
-std::unique_ptr<PredicatesCacheManager> basic_pcm();
+UpdatesLoggerFilesManager mock_fh_manager(PCMDataHolders &h);
+std::unique_ptr<PredicatesCacheManager> basic_pcm(DataHolders &h);
 
-std::unique_ptr<NodeIdsManager> mock_nis();
-std::unique_ptr<FHMock> mock_fh();
-std::unique_ptr<CacheContainer> mock_cache_container();
+std::unique_ptr<NodeIdsManager> mock_nis(NIMDataHolders &holders);
+std::unique_ptr<FHMock> mock_fh(std::string &data);
+std::unique_ptr<CacheContainer> mock_cache_container(DataHolders &holders);
 std::vector<TripleNodeId> read_all_from_streamer(I_TRMatchingStreamer &streamer,
                                                  long predicate_id);
 
 struct CreatedPredData {
-  const std::string raw_str;
+  std::string raw_str;
   std::unique_ptr<PredicatesIndexCacheMD> get_picmd();
   explicit CreatedPredData(std::string raw_str);
 };
