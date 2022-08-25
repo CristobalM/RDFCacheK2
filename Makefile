@@ -92,6 +92,7 @@ bundle-code: # clean-all
 	--include 'utils/***' \
 	--include 'algorithms/***' \
 	--include 'benchmarks/***' \
+	--include 'experiments/***' \
 	--include 'proto/' \
 	--include 'proto/*.proto' \
 	--include 'scripts/***' \
@@ -100,7 +101,7 @@ bundle-code: # clean-all
 	--include '.gitmodules' \
 	--include 'CMakeLists.txt' \
 	--include 'clang-format.txt' \
-	--include 'Makefile' \
+	--include 'Makefile' 	\
 	--include 'CTestCustom.cmake' \
 	--include '*.sh' \
 	--include 'lib/' \
