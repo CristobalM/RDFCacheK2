@@ -72,7 +72,7 @@ parsed_options parse_cmd_line(int argc, char **argv) {
       {"workers", required_argument, nullptr, 'w'},
       {"replacement-strategy", required_argument, nullptr, 'R'},
       {"update-log-filename", required_argument, nullptr, 'U'},
-      {"fip", optional_argument, nullptr, 'F'},
+      {"fic", optional_argument, nullptr, 'F'},
   };
 
   int opt, opt_index;
