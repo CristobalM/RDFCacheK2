@@ -35,7 +35,10 @@ add_definitions(-DLIGHT_FIELDS)
 
 set(CORE_SOURCE_FILES
         core/builder/PredicatesIndexFileBuilder.cpp
-        core/fic/FullyIndexedCache.cpp
+        core/fic/FullyIndexedCacheImpl.cpp
+        core/fic/FullyIndexedCacheImpl.hpp
+        core/fic/NoFIC.cpp
+        core/fic/NoFIC.hpp
         core/fic/FullyIndexedCache.hpp
         core/fic/FullyIndexedCacheResponse.cpp
         core/fic/FullyIndexedCacheResponse.hpp
@@ -96,7 +99,7 @@ set(CORE_SOURCE_FILES
         core/updating/UpdatesLoggerImpl.hpp
         core/updating/UpdatesLoggerFilesManager.cpp
         core/updating/UpdatesLoggerFilesManager.hpp
-        core/nodeids/NodeIdsManagerImpl.cpp core/nodeids/NodeIdsManagerImpl.hpp core/manager/PredicatesCacheManager.hpp core/manager/PCMFactory.cpp core/manager/PCMFactory.hpp core/nodeids/NodeIdsManager.hpp core/nodeids/NodeIdsManagerFactory.cpp core/nodeids/NodeIdsManagerFactory.hpp core/nodeids/NodesMap.hpp core/nodeids/NodesMapImpl.cpp core/nodeids/NodesMapImpl.hpp core/nodeids/NodesMapFactory.cpp core/nodeids/NodesMapFactory.hpp core/nodeids/node_ids_constants.hpp core/nodeids/NodeIdsManagerIdentity.cpp core/nodeids/NodeIdsManagerIdentity.hpp)
+        core/nodeids/NodeIdsManagerImpl.cpp core/nodeids/NodeIdsManagerImpl.hpp core/manager/PredicatesCacheManager.hpp core/manager/PCMFactory.cpp core/manager/PCMFactory.hpp core/nodeids/NodeIdsManager.hpp core/nodeids/NodeIdsManagerFactory.cpp core/nodeids/NodeIdsManagerFactory.hpp core/nodeids/NodesMap.hpp core/nodeids/NodesMapImpl.cpp core/nodeids/NodesMapImpl.hpp core/nodeids/NodesMapFactory.cpp core/nodeids/NodesMapFactory.hpp core/nodeids/node_ids_constants.hpp core/nodeids/NodeIdsManagerIdentity.cpp core/nodeids/NodeIdsManagerIdentity.hpp core/updating/PCMMergerWrapper.cpp core/updating/PCMMergerWrapper.hpp core/manager/K2TreeFetcher.hpp core/manager/FetcherWrapperLazyInit.cpp core/manager/FetcherWrapperLazyInit.hpp core/updating/NoUpdate.cpp core/updating/NoUpdate.hpp)
 
 
 set(NETWORK_SOURCE_FILES

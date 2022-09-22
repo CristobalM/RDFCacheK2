@@ -15,7 +15,7 @@
 #include "I_FileRWHandler.hpp"
 #include "PredicatesCacheManager.hpp"
 #include "PredicatesIndexCacheMD.hpp"
-#include "fic/FullyIndexedCache.hpp"
+#include "fic/FullyIndexedCacheImpl.hpp"
 #include "k2tree/K2TreeBulkOp.hpp"
 #include "k2tree/K2TreeMixed.hpp"
 #include "k2tree/K2TreeScanner.hpp"
@@ -30,24 +30,24 @@ namespace k2cache {
 class PredicatesCacheManagerImpl : public PredicatesCacheManager {
   std::unique_ptr<PredicatesIndexCacheMD> predicates_index;
   std::unique_ptr<UpdatesLogger> updates_logger;
-  //  std::unique_ptr<NodeIdsManager> nis;
-
-  FullyIndexedCache fully_indexed_cache;
+  std::unique_ptr<FullyIndexedCache> fully_indexed_cache;
 
 public:
   // read/write constructors
   PredicatesCacheManagerImpl(
       std::unique_ptr<PredicatesIndexCacheMD> &&predicates_index,
-      std::unique_ptr<UpdatesLogger> &&update_logger);
-  //      std::unique_ptr<NodeIdsManager> &&nis);
+      std::unique_ptr<UpdatesLogger> &&update_logger,
+      std::unique_ptr<FullyIndexedCache> &&fic);
 
-  PredicatesCacheManagerImpl(
-      std::unique_ptr<I_FileRWHandler> &&index_file_handler,
-      UpdatesLoggerFilesManager &&updates_logger_fm);
+  //  PredicatesCacheManagerImpl(
+  //      std::unique_ptr<I_FileRWHandler> &&index_file_handler,
+  //      UpdatesLoggerFilesManager &&updates_logger_fm,
+  //      std::unique_ptr<FullyIndexedCache> &&fully_indexed_cache);
 
   // read only constructor
-  PredicatesCacheManagerImpl(
-      std::unique_ptr<PredicatesIndexCacheMD> &&predicates_index);
+  //  PredicatesCacheManagerImpl(
+  //      std::unique_ptr<PredicatesIndexCacheMD> &&predicates_index,
+  //      std::unique_ptr<FullyIndexedCache> &&fully_indexed_cache);
 
   PredicatesIndexCacheMD &get_predicates_index_cache() override;
   void load_all_predicates() override;
@@ -64,9 +64,6 @@ public:
                          K2TreeMixed &k2tree) override;
 
   void merge_update(std::vector<K2TreeUpdates> &updates) override;
-
-  //  explicit PredicatesCacheManagerImpl(const std::string
-  //  &input_k2tree_filename);
 
   FullyIndexedCache &get_fully_indexed_cache() override;
 

@@ -7,7 +7,7 @@
 
 #include "CacheContainer.hpp"
 #include "I_TRStreamer.hpp"
-#include "fic/FullyIndexedCache.hpp"
+#include "fic/FullyIndexedCacheImpl.hpp"
 #include "k2tree/K2TreeScanner.hpp"
 #include "server/tasks/TaskProcessor.hpp"
 #include <memory>

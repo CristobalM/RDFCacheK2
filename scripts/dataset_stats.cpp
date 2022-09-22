@@ -35,7 +35,6 @@ int main(int argc, char **argv) {
 
   auto frw_handler = std::make_unique<FileRWHandler>(parsed.k2trees_file);
   auto pcm = PCMFactory::create(std::move(frw_handler));
-
   auto &predicates_index = pcm->get_predicates_index_cache();
   const auto &predicates_ids = predicates_index.get_predicates_ids();
 

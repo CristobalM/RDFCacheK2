@@ -14,28 +14,33 @@ namespace k2cache {
 
 PredicatesCacheManagerImpl::PredicatesCacheManagerImpl(
     std::unique_ptr<PredicatesIndexCacheMD> &&predicates_index,
-    std::unique_ptr<UpdatesLogger> &&update_logger)
+    std::unique_ptr<UpdatesLogger> &&update_logger,
+    std::unique_ptr<FullyIndexedCache> &&fic)
     : predicates_index(std::move(predicates_index)),
       updates_logger(std::move(update_logger)),
-      fully_indexed_cache(*this->predicates_index) {
+      fully_indexed_cache(std::move(fic)) {
   this->predicates_index->set_update_logger(this->updates_logger.get());
   updates_logger->recover_all();
 }
-
-PredicatesCacheManagerImpl::PredicatesCacheManagerImpl(
-    std::unique_ptr<I_FileRWHandler> &&index_file_handler,
-    UpdatesLoggerFilesManager &&updates_logger_fm)
-    : PredicatesCacheManagerImpl(std::make_unique<PredicatesIndexCacheMD>(
-                                     std::move(index_file_handler)),
-                                 std::make_unique<UpdatesLoggerImpl>(
-                                     *this, std::move(updates_logger_fm))) {}
+//
+// PredicatesCacheManagerImpl::PredicatesCacheManagerImpl(
+//    std::unique_ptr<I_FileRWHandler> &&index_file_handler,
+//    UpdatesLoggerFilesManager &&updates_logger_fm,
+//    std::unique_ptr<FullyIndexedCache> &&fully_indexed_cache)
+//    : PredicatesCacheManagerImpl(std::make_unique<PredicatesIndexCacheMD>(
+//                                     std::move(index_file_handler)),
+//                                 std::make_unique<UpdatesLoggerImpl>(
+//                                     *this, std::move(updates_logger_fm)),
+//                                 std::move(fully_indexed_cache)) {
+//}
 
 // read only constructors
-
-PredicatesCacheManagerImpl::PredicatesCacheManagerImpl(
-    std::unique_ptr<PredicatesIndexCacheMD> &&predicates_index)
-    : predicates_index(std::move(predicates_index)),
-      fully_indexed_cache(*predicates_index) {}
+//
+// PredicatesCacheManagerImpl::PredicatesCacheManagerImpl(
+//    std::unique_ptr<PredicatesIndexCacheMD> &&predicates_index,
+//    std::unique_ptr<FullyIndexedCache> &&fully_indexed_cache)
+//    : predicates_index(std::move(predicates_index)),
+//      fully_indexed_cache(std::move(fully_indexed_cache)) {}
 
 PredicatesIndexCacheMD &
 PredicatesCacheManagerImpl::get_predicates_index_cache() {
@@ -104,7 +109,7 @@ void PredicatesCacheManagerImpl::merge_op_tree(
     op(bulk_op, point.first, point.second);
   }
   predicates_index->mark_dirty(predicate_id);
-  fully_indexed_cache.resync_predicate(predicate_id);
+  fully_indexed_cache->resync_predicate(predicate_id);
 }
 
 void PredicatesCacheManagerImpl::merge_update(
@@ -119,7 +124,7 @@ void PredicatesCacheManagerImpl::merge_update(
   }
 }
 FullyIndexedCache &PredicatesCacheManagerImpl::get_fully_indexed_cache() {
-  return fully_indexed_cache;
+  return *fully_indexed_cache;
 }
 UpdatesLogger &PredicatesCacheManagerImpl::get_updates_logger() {
   if (!updates_logger)

@@ -7,10 +7,13 @@
 
 #include "CacheContainerImpl.hpp"
 #include "builder/PredicatesIndexFileBuilder.hpp"
+#include "fic/NoFIC.hpp"
 #include "k2tree/K2TreeMixed.hpp"
 #include "manager/PCMFactory.hpp"
+#include "manager/PredicatesCacheManagerImpl.hpp"
 #include "nodeids/NodeIdsManagerFactory.hpp"
 #include "nodeids/NodeIdsManagerIdentity.hpp"
+#include "updating/NoUpdate.hpp"
 #include <serialization_util.hpp>
 
 namespace k2cache {
@@ -97,7 +100,9 @@ std::unique_ptr<PredicatesCacheManager> basic_pcm(DataHolders &h) {
   }
   auto *plain_ptr = &h.nim_h.plain;
   (void)plain_ptr;
-  return PCMFactory::create(std::move(fh_pcm), mock_fh_manager(h.pcm_h));
+  auto pcm =
+      PCMFactory::create(std::move(fh_pcm), mock_fh_manager(h.pcm_h), false);
+  return pcm;
 }
 std::unique_ptr<NodeIdsManager> mock_nis(NIMDataHolders &holders) {
   auto plain_fh = mock_fh(holders.plain);

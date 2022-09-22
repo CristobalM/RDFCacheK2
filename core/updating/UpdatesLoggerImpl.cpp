@@ -12,9 +12,9 @@ namespace k2cache {
 
 namespace fs = std::filesystem;
 
-UpdatesLoggerImpl::UpdatesLoggerImpl(DataMerger &data_merger,
+UpdatesLoggerImpl::UpdatesLoggerImpl(std::unique_ptr<DataMerger> &&data_merger,
                                      UpdatesLoggerFilesManager &&files_manager)
-    : data_merger(data_merger), fm(std::move(files_manager)),
+    : data_merger(std::move(data_merger)), fm(std::move(files_manager)),
       metadata_file_rw(
           fm.get_metadata_fh().get_reader_writer(std::ios::binary)) {
   retrieve_offsets_map();
@@ -76,7 +76,7 @@ void UpdatesLoggerImpl::log(std::vector<K2TreeUpdates> &k2tree_updates) {
 
   {
     // updates sync
-    data_merger.merge_update(k2tree_updates);
+    data_merger->merge_update(k2tree_updates);
     total_updates++;
     commit_total_updates();
   }
@@ -396,11 +396,11 @@ void UpdatesLoggerImpl::compact_logs() {
 void UpdatesLoggerImpl::merge_update(
     UpdatesLoggerImpl::PredicateUpdate &predicate_update) {
   if (predicate_update.add_update)
-    data_merger.merge_add_tree(predicate_update.predicate_id,
-                               *predicate_update.add_update);
+    data_merger->merge_add_tree(predicate_update.predicate_id,
+                                *predicate_update.add_update);
   if (predicate_update.del_update)
-    data_merger.merge_delete_tree(predicate_update.predicate_id,
-                                  *predicate_update.del_update);
+    data_merger->merge_delete_tree(predicate_update.predicate_id,
+                                   *predicate_update.del_update);
 }
 
 int UpdatesLoggerImpl::logs_number() { return total_updates; }

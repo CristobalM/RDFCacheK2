@@ -25,6 +25,8 @@ struct parsed_options {
 
   std::string update_log_filename;
   std::string node_ids_logs_filename;
+
+  bool has_fip;
 };
 
 parsed_options parse_cmd_line(int argc, char **argv);
@@ -50,6 +52,7 @@ int main(int argc, char **argv) {
   cache_args.node_ids_filename = parsed.node_ids_file;
   cache_args.mapped_node_ids_filename = parsed.mapped_node_ids_filename;
   cache_args.node_ids_logs_filename = parsed.node_ids_logs_filename;
+  cache_args.has_fic = parsed.has_fip;
 
   auto cache = CacheContainerFactory::create(cache_args);
 
@@ -58,7 +61,7 @@ int main(int argc, char **argv) {
 }
 
 parsed_options parse_cmd_line(int argc, char **argv) {
-  const char short_options[] = "I:N:M:L:O:m:p:w:R:U:";
+  const char short_options[] = "I:N:M:L:O:m:p:w:R:U:F::";
   struct option long_options[] = {
       {"index-file", required_argument, nullptr, 'I'},
       {"node-ids-file", required_argument, nullptr, 'N'},
@@ -69,6 +72,7 @@ parsed_options parse_cmd_line(int argc, char **argv) {
       {"workers", required_argument, nullptr, 'w'},
       {"replacement-strategy", required_argument, nullptr, 'R'},
       {"update-log-filename", required_argument, nullptr, 'U'},
+      {"fip", optional_argument, nullptr, 'F'},
   };
 
   int opt, opt_index;
@@ -83,6 +87,8 @@ parsed_options parse_cmd_line(int argc, char **argv) {
   bool has_strategy = false;
   bool has_update_log_filename = false;
   parsed_options out{};
+
+  out.has_fip = false;
 
   while ((
       opt = getopt_long(argc, argv, short_options, long_options, &opt_index))) {
@@ -138,6 +144,9 @@ parsed_options parse_cmd_line(int argc, char **argv) {
     case 'U':
       out.update_log_filename = optarg;
       has_update_log_filename = true;
+      break;
+    case 'F':
+      out.has_fip = true;
       break;
     default:
       break;

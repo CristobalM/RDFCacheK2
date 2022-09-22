@@ -1,52 +1,18 @@
 //
-// Created by cristobal on 3/5/22.
+// Created by cristobal on 20-09-22.
 //
 
 #ifndef RDFCACHEK2_FULLYINDEXEDCACHE_HPP
 #define RDFCACHEK2_FULLYINDEXEDCACHE_HPP
-
 #include "FullyIndexedCacheResponse.hpp"
-#include "I_CachedPredicateSource.hpp"
-#include "manager/DataManager.hpp"
-#include "manager/PredicatesIndexCacheMD.hpp"
-#include "replacement/CacheReplacement.hpp"
-#include "replacement/LRUReplacementStrategy.hpp"
-
 namespace k2cache {
-class FullyIndexedCache {
-
-  PredicatesIndexCacheMD &pic;
-
-  using cache_map_t =
-      std::unordered_map<unsigned long,
-                         std::unique_ptr<I_CachedPredicateSource>>;
-
-  cache_map_t cached_predicates_sources;
-
-  class CacheDataManager : public DataManager {
-    cache_map_t &cache_map;
-    PredicatesIndexCacheMD &pic;
-
-  public:
-    CacheDataManager(cache_map_t &cache_map, PredicatesIndexCacheMD &pic);
-    void remove_key(unsigned long key) override;
-    void retrieve_key(unsigned long key) override;
-  };
-
-  CacheDataManager data_manager;
-
-  CacheReplacement<LRUReplacementStrategy> cache_replacement;
-
-public:
-  explicit FullyIndexedCache(PredicatesIndexCacheMD &pic);
-
-  void init_streamer_predicates(
-      const std::vector<unsigned long> &streamer_predicates);
-  bool should_cache(unsigned long predicate);
-  //  std::unique_ptr<I_CachedPredicateSource>
-  //  make_cached_predicate_source(unsigned long predicate);
-  FullyIndexedCacheResponse get(unsigned long predicate_id);
-  void resync_predicate(unsigned long predicate_id);
+struct FullyIndexedCache {
+  virtual ~FullyIndexedCache() = default;
+  virtual void init_streamer_predicates(
+      const std::vector<unsigned long> &streamer_predicates) = 0;
+  virtual bool should_cache(unsigned long predicate) = 0;
+  virtual FullyIndexedCacheResponse get(unsigned long predicate_id) = 0;
+  virtual void resync_predicate(unsigned long predicate_id) = 0;
 };
 } // namespace k2cache
 #endif // RDFCACHEK2_FULLYINDEXEDCACHE_HPP

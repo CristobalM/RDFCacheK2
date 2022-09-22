@@ -22,7 +22,7 @@
 
 namespace k2cache {
 class UpdatesLoggerImpl : public UpdatesLogger {
-  DataMerger &data_merger;
+  std::unique_ptr<DataMerger> data_merger;
   UpdatesLoggerFilesManager fm;
 
   std::unique_ptr<I_OStream> current_file_writer;
@@ -37,7 +37,7 @@ class UpdatesLoggerImpl : public UpdatesLogger {
   int total_updates;
 
 public:
-  UpdatesLoggerImpl(DataMerger &data_merger,
+  UpdatesLoggerImpl(std::unique_ptr<DataMerger> &&data_merger,
                     UpdatesLoggerFilesManager &&files_manager);
   void recover_all() override;
   void log(std::vector<K2TreeUpdates> &k2tree_updates) override;

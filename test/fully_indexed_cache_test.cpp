@@ -28,7 +28,8 @@ TEST(fully_indexed_cache, test_resynced_on_update_unloaded) {
     fh_writer->flush();
   }
   DataHolders h2;
-  auto pcm = PCMFactory::create(std::move(fh_pcm), mock_fh_manager(h2.pcm_h));
+  auto pcm =
+      PCMFactory::create(std::move(fh_pcm), mock_fh_manager(h2.pcm_h), true);
   auto &updates_logger = pcm->get_updates_logger();
 
   unsigned long predicate_id_1 = 123;
@@ -80,7 +81,8 @@ TEST(fully_indexed_cache, test_resynced_on_update_loaded) {
     fh_writer->flush();
   }
   DataHolders h2;
-  auto pcm = PCMFactory::create(std::move(fh_pcm), mock_fh_manager(h2.pcm_h));
+  auto pcm =
+      PCMFactory::create(std::move(fh_pcm), mock_fh_manager(h2.pcm_h), true);
   auto &updates_logger = pcm->get_updates_logger();
 
   unsigned long predicate_id_1 = 123;
