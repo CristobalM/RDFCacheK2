@@ -26,7 +26,7 @@ struct parsed_options {
   std::string update_log_filename;
   std::string node_ids_logs_filename;
 
-  bool has_fip;
+  bool has_fic;
 };
 
 parsed_options parse_cmd_line(int argc, char **argv);
@@ -52,7 +52,7 @@ int main(int argc, char **argv) {
   cache_args.node_ids_filename = parsed.node_ids_file;
   cache_args.mapped_node_ids_filename = parsed.mapped_node_ids_filename;
   cache_args.node_ids_logs_filename = parsed.node_ids_logs_filename;
-  cache_args.has_fic = parsed.has_fip;
+  cache_args.has_fic = parsed.has_fic;
 
   auto cache = CacheContainerFactory::create(cache_args);
 
@@ -88,7 +88,7 @@ parsed_options parse_cmd_line(int argc, char **argv) {
   bool has_update_log_filename = false;
   parsed_options out{};
 
-  out.has_fip = false;
+  out.has_fic = false;
 
   while ((
       opt = getopt_long(argc, argv, short_options, long_options, &opt_index))) {
@@ -146,7 +146,7 @@ parsed_options parse_cmd_line(int argc, char **argv) {
       has_update_log_filename = true;
       break;
     case 'F':
-      out.has_fip = true;
+      out.has_fic = true;
       break;
     default:
       break;
