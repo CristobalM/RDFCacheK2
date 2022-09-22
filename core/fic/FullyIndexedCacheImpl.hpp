@@ -9,7 +9,7 @@
 #include "FullyIndexedCacheResponse.hpp"
 #include "I_CachedPredicateSource.hpp"
 #include "manager/DataManager.hpp"
-#include "manager/PredicatesIndexCacheMD.hpp"
+#include "manager/K2TreeFetcher.hpp"
 #include "replacement/CacheReplacement.hpp"
 #include "replacement/LRUReplacementStrategy.hpp"
 

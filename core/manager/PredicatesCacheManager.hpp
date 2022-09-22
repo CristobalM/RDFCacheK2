@@ -5,10 +5,12 @@
 #ifndef RDFCACHEK2_PREDICATESCACHEMANAGER_HPP
 #define RDFCACHEK2_PREDICATESCACHEMANAGER_HPP
 
+#include "PredicatesIndexCacheMD.hpp"
 #include "fic/FullyIndexedCacheImpl.hpp"
 #include "manager/DataManager.hpp"
 #include "nodeids/NodeIdsManager.hpp"
 #include "updating/DataMerger.hpp"
+#include "updating/UpdatesLogger.hpp"
 
 namespace k2cache {
 
