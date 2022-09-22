@@ -17,7 +17,7 @@ K2TreeMixed::K2TreeMixed(uint32_t treedepth)
     : K2TreeMixed(treedepth, MAX_NODES_IN_BLOCK) {}
 
 K2TreeMixed::K2TreeMixed(uint32_t treedepth, uint32_t max_node_count)
-    : K2TreeMixed(treedepth, max_node_count, std::max(treedepth / 4, 1U)) {}
+    : K2TreeMixed(treedepth, max_node_count, 0) {}
 K2TreeMixed::K2TreeMixed(uint32_t treedepth, uint32_t max_node_count,
                          uint32_t cut_depth)
     : K2TreeMixed(create_k2node(), treedepth, max_node_count, cut_depth, 0) {}
@@ -313,9 +313,7 @@ K2TreeMixed K2TreeMixed::read_from_istream(std::istream &is) {
 
 size_t K2TreeMixed::size() const { return points_count; }
 
-struct k2node *K2TreeMixed::get_root_k2node() {
-  return root;
-}
+struct k2node *K2TreeMixed::get_root_k2node() { return root; }
 
 k2node *deserialize_k2node_tree(std::istream &is,
                                 std::vector<uint32_t> &containers,
@@ -435,7 +433,10 @@ static k2node *copy_tree(k2node *root, int cut_depth, int tree_depth,
       }
       node_copy->k2subtree.children[i] = copied_child;
     }
-  } else {
+  }
+  // if cut depth is reached and the block child is non null
+  // we copy the subtree, if not, this part is ignored.
+  else if (root->k2subtree.block_child) {
     node_copy->k2subtree.block_child = create_block();
     copy_block_tree(root->k2subtree.block_child,
                     node_copy->k2subtree.block_child);
