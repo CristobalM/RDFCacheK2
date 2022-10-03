@@ -7,10 +7,10 @@
 
 #include "FullyIndexedCache.hpp"
 #include "manager/K2TreeFetcher.hpp"
+#include "manager/PredicatesIndexCacheMD.hpp"
 #include <memory>
-namespace k2cache::FICFactory{
-  std::unique_ptr<FullyIndexedCache> create(std::unique_ptr<K2TreeFetcher> &&fetcher);
+namespace k2cache::FICFactory {
+std::unique_ptr<FullyIndexedCache> create(K2TreeFetcher &picmd);
 }
-
 
 #endif // RDFCACHEK2_FICFACTORY_HPP

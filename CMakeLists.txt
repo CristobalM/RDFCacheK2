@@ -99,7 +99,7 @@ set(CORE_SOURCE_FILES
         core/updating/UpdatesLoggerImpl.hpp
         core/updating/UpdatesLoggerFilesManager.cpp
         core/updating/UpdatesLoggerFilesManager.hpp
-        core/nodeids/NodeIdsManagerImpl.cpp core/nodeids/NodeIdsManagerImpl.hpp core/manager/PredicatesCacheManager.hpp core/manager/PCMFactory.cpp core/manager/PCMFactory.hpp core/nodeids/NodeIdsManager.hpp core/nodeids/NodeIdsManagerFactory.cpp core/nodeids/NodeIdsManagerFactory.hpp core/nodeids/NodesMap.hpp core/nodeids/NodesMapImpl.cpp core/nodeids/NodesMapImpl.hpp core/nodeids/NodesMapFactory.cpp core/nodeids/NodesMapFactory.hpp core/nodeids/node_ids_constants.hpp core/nodeids/NodeIdsManagerIdentity.cpp core/nodeids/NodeIdsManagerIdentity.hpp core/updating/PCMMergerWrapper.cpp core/updating/PCMMergerWrapper.hpp core/manager/K2TreeFetcher.hpp core/manager/FetcherWrapperLazyInit.cpp core/manager/FetcherWrapperLazyInit.hpp core/updating/NoUpdate.cpp core/updating/NoUpdate.hpp core/fic/CachedPredicateSourceMap.hpp core/fic/FICFactory.cpp core/fic/FICFactory.hpp core/fic/CacheDataManager.cpp core/fic/CacheDataManager.hpp core/fic/types.hpp)
+        core/nodeids/NodeIdsManagerImpl.cpp core/nodeids/NodeIdsManagerImpl.hpp core/manager/PredicatesCacheManager.hpp core/manager/PCMFactory.cpp core/manager/PCMFactory.hpp core/nodeids/NodeIdsManager.hpp core/nodeids/NodeIdsManagerFactory.cpp core/nodeids/NodeIdsManagerFactory.hpp core/nodeids/NodesMap.hpp core/nodeids/NodesMapImpl.cpp core/nodeids/NodesMapImpl.hpp core/nodeids/NodesMapFactory.cpp core/nodeids/NodesMapFactory.hpp core/nodeids/node_ids_constants.hpp core/nodeids/NodeIdsManagerIdentity.cpp core/nodeids/NodeIdsManagerIdentity.hpp core/updating/PCMMergerWrapper.cpp core/updating/PCMMergerWrapper.hpp core/manager/K2TreeFetcher.hpp core/updating/NoUpdate.cpp core/updating/NoUpdate.hpp core/fic/FICFactory.cpp core/fic/FICFactory.hpp core/fic/CacheDataManager.cpp core/fic/CacheDataManager.hpp core/fic/types.hpp)
 
 
 set(NETWORK_SOURCE_FILES
@@ -386,7 +386,7 @@ if (GTest_FOUND)
             test/mock_structures/StringIOStream.hpp
             test/mock_structures/TestingTaskProcessor.cpp
             test/mock_structures/TestingTaskProcessor.hpp
-            )
+            test/mock_structures/MockFetcher.cpp test/mock_structures/MockFetcher.hpp test/mock_structures/DataManagerMock.cpp test/mock_structures/DataManagerMock.hpp)
 
     add_library(MockStructureLib STATIC ${MOCK_STRUCTURES})
     add_dependencies(MockStructureLib RDFCacheK2 RDFCacheK2_Network RDFCacheK2_Cache Utils)

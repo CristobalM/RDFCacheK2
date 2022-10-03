@@ -7,7 +7,10 @@
 #include "k2tree/K2TreeMixed.hpp"
 #include "manager/PCMFactory.hpp"
 #include "manager/PredicatesCacheMetadata.hpp"
+#include "mock_structures/DataManagerMock.hpp"
 #include "mock_structures/FHMock.hpp"
+#include "mock_structures/MockFetcher.hpp"
+#include "replacement/NoCachingReplacement.hpp"
 #include <gtest/gtest.h>
 
 using namespace k2cache;
@@ -133,4 +136,21 @@ TEST(fully_indexed_cache, test_resynced_on_update_loaded) {
     ASSERT_TRUE(fi_resp_2.get()->has(size_tree + i + 1, size_tree + i + 1));
   }
   ASSERT_FALSE(fi_resp_2.get()->has(2 * size_tree + 1, 2 * size_tree + 1));
+}
+
+
+TEST(fully_indexed_cache, test_impl_1){
+  auto fetcher = std::make_unique<MockFetcher>();
+  auto map = std::make_unique<fic::types::cache_map_t>();
+  auto *map_ref = map.get();
+  auto dm = std::make_unique<DataManagerMock>();
+  auto cr = std::make_unique<NoCachingReplacement>();
+  FullyIndexedCacheImpl idx(
+      *fetcher,
+      std::move(map),
+      std::move(dm),
+      std::move(cr)
+      );
+
+  
 }
