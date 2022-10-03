@@ -5,6 +5,7 @@
 #ifndef RDFCACHEK2_FULLYINDEXEDCACHEIMPL_HPP
 #define RDFCACHEK2_FULLYINDEXEDCACHEIMPL_HPP
 
+#include "CachedPredicateSourceMap.hpp"
 #include "FullyIndexedCache.hpp"
 #include "FullyIndexedCacheResponse.hpp"
 #include "I_CachedPredicateSource.hpp"
@@ -12,34 +13,41 @@
 #include "manager/K2TreeFetcher.hpp"
 #include "replacement/CacheReplacement.hpp"
 #include "replacement/LRUReplacementStrategy.hpp"
+#include "types.hpp"
 
 namespace k2cache {
 class FullyIndexedCacheImpl : public FullyIndexedCache {
 
   std::unique_ptr<K2TreeFetcher> fetcher;
+  std::unique_ptr<CachedPredicateSourceMap> cached_predicates_sources;
+  std::unique_ptr<DataManager> data_manager;
+  std::unique_ptr<I_CacheReplacement> cache_replacement;
 
-  using cache_map_t =
-      std::unordered_map<unsigned long,
-                         std::unique_ptr<I_CachedPredicateSource>>;
+//  fic::types::cache_map_t cached_predicates_sources;
 
-  cache_map_t cached_predicates_sources;
 
-  class CacheDataManager : public DataManager {
-    cache_map_t &cache_map;
-    K2TreeFetcher &cdm_fetcher;
+//  class CacheDataManager : public DataManager {
+//    cache_map_t &cache_map;
+//    K2TreeFetcher &cdm_fetcher;
+//
+//  public:
+//    CacheDataManager(cache_map_t &cache_map, K2TreeFetcher &f);
+//    void remove_key(unsigned long key) override;
+//    void retrieve_key(unsigned long key) override;
+//  };
 
-  public:
-    CacheDataManager(cache_map_t &cache_map, K2TreeFetcher &f);
-    void remove_key(unsigned long key) override;
-    void retrieve_key(unsigned long key) override;
-  };
+//  CacheDataManager data_manager;
+//
+//  CacheReplacement<LRUReplacementStrategy> cache_replacement;
 
-  CacheDataManager data_manager;
-
-  CacheReplacement<LRUReplacementStrategy> cache_replacement;
 
 public:
-  explicit FullyIndexedCacheImpl(std::unique_ptr<K2TreeFetcher> &&fetcher);
+  FullyIndexedCacheImpl(
+      std::unique_ptr<K2TreeFetcher> &&fetcher,
+      std::unique_ptr<CachedPredicateSourceMap> &&cached_predicates_sources,
+      std::unique_ptr<DataManager> &&data_manager,
+      std::unique_ptr<I_CacheReplacement> &&cache_replacement
+      );
 
   void init_streamer_predicates(
       const std::vector<unsigned long> &streamer_predicates) override;
