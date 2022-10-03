@@ -54,6 +54,8 @@ int main(int argc, char **argv) {
   cache_args.node_ids_logs_filename = parsed.node_ids_logs_filename;
   cache_args.has_fic = parsed.has_fic;
 
+  std::cout << "has fic: " << (cache_args.has_fic ? "YES": "NO") << std::endl;
+
   auto cache = CacheContainerFactory::create(cache_args);
 
   CacheServer server(*cache, parsed.port, parsed.workers_count);
