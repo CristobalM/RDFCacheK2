@@ -28,8 +28,6 @@ bool FullyIndexedCacheImpl::should_cache(unsigned long predicate) {
   if (!fetch_result.loaded())
     return false;
   static constexpr auto max_to_cache_sz = 10'000'000UL;
-  std::unordered_map<unsigned long, std::unique_ptr<I_CachedPredicateSource>> m;
-  m.find(1);
   return fetch_result.get().size() < max_to_cache_sz;
 }
 
