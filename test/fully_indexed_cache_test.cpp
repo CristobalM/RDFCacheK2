@@ -141,7 +141,6 @@ TEST(fully_indexed_cache, test_resynced_on_update_loaded) {
 TEST(fully_indexed_cache, test_impl_1) {
   auto fetcher = std::make_unique<MockFetcher>();
   auto map = std::make_unique<fic::types::cache_map_t>();
-  //  auto *map_ref = map.get();
   auto dm = std::make_unique<CacheDataManager>(*map, *fetcher);
   auto cr = std::make_unique<NoCachingReplacement>();
   FullyIndexedCacheImpl idx(*fetcher, std::move(map), std::move(dm),
@@ -152,9 +151,14 @@ TEST(fully_indexed_cache, test_impl_1) {
   };
 
   idx.init_streamer_predicates(predicates);
+  
+  for(auto p: predicates){
+    auto sc = idx.should_cache(p);
+    ASSERT_TRUE(sc == 1);
+  }
 
-  std::cout << idx.should_cache(1) << std::endl;
-  std::cout << idx.should_cache(2) << std::endl;
-  std::cout << idx.should_cache(5) << std::endl;
-  std::cout << idx.should_cache(6) << std::endl;
+  for(auto i = 6; i < 100; i++){
+    auto sc = idx.should_cache(i);
+    ASSERT_FALSE(sc == 1);
+  }
 }
