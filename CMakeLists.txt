@@ -34,17 +34,25 @@ add_definitions(-DLIGHT_FIELDS)
 
 
 set(CORE_SOURCE_FILES
+        core/fisher_yates.hpp
+
         core/builder/PredicatesIndexFileBuilder.cpp
+
+        core/fic/CacheDataManager.cpp
+        core/fic/CacheDataManager.hpp
+        core/fic/FICFactory.cpp
+        core/fic/FICFactory.hpp
+        core/fic/FullyIndexedCache.hpp
         core/fic/FullyIndexedCacheImpl.cpp
         core/fic/FullyIndexedCacheImpl.hpp
-        core/fic/NoFIC.cpp
-        core/fic/NoFIC.hpp
-        core/fic/FullyIndexedCache.hpp
         core/fic/FullyIndexedCacheResponse.cpp
         core/fic/FullyIndexedCacheResponse.hpp
         core/fic/FullyIndexedPredicate.cpp
         core/fic/FullyIndexedPredicate.hpp
         core/fic/I_CachedPredicateSource.hpp
+        core/fic/NoFIC.cpp
+        core/fic/NoFIC.hpp
+        core/fic/types.hpp
 
         core/k2tree/BandScanner.cpp
         core/k2tree/BandScanner.hpp
@@ -65,17 +73,34 @@ set(CORE_SOURCE_FILES
         core/k2tree/block_stats.hpp
 
         core/manager/DataManager.hpp
+        core/manager/K2TreeFetcher.hpp
+        core/manager/PCMFactory.cpp
+        core/manager/PCMFactory.hpp
         core/manager/PredicateFetchResult.cpp
+        core/manager/PredicatesCacheManager.hpp
         core/manager/PredicatesCacheManagerImpl.cpp
         core/manager/PredicatesCacheMetadata.cpp
         core/manager/PredicatesIndexCacheMD.cpp
 
         core/nodeids/NodeId.cpp
         core/nodeids/NodeId.hpp
+        core/nodeids/NodeIdsManager.hpp
+        core/nodeids/NodeIdsManagerFactory.cpp
+        core/nodeids/NodeIdsManagerFactory.hpp
+        core/nodeids/NodeIdsManagerIdentity.cpp
+        core/nodeids/NodeIdsManagerIdentity.hpp
+        core/nodeids/NodeIdsManagerImpl.cpp
+        core/nodeids/NodeIdsManagerImpl.hpp
+        core/nodeids/NodesMap.hpp
+        core/nodeids/NodesMapFactory.cpp
+        core/nodeids/NodesMapFactory.hpp
+        core/nodeids/NodesMapImpl.cpp
+        core/nodeids/NodesMapImpl.hpp
         core/nodeids/NodesSequence.cpp
         core/nodeids/NodesSequence.hpp
         core/nodeids/TripleNodeId.cpp
         core/nodeids/TripleNodeId.hpp
+        core/nodeids/node_ids_constants.hpp
 
         core/replacement/CacheReplacement.cpp
         core/replacement/CacheReplacement.hpp
@@ -92,14 +117,18 @@ set(CORE_SOURCE_FILES
         core/replacement/NoCachingReplacement.hpp
 
         core/updating/DataMerger.hpp
-        core/updating/UpdatesLogger.hpp
         core/updating/K2TreeUpdates.cpp
         core/updating/K2TreeUpdates.hpp
-        core/updating/UpdatesLoggerImpl.cpp
-        core/updating/UpdatesLoggerImpl.hpp
+        core/updating/NoUpdate.cpp
+        core/updating/NoUpdate.hpp
+        core/updating/PCMMergerWrapper.cpp
+        core/updating/PCMMergerWrapper.hpp
+        core/updating/UpdatesLogger.hpp
         core/updating/UpdatesLoggerFilesManager.cpp
         core/updating/UpdatesLoggerFilesManager.hpp
-        core/nodeids/NodeIdsManagerImpl.cpp core/nodeids/NodeIdsManagerImpl.hpp core/manager/PredicatesCacheManager.hpp core/manager/PCMFactory.cpp core/manager/PCMFactory.hpp core/nodeids/NodeIdsManager.hpp core/nodeids/NodeIdsManagerFactory.cpp core/nodeids/NodeIdsManagerFactory.hpp core/nodeids/NodesMap.hpp core/nodeids/NodesMapImpl.cpp core/nodeids/NodesMapImpl.hpp core/nodeids/NodesMapFactory.cpp core/nodeids/NodesMapFactory.hpp core/nodeids/node_ids_constants.hpp core/nodeids/NodeIdsManagerIdentity.cpp core/nodeids/NodeIdsManagerIdentity.hpp core/updating/PCMMergerWrapper.cpp core/updating/PCMMergerWrapper.hpp core/manager/K2TreeFetcher.hpp core/updating/NoUpdate.cpp core/updating/NoUpdate.hpp core/fic/FICFactory.cpp core/fic/FICFactory.hpp core/fic/CacheDataManager.cpp core/fic/CacheDataManager.hpp core/fic/types.hpp)
+        core/updating/UpdatesLoggerImpl.cpp
+        core/updating/UpdatesLoggerImpl.hpp
+        )
 
 
 set(NETWORK_SOURCE_FILES
@@ -433,6 +462,9 @@ if (GTest_FOUND)
     add_executable(node_ids_dyn_mapper_test test/node_ids_dyn_mapper_test.cpp test/cache_test_util.cpp)
     target_link_libraries(node_ids_dyn_mapper_test MockStructureLib ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES}  pthread)
 
+    add_executable(nodeids_manager_impl_test test/nodeids_manager_impl_test.cpp test/cache_test_util.cpp)
+    target_link_libraries(nodeids_manager_impl_test MockStructureLib ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES}  pthread)
+
 
     add_test(NAME serialization_test COMMAND ./serialization_test)
     add_test(NAME k2tree_serialization_test COMMAND ./k2tree_serialization_test)
@@ -446,6 +478,7 @@ if (GTest_FOUND)
     add_test(NAME fully_indexed_cache_test COMMAND ./fully_indexed_cache_test)
     add_test(NAME nodes_map_test COMMAND ./nodes_map_test)
     add_test(NAME node_ids_dyn_mapper_test COMMAND ./node_ids_dyn_mapper_test)
+    add_test(NAME nodeids_manager_impl_test COMMAND ./nodeids_manager_impl_test)
 
     # K2 Tree Tests
 

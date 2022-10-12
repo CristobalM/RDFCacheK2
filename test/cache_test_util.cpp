@@ -199,4 +199,13 @@ std::unique_ptr<PredicatesIndexCacheMD> CreatedPredData::get_picmd() {
 }
 CreatedPredData::CreatedPredData(std::string raw_str)
     : raw_str(std::move(raw_str)) {}
+
+std::stringstream build_node_ids_seq_mem(const std::vector<unsigned long> &nis_seq){
+  std::stringstream ss;
+  write_u64(ss, nis_seq.size());
+  for(auto v: nis_seq){
+    write_u64(ss, v);
+  }
+  return ss;
+}
 } // namespace k2cache

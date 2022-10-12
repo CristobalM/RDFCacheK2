@@ -68,5 +68,8 @@ struct PairStream {
 CreatedPredData build_pred_data(K2TreeConfig config, unsigned long predicate_id,
                                 PairStream &pair_stream);
 
+
+std::stringstream build_node_ids_seq_mem(const std::vector<unsigned long> &nis_seq);
+
 } // namespace k2cache
 #endif /* _CACHE_TEST_UTIL_HPP_ */
