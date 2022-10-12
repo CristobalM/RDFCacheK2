@@ -151,7 +151,7 @@ TEST(fully_indexed_cache, test_impl_1) {
   };
 
   idx.init_streamer_predicates(predicates);
-  
+
   for(auto p: predicates){
     auto sc = idx.should_cache(p);
     ASSERT_TRUE(sc == 1);
