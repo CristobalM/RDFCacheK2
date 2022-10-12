@@ -3,11 +3,11 @@
 //
 #include "I_FileRWHandler.hpp"
 #include "cache_test_util.hpp"
+#include "fic/CacheDataManager.hpp"
 #include "k2tree/K2TreeBulkOp.hpp"
 #include "k2tree/K2TreeMixed.hpp"
 #include "manager/PCMFactory.hpp"
 #include "manager/PredicatesCacheMetadata.hpp"
-#include "mock_structures/DataManagerMock.hpp"
 #include "mock_structures/FHMock.hpp"
 #include "mock_structures/MockFetcher.hpp"
 #include "replacement/NoCachingReplacement.hpp"
@@ -142,8 +142,8 @@ TEST(fully_indexed_cache, test_resynced_on_update_loaded) {
 TEST(fully_indexed_cache, test_impl_1){
   auto fetcher = std::make_unique<MockFetcher>();
   auto map = std::make_unique<fic::types::cache_map_t>();
-  auto *map_ref = map.get();
-  auto dm = std::make_unique<DataManagerMock>();
+//  auto *map_ref = map.get();
+  auto dm = std::make_unique<CacheDataManager>(*map, *fetcher);
   auto cr = std::make_unique<NoCachingReplacement>();
   FullyIndexedCacheImpl idx(
       *fetcher,
@@ -152,5 +152,15 @@ TEST(fully_indexed_cache, test_impl_1){
       std::move(cr)
       );
 
-  
+  std::vector<unsigned long> predicates = {
+      1, 2, 3, 4, 5,
+  };
+
+  idx.init_streamer_predicates(predicates);
+
+  std::cout << idx.should_cache(1) << std::endl;
+  std::cout << idx.should_cache(2) << std::endl;
+  std::cout << idx.should_cache(5) << std::endl;
+  std::cout << idx.should_cache(6) << std::endl;
+
 }

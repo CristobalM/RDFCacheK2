@@ -386,7 +386,7 @@ if (GTest_FOUND)
             test/mock_structures/StringIOStream.hpp
             test/mock_structures/TestingTaskProcessor.cpp
             test/mock_structures/TestingTaskProcessor.hpp
-            test/mock_structures/MockFetcher.cpp test/mock_structures/MockFetcher.hpp test/mock_structures/DataManagerMock.cpp test/mock_structures/DataManagerMock.hpp)
+            test/mock_structures/MockFetcher.cpp test/mock_structures/MockFetcher.hpp)
 
     add_library(MockStructureLib STATIC ${MOCK_STRUCTURES})
     add_dependencies(MockStructureLib RDFCacheK2 RDFCacheK2_Network RDFCacheK2_Cache Utils)
@@ -518,3 +518,7 @@ target_link_libraries(build_from_raw_points ${DEFAULT_LIBS})
 
 add_executable(deserialize_k2tree experiments/deserialize_k2tree.cpp)
 target_link_libraries(deserialize_k2tree ${DEFAULT_LIBS})
+
+add_executable(validate_k2tree_correctness experiments/validate_k2tree_correctness.cpp)
+target_include_directories(validate_k2tree_correctness PUBLIC benchmarks)
+target_link_libraries(validate_k2tree_correctness ${DEFAULT_LIBS})
