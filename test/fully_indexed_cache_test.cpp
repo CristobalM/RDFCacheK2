@@ -138,19 +138,14 @@ TEST(fully_indexed_cache, test_resynced_on_update_loaded) {
   ASSERT_FALSE(fi_resp_2.get()->has(2 * size_tree + 1, 2 * size_tree + 1));
 }
 
-
-TEST(fully_indexed_cache, test_impl_1){
+TEST(fully_indexed_cache, test_impl_1) {
   auto fetcher = std::make_unique<MockFetcher>();
   auto map = std::make_unique<fic::types::cache_map_t>();
-//  auto *map_ref = map.get();
+  //  auto *map_ref = map.get();
   auto dm = std::make_unique<CacheDataManager>(*map, *fetcher);
   auto cr = std::make_unique<NoCachingReplacement>();
-  FullyIndexedCacheImpl idx(
-      *fetcher,
-      std::move(map),
-      std::move(dm),
-      std::move(cr)
-      );
+  FullyIndexedCacheImpl idx(*fetcher, std::move(map), std::move(dm),
+                            std::move(cr));
 
   std::vector<unsigned long> predicates = {
       1, 2, 3, 4, 5,
@@ -162,5 +157,4 @@ TEST(fully_indexed_cache, test_impl_1){
   std::cout << idx.should_cache(2) << std::endl;
   std::cout << idx.should_cache(5) << std::endl;
   std::cout << idx.should_cache(6) << std::endl;
-
 }
