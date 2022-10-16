@@ -22,6 +22,11 @@ class Message {
 public:
   explicit Message(uint32_t message_size);
 
+  Message(const Message& message);
+  Message &operator=(const Message &message);
+  Message(Message&& message) noexcept;
+  Message &operator=(Message &&message) noexcept;
+
   proto_msg::MessageType request_type();
 
   enum ReqType { CACHE_CHECK = 0, CACHE_FEED, CACHE_RETRIEVE, CONNECTION_END };

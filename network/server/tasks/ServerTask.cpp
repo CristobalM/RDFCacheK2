@@ -26,56 +26,59 @@ ServerTask::ServerTask(std::unique_ptr<ClientReqHandler> &&req_handler,
     : req_handler(std::move(req_handler)), cache(cache),
       task_processor(task_processor) {}
 
+void ServerTask::process_next() {
+  auto message = req_handler->get_next_message();
+
+  switch (message->request_type()) {
+  case proto_msg::MessageType::CONNECTION_END:
+    std::cout << "Request of type CONNECTION_END" << std::endl;
+    process_connection_end();
+    return;
+  case proto_msg::MessageType::CACHE_REQUEST_SEPARATE_PREDICATES:
+    std::cout << "Request of type CACHE_REQUEST_SEPARATE_PREDICATES"
+              << std::endl;
+    process_predicates_lock_for_triple_stream(*message);
+    break;
+  case proto_msg::MessageType::STREAM_REQUEST_TRIPLE_PATTERN:
+    process_stream_request_triple_pattern(*message);
+    break;
+  case proto_msg::MessageType::STREAM_CONTINUE_TRIPLE_PATTERN:
+    process_stream_continue_triple_pattern(*message);
+    break;
+  case proto_msg::MessageType::DONE_WITH_PREDICATES_NOTIFY:
+    std::cout << "Request of type DONE_WITH_PREDICATES_NOTIFY" << std::endl;
+    process_done_with_predicates_notify(*message);
+    break;
+  case proto_msg::MessageType::CACHE_REQUEST_START_UPDATE_TRIPLES:
+    std::cout << "Request of type CACHE_REQUEST_START_UPDATE_TRIPLES"
+              << std::endl;
+    process_request_start_update_triples(*message);
+    break;
+
+  case proto_msg::MessageType::CACHE_DONE_UPDATE_TRIPLES:
+    std::cout << "Request of type CACHE_DONE_UPDATE_TRIPLES" << std::endl;
+    process_done_update_triples(*message);
+    break;
+
+  case proto_msg::MessageType::TRIPLES_UPDATE_BATCH:
+    std::cout << "Request of type TRIPLES_UPDATE_BATCH" << std::endl;
+    process_update_triples_batch(*message);
+    break;
+
+  case proto_msg::MessageType::SYNC_LOGS_WITH_INDEXES_REQUEST:
+    std::cout << "Request of type SYNC_LOGS_WITH_INDEXES_REQUEST"
+              << std::endl;
+    process_sync_logs_with_indexes(*message);
+    break;
+
+  default:
+    std::cout << "received unknown message... ignoring " << std::endl;
+    break;
+  }
+}
 void ServerTask::process() {
   for (;;) {
-    auto message = req_handler->get_next_message();
-
-    switch (message->request_type()) {
-    case proto_msg::MessageType::CONNECTION_END:
-      std::cout << "Request of type CONNECTION_END" << std::endl;
-      process_connection_end();
-      return;
-    case proto_msg::MessageType::CACHE_REQUEST_SEPARATE_PREDICATES:
-      std::cout << "Request of type CACHE_REQUEST_SEPARATE_PREDICATES"
-                << std::endl;
-      process_predicates_lock_for_triple_stream(*message);
-      break;
-    case proto_msg::MessageType::STREAM_REQUEST_TRIPLE_PATTERN:
-      process_stream_request_triple_pattern(*message);
-      break;
-    case proto_msg::MessageType::STREAM_CONTINUE_TRIPLE_PATTERN:
-      process_stream_continue_triple_pattern(*message);
-      break;
-    case proto_msg::MessageType::DONE_WITH_PREDICATES_NOTIFY:
-      std::cout << "Request of type DONE_WITH_PREDICATES_NOTIFY" << std::endl;
-      process_done_with_predicates_notify(*message);
-      break;
-    case proto_msg::MessageType::CACHE_REQUEST_START_UPDATE_TRIPLES:
-      std::cout << "Request of type CACHE_REQUEST_START_UPDATE_TRIPLES"
-                << std::endl;
-      process_request_start_update_triples(*message);
-      break;
-
-    case proto_msg::MessageType::CACHE_DONE_UPDATE_TRIPLES:
-      std::cout << "Request of type CACHE_DONE_UPDATE_TRIPLES" << std::endl;
-      process_done_update_triples(*message);
-      break;
-
-    case proto_msg::MessageType::TRIPLES_UPDATE_BATCH:
-      std::cout << "Request of type TRIPLES_UPDATE_BATCH" << std::endl;
-      process_update_triples_batch(*message);
-      break;
-
-    case proto_msg::MessageType::SYNC_LOGS_WITH_INDEXES_REQUEST:
-      std::cout << "Request of type SYNC_LOGS_WITH_INDEXES_REQUEST"
-                << std::endl;
-      process_sync_logs_with_indexes(*message);
-      break;
-
-    default:
-      std::cout << "received unknown message... ignoring " << std::endl;
-      break;
-    }
+    process_next();
   }
 }
 

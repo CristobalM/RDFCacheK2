@@ -10,38 +10,6 @@
 
 using namespace k2cache;
 
-static std::string zero_data_str_content() {
-  std::stringstream ss;
-  write_u64(ss, 0);
-  return ss.str();
-}
-
-static std::unique_ptr<NIMDataHolders>
-no_logs_static_ni_dh(std::string plain_ni) {
-  auto dh = std::make_unique<NIMDataHolders>();
-  dh->plain = std::move(plain_ni);
-  dh->logs = zero_data_str_content();
-  dh->logs_counter = zero_data_str_content();
-  dh->mapped = zero_data_str_content();
-  return dh;
-}
-
-struct TD_Nis {
-  std::unique_ptr<NIMDataHolders> nim_dh;
-  std::unique_ptr<NodeIdsManager> nim;
-};
-
-static TD_Nis
-boilerplate_nis_from_vec(const std::vector<unsigned long> &data_vec) {
-  auto ss = build_node_ids_seq_mem(data_vec);
-  auto dh = no_logs_static_ni_dh(ss.str());
-  auto nis = mock_nis(*dh);
-  TD_Nis out;
-  out.nim_dh = std::move(dh);
-  out.nim = std::move(nis);
-  return out;
-}
-
 TEST(nodeids_manager_impl_test, can_get_id_simple_input) {
   auto nis_vec =
       std::vector<unsigned long>{9, 323, 1322, 9433, 54345, 9595955, 34343333};

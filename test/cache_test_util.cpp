@@ -13,6 +13,7 @@
 #include "manager/PredicatesCacheManagerImpl.hpp"
 #include "nodeids/NodeIdsManagerFactory.hpp"
 #include "nodeids/NodeIdsManagerIdentity.hpp"
+#include "replacement/NoCachingReplacement.hpp"
 #include "updating/NoUpdate.hpp"
 #include <serialization_util.hpp>
 
@@ -200,12 +201,79 @@ std::unique_ptr<PredicatesIndexCacheMD> CreatedPredData::get_picmd() {
 CreatedPredData::CreatedPredData(std::string raw_str)
     : raw_str(std::move(raw_str)) {}
 
-std::stringstream build_node_ids_seq_mem(const std::vector<unsigned long> &nis_seq){
+std::stringstream
+build_node_ids_seq_mem(const std::vector<unsigned long> &nis_seq) {
   std::stringstream ss;
   write_u64(ss, nis_seq.size());
-  for(auto v: nis_seq){
+  for (auto v : nis_seq) {
     write_u64(ss, v);
   }
   return ss;
 }
+
+std::string zero_data_str_content() {
+  std::stringstream ss;
+  write_u64(ss, 0);
+  return ss.str();
+}
+
+std::unique_ptr<NIMDataHolders> no_logs_static_ni_dh(std::string plain_ni) {
+  auto dh = std::make_unique<NIMDataHolders>();
+  dh->plain = std::move(plain_ni);
+  dh->logs = zero_data_str_content();
+  dh->logs_counter = zero_data_str_content();
+  dh->mapped = zero_data_str_content();
+  return dh;
+}
+
+TD_Nis boilerplate_nis_from_vec(const std::vector<unsigned long> &data_vec) {
+  auto ss = build_node_ids_seq_mem(data_vec);
+  auto dh = no_logs_static_ni_dh(ss.str());
+  auto nis = mock_nis(*dh);
+  TD_Nis out;
+  out.nim_dh = std::move(dh);
+  out.nim = std::move(nis);
+  return out;
+}
+
+
+std::stringstream
+build_k2tree_to_ss(const std::vector<TripleValue> &data) {
+  std::stringstream plain_ss;
+  FileData filedata{};
+  filedata.current_triple = 0;
+  filedata.size = data.size();
+  write_u64(plain_ss, data.size());
+  for (auto t : data) {
+    t.write_to_file(plain_ss);
+  }
+  return plain_ss;
+}
+
+
+std::unique_ptr<TDWrapper>
+mock_cache_container(const std::vector<TripleValue> &triples,
+                     const std::vector<unsigned long> &nids) {
+  auto plain_ss = build_k2tree_to_ss(triples);
+  auto td_wrapper = std::make_unique<TDWrapper>();
+  td_wrapper->tdata = plain_ss.str();
+  auto fhmock = std::make_unique<FHMock>(td_wrapper->tdata);
+  auto pcimd = std::make_unique<PredicatesIndexCacheMD>(std::move(fhmock));
+  auto updl = std::make_unique<NoUpdate>();
+  auto nofic = std::make_unique<NoFIC>();
+  auto pcm = std::make_unique<PredicatesCacheManagerImpl>(
+      std::move(pcimd), std::move(updl), std::move(nofic));
+
+  auto bp = boilerplate_nis_from_vec(nids);
+  auto norep = std::make_unique<NoCachingReplacement>();
+  auto cache_container = std::make_unique<CacheContainerImpl>(
+      std::move(pcm), std::move(bp.nim), std::move(norep),
+      I_CacheReplacement::NO_CACHING);
+
+  td_wrapper->cache_container = std::move(cache_container);
+  td_wrapper->nis_bp = std::move(bp);
+
+  return td_wrapper;
+}
+
 } // namespace k2cache

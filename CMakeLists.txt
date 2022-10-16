@@ -415,7 +415,7 @@ if (GTest_FOUND)
             test/mock_structures/StringIOStream.hpp
             test/mock_structures/TestingTaskProcessor.cpp
             test/mock_structures/TestingTaskProcessor.hpp
-            test/mock_structures/MockFetcher.cpp test/mock_structures/MockFetcher.hpp)
+            test/mock_structures/MockFetcher.cpp test/mock_structures/MockFetcher.hpp test/mock_structures/MockClientReqHandler.cpp test/mock_structures/MockClientReqHandler.hpp test/mock_structures/MockUpdatesLogger.cpp test/mock_structures/MockUpdatesLogger.hpp)
 
     add_library(MockStructureLib STATIC ${MOCK_STRUCTURES})
     add_dependencies(MockStructureLib RDFCacheK2 RDFCacheK2_Network RDFCacheK2_Cache Utils)
@@ -466,6 +466,10 @@ if (GTest_FOUND)
     target_link_libraries(nodeids_manager_impl_test MockStructureLib ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES}  pthread)
 
 
+    add_executable(server_task_test test/server_task_test.cpp test/cache_test_util.cpp)
+    target_link_libraries(server_task_test MockStructureLib ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES}  pthread)
+
+
     add_test(NAME serialization_test COMMAND ./serialization_test)
     add_test(NAME k2tree_serialization_test COMMAND ./k2tree_serialization_test)
     add_test(NAME k2tree_tests COMMAND ./k2tree_tests)
@@ -479,6 +483,7 @@ if (GTest_FOUND)
     add_test(NAME nodes_map_test COMMAND ./nodes_map_test)
     add_test(NAME node_ids_dyn_mapper_test COMMAND ./node_ids_dyn_mapper_test)
     add_test(NAME nodeids_manager_impl_test COMMAND ./nodeids_manager_impl_test)
+    add_test(NAME server_task_test COMMAND ./server_task_test)
 
     # K2 Tree Tests
 

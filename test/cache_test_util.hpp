@@ -65,11 +65,36 @@ struct PairStream {
   virtual std::pair<long, long> next() = 0;
 };
 
+struct TD_Nis {
+  std::unique_ptr<NIMDataHolders> nim_dh;
+  std::unique_ptr<NodeIdsManager> nim;
+};
+
+struct TDWrapper {
+  std::string tdata;
+  std::unique_ptr<CacheContainer> cache_container;
+  TD_Nis nis_bp;
+};
 CreatedPredData build_pred_data(K2TreeConfig config, unsigned long predicate_id,
                                 PairStream &pair_stream);
 
+std::stringstream
+build_node_ids_seq_mem(const std::vector<unsigned long> &nis_seq);
 
-std::stringstream build_node_ids_seq_mem(const std::vector<unsigned long> &nis_seq);
+std::string zero_data_str_content();
+
+std::unique_ptr<NIMDataHolders> no_logs_static_ni_dh(std::string plain_ni);
+
+TD_Nis boilerplate_nis_from_vec(const std::vector<unsigned long> &data_vec);
+
+
+std::stringstream
+build_k2tree_to_ss(const std::vector<TripleValue> &data);
+
+
+std::unique_ptr<TDWrapper>
+mock_cache_container(const std::vector<TripleValue> &triples,
+                     const std::vector<unsigned long> &nids) ;
 
 } // namespace k2cache
 #endif /* _CACHE_TEST_UTIL_HPP_ */
