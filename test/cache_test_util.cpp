@@ -240,9 +240,6 @@ TD_Nis boilerplate_nis_from_vec(const std::vector<unsigned long> &data_vec) {
 std::stringstream
 build_k2tree_to_ss(const std::vector<TripleValue> &data) {
   std::stringstream plain_ss;
-  FileData filedata{};
-  filedata.current_triple = 0;
-  filedata.size = data.size();
   write_u64(plain_ss, data.size());
   for (auto t : data) {
     t.write_to_file(plain_ss);

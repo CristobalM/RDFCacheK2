@@ -22,7 +22,7 @@ void NoUpdate::clean_append_log() {
   throw std::runtime_error("clean_append_log not implemented on NoUpdate");
 }
 void NoUpdate::recover_all() {
-  throw std::runtime_error("recover_all not implemented on NoUpdate");
+//  throw std::runtime_error("recover_all not implemented on NoUpdate");
 }
 void NoUpdate::log(std::vector<K2TreeUpdates> &) {
   throw std::runtime_error("log not implemented on NoUpdate");

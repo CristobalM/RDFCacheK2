@@ -31,8 +31,8 @@ Message::Message(const Message &message) {
   buffer = std::make_unique<char[]>(message_size);
   std::copy(message.buffer.get(), message.buffer.get() + message_size,
             buffer.get());
-  deserialized =
-      std::make_unique<proto_msg::CacheRequest>(*message.deserialized);
+  deserialized = std::make_unique<proto_msg::CacheRequest>();
+  deserialized->CopyFrom(*message.deserialized);
 }
 Message &Message::operator=(const Message &message) {
   message_size = message.message_size;
@@ -53,5 +53,10 @@ Message &Message::operator=(Message &&message) noexcept {
   buffer = std::move(message.buffer);
   deserialized = std::move(message.deserialized);
   return *this;
+}
+Message::Message(char *data, uint32_t message_size)
+    : Message(message_size) {
+  std::copy(data, data + message_size, buffer.get());
+  deserialize();
 }
 } // namespace k2cache

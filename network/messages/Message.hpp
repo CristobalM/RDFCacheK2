@@ -21,6 +21,7 @@ class Message {
 
 public:
   explicit Message(uint32_t message_size);
+  Message(char *data, uint32_t message_size);
 
   Message(const Message& message);
   Message &operator=(const Message &message);
@@ -39,9 +40,6 @@ public:
 
   proto_msg::CacheRequest &get_cache_request();
 
-private:
-  Message(const Message &);
-  Message &operator=(const Message &);
 };
 } // namespace k2cache
 #endif // RDFCACHEK2_MESSAGE_HPP
