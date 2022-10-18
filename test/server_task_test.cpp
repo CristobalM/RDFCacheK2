@@ -23,10 +23,7 @@
 using namespace k2cache;
 
 static std::unique_ptr<MockClientReqHandler> mock_client_req_handler() {
-  auto mcr = std::make_unique<MockClientReqHandler>([](const std::string &s) {
-    std::cout << "mock handling message: " << s << std::endl;
-  });
-  return mcr;
+  return std::make_unique<MockClientReqHandler>();
 }
 
 struct ServerTaskWrapper {
@@ -93,10 +90,21 @@ static TriplesNidsSet random_triples_nids() {
   return out;
 }
 
+
+static proto_msg::CacheResponse read_response(const std::string &s){
+  std::istringstream iss(s);
+  auto sz = read_u64(iss);
+  std::array<char, 16> hash{};
+  iss.read(hash.data(), hash.size());
+  std::cout << "sz is: " << sz << std::endl;
+  proto_msg::CacheResponse resp;
+  resp.ParseFromIstream(&iss);
+  return resp;
+}
+
 TEST(server_task_test, process_connection_end_test) {
   auto tn = random_triples_nids();
   auto mst = mock_server_task(tn.triples, tn.node_ids);
-
 
   proto_msg::CacheRequest req;
   req.set_request_type(proto_msg::MessageType::CONNECTION_END);
@@ -105,7 +113,60 @@ TEST(server_task_test, process_connection_end_test) {
 
   auto msg = std::make_unique<Message>(sreq.data(), sreq.size());
 
-  mst->mock_req_handler->set_next_message(std::move(msg));
+  mst->mock_req_handler->set_next_req_msg(std::move(msg));
   mst->server_task->process_next();
+  auto resp_msg = mst->mock_req_handler->get_last_resp_msg();
+  auto resp = read_response(resp_msg);
 
+  ASSERT_EQ(proto_msg::MessageType::CONNECTION_END, resp.response_type());
+}
+TEST(server_task_test, process_req_triple_stream) {
+  auto tn = random_triples_nids();
+  auto mst = mock_server_task(tn.triples, tn.node_ids);
+
+  auto pred_first = tn.triples[0].second;
+  auto pred_real = tn.node_ids[pred_first];
+
+  std::set<std::pair<unsigned long, unsigned long>> matches;
+  for(auto t : tn.triples){
+    if(t.second == pred_first){
+      matches.insert({t.first, t.third});
+    }
+  }
+
+  {
+
+    proto_msg::CacheRequest req;
+    req.set_request_type(proto_msg::MessageType::CACHE_REQUEST_SEPARATE_PREDICATES);
+    auto *sep = req.mutable_cache_request_separate_predicates();
+    sep->add_predicates()->set_encoded_data(pred_real);
+    auto sreq = req.SerializeAsString();
+    auto msg = std::make_unique<Message>(sreq.data(), sreq.size());
+    mst->mock_req_handler->set_next_req_msg(std::move(msg));
+    mst->server_task->process_next();
+    auto resp_s = mst->mock_req_handler->get_last_resp_msg();
+    auto resp = read_response(resp_s);
+    ASSERT_EQ(proto_msg::MessageType::EXTRACT_SEPARATE_PREDICATES_RESPONSE, resp.response_type());
+  }
+
+  proto_msg::CacheRequest req;
+  req.set_request_type(proto_msg::MessageType::STREAM_REQUEST_TRIPLE_PATTERN);
+  auto *req_trip = req.mutable_stream_request_triple_pattern();
+  auto *tnode = req_trip->mutable_triple_node();
+  tnode->mutable_subject()->set_encoded_data(-9);
+  tnode->mutable_predicate()->set_encoded_data(pred_real);
+  tnode->mutable_object()->set_encoded_data(-9);
+
+
+
+  auto sreq = req.SerializeAsString();
+
+  auto msg = std::make_unique<Message>(sreq.data(), sreq.size());
+
+  mst->mock_req_handler->set_next_req_msg(std::move(msg));
+  mst->server_task->process_next();
+  auto resp_msg = mst->mock_req_handler->get_last_resp_msg();
+  auto resp = read_response(resp_msg);
+
+  ASSERT_EQ(proto_msg::MessageType::CONNECTION_END, resp.response_type());
 }
