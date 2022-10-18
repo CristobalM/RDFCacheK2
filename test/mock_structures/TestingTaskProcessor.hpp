@@ -5,6 +5,7 @@
 #ifndef RDFCACHEK2_TESTINGTASKPROCESSOR_HPP
 #define RDFCACHEK2_TESTINGTASKPROCESSOR_HPP
 
+#include "server/replacement/ReplacementTaskProcessor.hpp"
 #include <CacheContainer.hpp>
 #include <memory>
 #include <server/tasks/TaskProcessor.hpp>
@@ -19,6 +20,10 @@ class TestingTaskProcessor : public TaskProcessor {
   std::unordered_map<int, std::unique_ptr<I_TRStreamer>> triples_streamer_map;
 
   static constexpr size_t DEFAULT_THRESHOLD_PART_SZ = 100'000'000;
+
+  std::unordered_map<int, std::unique_ptr<Updater>> updaters_sessions;
+  int current_update_session_id;
+
 
 public:
   explicit TestingTaskProcessor(CacheContainer &cache);

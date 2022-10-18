@@ -107,5 +107,4 @@ TEST(server_task_test, process_connection_end_test) {
 
   mst->mock_req_handler->set_next_message(std::move(msg));
   mst->server_task->process_next();
-
 }
