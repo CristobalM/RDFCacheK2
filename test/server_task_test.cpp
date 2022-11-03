@@ -168,5 +168,5 @@ TEST(server_task_test, process_req_triple_stream) {
   auto resp_msg = mst->mock_req_handler->get_last_resp_msg();
   auto resp = read_response(resp_msg);
 
-  ASSERT_EQ(proto_msg::MessageType::CONNECTION_END, resp.response_type());
+  ASSERT_EQ(proto_msg::MessageType::STREAM_OF_TRIPLES_MATCHING_PATTERN_RESPONSE, resp.response_type());
 }

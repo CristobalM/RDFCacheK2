@@ -10,14 +10,15 @@
 #include <vector>
 
 namespace k2cache {
-I_TRStreamer &TestingTaskProcessor::get_triple_streamer(int) {
-  throw std::runtime_error("not implemented get_triple_streamer");
+I_TRStreamer &TestingTaskProcessor::get_triple_streamer(int channel_id) {
+  return *triples_streamer_map[channel_id];
 }
-bool TestingTaskProcessor::has_triple_streamer(int) {
-  throw std::runtime_error("not implemented has_triple_streamer");
+bool TestingTaskProcessor::has_triple_streamer(int channel_id) {
+  return triples_streamer_map.find(channel_id) != triples_streamer_map.end();
 }
-void TestingTaskProcessor::clean_triple_streamer(int) {
-  throw std::runtime_error("not implemented clean_triple_streamer");
+void TestingTaskProcessor::clean_triple_streamer(int channel_id) {
+  triples_streamer_map[channel_id] = nullptr;
+  triples_streamer_map.erase(channel_id);
 }
 void TestingTaskProcessor::process_missed_predicates(
     std::shared_ptr<const std::vector<unsigned long>>) {

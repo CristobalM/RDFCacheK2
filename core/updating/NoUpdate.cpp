@@ -7,13 +7,11 @@
 namespace k2cache {
 
 void NoUpdate::recover_predicate(unsigned long) {
-  throw std::runtime_error("recover_predicate not implemented on NoUpdate");
 }
 bool NoUpdate::has_predicate_stored(unsigned long) {
-  throw std::runtime_error("has_predicate_stored not implemented on NoUpdate");
+  return false;
 }
 void NoUpdate::compact_logs() {
-  throw std::runtime_error("compact_logs not implemented on NoUpdate");
 }
 std::vector<unsigned long> NoUpdate::get_predicates() {
   throw std::runtime_error("get_predicates not implemented on NoUpdate");
