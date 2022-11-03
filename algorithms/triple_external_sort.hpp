@@ -46,7 +46,6 @@ struct TripleValue {
     write_u64(file, second);
     write_u64(file, third);
   }
-
 };
 
 struct FileData {
