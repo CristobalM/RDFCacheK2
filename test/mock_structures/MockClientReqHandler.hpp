@@ -8,15 +8,15 @@
 namespace  k2cache{
 class MockClientReqHandler: public ClientReqHandler {
   std::unique_ptr<Message> next_msg;
-  std::function<void(const std::string&)> response_handler;
+  std::string last_message;
 public:
-  explicit MockClientReqHandler(
-      std::function<void(const std::string &)> response_handler);
 
   std::unique_ptr<Message> get_next_message() override;
   void send_response(const std::string &response) override;
 
-  void set_next_message(std::unique_ptr<Message>&&msg);
+  void set_next_req_msg(std::unique_ptr<Message>&&msg);
+
+  const std::string &get_last_resp_msg();
 };
 }
 
