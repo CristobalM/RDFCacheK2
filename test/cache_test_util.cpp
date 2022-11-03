@@ -120,7 +120,8 @@ std::unique_ptr<FHMock> mock_fh(std::string &data) {
 
 std::unique_ptr<CacheContainer> mock_cache_container(DataHolders &holders) {
   return std::make_unique<CacheContainerImpl>(
-      basic_pcm(holders), mock_nis(holders.nim_h), nullptr,
+      basic_pcm(holders), mock_nis(holders.nim_h),
+      std::make_unique<NoCachingReplacement>(),
       I_CacheReplacement::REPLACEMENT_STRATEGY::NO_CACHING);
 }
 std::vector<TripleNodeId> read_all_from_streamer(I_TRMatchingStreamer &streamer,
@@ -236,9 +237,7 @@ TD_Nis boilerplate_nis_from_vec(const std::vector<unsigned long> &data_vec) {
   return out;
 }
 
-
-std::stringstream
-build_k2tree_to_ss(const std::vector<TripleValue> &data) {
+std::stringstream build_k2tree_to_ss(const std::vector<TripleValue> &data) {
   std::stringstream plain_ss;
   write_u64(plain_ss, data.size());
   for (auto t : data) {
@@ -246,7 +245,6 @@ build_k2tree_to_ss(const std::vector<TripleValue> &data) {
   }
   return plain_ss;
 }
-
 
 std::unique_ptr<TDWrapper>
 mock_cache_container(const std::vector<TripleValue> &triples,
