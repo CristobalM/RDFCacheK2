@@ -15,8 +15,8 @@ namespace k2cache {
 class NodeIdsManagerImpl : public NodeIdsManager {
   std::unique_ptr<I_FileRWHandler> plain_ni_fh;
   std::unique_ptr<I_FileRWHandler> mapped_ni_fh;
-  std::unique_ptr<I_FileRWHandler> &&log_fh;
-  std::unique_ptr<I_FileRWHandler> &&log_fh_counter;
+  std::unique_ptr<I_FileRWHandler> log_fh;
+  std::unique_ptr<I_FileRWHandler> log_fh_counter;
 
   std::unique_ptr<NodesSequence> nodes_sequence;
   std::unique_ptr<NodesMap> nodes_map;

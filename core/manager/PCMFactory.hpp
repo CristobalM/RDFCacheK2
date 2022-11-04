@@ -14,18 +14,27 @@
 
 namespace k2cache {
 struct PCMFactory {
-  static std::unique_ptr<PredicatesCacheManager>
-  create(std::unique_ptr<I_FileRWHandler> &&index_file_handler,
-         UpdatesLoggerFilesManager &&updates_logger_fm);
-
-  static std::unique_ptr<PredicatesCacheManager>
-  create(std::unique_ptr<I_FileRWHandler> &&index_file_handler);
+  //  static std::unique_ptr<PredicatesCacheManager>
+  //  create(std::unique_ptr<I_FileRWHandler> &&index_file_handler,
+  //         UpdatesLoggerFilesManager &&updates_logger_fm,
+  //         std::unique_ptr<FullyIndexedCache> &&fully_indexed_cache);
+  //
+  //  static std::unique_ptr<PredicatesCacheManager>
+  //  create(std::unique_ptr<I_FileRWHandler> &&index_file_handler,
+  //         std::unique_ptr<FullyIndexedCache> &&fully_indexed_cache);
 
   static std::unique_ptr<PredicatesCacheManager>
   create(const CacheArgs &cache_args);
 
   static std::unique_ptr<PredicatesCacheManager>
   create(const std::string &location);
+
+  static std::unique_ptr<PredicatesCacheManager>
+  create(std::unique_ptr<I_FileRWHandler> &&index_file_handler);
+  static std::unique_ptr<PredicatesCacheManager>
+  create(std::unique_ptr<I_FileRWHandler> &&index_file_handler,
+         UpdatesLoggerFilesManager &&updates_logger_files_manager,
+         bool has_fic);
 };
 } // namespace k2cache
 #endif // RDFCACHEK2_PCMFACTORY_HPP

@@ -3,11 +3,14 @@
 //
 #include "I_FileRWHandler.hpp"
 #include "cache_test_util.hpp"
+#include "fic/CacheDataManager.hpp"
 #include "k2tree/K2TreeBulkOp.hpp"
 #include "k2tree/K2TreeMixed.hpp"
 #include "manager/PCMFactory.hpp"
 #include "manager/PredicatesCacheMetadata.hpp"
 #include "mock_structures/FHMock.hpp"
+#include "mock_structures/MockFetcher.hpp"
+#include "replacement/NoCachingReplacement.hpp"
 #include <gtest/gtest.h>
 
 using namespace k2cache;
@@ -28,7 +31,8 @@ TEST(fully_indexed_cache, test_resynced_on_update_unloaded) {
     fh_writer->flush();
   }
   DataHolders h2;
-  auto pcm = PCMFactory::create(std::move(fh_pcm), mock_fh_manager(h2.pcm_h));
+  auto pcm =
+      PCMFactory::create(std::move(fh_pcm), mock_fh_manager(h2.pcm_h), true);
   auto &updates_logger = pcm->get_updates_logger();
 
   unsigned long predicate_id_1 = 123;
@@ -80,7 +84,8 @@ TEST(fully_indexed_cache, test_resynced_on_update_loaded) {
     fh_writer->flush();
   }
   DataHolders h2;
-  auto pcm = PCMFactory::create(std::move(fh_pcm), mock_fh_manager(h2.pcm_h));
+  auto pcm =
+      PCMFactory::create(std::move(fh_pcm), mock_fh_manager(h2.pcm_h), true);
   auto &updates_logger = pcm->get_updates_logger();
 
   unsigned long predicate_id_1 = 123;
@@ -131,4 +136,29 @@ TEST(fully_indexed_cache, test_resynced_on_update_loaded) {
     ASSERT_TRUE(fi_resp_2.get()->has(size_tree + i + 1, size_tree + i + 1));
   }
   ASSERT_FALSE(fi_resp_2.get()->has(2 * size_tree + 1, 2 * size_tree + 1));
+}
+
+TEST(fully_indexed_cache, test_impl_1) {
+  auto fetcher = std::make_unique<MockFetcher>();
+  auto map = std::make_unique<fic::types::cache_map_t>();
+  auto dm = std::make_unique<CacheDataManager>(*map, *fetcher);
+  auto cr = std::make_unique<NoCachingReplacement>();
+  FullyIndexedCacheImpl idx(*fetcher, std::move(map), std::move(dm),
+                            std::move(cr));
+
+  std::vector<unsigned long> predicates = {
+      1, 2, 3, 4, 5,
+  };
+
+  idx.init_streamer_predicates(predicates);
+
+  for(auto p: predicates){
+    auto sc = idx.should_cache(p);
+    ASSERT_TRUE(sc == 1);
+  }
+
+  for(auto i = 6; i < 100; i++){
+    auto sc = idx.should_cache(i);
+    ASSERT_FALSE(sc == 1);
+  }
 }

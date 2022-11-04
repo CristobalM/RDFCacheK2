@@ -10,13 +10,14 @@
 #include <set>
 #include <vector>
 
+#include "K2TreeFetcher.hpp"
 #include "PredicateFetchResult.hpp"
 #include "PredicatesCacheMetadata.hpp"
 #include "k2tree/K2TreeMixed.hpp"
 #include "updating/UpdatesLogger.hpp"
 
 namespace k2cache {
-class PredicatesIndexCacheMD {
+class PredicatesIndexCacheMD : public K2TreeFetcher {
   std::unique_ptr<I_FileRWHandler> file_handler;
   std::unique_ptr<I_IStream> is;
 
@@ -48,8 +49,9 @@ public:
   PredicatesIndexCacheMD(PredicatesIndexCacheMD &&other) noexcept;
 
   bool load_single_predicate(uint64_t predicate_index);
-  PredicateFetchResult fetch_k2tree(uint64_t predicate_index);
-  PredicateFetchResult fetch_k2tree_if_loaded(uint64_t predicate_index);
+  PredicateFetchResult fetch_k2tree(uint64_t predicate_index) override;
+  PredicateFetchResult
+  fetch_k2tree_if_loaded(uint64_t predicate_index) override;
 
   bool has_predicate(uint64_t predicate_index);
   bool has_predicate_active(uint64_t predicate_index);

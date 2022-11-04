@@ -24,6 +24,7 @@ public:
              CacheContainer &cache, TaskProcessor &task_processor);
 
   void process();
+  void process_next();
 
   void send_invalid_response();
 

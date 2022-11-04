@@ -29,6 +29,12 @@ public:
       : std::runtime_error("Invalid string size for NodeId, size given: " +
                            std::to_string(given_size)) {}
 };
+
+struct NoRefException : public std::runtime_error {
+  explicit NoRefException(const char *msg)
+      : std::runtime_error(
+            std::string("wrapper doesn't have ref set: " + std::string(msg))) {}
+};
 } // namespace k2cache
 
 #endif // RDFCACHEK2_EXCEPT_HPP

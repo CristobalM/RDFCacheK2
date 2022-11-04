@@ -20,9 +20,11 @@ TEST(update_log_test, test_data_merger_mock) {
   config.treedepth = 32;
   config.cut_depth = 10;
   config.max_node_count = 256;
-  DataMergerMock data_merger(config);
+  auto data_merger_sptr = std::make_unique<DataMergerMock>(config);
+  auto &data_merger = *data_merger_sptr;
   PCMDataHolders h;
-  UpdatesLoggerImpl updates_logger(data_merger, mock_fh_manager(h));
+  UpdatesLoggerImpl updates_logger(std::move(data_merger_sptr),
+                                   mock_fh_manager(h));
 
   int predicate_id_1 = 123;
 
@@ -69,7 +71,8 @@ TEST(update_log_test, test_fhmock_can_sync_log_to_main_storage) {
     metadata_pcm.write_to_ostream(fh_writer->get_ostream());
     fh_writer->flush();
   }
-  auto pcm = PCMFactory::create(std::move(fh_pcm), mock_fh_manager(h.pcm_h));
+  auto pcm =
+      PCMFactory::create(std::move(fh_pcm), mock_fh_manager(h.pcm_h), false);
 
   int predicate_id_1 = 123;
 
@@ -126,7 +129,8 @@ TEST(update_log_test, test_can_compact_log_only_two_inserts) {
   }
   DataHolders h2;
 
-  auto pcm = PCMFactory::create(std::move(fh_pcm), mock_fh_manager(h2.pcm_h));
+  auto pcm =
+      PCMFactory::create(std::move(fh_pcm), mock_fh_manager(h2.pcm_h), false);
 
   int predicate_id_1 = 123;
 
@@ -211,7 +215,8 @@ TEST(update_log_test, test_can_compact_log_one_insert_one_delete) {
     fh_writer->flush();
   }
   DataHolders h2;
-  auto pcm = PCMFactory::create(std::move(fh_pcm), mock_fh_manager(h2.pcm_h));
+  auto pcm =
+      PCMFactory::create(std::move(fh_pcm), mock_fh_manager(h2.pcm_h), false);
 
   auto &updates_logger = pcm->get_updates_logger();
 
@@ -294,7 +299,8 @@ TEST(update_log_test, test_update_unloaded_predicates_from_logs) {
     fh_writer->flush();
   }
   DataHolders h2;
-  auto pcm = PCMFactory::create(std::move(fh_pcm), mock_fh_manager(h2.pcm_h));
+  auto pcm =
+      PCMFactory::create(std::move(fh_pcm), mock_fh_manager(h2.pcm_h), false);
   auto &updates_logger = pcm->get_updates_logger();
 
   int predicate_id_1 = 123;

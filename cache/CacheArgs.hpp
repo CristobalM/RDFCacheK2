@@ -15,6 +15,7 @@ struct CacheArgs {
   std::string node_ids_filename;
   std::string mapped_node_ids_filename;
   std::string node_ids_logs_filename;
+  bool has_fic;
 };
 } // namespace k2cache
 
