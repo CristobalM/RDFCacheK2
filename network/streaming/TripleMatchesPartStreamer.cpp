@@ -5,6 +5,7 @@
 #include "TripleMatchesPartStreamer.hpp"
 
 #include "StreamerFromCachedSource.hpp"
+#include "TPMSortedStreamer.hpp"
 #include "TriplePatternMatchingStreamer.hpp"
 #include "fic/FullyIndexedPredicate.hpp"
 #include <map>
@@ -79,6 +80,11 @@ TripleMatchesPartStreamer::start_streaming_matching_triples(
     streamer = std::make_unique<StreamerFromCachedSource>(
         fic_response.get(), channel_id, current_pattern_channel_id,
         triple_pattern, cache, threshold_part_size);
+  } else if(cache->should_sort_results()) {
+    streamer = std::make_unique<TPMSortedStreamer>(
+        channel_id, current_pattern_channel_id, triple_pattern, cache,
+        threshold_part_size
+    );
   } else {
     streamer = std::make_unique<TriplePatternMatchingStreamer>(
         channel_id, current_pattern_channel_id, triple_pattern, cache,

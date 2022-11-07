@@ -167,7 +167,7 @@ set(NETWORK_SOURCE_FILES
         network/streaming/TripleMatchesPartStreamer.hpp
         network/streaming/TriplePatternMatchingStreamer.cpp
         network/streaming/TriplePatternMatchingStreamer.hpp
-        network/server/ClientReqHandler.hpp network/server/ClientReqHandlerImpl.cpp network/server/ClientReqHandlerImpl.hpp)
+        network/server/ClientReqHandler.hpp network/server/ClientReqHandlerImpl.cpp network/server/ClientReqHandlerImpl.hpp network/streaming/TPMSortedStreamer.cpp network/streaming/TPMSortedStreamer.hpp)
 
 
 set(PROTO_MESSAGES

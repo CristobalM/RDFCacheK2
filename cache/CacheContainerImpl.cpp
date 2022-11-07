@@ -39,9 +39,10 @@ CacheContainerImpl::CacheContainerImpl(
     std::unique_ptr<PredicatesCacheManager> &&pcm,
     std::unique_ptr<NodeIdsManager> &&nis,
     std::unique_ptr<I_CacheReplacement> &&cache_replacement,
-    I_CacheReplacement::REPLACEMENT_STRATEGY strategy_id)
+    I_CacheReplacement::REPLACEMENT_STRATEGY strategy_id, bool sort_results)
     : pcm(std::move(pcm)), nis(std::move(nis)),
-      cache_replacement(std::move(cache_replacement)),
-      strategy_id(strategy_id) {}
+      cache_replacement(std::move(cache_replacement)), strategy_id(strategy_id),
+      sort_results(sort_results) {}
+bool CacheContainerImpl::should_sort_results() { return sort_results; }
 
 } // namespace k2cache
