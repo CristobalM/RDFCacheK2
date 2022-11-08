@@ -22,6 +22,9 @@ class TPMSortedStreamer : public I_TRMatchingStreamer {
     std::vector<unsigned long> single_results;
   };
 
+  DataResults data_results;
+  unsigned long current_sent;
+
 public:
   proto_msg::CacheResponse get_next_response() override;
   int get_pattern_channel_id() override;
@@ -34,8 +37,12 @@ public:
   void initialize();
 
 private:
-  DataResults get_all_data(K2TreeScanner &scanner, bool subject_variable,
+  void get_all_data(K2TreeScanner &scanner, bool subject_variable,
                     bool object_variable);
+  void sort_data();
+  proto_msg::CacheResponse get_next_pairs_response();
+  proto_msg::CacheResponse get_next_single_response();
+  proto_msg::CacheResponse get_empty_response();
 };
 
 } // namespace k2cache

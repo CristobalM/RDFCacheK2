@@ -465,9 +465,11 @@ if (GTest_FOUND)
     add_executable(nodeids_manager_impl_test test/nodeids_manager_impl_test.cpp test/cache_test_util.cpp)
     target_link_libraries(nodeids_manager_impl_test MockStructureLib ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES}  pthread)
 
-
     add_executable(server_task_test test/server_task_test.cpp test/cache_test_util.cpp)
     target_link_libraries(server_task_test MockStructureLib ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES}  pthread)
+
+    add_executable(sort_results_test test/sort_results_test.cpp test/cache_test_util.cpp)
+    target_link_libraries(sort_results_test MockStructureLib ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES}  pthread)
 
 
     add_test(NAME serialization_test COMMAND ./serialization_test)
