@@ -38,7 +38,7 @@ mock_server_task(const std::vector<TripleValue> &triples,
                  const std::vector<unsigned long> &nids) {
   auto out = std::make_unique<ServerTaskWrapper>();
 
-  auto td_wrapper = mock_cache_container(triples, nids);
+  auto td_wrapper = mock_cache_container(triples, nids, false);
 
   auto tp =
       std::make_unique<TestingTaskProcessor>(*td_wrapper->cache_container);

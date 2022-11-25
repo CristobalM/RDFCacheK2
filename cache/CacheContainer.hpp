@@ -18,6 +18,7 @@ struct CacheContainer {
   virtual std::vector<unsigned long> extract_loaded_predicates_from_sequence(
       const std::vector<unsigned long> &input_predicates_ids) = 0;
   virtual NodeIdsManager &get_nodes_ids_manager() = 0;
+  virtual bool should_sort_results() = 0;
 };
 } // namespace k2cache
 

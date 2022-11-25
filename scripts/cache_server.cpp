@@ -27,6 +27,7 @@ struct parsed_options {
   std::string node_ids_logs_filename;
 
   bool has_fic;
+  bool has_sort_results;
 };
 
 parsed_options parse_cmd_line(int argc, char **argv);
@@ -53,6 +54,7 @@ int main(int argc, char **argv) {
   cache_args.mapped_node_ids_filename = parsed.mapped_node_ids_filename;
   cache_args.node_ids_logs_filename = parsed.node_ids_logs_filename;
   cache_args.has_fic = parsed.has_fic;
+  cache_args.has_sort_results = parsed.has_sort_results;
 
   std::cout << "has fic: " << (cache_args.has_fic ? "YES": "NO") << std::endl;
 
@@ -63,7 +65,7 @@ int main(int argc, char **argv) {
 }
 
 parsed_options parse_cmd_line(int argc, char **argv) {
-  const char short_options[] = "I:N:M:L:O:m:p:w:R:U:F::";
+  const char short_options[] = "I:N:M:L:O:m:p:w:R:U:F::S::";
   struct option long_options[] = {
       {"index-file", required_argument, nullptr, 'I'},
       {"node-ids-file", required_argument, nullptr, 'N'},
@@ -75,6 +77,7 @@ parsed_options parse_cmd_line(int argc, char **argv) {
       {"replacement-strategy", required_argument, nullptr, 'R'},
       {"update-log-filename", required_argument, nullptr, 'U'},
       {"fic", optional_argument, nullptr, 'F'},
+      {"sort-results", optional_argument, nullptr, 'S'},
   };
 
   int opt, opt_index;
@@ -91,6 +94,7 @@ parsed_options parse_cmd_line(int argc, char **argv) {
   parsed_options out{};
 
   out.has_fic = false;
+  out.has_sort_results = false;
 
   while ((
       opt = getopt_long(argc, argv, short_options, long_options, &opt_index))) {
@@ -149,6 +153,9 @@ parsed_options parse_cmd_line(int argc, char **argv) {
       break;
     case 'F':
       out.has_fic = true;
+      break;
+    case 'S':
+      out.has_sort_results = true;
       break;
     default:
       break;

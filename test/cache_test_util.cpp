@@ -118,11 +118,12 @@ std::unique_ptr<FHMock> mock_fh(std::string &data) {
   return std::make_unique<FHMock>(data);
 }
 
-std::unique_ptr<CacheContainer> mock_cache_container(DataHolders &holders) {
+std::unique_ptr<CacheContainer>
+mock_cache_container(DataHolders &holders, bool sort_results = false) {
   return std::make_unique<CacheContainerImpl>(
       basic_pcm(holders), mock_nis(holders.nim_h),
       std::make_unique<NoCachingReplacement>(),
-      I_CacheReplacement::REPLACEMENT_STRATEGY::NO_CACHING);
+      I_CacheReplacement::REPLACEMENT_STRATEGY::NO_CACHING, sort_results);
 }
 std::vector<TripleNodeId> read_all_from_streamer(I_TRMatchingStreamer &streamer,
                                                  long predicate_id) {
@@ -248,7 +249,8 @@ std::stringstream build_k2tree_to_ss(const std::vector<TripleValue> &data) {
 
 std::unique_ptr<TDWrapper>
 mock_cache_container(const std::vector<TripleValue> &triples,
-                     const std::vector<unsigned long> &nids) {
+                     const std::vector<unsigned long> &nids,
+                     bool sort_results = false) {
   auto plain_ss = build_k2tree_to_ss(triples);
   auto td_wrapper = std::make_unique<TDWrapper>();
   td_wrapper->tdata = plain_ss.str();
@@ -263,7 +265,7 @@ mock_cache_container(const std::vector<TripleValue> &triples,
   auto norep = std::make_unique<NoCachingReplacement>();
   auto cache_container = std::make_unique<CacheContainerImpl>(
       std::move(pcm), std::move(bp.nim), std::move(norep),
-      I_CacheReplacement::NO_CACHING);
+      I_CacheReplacement::NO_CACHING, sort_results);
 
   td_wrapper->cache_container = std::move(cache_container);
   td_wrapper->nis_bp = std::move(bp);

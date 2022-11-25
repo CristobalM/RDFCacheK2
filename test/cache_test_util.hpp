@@ -45,7 +45,8 @@ std::unique_ptr<PredicatesCacheManager> basic_pcm(DataHolders &h);
 
 std::unique_ptr<NodeIdsManager> mock_nis(NIMDataHolders &holders);
 std::unique_ptr<FHMock> mock_fh(std::string &data);
-std::unique_ptr<CacheContainer> mock_cache_container(DataHolders &holders);
+std::unique_ptr<CacheContainer> mock_cache_container(DataHolders &holders,
+                                                     bool sort_results);
 std::vector<TripleNodeId> read_all_from_streamer(I_TRMatchingStreamer &streamer,
                                                  long predicate_id);
 
@@ -91,10 +92,9 @@ TD_Nis boilerplate_nis_from_vec(const std::vector<unsigned long> &data_vec);
 std::stringstream
 build_k2tree_to_ss(const std::vector<TripleValue> &data);
 
-
 std::unique_ptr<TDWrapper>
 mock_cache_container(const std::vector<TripleValue> &triples,
-                     const std::vector<unsigned long> &nids) ;
+                     const std::vector<unsigned long> &nids, bool sort_results);
 
 } // namespace k2cache
 #endif /* _CACHE_TEST_UTIL_HPP_ */
