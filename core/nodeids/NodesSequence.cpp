@@ -9,7 +9,8 @@
 #include <stdexcept>
 namespace k2cache {
 long NodesSequence::get_id(long value) {
-  auto it = std::lower_bound(values.begin(), values.end(), value);
+  auto ulvalue = (unsigned long)value;
+  auto it = std::lower_bound(values.begin(), values.end(), ulvalue);
   if (it == values.end())
     return NOT_FOUND_NODEID;
   if (*it != value)

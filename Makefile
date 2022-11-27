@@ -89,6 +89,7 @@ bundle-code: # clean-all
 	--include 'memory/***' \
 	--include 'network/***' \
 	--include 'proc/***' \
+	--include 'sort/***' \
 	--include 'utils/***' \
 	--include 'algorithms/***' \
 	--include 'benchmarks/***' \

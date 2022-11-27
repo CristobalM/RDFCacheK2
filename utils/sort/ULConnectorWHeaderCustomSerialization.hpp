@@ -5,6 +5,7 @@
 #ifndef ULConnectorWHeaderCustomSerialization_CUSTOM_SERIALIZATION_HPP
 #define ULConnectorWHeaderCustomSerialization_CUSTOM_SERIALIZATION_HPP
 
+#include "serialization_util.hpp"
 #include <fstream>
 namespace k2cache {
 class ULConnectorWHeaderCustomSerialization {

@@ -128,6 +128,7 @@ set(CORE_SOURCE_FILES
         core/updating/UpdatesLoggerFilesManager.hpp
         core/updating/UpdatesLoggerImpl.cpp
         core/updating/UpdatesLoggerImpl.hpp
+
         )
 
 
@@ -222,6 +223,7 @@ set(INCLUDES
         utils
         memory
         cache
+        sort
         ${PROTO_MESSAGES_PATH}
         )
 
@@ -272,7 +274,16 @@ add_library(Utils utils/serialization_util.cpp
         utils/FileOStream.cpp
         utils/FileOStream.hpp
 
-        utils/FileIOStream.cpp utils/FileIOStream.hpp)
+        utils/FileIOStream.cpp
+        utils/FileIOStream.hpp
+
+
+        utils/sort/triples_to_node_ids_file.hpp
+        utils/sort/triples_to_node_ids_file.cpp
+        utils/sort/ULConnectorWHeaderCustomSerialization.hpp
+        utils/sort/ULHeaderIOHandlerCustomSerialization.hpp
+
+        )
 
 # add_dependencies(RDFCacheK2 _k2tree_merged_noalloc)
 #add_dependencies(RDFCacheK2 k2dyn Utils)
@@ -465,6 +476,9 @@ if (GTest_FOUND)
     add_executable(nodeids_manager_impl_test test/nodeids_manager_impl_test.cpp test/cache_test_util.cpp)
     target_link_libraries(nodeids_manager_impl_test MockStructureLib ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES}  pthread)
 
+    add_executable(nodeids_build_flow_test test/nodeids_build_flow_test.cpp test/cache_test_util.cpp)
+    target_link_libraries(nodeids_build_flow_test MockStructureLib ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES}  pthread)
+
     add_executable(server_task_test test/server_task_test.cpp test/cache_test_util.cpp)
     target_link_libraries(server_task_test MockStructureLib ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES}  pthread)
 
@@ -486,6 +500,7 @@ if (GTest_FOUND)
     add_test(NAME node_ids_dyn_mapper_test COMMAND ./node_ids_dyn_mapper_test)
     add_test(NAME nodeids_manager_impl_test COMMAND ./nodeids_manager_impl_test)
     add_test(NAME server_task_test COMMAND ./server_task_test)
+    add_test(NAME nodeids_build_flow_test COMMAND ./nodeids_build_flow_test)
 
     # K2 Tree Tests
 

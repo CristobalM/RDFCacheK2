@@ -5,6 +5,7 @@
 #ifndef ULHEADERIOHANDLER_CUSTOM_SERIALIZATION_HPP
 #define ULHEADERIOHANDLER_CUSTOM_SERIALIZATION_HPP
 
+#include "serialization_util.hpp"
 #include <fstream>
 
 namespace k2cache {
