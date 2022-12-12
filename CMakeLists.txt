@@ -32,7 +32,6 @@ add_definitions(-DLIGHT_FIELDS)
 #set(CMAKE_LINKER_FLAGS_DEBUG "-fsanitize=address")
 
 
-
 set(CORE_SOURCE_FILES
         core/fisher_yates.hpp
 
@@ -129,6 +128,9 @@ set(CORE_SOURCE_FILES
         core/updating/UpdatesLoggerImpl.cpp
         core/updating/UpdatesLoggerImpl.hpp
 
+        core/algorithms/search_paths.cpp
+        core/algorithms/search_paths.hpp
+        core/algorithms/DirectedPath.hpp
         )
 
 
@@ -159,7 +161,7 @@ set(NETWORK_SOURCE_FILES
         network/server/tasks/ServerTask.cpp
         network/server/tasks/WriteDataLock.cpp
         network/server/tasks/WriteDataLock.hpp
-        
+
         network/streaming/I_TRMatchingStreamer.hpp
         network/streaming/I_TRStreamer.hpp
         network/streaming/StreamerFromCachedSource.cpp
@@ -408,6 +410,10 @@ add_executable(trigger_logs_sync scripts/trigger_logs_sync.cpp)
 target_include_directories(trigger_logs_sync PUBLIC ${INCLUDES})
 target_link_libraries(trigger_logs_sync ${DEFAULT_LIBS})
 
+add_executable(search_paths scripts/search_paths.cpp)
+target_include_directories(search_paths PUBLIC ${INCLUDES})
+target_link_libraries(search_paths ${DEFAULT_LIBS})
+
 # Only create test executables if google test is found
 find_package(GTest QUIET)
 if (GTest_FOUND)
@@ -471,19 +477,19 @@ if (GTest_FOUND)
     target_link_libraries(nodes_map_test ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} MockStructureLib pthread)
 
     add_executable(node_ids_dyn_mapper_test test/node_ids_dyn_mapper_test.cpp test/cache_test_util.cpp)
-    target_link_libraries(node_ids_dyn_mapper_test MockStructureLib ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES}  pthread)
+    target_link_libraries(node_ids_dyn_mapper_test MockStructureLib ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} pthread)
 
     add_executable(nodeids_manager_impl_test test/nodeids_manager_impl_test.cpp test/cache_test_util.cpp)
-    target_link_libraries(nodeids_manager_impl_test MockStructureLib ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES}  pthread)
+    target_link_libraries(nodeids_manager_impl_test MockStructureLib ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} pthread)
 
     add_executable(nodeids_build_flow_test test/nodeids_build_flow_test.cpp test/cache_test_util.cpp)
-    target_link_libraries(nodeids_build_flow_test MockStructureLib ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES}  pthread)
+    target_link_libraries(nodeids_build_flow_test MockStructureLib ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} pthread)
 
     add_executable(server_task_test test/server_task_test.cpp test/cache_test_util.cpp)
-    target_link_libraries(server_task_test MockStructureLib ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES}  pthread)
+    target_link_libraries(server_task_test MockStructureLib ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} pthread)
 
     add_executable(sort_results_test test/sort_results_test.cpp test/cache_test_util.cpp)
-    target_link_libraries(sort_results_test MockStructureLib ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES}  pthread)
+    target_link_libraries(sort_results_test MockStructureLib ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} pthread)
 
 
     add_test(NAME serialization_test COMMAND ./serialization_test)
