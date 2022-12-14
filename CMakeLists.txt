@@ -131,7 +131,7 @@ set(CORE_SOURCE_FILES
         core/algorithms/search_paths.cpp
         core/algorithms/search_paths.hpp
         core/algorithms/DirectedPath.hpp
-        )
+        core/algorithms/DirectedPath.cpp)
 
 
 set(NETWORK_SOURCE_FILES
