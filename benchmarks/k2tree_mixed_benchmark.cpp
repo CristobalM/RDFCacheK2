@@ -9,7 +9,7 @@
 #include "k2tree/K2TreeBulkOp.hpp"
 #include "k2tree/K2TreeMixed.hpp"
 
-#include "fisher_yates.hpp"
+#include "util_algorithms/fisher_yates.hpp"
 using namespace k2cache;
 
 std::mt19937 rng(123321);

@@ -18,13 +18,11 @@ namespace k2cache {
  * @param max_number
  * @return n DirectedPaths
  */
-std::vector<DirectedPath> find_n_paths(
+std::vector<std::pair<unsigned long, unsigned long>> find_n_paths(
     PredicatesCacheManager &pcm,
     int n,
-    int max_number,
-    bool discard_intermediate = true
+    int max_number
     );
-
 }
 
 #endif // RDFCACHEK2_SEARCH_PATHS_HPP

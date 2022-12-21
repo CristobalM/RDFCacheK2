@@ -15,7 +15,7 @@
 #include "replacement/NoCachingReplacement.hpp"
 #include "server/tasks/ServerTask.hpp"
 #include "updating/NoUpdate.hpp"
-#include <fisher_yates.hpp>
+#include <util_algorithms/fisher_yates.hpp>
 #include <google/protobuf/message_lite.h>
 #include <serialization_util.hpp>
 #include <triple_external_sort.hpp>

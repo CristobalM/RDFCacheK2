@@ -7,14 +7,14 @@
 namespace k2cache {
 
 bool DirectedPath::operator==(DirectedPath &other) {
-  return nodes == other.nodes;
+  return edges == other.edges;
 }
 
 std::size_t DirectedPath::hash() const {
   auto result = 0UL;
   auto cnt = 0UL;
-  for (auto v : nodes) {
-    result ^= v * (31UL << (++cnt));
+  for (auto v : edges) {
+    result ^= v.get_hash() * (31UL << (++cnt));
   }
   return result;
 }

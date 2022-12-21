@@ -5,13 +5,14 @@
 #ifndef RDFCACHEK2_DIRECTEDPATH_HPP
 #define RDFCACHEK2_DIRECTEDPATH_HPP
 
+#include "k2tree/RDFTriple.hpp"
 #include <cstddef>
 #include <vector>
 
 namespace k2cache {
 
 class DirectedPath {
-  std::vector<unsigned long> nodes;
+  std::vector<RDFTriple> edges;
 public:
 
 

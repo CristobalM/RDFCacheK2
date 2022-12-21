@@ -2,8 +2,8 @@
 // Created by cristobal on 05-10-22.
 //
 
-#include "fisher_yates.hpp"
 #include "k2tree/K2TreeMixed.hpp"
+#include "util_algorithms/fisher_yates.hpp"
 #include <algorithm>
 #include <iostream>
 #include <random>

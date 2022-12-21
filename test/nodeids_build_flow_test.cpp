@@ -3,8 +3,7 @@
 //
 #include "FileIStream.hpp"
 #include "UuidGenerator.hpp"
-#include "external_sort.hpp"
-#include "fisher_yates.hpp"
+#include "util_algorithms/fisher_yates.hpp"
 #include "nodeids/NodesSequence.hpp"
 #include "sort/triples_to_node_ids_file.hpp"
 #include <filesystem>

@@ -1,9 +1,13 @@
-#ifndef _FISHER_YATES_H
-#define _FISHER_YATES_H
+//
+// Created by cristobal on 20-12-22.
+//
 
 #include <random>
 #include <unordered_map>
-#include <vector>
+
+#include "fisher_yates.hpp"
+
+
 namespace k2cache{
 std::vector<unsigned long> fisher_yates(unsigned long result_size,
                                         unsigned long choice_set_size) {
@@ -30,5 +34,3 @@ std::vector<unsigned long> fisher_yates(unsigned long result_size,
   return result;
 }
 }
-
-#endif

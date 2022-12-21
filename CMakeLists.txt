@@ -33,7 +33,7 @@ add_definitions(-DLIGHT_FIELDS)
 
 
 set(CORE_SOURCE_FILES
-        core/fisher_yates.hpp
+        core/util_algorithms/fisher_yates.hpp
 
         core/builder/PredicatesIndexFileBuilder.cpp
 
@@ -131,7 +131,10 @@ set(CORE_SOURCE_FILES
         core/algorithms/search_paths.cpp
         core/algorithms/search_paths.hpp
         core/algorithms/DirectedPath.hpp
-        core/algorithms/DirectedPath.cpp)
+        core/algorithms/DirectedPath.cpp
+
+        core/util_algorithms/fisher_yates.cpp
+        )
 
 
 set(NETWORK_SOURCE_FILES
@@ -432,7 +435,12 @@ if (GTest_FOUND)
             test/mock_structures/StringIOStream.hpp
             test/mock_structures/TestingTaskProcessor.cpp
             test/mock_structures/TestingTaskProcessor.hpp
-            test/mock_structures/MockFetcher.cpp test/mock_structures/MockFetcher.hpp test/mock_structures/MockClientReqHandler.cpp test/mock_structures/MockClientReqHandler.hpp test/mock_structures/MockUpdatesLogger.cpp test/mock_structures/MockUpdatesLogger.hpp)
+            test/mock_structures/MockFetcher.cpp
+            test/mock_structures/MockFetcher.hpp
+            test/mock_structures/MockClientReqHandler.cpp
+            test/mock_structures/MockClientReqHandler.hpp
+            test/mock_structures/MockUpdatesLogger.cpp
+            test/mock_structures/MockUpdatesLogger.hpp)
 
     add_library(MockStructureLib STATIC ${MOCK_STRUCTURES})
     add_dependencies(MockStructureLib RDFCacheK2 RDFCacheK2_Network RDFCacheK2_Cache Utils)
@@ -490,6 +498,9 @@ if (GTest_FOUND)
 
     add_executable(sort_results_test test/sort_results_test.cpp test/cache_test_util.cpp)
     target_link_libraries(sort_results_test MockStructureLib ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} pthread)
+#
+#    add_executable(search_paths_test test/search_paths_test.cpp test/cache_test_util.cpp)
+#    target_link_libraries(search_paths_test MockStructureLib ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} pthread)
 
 
     add_test(NAME serialization_test COMMAND ./serialization_test)
@@ -507,6 +518,7 @@ if (GTest_FOUND)
     add_test(NAME nodeids_manager_impl_test COMMAND ./nodeids_manager_impl_test)
     add_test(NAME server_task_test COMMAND ./server_task_test)
     add_test(NAME nodeids_build_flow_test COMMAND ./nodeids_build_flow_test)
+#    add_test(NAME search_paths_test COMMAND ./search_paths_test)
 
     # K2 Tree Tests
 

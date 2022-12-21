@@ -2,7 +2,7 @@
 // Created by cristobal on 12-10-22.
 //
 #include "cache_test_util.hpp"
-#include "fisher_yates.hpp"
+#include "util_algorithms/fisher_yates.hpp"
 #include "nodeids/NodeIdsManagerImpl.hpp"
 #include "nodeids/NodesSequence.hpp"
 #include <gtest/gtest.h>
