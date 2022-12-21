@@ -114,8 +114,8 @@ std::unique_ptr<NodeIdsManager> mock_nis(NIMDataHolders &holders) {
                                        std::move(mapped_fh), std::move(logs_fh),
                                        std::move(logs_counter_fh));
 }
-std::unique_ptr<FHMock> mock_fh(std::string &data) {
-  return std::make_unique<FHMock>(data);
+std::unique_ptr<FHMock> mock_fh(std::shared_ptr<std::string> data) {
+  return std::make_unique<FHMock>(std::move(data));
 }
 
 std::unique_ptr<CacheContainer>
@@ -192,7 +192,7 @@ CreatedPredData build_pred_data(K2TreeConfig config, unsigned long predicate_id,
 
   PredicatesIndexFileBuilder::build(ss, *out, tmp, config);
 
-  CreatedPredData cpd(out->str());
+  CreatedPredData cpd(std::make_shared<std::string>(out->str()));
   return cpd;
 }
 
@@ -200,7 +200,7 @@ std::unique_ptr<PredicatesIndexCacheMD> CreatedPredData::get_picmd() {
   auto frw_handler = std::make_unique<FHMock>(raw_str);
   return std::make_unique<PredicatesIndexCacheMD>(std::move(frw_handler));
 }
-CreatedPredData::CreatedPredData(std::string raw_str)
+CreatedPredData::CreatedPredData(std::shared_ptr<std::string> raw_str)
     : raw_str(std::move(raw_str)) {}
 
 std::stringstream
@@ -213,13 +213,14 @@ build_node_ids_seq_mem(const std::vector<unsigned long> &nis_seq) {
   return ss;
 }
 
-std::string zero_data_str_content() {
+std::shared_ptr<std::string> zero_data_str_content() {
   std::stringstream ss;
   write_u64(ss, 0);
-  return ss.str();
+  return std::make_shared<std::string>(ss.str());
 }
 
-std::unique_ptr<NIMDataHolders> no_logs_static_ni_dh(std::string plain_ni) {
+std::unique_ptr<NIMDataHolders>
+no_logs_static_ni_dh(std::shared_ptr<std::string> plain_ni) {
   auto dh = std::make_unique<NIMDataHolders>();
   dh->plain = std::move(plain_ni);
   dh->logs = zero_data_str_content();
@@ -229,8 +230,9 @@ std::unique_ptr<NIMDataHolders> no_logs_static_ni_dh(std::string plain_ni) {
 }
 
 TD_Nis boilerplate_nis_from_vec(const std::vector<unsigned long> &data_vec) {
-  auto ss = build_node_ids_seq_mem(data_vec);
-  auto dh = no_logs_static_ni_dh(ss.str());
+  auto ss =
+      std::make_shared<std::string>(build_node_ids_seq_mem(data_vec).str());
+  auto dh = no_logs_static_ni_dh(std::move(ss));
   auto nis = mock_nis(*dh);
   TD_Nis out;
   out.nim_dh = std::move(dh);
@@ -251,9 +253,10 @@ std::unique_ptr<TDWrapper>
 mock_cache_container(const std::vector<TripleValue> &triples,
                      const std::vector<unsigned long> &nids,
                      bool sort_results = false) {
-  auto plain_ss = build_k2tree_to_ss(triples);
+  auto plain_str =
+      std::make_shared<std::string>(build_k2tree_to_ss(triples).str());
   auto td_wrapper = std::make_unique<TDWrapper>();
-  td_wrapper->tdata = plain_ss.str();
+  td_wrapper->tdata = std::move(plain_str);
   auto fhmock = std::make_unique<FHMock>(td_wrapper->tdata);
   auto pcimd = std::make_unique<PredicatesIndexCacheMD>(std::move(fhmock));
   auto updl = std::make_unique<NoUpdate>();
@@ -273,4 +276,17 @@ mock_cache_container(const std::vector<TripleValue> &triples,
   return td_wrapper;
 }
 
+std::shared_ptr<std::string> make_empty_ptr_shared_str() {
+  return std::make_shared<std::string>(std::string());
+}
+
+PCMDataHolders::PCMDataHolders()
+    : data(std::make_shared<std::string>()),
+      offsets(std::make_shared<std::string>()),
+      metadata(std::make_shared<std::string>()) {}
+NIMDataHolders::NIMDataHolders()
+    : plain(std::make_shared<std::string>()),
+      mapped(std::make_shared<std::string>()),
+      logs(std::make_shared<std::string>()),
+      logs_counter(std::make_shared<std::string>()) {}
 } // namespace k2cache

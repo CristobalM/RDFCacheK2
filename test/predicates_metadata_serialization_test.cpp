@@ -34,7 +34,7 @@ build_picmd(DataHolders &h) {
 
   PredicatesIndexFileBuilder::build(ss, out, tmp, config);
 
-  h.pcm_h.data = out.str();
+  h.pcm_h.data = std::make_shared<std::string>(out.str());
 
   auto frw_handler = std::make_unique<FHMock>(h.pcm_h.data);
 
@@ -63,7 +63,8 @@ build_picmd_single_predicate(unsigned long predicate_id, DataHolders &h) {
 
   PredicatesIndexFileBuilder::build(ss, out, tmp, config);
 
-  h.pcm_h.data = out.str();
+  h.pcm_h.data =  std::make_shared<std::string>(out.str());
+
 
   auto frw_handler = std::make_unique<FHMock>(h.pcm_h.data);
 

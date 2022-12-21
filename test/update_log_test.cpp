@@ -55,12 +55,9 @@ TEST(update_log_test, test_fhmock_can_sync_log_to_main_storage) {
   config.treedepth = 32;
   config.cut_depth = 10;
   config.max_node_count = 256;
-  std::string data_updates;
-  std::string data_offsets_updates;
-  std::string metadata_updates;
-  FHMock fh(data_updates);
-  FHMock fh_offsets(data_offsets_updates);
-  FHMock fh_metadata(metadata_updates);
+  FHMock fh(make_empty_ptr_shared_str());
+  FHMock fh_offsets(make_empty_ptr_shared_str());
+  FHMock fh_metadata(make_empty_ptr_shared_str());
 
   DataHolders h;
   std::unique_ptr<I_FileRWHandler> fh_pcm{};

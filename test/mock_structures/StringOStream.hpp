@@ -9,16 +9,17 @@
 #include <ostream>
 #include <sstream>
 #include <string>
+#include <memory>
 
 #include <I_OStream.hpp>
 namespace k2cache {
 
 struct StringOStream : public I_OStream {
-  std::string &data;
+  std::shared_ptr<std::string> data;
   std::ostringstream oss;
 
 public:
-  StringOStream(std::string &data, std::ios::openmode openmode);
+  StringOStream(std::shared_ptr<std::string> data, std::ios::openmode openmode);
   ~StringOStream() override;
   void flush() override;
   std::ostream &get_ostream() override;

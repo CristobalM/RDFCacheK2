@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <memory>
 
 #include "CacheContainer.hpp"
 #include "k2tree/RDFTriple.hpp"
@@ -16,16 +17,18 @@
 namespace k2cache {
 
 struct NIMDataHolders {
-  std::string plain;
-  std::string mapped;
-  std::string logs;
-  std::string logs_counter;
+  std::shared_ptr<std::string> plain;
+  std::shared_ptr<std::string> mapped;
+  std::shared_ptr<std::string> logs;
+  std::shared_ptr<std::string> logs_counter;
+  NIMDataHolders();
 };
 
 struct PCMDataHolders {
-  std::string data;
-  std::string offsets;
-  std::string metadata;
+  std::shared_ptr<std::string> data;
+  std::shared_ptr<std::string> offsets;
+  std::shared_ptr<std::string> metadata;
+  PCMDataHolders();
 };
 
 struct DataHolders {
@@ -44,16 +47,16 @@ UpdatesLoggerFilesManager mock_fh_manager(PCMDataHolders &h);
 std::unique_ptr<PredicatesCacheManager> basic_pcm(DataHolders &h);
 
 std::unique_ptr<NodeIdsManager> mock_nis(NIMDataHolders &holders);
-std::unique_ptr<FHMock> mock_fh(std::string &data);
+std::unique_ptr<FHMock> mock_fh(std::shared_ptr<std::string> data);
 std::unique_ptr<CacheContainer> mock_cache_container(DataHolders &holders,
                                                      bool sort_results);
 std::vector<TripleNodeId> read_all_from_streamer(I_TRMatchingStreamer &streamer,
                                                  long predicate_id);
 
 struct CreatedPredData {
-  std::string raw_str;
+  std::shared_ptr<std::string> raw_str;
   std::unique_ptr<PredicatesIndexCacheMD> get_picmd();
-  explicit CreatedPredData(std::string raw_str);
+  explicit CreatedPredData(std::shared_ptr<std::string> raw_str);
 };
 
 CreatedPredData build_pred_data_sz(K2TreeConfig config,
@@ -72,7 +75,7 @@ struct TD_Nis {
 };
 
 struct TDWrapper {
-  std::string tdata;
+  std::shared_ptr<std::string> tdata;
   std::unique_ptr<CacheContainer> cache_container;
   TD_Nis nis_bp;
 };
@@ -82,9 +85,9 @@ CreatedPredData build_pred_data(K2TreeConfig config, unsigned long predicate_id,
 std::stringstream
 build_node_ids_seq_mem(const std::vector<unsigned long> &nis_seq);
 
-std::string zero_data_str_content();
+std::shared_ptr<std::string> zero_data_str_content();
 
-std::unique_ptr<NIMDataHolders> no_logs_static_ni_dh(std::string plain_ni);
+std::unique_ptr<NIMDataHolders> no_logs_static_ni_dh(std::shared_ptr<std::string> plain_ni);
 
 TD_Nis boilerplate_nis_from_vec(const std::vector<unsigned long> &data_vec);
 
@@ -95,6 +98,8 @@ build_k2tree_to_ss(const std::vector<TripleValue> &data);
 std::unique_ptr<TDWrapper>
 mock_cache_container(const std::vector<TripleValue> &triples,
                      const std::vector<unsigned long> &nids, bool sort_results);
+
+std::shared_ptr<std::string> make_empty_ptr_shared_str();
 
 } // namespace k2cache
 #endif /* _CACHE_TEST_UTIL_HPP_ */

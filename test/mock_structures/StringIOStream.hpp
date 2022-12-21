@@ -7,11 +7,12 @@
 
 #include <ios>
 #include <sstream>
+#include <memory>
 
 #include <I_IOStream.hpp>
 namespace k2cache {
 class StringIOStream : public I_IOStream {
-  std::string &data;
+  std::shared_ptr<std::string> data;
   std::stringstream ss;
 
 public:
@@ -20,7 +21,7 @@ public:
   std::streampos tellg() override;
   void seekp(std::streamoff offset, std::ios_base::seekdir way) override;
   std::streampos tellp() override;
-  StringIOStream(std::string &data, std::ios::openmode openmode);
+  StringIOStream(std::shared_ptr<std::string> data, std::ios::openmode openmode);
   void flush() override;
   explicit operator bool() const override;
   std::istream &get_istream() override;
