@@ -1,9 +1,9 @@
 #ifndef _CACHE_TEST_UTIL_HPP_
 #define _CACHE_TEST_UTIL_HPP_
 
+#include <memory>
 #include <string>
 #include <vector>
-#include <memory>
 
 #include "CacheContainer.hpp"
 #include "k2tree/RDFTriple.hpp"
@@ -87,17 +87,18 @@ build_node_ids_seq_mem(const std::vector<unsigned long> &nis_seq);
 
 std::shared_ptr<std::string> zero_data_str_content();
 
-std::unique_ptr<NIMDataHolders> no_logs_static_ni_dh(std::shared_ptr<std::string> plain_ni);
+std::unique_ptr<NIMDataHolders>
+no_logs_static_ni_dh(std::shared_ptr<std::string> plain_ni);
 
 TD_Nis boilerplate_nis_from_vec(const std::vector<unsigned long> &data_vec);
 
-
-std::stringstream
-build_k2tree_to_ss(const std::vector<TripleValue> &data);
+std::stringstream build_k2tree_to_ss(const std::vector<TripleValue> &data,
+                                     K2TreeConfig config);
 
 std::unique_ptr<TDWrapper>
 mock_cache_container(const std::vector<TripleValue> &triples,
-                     const std::vector<unsigned long> &nids, bool sort_results);
+                     const std::vector<unsigned long> &nids,
+                     K2TreeConfig config, bool sort_results);
 
 std::shared_ptr<std::string> make_empty_ptr_shared_str();
 

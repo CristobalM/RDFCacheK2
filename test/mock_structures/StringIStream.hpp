@@ -11,13 +11,14 @@
 #include <string>
 
 #include <I_IStream.hpp>
+#include <memory>
 namespace k2cache {
 struct StringIStream : public I_IStream {
-  std::string data;
+  std::shared_ptr<std::string> data;
   std::istringstream iss;
 
 public:
-  StringIStream(std::string &data, std::ios::openmode openmode);
+  StringIStream(std::shared_ptr<std::string> data, std::ios::openmode openmode);
   void seekg(std::streamoff offset, std::ios_base::seekdir way) override;
   explicit operator bool() const override;
   std::istream &get_istream() override;

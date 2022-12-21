@@ -58,7 +58,7 @@ TEST(NodesMapSuite, CanDeserialize) {
   for (unsigned long i = 0; i < nodes_number; i++) {
     write_u64(ss, i);
   }
-  auto data = ss.str();
+  auto data = std::make_shared<std::string>(ss.str());
   StringIStream sis(data, std::ios::binary | std::ios::in);
   auto nodes_sequence = NodesSequence::from_input_stream(sis);
   for (long i = 0; i < nodes_number; i++) {

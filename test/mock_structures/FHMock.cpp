@@ -17,7 +17,7 @@ std::unique_ptr<I_OStream> FHMock::get_writer(std::ios::openmode) {
                                                    std::ios::binary);
 }
 std::unique_ptr<I_IStream> FHMock::get_reader(std::ios::openmode) {
-  return std::make_unique<StringIStream>(*data,
+  return std::make_unique<StringIStream>(data,
                                          std::ios::in | std::ios::binary);
 }
 bool FHMock::exists() { return true; }

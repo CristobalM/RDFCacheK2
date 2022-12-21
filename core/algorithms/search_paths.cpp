@@ -127,7 +127,7 @@ void find_paths_subj_origin(
       continue;
     }
 
-    if (curr_path_size + 1 >= max_path_size) {
+    if (curr_path_size + 1 > max_path_size) {
       paths.emplace_back(first_subject, obj2);
       current_path.push(triple);
       debug_reverse_print_stack(current_path);
@@ -162,8 +162,7 @@ static void debug_reverse_print_stack_rec(std::stack<RDFTriple> &s){
   std::cout << "("
             << t.subject << ", "
             << t.predicate << ", "
-            << t.object << ")"
-            << std::endl;
+            << t.object << "), ";
 }
 void debug_reverse_print_stack(const std::stack<RDFTriple> &s) {
   auto copied = s;

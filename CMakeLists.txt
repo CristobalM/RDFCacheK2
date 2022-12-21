@@ -498,9 +498,9 @@ if (GTest_FOUND)
 
     add_executable(sort_results_test test/sort_results_test.cpp test/cache_test_util.cpp)
     target_link_libraries(sort_results_test MockStructureLib ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} pthread)
-#
-#    add_executable(search_paths_test test/search_paths_test.cpp test/cache_test_util.cpp)
-#    target_link_libraries(search_paths_test MockStructureLib ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} pthread)
+
+    add_executable(search_paths_test test/search_paths_test.cpp test/cache_test_util.cpp)
+    target_link_libraries(search_paths_test MockStructureLib ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} pthread)
 
 
     add_test(NAME serialization_test COMMAND ./serialization_test)
@@ -518,7 +518,7 @@ if (GTest_FOUND)
     add_test(NAME nodeids_manager_impl_test COMMAND ./nodeids_manager_impl_test)
     add_test(NAME server_task_test COMMAND ./server_task_test)
     add_test(NAME nodeids_build_flow_test COMMAND ./nodeids_build_flow_test)
-#    add_test(NAME search_paths_test COMMAND ./search_paths_test)
+    add_test(NAME search_paths_test COMMAND ./search_paths_test)
 
     # K2 Tree Tests
 

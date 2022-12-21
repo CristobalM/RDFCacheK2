@@ -240,21 +240,25 @@ TD_Nis boilerplate_nis_from_vec(const std::vector<unsigned long> &data_vec) {
   return out;
 }
 
-std::stringstream build_k2tree_to_ss(const std::vector<TripleValue> &data) {
+std::stringstream build_k2tree_to_ss(const std::vector<TripleValue> &data,
+                                     K2TreeConfig config) {
   std::stringstream plain_ss;
   write_u64(plain_ss, data.size());
   for (auto t : data) {
     t.write_to_file(plain_ss);
   }
-  return plain_ss;
+  std::stringstream k2tree_ss;
+  std::stringstream tmp_ss;
+  PredicatesIndexFileBuilder::build(plain_ss, k2tree_ss, tmp_ss, config);
+  return k2tree_ss;
 }
 
 std::unique_ptr<TDWrapper>
 mock_cache_container(const std::vector<TripleValue> &triples,
                      const std::vector<unsigned long> &nids,
-                     bool sort_results = false) {
+                     K2TreeConfig config, bool sort_results = false) {
   auto plain_str =
-      std::make_shared<std::string>(build_k2tree_to_ss(triples).str());
+      std::make_shared<std::string>(build_k2tree_to_ss(triples, config).str());
   auto td_wrapper = std::make_unique<TDWrapper>();
   td_wrapper->tdata = std::move(plain_str);
   auto fhmock = std::make_unique<FHMock>(td_wrapper->tdata);

@@ -5,8 +5,8 @@
 #include "StringIStream.hpp"
 namespace k2cache {
 
-StringIStream::StringIStream(std::string &data, std::ios::openmode openmode)
-    : data(data), iss(data, openmode) {}
+StringIStream::StringIStream(std::shared_ptr<std::string> data, std::ios::openmode openmode)
+    : data(std::move(data)), iss(*this->data, openmode) {}
 
 void StringIStream::seekg(std::streamoff offset, std::ios_base::seekdir way) {
   iss.seekg(offset, way);
