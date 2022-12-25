@@ -14,9 +14,6 @@
 using namespace k2cache;
 
 struct parsed_options {
-  std::string iris_file;
-  std::string blanks_file;
-  std::string literals_file;
   std::string k2trees_file;
   std::string output_file;
 };
@@ -28,17 +25,17 @@ void print_help();
 int main(int argc, char **argv) {
   parsed_options parsed = parse_cmd_line(argc, argv);
 
-  std::ifstream ifs_iris(parsed.iris_file, std::ios::in | std::ios::binary);
-  std::ifstream ifs_blanks(parsed.blanks_file, std::ios::in | std::ios::binary);
-  std::ifstream ifs_literals(parsed.literals_file,
-                             std::ios::in | std::ios::binary);
-
   auto frw_handler = std::make_unique<FileRWHandler>(parsed.k2trees_file);
   auto pcm = PCMFactory::create(std::move(frw_handler));
   auto &predicates_index = pcm->get_predicates_index_cache();
   const auto &predicates_ids = predicates_index.get_predicates_ids();
 
   std::ofstream ofs(parsed.output_file, std::ios::out | std::ios::trunc);
+  using namespace k2cache;
+  struct parsed_options {
+    std::string input_file;
+    std::string output_file;
+  };
 
   unsigned long total_points = 0;
 
@@ -85,20 +82,14 @@ int main(int argc, char **argv) {
 }
 
 parsed_options parse_cmd_line(int argc, char **argv) {
-  const char short_options[] = "i:b:l:k:o:";
+  const char short_options[] = "k:o:";
   struct option long_options[] = {
-      {"iris-file", required_argument, nullptr, 'i'},
-      {"blanks-file", required_argument, nullptr, 'b'},
-      {"literals-file", required_argument, nullptr, 'l'},
       {"k2trees-file", required_argument, nullptr, 'k'},
       {"output-file", required_argument, nullptr, 'o'},
   };
 
   int opt, opt_index;
 
-  bool has_iris = false;
-  bool has_blanks = false;
-  bool has_literals = false;
   bool has_k2trees = false;
   bool has_output_file = false;
 
@@ -112,18 +103,6 @@ parsed_options parse_cmd_line(int argc, char **argv) {
     }
 
     switch (opt) {
-    case 'i':
-      out.iris_file = optarg;
-      has_iris = true;
-      break;
-    case 'b':
-      out.blanks_file = optarg;
-      has_blanks = true;
-      break;
-    case 'l':
-      out.literals_file = optarg;
-      has_literals = true;
-      break;
     case 'k':
       out.k2trees_file = optarg;
       has_k2trees = true;
@@ -140,21 +119,6 @@ parsed_options parse_cmd_line(int argc, char **argv) {
     }
   }
 
-  if (!has_iris) {
-    std::cerr << "Missing option --iris-file\n" << std::endl;
-    print_help();
-    exit(1);
-  }
-  if (!has_blanks) {
-    std::cerr << "Missing option --blanks-file\n" << std::endl;
-    print_help();
-    exit(1);
-  }
-  if (!has_literals) {
-    std::cerr << "Missing option --literals-file\n" << std::endl;
-    print_help();
-    exit(1);
-  }
   if (!has_k2trees) {
     std::cerr << "Missing option --k2trees-file\n" << std::endl;
     print_help();
@@ -171,9 +135,7 @@ parsed_options parse_cmd_line(int argc, char **argv) {
 }
 
 void print_help() {
-  std::cout << "--iris-file\t(-i)\t\t(string-required)\n"
-            << "--blanks-file\t(-b)\t\t(string-required)\n"
-            << "--literals-file\t(-l)\t\t(string-required)\n"
+  std::cout
             << "--k2trees-file\t(-k)\t\t(string-required)\n"
             << "--output-file\t(-o)\t\t(string-required)\n"
             << std::endl;
