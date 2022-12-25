@@ -103,6 +103,7 @@ find_n_paths(PredicatesCacheManager &pcm, int n, int max_number) {
 
       find_paths_subj_origin(current_path, subj, sp_pair, paths, pcm, visited, k2tree, p,
                              pidx, 1, n, max_number, sorted_predicate_ids);
+      if((int)paths.size() >= max_number) break;
     }
   }
   return paths;
@@ -116,6 +117,9 @@ void find_paths_subj_origin(
     K2TreeMixed &current_k2tree, unsigned long current_predicate,
     unsigned long, int curr_path_size, int max_path_size,
     int max_paths, const std::vector<unsigned long> &sorted_predicates) {
+  if((int)paths.size() >= max_paths){
+    return;
+  }
   auto bscanner = current_k2tree.create_band_scanner(
       sp_pair.subject, K2TreeScanner::BandType::COLUMN_BAND_TYPE);
   while (bscanner->has_next()) {
