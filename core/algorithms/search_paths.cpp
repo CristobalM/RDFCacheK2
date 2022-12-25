@@ -168,6 +168,7 @@ void debug_reverse_print_stack(const std::stack<RDFTriple> &s) {
   auto copied = s;
   std::cout << "printing path of size " << s.size() << ": " << std::endl;
   debug_reverse_print_stack_rec(copied);
+  std::cout << std::endl;
 }
 
 
