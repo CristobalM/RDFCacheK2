@@ -122,9 +122,7 @@ parsed_options parse_cmd_line(int argc, char **argv) {
 }
 
 void print_help() {
-  std::cout << "--iris-file\t(-i)\t\t(string-required)\n"
-            << "--blanks-file\t(-b)\t\t(string-required)\n"
-            << "--literals-file\t(-l)\t\t(string-required)\n"
+  std::cout
             << "--k2trees-file\t(-k)\t\t(string-required)\n"
             << "--output-file\t(-o)\t\t(string-required)\n"
             << "--tmp-serialization-file\t(-T)\t\t(string-required)\n"
