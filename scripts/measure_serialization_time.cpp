@@ -12,9 +12,6 @@
 using namespace k2cache;
 
 struct parsed_options {
-  std::string iris_file;
-  std::string blanks_file;
-  std::string literals_file;
   std::string k2trees_file;
   std::string output_file;
   std::string tmp_serialization_file;
@@ -61,11 +58,8 @@ int main(int argc, char **argv) {
 }
 
 parsed_options parse_cmd_line(int argc, char **argv) {
-  const char short_options[] = "i:b:l:k:o:T:";
+  const char short_options[] = "k:o:T:";
   struct option long_options[] = {
-      {"iris-file", required_argument, nullptr, 'i'},
-      {"blanks-file", required_argument, nullptr, 'b'},
-      {"literals-file", required_argument, nullptr, 'l'},
       {"k2trees-file", required_argument, nullptr, 'k'},
       {"output-file", required_argument, nullptr, 'o'},
       {"tmp-serialization-file", required_argument, nullptr, 'T'},
@@ -73,9 +67,6 @@ parsed_options parse_cmd_line(int argc, char **argv) {
 
   int opt, opt_index;
 
-  bool has_iris = false;
-  bool has_blanks = false;
-  bool has_literals = false;
   bool has_k2trees = false;
   bool has_output_file = false;
   bool has_tmp_file = false;
@@ -90,18 +81,6 @@ parsed_options parse_cmd_line(int argc, char **argv) {
     }
 
     switch (opt) {
-    case 'i':
-      out.iris_file = optarg;
-      has_iris = true;
-      break;
-    case 'b':
-      out.blanks_file = optarg;
-      has_blanks = true;
-      break;
-    case 'l':
-      out.literals_file = optarg;
-      has_literals = true;
-      break;
     case 'k':
       out.k2trees_file = optarg;
       has_k2trees = true;
@@ -122,21 +101,6 @@ parsed_options parse_cmd_line(int argc, char **argv) {
     }
   }
 
-  if (!has_iris) {
-    std::cerr << "Missing option --iris-file\n" << std::endl;
-    print_help();
-    exit(1);
-  }
-  if (!has_blanks) {
-    std::cerr << "Missing option --blanks-file\n" << std::endl;
-    print_help();
-    exit(1);
-  }
-  if (!has_literals) {
-    std::cerr << "Missing option --literals-file\n" << std::endl;
-    print_help();
-    exit(1);
-  }
   if (!has_k2trees) {
     std::cerr << "Missing option --k2trees-file\n" << std::endl;
     print_help();
