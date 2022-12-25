@@ -15,7 +15,11 @@ TEST(sort_results_test, can_get_correct_results){
       {1, 3, 2},
       {2, 3, 4},
   };
-  auto td_wrapper = mock_cache_container(triples, nids, true);
+  K2TreeConfig config;
+  config.cut_depth = 0;
+  config.max_node_count = 128;
+  config.treedepth = 32;
+  auto td_wrapper = mock_cache_container(triples, nids, config, true);
   td_wrapper->cache_container->get_pcm().load_all_predicates();
 //  TripleNodeId triple_node_id(
 //      NodeId()

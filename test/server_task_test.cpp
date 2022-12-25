@@ -38,7 +38,12 @@ mock_server_task(const std::vector<TripleValue> &triples,
                  const std::vector<unsigned long> &nids) {
   auto out = std::make_unique<ServerTaskWrapper>();
 
-  auto td_wrapper = mock_cache_container(triples, nids, false);
+  K2TreeConfig config;
+  config.treedepth = 32;
+  config.max_node_count = 128;
+  config.cut_depth = 0;
+
+  auto td_wrapper = mock_cache_container(triples, nids, config, false);
 
   auto tp =
       std::make_unique<TestingTaskProcessor>(*td_wrapper->cache_container);
