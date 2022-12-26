@@ -42,11 +42,16 @@ long NodeIdsManagerImpl::get_id(long real_id) {
     return plain_id;
   return nodes_map->get_id(real_id);
 }
-long NodeIdsManagerImpl::get_real_id(long mapped_id) {
-  auto from_seq = nodes_sequence->get_real_id(mapped_id);
-  if (from_seq != NOT_FOUND_NODEID)
+long NodeIdsManagerImpl::get_real_id(long mapped_id, int *err_code = nullptr) {
+  int err_code2 = 0;
+  auto from_seq = nodes_sequence->get_real_id(mapped_id, &err_code2);
+  if (err_code2 == (int)NidsErrCode::SUCCESS_ERR_CODE){
+    if(err_code != nullptr){
+      *err_code = (int)NidsErrCode::SUCCESS_ERR_CODE;
+    }
     return from_seq;
-  return nodes_map->get_real_id(mapped_id);
+  }
+  return nodes_map->get_real_id(mapped_id, err_code);
 }
 long NodeIdsManagerImpl::get_id_or_create(long real_id) {
   auto mapped_id = get_id(real_id);

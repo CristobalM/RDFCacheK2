@@ -29,7 +29,16 @@ long NodesMapImpl::get_id(long real_id) {
     return NOT_FOUND_NODEID;
   return it->second;
 }
-long NodesMapImpl::get_real_id(long id) { return rev_map[id]; }
+long NodesMapImpl::get_real_id(long id, int *err_code) {
+  auto it = rev_map.find(id);
+  if(it == rev_map.end()){
+    if(err_code != nullptr){
+      *err_code = (int)NidsErrCode::NOT_FOUND_ERR_CODE;
+    }
+    return -1;
+  }
+  return it->second;
+}
 long NodesMapImpl::get_last_assigned() {
   if (rev_map.empty())
     return NOT_FOUND_NODEID;

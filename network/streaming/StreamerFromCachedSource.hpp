@@ -43,6 +43,8 @@ public:
   int get_channel_id() override;
   bool all_sent() override;
   void set_finished();
+private:
+  bool add_real_value(long mapped_value, long *data, int &cnt);
 };
 } // namespace k2cache
 

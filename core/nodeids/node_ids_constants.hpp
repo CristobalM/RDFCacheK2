@@ -10,5 +10,11 @@ enum NodeIdsImplIds {
 };
 
 const long NOT_FOUND_NODEID = -1L;
+
+enum class NidsErrCode {
+  NOT_FOUND_ERR_CODE = -1,
+  SUCCESS_ERR_CODE = 0,
+};
+
 } // namespace k2cache
 #endif // RDFCACHEK2_NODE_IDS_CONSTANTS_HPP

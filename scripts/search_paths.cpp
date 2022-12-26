@@ -5,6 +5,7 @@
 #include "algorithms/search_paths.hpp"
 #include "manager/PCMFactory.hpp"
 #include "nodeids/NodeIdsManagerFactory.hpp"
+#include "nodeids/node_ids_constants.hpp"
 #include <getopt.h>
 #include <stdexcept>
 #include <string>
@@ -32,17 +33,26 @@ int main(int argc, char **argv) {
   auto nim = NodeIdsManagerFactory::create(args);
   auto paths = find_n_paths(*pcm, parsed.path_size, parsed.max_number_paths);
   std::ofstream ofs(parsed.output_file, std::ios::out);
+  int err_code = 0;
   for(auto p: paths){
-    auto first = nim->get_real_id(p.first);
-    auto second = nim->get_real_id(p.second);
+    auto first = nim->get_real_id(p.first, &err_code);
+    if(err_code != (int)NidsErrCode::SUCCESS_ERR_CODE){
+      std::cerr << "NodeId not found for value: " << p.first << std::endl;
+      continue;
+    }
+    auto second = nim->get_real_id(p.second,  &err_code);
+    if(err_code != (int)NidsErrCode::SUCCESS_ERR_CODE){
+      std::cerr << "NodeId not found for value: " << p.second << std::endl;
+      continue;
+    }
     ofs << first << "," << second << "\n";
   }
 }
 
 parsed_options parse_cmd_line(int argc, char **argv) {
-  const char short_options[] = "i:N:M:o:s:n:";
+  const char short_options[] = "k:N:M:o:s:n:";
   struct option long_options[] = {
-      {"k2tree-file", required_argument, nullptr, 'i'},
+      {"k2tree-file", required_argument, nullptr, 'k'},
       {"node-ids-file", required_argument, nullptr, 'N'},
       {"mapped-node-ids-file", required_argument, nullptr, 'M'},
       {"output-file", required_argument, nullptr, 'o'},
@@ -66,7 +76,7 @@ parsed_options parse_cmd_line(int argc, char **argv) {
       break;
     }
     switch (opt) {
-    case 'i':
+    case 'k':
       out.k2tree_file = optarg;
       has_input = true;
       break;
@@ -96,7 +106,7 @@ parsed_options parse_cmd_line(int argc, char **argv) {
   }
 
   if (!has_input)
-    throw std::runtime_error("k2tree-file (i) argument is required");
+    throw std::runtime_error("k2tree-file (k) argument is required");
   if (!has_node_ids)
     throw std::runtime_error("node-ids-file (N) argument is required");
   if (!has_mapped_node_ids)

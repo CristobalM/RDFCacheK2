@@ -26,7 +26,7 @@ TEST(NodesMapSuite, CanGetNodesIdCorrectly) {
     auto id = nodes_sequence.get_id(value);
     ASSERT_EQ(id, i);
 
-    auto extracted_value = nodes_sequence.get_real_id(i);
+    auto extracted_value = nodes_sequence.get_real_id(i, nullptr);
     ASSERT_EQ(extracted_value, value);
   }
 }
@@ -46,7 +46,7 @@ TEST(NodesMapSuite, NotFoundFailGraciously) {
     auto value = (i + 1) * 100 + 1;
     auto id = nodes_sequence.get_id(value);
     ASSERT_EQ(id, NOT_FOUND_NODEID);
-    auto extracted_value = nodes_sequence.get_real_id(i + 100000);
+    auto extracted_value = nodes_sequence.get_real_id(i + 100000, nullptr);
     ASSERT_EQ(extracted_value, NOT_FOUND_NODEID);
   }
 }
@@ -62,7 +62,7 @@ TEST(NodesMapSuite, CanDeserialize) {
   StringIStream sis(data, std::ios::binary | std::ios::in);
   auto nodes_sequence = NodesSequence::from_input_stream(sis);
   for (long i = 0; i < nodes_number; i++) {
-    auto value = nodes_sequence.get_real_id(i);
+    auto value = nodes_sequence.get_real_id(i, nullptr);
     ASSERT_EQ(value, i);
   }
 }

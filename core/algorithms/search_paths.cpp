@@ -136,6 +136,9 @@ void find_paths_subj_origin(
       current_path.push(triple);
       debug_reverse_print_stack(current_path);
       current_path.pop();
+      if((int)paths.size() >= max_paths){
+        return;
+      }
     } else {
       visited_edges.insert(triple);
       current_path.push(triple);

@@ -19,7 +19,7 @@ public:
   void serialize(I_OStream &os) override;
   int impl_id() override;
   long get_id(long real_id) override;
-  long get_real_id(long id) override;
+  long get_real_id(long id, int *err_code) override;
   long get_last_assigned() override;
   void add(long real_id, long mapped_id) override;
   void restore(std::unique_ptr<I_IStream> &&log_istream,

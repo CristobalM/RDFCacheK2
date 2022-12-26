@@ -41,6 +41,9 @@ public:
   proto_msg::RDFTerm resource_to_term(RDFResource &&resource);
   void set_finished();
   proto_msg::CacheResponse timeout_proto_response();
+
+  bool add_real_value(long mapped_value, long *data, int &cnt);
+
 };
 } // namespace k2cache
 #endif // RDFCACHEK2_TRIPLEPATTERNMATCHINGSTREAMER_HPP

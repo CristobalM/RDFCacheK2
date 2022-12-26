@@ -29,7 +29,7 @@ static void do_checks(const std::vector<unsigned long> &dataset,
 
   long last_read = std::numeric_limits<long>::lowest();
   for (auto i = 0UL; i < dataset.size(); i++) {
-    auto nodeid = nseq.get_real_id(i);
+    auto nodeid = nseq.get_real_id(i, nullptr);
     ASSERT_LT(last_read, nodeid)
         << "the sequence failed the increasing check at i = " << i
         << " -- with last_read = " << last_read << " and nodeid = " << nodeid;

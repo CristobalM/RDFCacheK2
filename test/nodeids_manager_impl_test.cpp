@@ -26,7 +26,7 @@ TEST(nodeids_manager_impl_test, can_get_real_id_simple_input) {
   auto tdnis = boilerplate_nis_from_vec(nis_vec);
   auto &nis = tdnis.nim;
   for (auto i = 0UL; i < nis_vec.size(); i++) {
-    ASSERT_EQ(nis_vec[i], nis->get_real_id(i));
+    ASSERT_EQ(nis_vec[i], nis->get_real_id(i, nullptr));
   }
 }
 
@@ -49,7 +49,7 @@ TEST(nodeids_manager_impl_test, can_get_real_id_random_fys_input_10) {
     auto tdnis = boilerplate_nis_from_vec(nis_vec);
     auto &nis = tdnis.nim;
     for (auto i = 0UL; i < nis_vec.size(); i++) {
-      ASSERT_EQ(nis_vec[i], nis->get_real_id(i));
+      ASSERT_EQ(nis_vec[i], nis->get_real_id(i, nullptr));
     }
   }
 }

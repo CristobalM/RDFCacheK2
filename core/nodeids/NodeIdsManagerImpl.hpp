@@ -35,7 +35,7 @@ public:
                      std::unique_ptr<I_FileRWHandler> &&log_fh_counter);
 
   long get_id(long real_id) override;
-  long get_real_id(long mapped_id) override;
+  long get_real_id(long mapped_id, int *err_code) override;
   long get_id_or_create(long real_id) override;
   long find_last_assigned();
   void log_new_kv(long real_id, long mapped_id);

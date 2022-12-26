@@ -13,7 +13,7 @@ struct NodesMap {
   virtual ~NodesMap() = default;
 
   virtual long get_id(long real_id) = 0;
-  virtual long get_real_id(long id) = 0;
+  virtual long get_real_id(long id, int *err_code) = 0;
 
   virtual long get_last_assigned() = 0;
   virtual void add(long real_id, long mapped_id) = 0;

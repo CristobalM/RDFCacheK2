@@ -3,6 +3,7 @@
 //
 
 #include "TPMSortedStreamer.hpp"
+#include "nodeids/node_ids_constants.hpp"
 
 namespace k2cache {
 proto_msg::CacheResponse TPMSortedStreamer::get_next_response() {
@@ -77,17 +78,34 @@ void TPMSortedStreamer::get_all_data(K2TreeScanner &scanner,
   auto &nis = cache->get_nodes_ids_manager();
   std::vector<unsigned long> single_results;
   std::vector<std::pair<unsigned long, unsigned long>> pair_results;
+  int err_code = 0;
   while (scanner.has_next()) {
     auto matching_pair_so = scanner.next();
     if (subject_variable && object_variable) {
-      auto subject = nis.get_real_id((long)matching_pair_so.first);
-      auto object = nis.get_real_id((long)matching_pair_so.second);
+      auto subject = nis.get_real_id((long)matching_pair_so.first, &err_code);
+      if(err_code != (int)NidsErrCode::SUCCESS_ERR_CODE){
+        std::cerr << "NodeId not found for value: " << matching_pair_so.first << std::endl;
+        continue;
+      }
+      auto object = nis.get_real_id((long)matching_pair_so.second, &err_code);
+      if(err_code != (int)NidsErrCode::SUCCESS_ERR_CODE){
+        std::cerr << "NodeId not found for value: " << matching_pair_so.second << std::endl;
+        continue;
+      }
       pair_results.emplace_back(subject, object);
     } else if (subject_variable) {
-      auto subject = nis.get_real_id((long)matching_pair_so.first);
+      auto subject = nis.get_real_id((long)matching_pair_so.first, &err_code);
+      if(err_code != (int)NidsErrCode::SUCCESS_ERR_CODE){
+        std::cerr << "NodeId not found for value: " << matching_pair_so.first << std::endl;
+        continue;
+      }
       single_results.push_back(subject);
     } else { // else if (object_variable) {
-      auto object = nis.get_real_id((long)matching_pair_so.second);
+      auto object = nis.get_real_id((long)matching_pair_so.second, &err_code);
+      if(err_code != (int)NidsErrCode::SUCCESS_ERR_CODE){
+        std::cerr << "NodeId not found for value: " << matching_pair_so.second << std::endl;
+        continue;
+      }
       single_results.push_back(object);
     }
   }

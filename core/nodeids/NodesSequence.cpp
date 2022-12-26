@@ -18,9 +18,13 @@ long NodesSequence::get_id(long value) {
   return it - values.begin();
 }
 
-long NodesSequence::get_real_id(long position) {
-  if (position >= (long)values.size())
-    return NOT_FOUND_NODEID;
+long NodesSequence::get_real_id(long position, int *err_code) {
+  if (position >= (long)values.size()){
+    if(err_code != nullptr){
+      *err_code = (int)NidsErrCode::NOT_FOUND_ERR_CODE;
+    }
+    return -1;
+  }
   return values[position];
 }
 

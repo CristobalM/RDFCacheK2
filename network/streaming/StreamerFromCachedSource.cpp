@@ -3,11 +3,26 @@
 //
 
 #include "StreamerFromCachedSource.hpp"
+#include "nodeids/node_ids_constants.hpp"
 #include "scanner/CachedObjectScanner.hpp"
 #include "scanner/CachedSubjectObjectScanner.hpp"
 #include "scanner/CachedSubjectScanner.hpp"
 
 namespace k2cache {
+
+
+bool StreamerFromCachedSource::add_real_value(long mapped_value, long *data, int &cnt){
+  auto &nis = cache->get_nodes_ids_manager();
+  int err_code = 0;
+  auto original_value = nis.get_real_id(mapped_value, &err_code);
+  if(err_code != (int)NidsErrCode::SUCCESS_ERR_CODE){
+    std::cerr << "NodeId not found for value: " << mapped_value << std::endl;
+    return false;
+  }
+  data[cnt++] = original_value;
+  return true;
+}
+
 proto_msg::CacheResponse StreamerFromCachedSource::get_next_response() {
   proto_msg::CacheResponse cache_response;
   cache_response.set_response_type(
@@ -36,22 +51,28 @@ proto_msg::CacheResponse StreamerFromCachedSource::get_next_response() {
 
   stream_response->set_has_exact_response(false);
 
-  auto &nis = cache->get_nodes_ids_manager();
-
+  long data[2] = {0, 0};
   while (cached_source_scanner->has_next()) {
+    bool valid = true;
     auto matching_pair_so = cached_source_scanner->next();
-    auto *matching_values = stream_response->mutable_matching_values()->Add();
-    if (subject_variable) {
-      acc_size += sizeof(unsigned long);
-      auto *s_match = matching_values->mutable_single_match()->Add();
-      auto original_value = nis.get_real_id((long)matching_pair_so.first);
-      s_match->set_encoded_data(original_value);
+
+    int cnt = 0;
+    if(subject_variable){
+      valid = add_real_value((long)matching_pair_so.first, data, cnt);
     }
-    if (object_variable) {
-      acc_size += sizeof(unsigned long);
+    if(object_variable){
+      valid = valid && add_real_value((long)matching_pair_so.second, data, cnt);
+    }
+
+    if(!valid){
+      continue;
+    }
+
+    auto *matching_values = stream_response->mutable_matching_values()->Add();
+    acc_size += sizeof(unsigned long) * cnt;
+    for(int i = 0; i < cnt; i++){
       auto *s_match = matching_values->mutable_single_match()->Add();
-      auto original_value = nis.get_real_id((long)matching_pair_so.second);
-      s_match->set_encoded_data(original_value);
+      s_match->set_encoded_data(data[i]);
     }
 
     if (acc_size > threshold_part_size) {
