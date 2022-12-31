@@ -13,7 +13,7 @@ namespace k2cache {
 class CacheReplacementFactory {
 public:
   static std::unique_ptr<I_CacheReplacement>
-  create_cache_replacement(unsigned long max_size_bytes,
+  create_cache_replacement(uint64_t max_size_bytes,
                            DataManager *cache_data_manager,
                            I_CacheReplacement::REPLACEMENT_STRATEGY strategy);
 };

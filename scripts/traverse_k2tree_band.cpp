@@ -19,8 +19,8 @@ struct parsed_options {
   std::string input_file;
   std::string output_file;
   BandType band;
-  unsigned long position;
-  unsigned long predicate;
+  uint64_t position;
+  uint64_t predicate;
 };
 
 parsed_options parse_cmd_line(int argc, char **argv);
@@ -51,22 +51,22 @@ int main(int argc, char **argv) {
             << "debug validate " << debug_validate << "\n"
             << std::endl;
 
-  std::set<unsigned long> band_tr;
+  std::set<uint64_t> band_tr;
 
   if (parsed.band == BandType::COL) {
     k2tree.traverse_column(
         parsed.position,
-        [](unsigned long, unsigned long row, void *report_state) {
-          reinterpret_cast<std::set<unsigned long> *>(report_state)
+        [](uint64_t, uint64_t row, void *report_state) {
+          reinterpret_cast<std::set<uint64_t> *>(report_state)
               ->insert(row);
         },
         &band_tr, bulk_op.get_stw());
   } else {
     k2tree.traverse_row(
         parsed.position,
-        [](unsigned long col, unsigned long, void *report_state) {
+        [](uint64_t col, uint64_t, void *report_state) {
           *reinterpret_cast<std::ofstream *>(report_state) << col << "\n";
-          reinterpret_cast<std::set<unsigned long> *>(report_state)
+          reinterpret_cast<std::set<uint64_t> *>(report_state)
               ->insert(col);
         },
         &band_tr, bulk_op.get_stw());
@@ -76,7 +76,7 @@ int main(int argc, char **argv) {
 
   int real_points_count = 0;
   trees[0]->scan_points(
-      [](unsigned long, unsigned long, void *report_state) {
+      [](uint64_t, uint64_t, void *report_state) {
         (*reinterpret_cast<int *>(report_state))++;
       },
       &real_points_count, bulk_op.get_stw());
@@ -87,15 +87,15 @@ int main(int argc, char **argv) {
   K2TreeBulkOp copy_bulk_op(copy_k2tree);
 
   trees[0]->scan_points(
-      [](unsigned long col, unsigned long row, void *report_state) {
+      [](uint64_t col, uint64_t row, void *report_state) {
         (*reinterpret_cast<K2TreeBulkOp *>(report_state)).insert(col, row);
       },
       &copy_bulk_op, copy_bulk_op.get_stw());
 
   std::vector<const K2TreeMixed *> other_trees = {&copy_k2tree};
 
-  unsigned long sz_serialized_original;
-  unsigned long sz_serialized_copy;
+  uint64_t sz_serialized_original;
+  uint64_t sz_serialized_copy;
   {
     std::stringstream ss_original;
     k2tree.write_to_ostream(ss_original);

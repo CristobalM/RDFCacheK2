@@ -11,14 +11,14 @@
 namespace k2cache {
 class PredicateNotFound : std::runtime_error {
 public:
-  explicit PredicateNotFound(const ulong predicate_index)
+  explicit PredicateNotFound(const uint64_t predicate_index)
       : std::runtime_error("Not found predicate with index " +
                            std::to_string(predicate_index)) {}
 };
 
 class PredicateAlreadyExists : std::runtime_error {
 public:
-  explicit PredicateAlreadyExists(const ulong predicate_index)
+  explicit PredicateAlreadyExists(const uint64_t predicate_index)
       : std::runtime_error("There is already one predicate with the index " +
                            std::to_string(predicate_index)) {}
 };

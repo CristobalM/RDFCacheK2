@@ -32,11 +32,11 @@ public:
   bool has_triple_streamer(int channel_id) override;
   void clean_triple_streamer(int id) override;
   void process_missed_predicates(
-      std::shared_ptr<const std::vector<unsigned long>> predicates) override;
-  void mark_using(const std::vector<unsigned long> &predicates) override;
-  void mark_ready(const std::vector<unsigned long> &predicates_in_use) override;
+      std::shared_ptr<const std::vector<uint64_t>> predicates) override;
+  void mark_using(const std::vector<uint64_t> &predicates) override;
+  void mark_ready(const std::vector<uint64_t> &predicates_in_use) override;
   I_TRStreamer &create_triples_streamer(
-      std::vector<unsigned long> &&loaded_predicates) override;
+      std::vector<uint64_t> &&loaded_predicates) override;
   int begin_update_session() override;
   Updater &get_updater(int updater_id) override;
   void log_updates(std::vector<K2TreeUpdates> &k2trees_updates) override;

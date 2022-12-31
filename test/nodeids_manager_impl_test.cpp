@@ -12,7 +12,7 @@ using namespace k2cache;
 
 TEST(nodeids_manager_impl_test, can_get_id_simple_input) {
   auto nis_vec =
-      std::vector<unsigned long>{9, 323, 1322, 9433, 54345, 9595955, 34343333};
+      std::vector<uint64_t>{9, 323, 1322, 9433, 54345, 9595955, 34343333};
   auto tdnis = boilerplate_nis_from_vec(nis_vec);
   auto &nis = tdnis.nim;
   for (auto i = 0UL; i < nis_vec.size(); i++) {
@@ -22,7 +22,7 @@ TEST(nodeids_manager_impl_test, can_get_id_simple_input) {
 
 TEST(nodeids_manager_impl_test, can_get_real_id_simple_input) {
   auto nis_vec =
-      std::vector<unsigned long>{9, 323, 1322, 9433, 54345, 9595955, 34343333};
+      std::vector<uint64_t>{9, 323, 1322, 9433, 54345, 9595955, 34343333};
   auto tdnis = boilerplate_nis_from_vec(nis_vec);
   auto &nis = tdnis.nim;
   for (auto i = 0UL; i < nis_vec.size(); i++) {

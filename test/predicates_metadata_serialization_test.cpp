@@ -10,7 +10,7 @@
 #include <triple_external_sort.hpp>
 #include <utility>
 using namespace k2cache;
-static std::pair<PredicatesIndexCacheMD, unsigned long>
+static std::pair<PredicatesIndexCacheMD, uint64_t>
 build_picmd(DataHolders &h) {
 
   K2TreeConfig config;
@@ -22,9 +22,9 @@ build_picmd(DataHolders &h) {
 
   std::stringstream out;
   std::stringstream tmp;
-  unsigned long sz = 10000;
+  uint64_t sz = 10000;
   write_u64(ss, 3 * sz);
-  for (unsigned long i = 1; i <= sz; i++) {
+  for (uint64_t i = 1; i <= sz; i++) {
     TripleValue(i, i, i).write_to_file(ss);
     TripleValue(i + 1, i, i + 1).write_to_file(ss);
     TripleValue(i + 2, i, i + 2).write_to_file(ss);
@@ -40,8 +40,8 @@ build_picmd(DataHolders &h) {
 
   return {PredicatesIndexCacheMD(std::move(frw_handler)), sz};
 }
-static std::pair<PredicatesIndexCacheMD, unsigned long>
-build_picmd_single_predicate(unsigned long predicate_id, DataHolders &h) {
+static std::pair<PredicatesIndexCacheMD, uint64_t>
+build_picmd_single_predicate(uint64_t predicate_id, DataHolders &h) {
 
   K2TreeConfig config;
   config.cut_depth = 10;
@@ -51,9 +51,9 @@ build_picmd_single_predicate(unsigned long predicate_id, DataHolders &h) {
   std::stringstream ss;
   std::stringstream out;
   std::stringstream tmp;
-  unsigned long sz = 10000;
+  uint64_t sz = 10000;
   write_u64(ss, 3 * sz);
-  for (unsigned long i = 1; i <= sz; i++) {
+  for (uint64_t i = 1; i <= sz; i++) {
     TripleValue(i, predicate_id, i).write_to_file(ss);
     TripleValue(i + 1, predicate_id, i + 1).write_to_file(ss);
     TripleValue(i + 2, predicate_id, i + 2).write_to_file(ss);
@@ -71,8 +71,8 @@ build_picmd_single_predicate(unsigned long predicate_id, DataHolders &h) {
   return {PredicatesIndexCacheMD(std::move(frw_handler)), sz};
 }
 
-static std::pair<std::unique_ptr<PredicatesIndexCacheMD>, unsigned long>
-build_picmd_2(unsigned long predicate_id) {
+static std::pair<std::unique_ptr<PredicatesIndexCacheMD>, uint64_t>
+build_picmd_2(uint64_t predicate_id) {
   K2TreeConfig config;
   config.cut_depth = 10;
   config.max_node_count = 256;
@@ -88,10 +88,10 @@ build_picmd_2(unsigned long predicate_id) {
   //  std::stringstream ss;
   //  auto out = std::make_unique<std::stringstream>();
   //  std::stringstream tmp;
-  //  unsigned long sz = 10000;
+  //  uint64_t sz = 10000;
   //  write_u64(ss, sz * 10);
-  //  for (unsigned long i = 1; i <= sz; i++) {
-  //    for (unsigned long j = i; j < 10; j++) {
+  //  for (uint64_t i = 1; i <= sz; i++) {
+  //    for (uint64_t j = i; j < 10; j++) {
   //      TripleValue(i, predicate_id, j).write_to_file(ss);
   //    }
   //  }
@@ -106,13 +106,13 @@ build_picmd_2(unsigned long predicate_id) {
 }
 
 TEST(predicates_metadata_serialization, same_k2tree_as_non_serialized) {
-  const unsigned long predicate_id = 123456;
+  const uint64_t predicate_id = 123456;
   auto [pc, sz] = build_picmd_2(predicate_id);
 
   K2TreeMixed non_serialized(32, 256, 10);
   K2TreeBulkOp bulk_op_non_serialized(non_serialized);
-  for (unsigned long i = 1; i <= sz; i++) {
-    for (unsigned long j = i; j < 10; j++) {
+  for (uint64_t i = 1; i <= sz; i++) {
+    for (uint64_t j = i; j < 10; j++) {
       bulk_op_non_serialized.insert(i, j);
     }
   }
@@ -156,8 +156,8 @@ TEST(predicates_metadata_serialization, can_create_save_and_retrieve) {
 
   const auto &metadata_map = metadata.get_map();
 
-  unsigned long current_offset = 0;
-  unsigned long last_predicate = 0;
+  uint64_t current_offset = 0;
+  uint64_t last_predicate = 0;
   for (auto predicate_id : metadata.get_ids_vector()) {
     auto current_metadata = metadata_map.at(predicate_id);
     ASSERT_EQ(current_metadata.predicate_id, predicate_id);
@@ -170,7 +170,7 @@ TEST(predicates_metadata_serialization, can_create_save_and_retrieve) {
     last_predicate = current_metadata.predicate_id;
   }
 
-  for (unsigned long i = sz; i > 0; i--) {
+  for (uint64_t i = sz; i > 0; i--) {
     auto fetch_result = pc.fetch_k2tree(i);
     auto &k2tree = fetch_result.get_mutable();
     K2TreeBulkOp bulk_op_curr(k2tree);
@@ -190,13 +190,13 @@ TEST(predicates_metadata_serialization, can_sync_with_external) {
   DataHolders h;
   auto [pc, sz] = build_picmd(h);
 
-  for (unsigned long i = 20'000; i < 30'000; i++) {
+  for (uint64_t i = 20'000; i < 30'000; i++) {
     pc.insert_point(i, i, i);
   }
 
   pc.sync_to_persistent();
 
-  for (unsigned long i = sz; i > 0; i--) {
+  for (uint64_t i = sz; i > 0; i--) {
     auto fetch_result = pc.fetch_k2tree(i);
     auto &k2tree = fetch_result.get_mutable();
     K2TreeBulkOp bulk_op(k2tree);
@@ -205,7 +205,7 @@ TEST(predicates_metadata_serialization, can_sync_with_external) {
     ASSERT_TRUE(k2tree.has_valid_structure(bulk_op.get_stw()));
   }
 
-  for (unsigned long i = 20'000; i < 30'000; i++) {
+  for (uint64_t i = 20'000; i < 30'000; i++) {
     auto fetch_result = pc.fetch_k2tree(i);
     auto &k2tree = fetch_result.get_mutable();
     K2TreeBulkOp bulk_op(k2tree);
@@ -216,7 +216,7 @@ TEST(predicates_metadata_serialization, can_sync_with_external) {
 }
 
 TEST(predicates_metadata_serialization, can_store_predicate_size_in_memory) {
-  unsigned long predicate_id = 12345;
+  uint64_t predicate_id = 12345;
   DataHolders h;
   auto [pc, sz] = build_picmd_single_predicate(predicate_id, h);
   auto fetched = pc.fetch_k2tree(predicate_id);

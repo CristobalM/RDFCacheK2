@@ -9,7 +9,7 @@
 using namespace k2cache;
 
 TEST(sort_results_test, can_get_correct_results){
-  auto nids = std::vector<unsigned long>{3, 3231, 9222, 123111, 828282828};
+  auto nids = std::vector<uint64_t>{3, 3231, 9222, 123111, 828282828};
   auto triples = std::vector<TripleValue>{
       {1, 2, 3},
       {1, 3, 2},

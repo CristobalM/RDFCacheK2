@@ -13,11 +13,11 @@
 namespace k2cache {
 class ReplacementTask {
   CacheContainer &cache;
-  std::shared_ptr<const std::vector<unsigned long>> predicates;
+  std::shared_ptr<const std::vector<uint64_t>> predicates;
 
 public:
   ReplacementTask(CacheContainer &cache,
-                  std::shared_ptr<const std::vector<unsigned long>> predicates);
+                  std::shared_ptr<const std::vector<uint64_t>> predicates);
   void process();
 };
 } // namespace k2cache

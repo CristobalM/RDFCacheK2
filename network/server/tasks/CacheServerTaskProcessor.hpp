@@ -56,11 +56,11 @@ public:
   void notify_workers();
 
   void process_missed_predicates(
-      std::shared_ptr<const std::vector<unsigned long>> predicates) override;
-  void mark_using(const std::vector<unsigned long> &predicates) override;
-  void mark_ready(const std::vector<unsigned long> &predicates_in_use) override;
+      std::shared_ptr<const std::vector<uint64_t>> predicates) override;
+  void mark_using(const std::vector<uint64_t> &predicates) override;
+  void mark_ready(const std::vector<uint64_t> &predicates_in_use) override;
   I_TRStreamer &create_triples_streamer(
-      std::vector<unsigned long> &&loaded_predicates) override;
+      std::vector<uint64_t> &&loaded_predicates) override;
   I_TRStreamer &get_triple_streamer(int channel_id) override;
   bool has_triple_streamer(int channel_id) override;
   void clean_triple_streamer(int channel_id) override;

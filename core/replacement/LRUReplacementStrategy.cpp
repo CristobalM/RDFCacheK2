@@ -7,12 +7,12 @@
 namespace k2cache {
 
 LRUReplacementStrategy::LRUReplacementStrategy() : low(0), high(0) {}
-void LRUReplacementStrategy::hit_key(unsigned long key) {
+void LRUReplacementStrategy::hit_key(uint64_t key) {
   auto next_key_value = high++;
   remove_key(key);
   key_mapping_to_lru_value[key] = next_key_value;
 }
-void LRUReplacementStrategy::remove_key(unsigned long key) {
+void LRUReplacementStrategy::remove_key(uint64_t key) {
   auto it = key_mapping_to_lru_value.find(key);
   if (it == key_mapping_to_lru_value.end())
     return;
@@ -28,7 +28,7 @@ void LRUReplacementStrategy::remove_key(unsigned long key) {
   }
   key_mapping_to_lru_value.erase(it);
 }
-long LRUReplacementStrategy::cost_function(unsigned long key) const {
+long LRUReplacementStrategy::cost_function(uint64_t key) const {
   auto it = key_mapping_to_lru_value.find(key);
   long value;
   if (it == key_mapping_to_lru_value.end()) {
@@ -41,11 +41,11 @@ long LRUReplacementStrategy::cost_function(unsigned long key) const {
   // extremely large.
 }
 bool LRUReplacementStrategy::should_discard_others_for_key(
-    unsigned long, I_ReplacementPriorityQueue &) {
+    uint64_t, I_ReplacementPriorityQueue &) {
   return true;
 }
 bool LRUReplacementStrategy::should_hit_without_retrieval(
-    unsigned long, I_ReplacementPriorityQueue &) {
+    uint64_t, I_ReplacementPriorityQueue &) {
   return false;
 }
 } // namespace k2cache

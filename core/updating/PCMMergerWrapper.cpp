@@ -7,12 +7,12 @@
 
 namespace k2cache {
 
-void PCMMergerWrapper::merge_add_tree(unsigned long predicate_id,
+void PCMMergerWrapper::merge_add_tree(uint64_t predicate_id,
                                       K2TreeMixed &k2tree) {
   no_ref_check();
   ref->merge_add_tree(predicate_id, k2tree);
 }
-void PCMMergerWrapper::merge_delete_tree(unsigned long predicate_id,
+void PCMMergerWrapper::merge_delete_tree(uint64_t predicate_id,
                                          K2TreeMixed &k2tree) {
   no_ref_check();
   ref->merge_delete_tree(predicate_id, k2tree);

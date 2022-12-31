@@ -103,7 +103,7 @@ TEST(update_log_test, test_fhmock_can_sync_log_to_main_storage) {
       predicate_id_1));
 }
 
-static unsigned long read_stream_size(I_FileRWHandler &fh) {
+static uint64_t read_stream_size(I_FileRWHandler &fh) {
   auto fh_reader = fh.get_reader(std::ios::binary);
   auto &is = fh_reader->get_istream();
   is.seekg(0, std::istream::end);

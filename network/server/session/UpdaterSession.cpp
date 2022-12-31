@@ -59,18 +59,18 @@ K2TreeConfig UpdaterSession::get_config() {
 
 K2TreeBulkOp &UpdaterSession::get_tree_bulk_op(tmap_t &map_src,
                                                TripleNodeId &triple_resource) {
-  unsigned long predicate_id = triple_resource.predicate.get_value();
+  uint64_t predicate_id = triple_resource.predicate.get_value();
   auto mapped_predicate =
       cache->get_nodes_ids_manager().get_id_or_create((long)predicate_id);
   return get_tree_bulk_op_id(map_src, mapped_predicate);
 }
 
-K2TreeBulkOp &UpdaterSession::get_tree_deleter(unsigned long id) {
+K2TreeBulkOp &UpdaterSession::get_tree_deleter(uint64_t id) {
   return get_tree_bulk_op_id(removed_triples, id);
 }
 
 K2TreeBulkOp &UpdaterSession::get_tree_bulk_op_id(tmap_t &map_src,
-                                                  unsigned long predicate_id) {
+                                                  uint64_t predicate_id) {
   auto it = map_src.find(predicate_id);
   if (it == map_src.end()) {
     auto config = get_config();
@@ -87,10 +87,10 @@ void UpdaterSession::log_updates() {
 
   auto updates_size = std::max(added_triples.size(), removed_triples.size());
   k2tree_updates.reserve(updates_size);
-  std::unordered_set<unsigned long> visited_del;
+  std::unordered_set<uint64_t> visited_del;
   visited_del.reserve(removed_triples.size() * 2);
   for (auto &kv : added_triples) {
-    unsigned long predicate_id = kv.first;
+    uint64_t predicate_id = kv.first;
     K2TreeMixed *add_tree = kv.second.first.get();
     K2TreeMixed *del_tree = nullptr;
     auto it_removed = removed_triples.find(predicate_id);
@@ -101,7 +101,7 @@ void UpdaterSession::log_updates() {
     k2tree_updates.emplace_back(predicate_id, add_tree, del_tree);
   }
   for (auto &kv : removed_triples) {
-    unsigned long predicate_id = kv.first;
+    uint64_t predicate_id = kv.first;
     if (visited_del.find(predicate_id) != visited_del.end())
       continue;
     K2TreeMixed *del_tree = kv.second.first.get();

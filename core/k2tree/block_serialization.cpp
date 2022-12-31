@@ -68,7 +68,7 @@ struct block read_block_from_istream(std::istream &is) {
 
 struct block read_block_from_istream(std::istream &is,
                                      MemorySegment *memory_segment);
-unsigned long write_block_to_ostream(struct block *b, std::ostream &os) {
+uint64_t write_block_to_ostream(struct block *b, std::ostream &os) {
   uint16_t nodes_count = b->nodes_count;
   uint16_t children = b->children;
   uint16_t container_size = b->container_size;
@@ -77,7 +77,7 @@ unsigned long write_block_to_ostream(struct block *b, std::ostream &os) {
   write_u16(os, children);
   write_u16(os, container_size);
 
-  unsigned long bytes_written = sizeof(uint16_t) * 3;
+  uint64_t bytes_written = sizeof(uint16_t) * 3;
 
   NODES_BV_T *frontier_preorders = b->preorders;
   for (uint32_t i = 0; i < children; i++) {
@@ -137,13 +137,13 @@ struct block read_block_from_istream(std::istream &is,
   return new_block;
 }
 
-unsigned long write_tree_to_ostream(k2tree_data data, std::ostream &os) {
+uint64_t write_tree_to_ostream(k2tree_data data, std::ostream &os) {
   write_u16(os, static_cast<uint16_t>(data.max_node_count));
   write_u16(os, static_cast<uint16_t>(data.treedepth));
   auto start_pos = os.tellp();
   write_u32(os, 0);
 
-  unsigned long bytes_written = sizeof(uint16_t) * 2 + sizeof(uint32_t);
+  uint64_t bytes_written = sizeof(uint16_t) * 2 + sizeof(uint32_t);
 
   uint32_t blocks_count =
       traverse_tree_write_to_ostream(&data.root, os, bytes_written);
@@ -155,7 +155,7 @@ unsigned long write_tree_to_ostream(k2tree_data data, std::ostream &os) {
 }
 
 uint32_t traverse_tree_write_to_ostream(struct block *b, std::ostream &os,
-                                        unsigned long &bytes_written) {
+                                        uint64_t &bytes_written) {
   struct block *child_blocks = b->children_blocks;
 
   uint32_t blocks_counted = 1;

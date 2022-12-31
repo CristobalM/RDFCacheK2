@@ -9,7 +9,7 @@ namespace k2cache {
 struct I_PQTraverse {
   virtual ~I_PQTraverse() = default;
   virtual bool has_next() = 0;
-  virtual unsigned long next_key() = 0;
+  virtual uint64_t next_key() = 0;
 };
 } // namespace k2cache
 

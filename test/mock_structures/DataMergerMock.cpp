@@ -7,7 +7,7 @@
 namespace k2cache {
 DataMergerMock::DataMergerMock(K2TreeConfig config) : config(config) {}
 
-void DataMergerMock::merge_add_tree(unsigned long predicate_id,
+void DataMergerMock::merge_add_tree(uint64_t predicate_id,
                                     K2TreeMixed &k2tree) {
   auto it = trees.find(predicate_id);
   K2TreeMixed *tree_ptr;
@@ -26,7 +26,7 @@ void DataMergerMock::merge_add_tree(unsigned long predicate_id,
   }
 }
 
-void DataMergerMock::merge_delete_tree(unsigned long predicate_id,
+void DataMergerMock::merge_delete_tree(uint64_t predicate_id,
                                        K2TreeMixed &k2tree) {
   auto it = trees.find(predicate_id);
   K2TreeMixed *tree_ptr;
@@ -46,7 +46,7 @@ void DataMergerMock::merge_delete_tree(unsigned long predicate_id,
 }
 
 void DataMergerMock::drop() {
-  trees = std::unordered_map<unsigned long, std::unique_ptr<K2TreeMixed>>();
+  trees = std::unordered_map<uint64_t, std::unique_ptr<K2TreeMixed>>();
 }
 
 void DataMergerMock::merge_update(std::vector<K2TreeUpdates> &updates) {

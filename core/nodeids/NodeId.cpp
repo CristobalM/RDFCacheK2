@@ -28,7 +28,7 @@ long NodeId::string_to_long(const std::string &input_string) {
 }
 
 std::ostream &operator<<(std::ostream &os, const NodeId &data) {
-  write_u64(os, (unsigned long)data.data);
+  write_u64(os, (uint64_t)data.data);
   return os;
 }
 

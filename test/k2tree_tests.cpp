@@ -9,7 +9,7 @@
 #include <google/protobuf/stubs/common.h>
 using namespace k2cache;
 
-using pairs_set = std::set<std::pair<unsigned long, unsigned long>>;
+using pairs_set = std::set<std::pair<uint64_t, uint64_t>>;
 
 struct DataOne {
   int a;
@@ -27,7 +27,7 @@ TEST(k2tree_tests, scan_test_1) {
   pairs_set points;
 
   k2Tree.scan_points(
-      [](unsigned long column, unsigned long row, void *_data) {
+      [](uint64_t column, uint64_t row, void *_data) {
         auto &points = *reinterpret_cast<pairs_set *>(_data);
         points.insert({column, row});
       },
@@ -40,7 +40,7 @@ TEST(k2tree_tests, scan_test_1) {
 
   k2Tree.traverse_row(
       0,
-      [](unsigned long column, unsigned long row, void *_data) {
+      [](uint64_t column, uint64_t row, void *_data) {
         auto &points = *reinterpret_cast<pairs_set *>(_data);
         points.insert({column, row});
       },
@@ -53,7 +53,7 @@ TEST(k2tree_tests, scan_test_1) {
 
   k2Tree.traverse_column(
       0,
-      [](unsigned long column, unsigned long row, void *_data) {
+      [](uint64_t column, uint64_t row, void *_data) {
         auto &points = *reinterpret_cast<pairs_set *>(_data);
         points.insert({column, row});
       },

@@ -14,7 +14,7 @@ bool CachedSubjectObjectScanner::has_next() {
   }
   return base_set_it != base_set.end();
 }
-std::pair<unsigned long, unsigned long> CachedSubjectObjectScanner::next() {
+std::pair<uint64_t, uint64_t> CachedSubjectObjectScanner::next() {
   auto next_active = active_right_elements->at(current_active_element_position);
   current_active_element_position++;
   if (left_right_dir)
@@ -36,7 +36,7 @@ CachedSubjectObjectScanner::CachedSubjectObjectScanner(
   active_right_elements = get_active_elements();
 }
 
-const std::vector<unsigned long> *
+const std::vector<uint64_t> *
 CachedSubjectObjectScanner::get_active_elements() {
   return left_right_dir ? &cached_source->get_objects(current_base_element)
                         : &cached_source->get_subjects(current_base_element);

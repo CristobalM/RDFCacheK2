@@ -60,8 +60,8 @@ struct CreatedPredData {
 };
 
 CreatedPredData build_pred_data_sz(K2TreeConfig config,
-                                   unsigned long predicate_id,
-                                   unsigned long sz);
+                                   uint64_t predicate_id,
+                                   uint64_t sz);
 
 struct PairStream {
   virtual ~PairStream() = default;
@@ -79,25 +79,25 @@ struct TDWrapper {
   std::unique_ptr<CacheContainer> cache_container;
   TD_Nis nis_bp;
 };
-CreatedPredData build_pred_data(K2TreeConfig config, unsigned long predicate_id,
+CreatedPredData build_pred_data(K2TreeConfig config, uint64_t predicate_id,
                                 PairStream &pair_stream);
 
 std::stringstream
-build_node_ids_seq_mem(const std::vector<unsigned long> &nis_seq);
+build_node_ids_seq_mem(const std::vector<uint64_t> &nis_seq);
 
 std::shared_ptr<std::string> zero_data_str_content();
 
 std::unique_ptr<NIMDataHolders>
 no_logs_static_ni_dh(std::shared_ptr<std::string> plain_ni);
 
-TD_Nis boilerplate_nis_from_vec(const std::vector<unsigned long> &data_vec);
+TD_Nis boilerplate_nis_from_vec(const std::vector<uint64_t> &data_vec);
 
 std::stringstream build_k2tree_to_ss(const std::vector<TripleValue> &data,
                                      K2TreeConfig config);
 
 std::unique_ptr<TDWrapper>
 mock_cache_container(const std::vector<TripleValue> &triples,
-                     const std::vector<unsigned long> &nids,
+                     const std::vector<uint64_t> &nids,
                      K2TreeConfig config, bool sort_results);
 
 std::shared_ptr<std::string> make_empty_ptr_shared_str();

@@ -37,7 +37,7 @@ int main(int argc, char **argv) {
     std::string output_file;
   };
 
-  unsigned long total_points = 0;
+  uint64_t total_points = 0;
 
   ofs << "#,"
       << "points,"

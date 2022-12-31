@@ -22,10 +22,10 @@ MockFetcher::MockFetcher() {
   config.cut_depth = 10;
   config.max_node_count = 128;
   config.treedepth = 32;
-  for(unsigned long i = 1; i <= 5; i++){
+  for(uint64_t i = 1; i <= 5; i++){
     data[i] = std::make_unique<K2TreeMixed>(config);
     auto st =data[i]->create_k2qw();
-    for(unsigned long j = 1; j <= 100; j++){
+    for(uint64_t j = 1; j <= 100; j++){
       data[i]->insert(j, j, st);
     }
   }

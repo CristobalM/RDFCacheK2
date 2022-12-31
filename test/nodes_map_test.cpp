@@ -55,7 +55,7 @@ TEST(NodesMapSuite, CanDeserialize) {
   std::stringstream ss;
   const long nodes_number = 1'000'000;
   write_u64(ss, nodes_number);
-  for (unsigned long i = 0; i < nodes_number; i++) {
+  for (uint64_t i = 0; i < nodes_number; i++) {
     write_u64(ss, i);
   }
   auto data = std::make_shared<std::string>(ss.str());

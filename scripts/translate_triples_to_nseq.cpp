@@ -53,9 +53,9 @@ int main(int argc, char **argv) {
     auto triple = filedata.read_triple(ifs);
     // ofs << triple.first << "," << triple.second << "," << triple.third <<
     // "\n";
-    auto first = (unsigned long)nodes_sequence->get_id((long)triple.first);
-    auto second = (unsigned long)nodes_sequence->get_id((long)triple.second);
-    auto third = (unsigned long)nodes_sequence->get_id((long)triple.third);
+    auto first = (uint64_t)nodes_sequence->get_id((long)triple.first);
+    auto second = (uint64_t)nodes_sequence->get_id((long)triple.second);
+    auto third = (uint64_t)nodes_sequence->get_id((long)triple.third);
     TripleValue triple_value(first, second, third);
     triple_value.write_to_file(ofs);
   }

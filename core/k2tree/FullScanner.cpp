@@ -13,7 +13,7 @@ namespace k2cache {
 bool FullScanner::has_next() {
   return static_cast<bool>(lazy_handler.has_next);
 }
-std::pair<unsigned long, unsigned long> FullScanner::next() {
+std::pair<uint64_t, uint64_t> FullScanner::next() {
   pair2dl_t result;
   k2node_naive_scan_points_lazy_next(&lazy_handler, &result);
   return {result.col, result.row};
@@ -31,7 +31,7 @@ void FullScanner::reset_scan() {
   k2node_naive_scan_points_lazy_reset(&lazy_handler);
 }
 K2TreeMixed &FullScanner::get_tree() { return k2tree; }
-unsigned long FullScanner::get_band_value() {
+uint64_t FullScanner::get_band_value() {
   throw std::runtime_error("Not band");
 }
 K2QStateWrapper &FullScanner::get_k2qw() { return stw; }

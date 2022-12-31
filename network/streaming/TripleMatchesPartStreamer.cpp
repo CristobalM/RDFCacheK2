@@ -11,7 +11,7 @@
 #include <map>
 namespace k2cache {
 TripleMatchesPartStreamer::TripleMatchesPartStreamer(
-    int channel_id, std::vector<unsigned long> &&loaded_predicates,
+    int channel_id, std::vector<uint64_t> &&loaded_predicates,
     size_t threshold_part_size, TaskProcessor *task_processor,
     CacheContainer *cache, FullyIndexedCache &fully_indexed_cache)
     : channel_id(channel_id), loaded_predicates(std::move(loaded_predicates)),
@@ -40,7 +40,7 @@ TripleMatchesPartStreamer::time_control_finished_error() {
   cache_response.mutable_invalid_query_response();
   return cache_response;
 }
-const std::vector<unsigned long> &
+const std::vector<uint64_t> &
 TripleMatchesPartStreamer::get_predicates_in_use() {
   return loaded_predicates;
 }
@@ -74,7 +74,7 @@ TripleMatchesPartStreamer::start_streaming_matching_triples(
 
   auto predicate_id = triple_pattern.predicate.get_value();
   auto predicate_id_translated =
-      (unsigned long)cache->get_nodes_ids_manager().get_id((long)predicate_id);
+      (uint64_t)cache->get_nodes_ids_manager().get_id((long)predicate_id);
   auto fic_response = fully_indexed_cache.get(predicate_id_translated);
   if (fic_response.exists()) {
     streamer = std::make_unique<StreamerFromCachedSource>(

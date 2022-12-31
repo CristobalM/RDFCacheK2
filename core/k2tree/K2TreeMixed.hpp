@@ -69,31 +69,31 @@ public:
 
   struct k2node *get_root_k2node();
 
-  void insert(unsigned long col, unsigned long row, K2QStateWrapper &stw);
-  void remove(unsigned long col, unsigned long row, K2QStateWrapper &stw);
-  bool has(unsigned long col, unsigned long row, K2QStateWrapper &stw) const;
+  void insert(uint64_t col, uint64_t row, K2QStateWrapper &stw);
+  void remove(uint64_t col, uint64_t row, K2QStateWrapper &stw);
+  bool has(uint64_t col, uint64_t row, K2QStateWrapper &stw) const;
 
-  void remove(unsigned long col, unsigned long row);
-  void insert(unsigned long col, unsigned long row);
-  bool has(unsigned long col, unsigned long row) const;
+  void remove(uint64_t col, uint64_t row);
+  void insert(uint64_t col, uint64_t row);
+  bool has(uint64_t col, uint64_t row) const;
 
-  unsigned long get_tree_depth() const;
+  uint64_t get_tree_depth() const;
 
-  std::vector<std::pair<unsigned long, unsigned long>>
+  std::vector<std::pair<uint64_t, uint64_t>>
   get_all_points(K2QStateWrapper &stw);
 
-  std::vector<std::pair<unsigned long, unsigned long>> get_all_points();
+  std::vector<std::pair<uint64_t, uint64_t>> get_all_points();
 
   void scan_points(point_reporter_fun_t fun_reporter, void *report_state,
                    K2QStateWrapper &stw) const;
   void scan_points(point_reporter_fun_t fun_reporter, void *report_state) const;
-  void traverse_row(unsigned long row, point_reporter_fun_t fun_reporter,
+  void traverse_row(uint64_t row, point_reporter_fun_t fun_reporter,
                     void *report_state, K2QStateWrapper &stw) const;
-  void traverse_row(unsigned long row, point_reporter_fun_t fun_reporter,
+  void traverse_row(uint64_t row, point_reporter_fun_t fun_reporter,
                     void *report_state) const;
-  void traverse_column(unsigned long column, point_reporter_fun_t fun_reporter,
+  void traverse_column(uint64_t column, point_reporter_fun_t fun_reporter,
                        void *report_state, K2QStateWrapper &stw) const;
-  void traverse_column(unsigned long column, point_reporter_fun_t fun_reporter,
+  void traverse_column(uint64_t column, point_reporter_fun_t fun_reporter,
                        void *report_state) const;
 
   struct k2tree_measurement measure_in_memory_size() const;
@@ -102,7 +102,7 @@ public:
 
   bool identical_structure_as(const K2TreeMixed &other) const;
 
-  unsigned long write_to_ostream(std::ostream &os) const;
+  uint64_t write_to_ostream(std::ostream &os) const;
   static K2TreeMixed read_from_istream(std::istream &is);
 
   size_t size() const;
@@ -114,7 +114,7 @@ public:
 
   std::unique_ptr<K2TreeScanner> create_full_scanner();
   std::unique_ptr<K2TreeScanner>
-  create_band_scanner(unsigned long band, K2TreeScanner::BandType band_type);
+  create_band_scanner(uint64_t band, K2TreeScanner::BandType band_type);
 
   std::unique_ptr<K2TreeScanner> create_empty_scanner();
 

@@ -9,9 +9,9 @@
 #include <replacement/LRUReplacementStrategy.hpp>
 namespace k2cache {
 struct MockDataManager : public DataManager {
-  std::set<unsigned long> keys;
-  void remove_key(unsigned long key) override { keys.erase(key); }
-  void retrieve_key(unsigned long key) override { keys.insert(key); }
+  std::set<uint64_t> keys;
+  void remove_key(uint64_t key) override { keys.erase(key); }
+  void retrieve_key(uint64_t key) override { keys.insert(key); }
 };
 } // namespace k2cache
 
@@ -21,7 +21,7 @@ TEST(cache_replacement_test, can_do_simple_lru_replacement_1_test) {
   MockDataManager mock_data_manager;
   CacheReplacement<LRUReplacementStrategy> cache_replacement(
       1'000'000, &mock_data_manager);
-  std::vector<std::pair<unsigned long, size_t>> keys_with_sizes = {
+  std::vector<std::pair<uint64_t, size_t>> keys_with_sizes = {
       {1, 100'000}, {2, 100'000}, {3, 100'000}, {4, 100'000}, {5, 700'000},
       {6, 700'000}, {7, 700'000}, {8, 700'000}, {9, 300'000},
   };
@@ -41,7 +41,7 @@ TEST(cache_replacement_test, can_do_simple_frequency_replacement_1_test) {
   MockDataManager mock_data_manager;
   CacheReplacement<FrequencyReplacementStrategy> cache_replacement(
       1'000'000, &mock_data_manager);
-  std::vector<std::pair<unsigned long, size_t>> keys_with_sizes = {
+  std::vector<std::pair<uint64_t, size_t>> keys_with_sizes = {
       {1, 100'000},  {1, 100'000},  {1, 100'000},  {1, 100'000},
 
       {2, 100'000},  {2, 100'000},  {2, 100'000},
@@ -87,9 +87,9 @@ TEST(cache_replacement_test, can_do_simple_frequency_replacement_1_test) {
 }
 
 TEST(cache_replacement_test, map_mutable_1) {
-  std::map<unsigned long, long> in_use;
+  std::map<uint64_t, long> in_use;
 
-  auto mark_using = [&](unsigned long key) {
+  auto mark_using = [&](uint64_t key) {
     auto it = in_use.find(key);
     if (it == in_use.end()) {
       in_use[key] = 1;
@@ -97,7 +97,7 @@ TEST(cache_replacement_test, map_mutable_1) {
     }
     it->second++;
   };
-  auto mark_ready = [&](unsigned long key) {
+  auto mark_ready = [&](uint64_t key) {
     auto it = in_use.find(key);
     if (it == in_use.end()) {
       return;
@@ -108,26 +108,26 @@ TEST(cache_replacement_test, map_mutable_1) {
     }
   };
 
-  for (unsigned long i = 0; i < 100; i++) {
+  for (uint64_t i = 0; i < 100; i++) {
     mark_using(i);
     mark_using(i);
   }
-  for (unsigned long i = 0; i < 100; i++) {
+  for (uint64_t i = 0; i < 100; i++) {
     ASSERT_EQ(in_use[i], 2);
   }
 
-  for (unsigned long i = 0; i < 100; i++) {
+  for (uint64_t i = 0; i < 100; i++) {
     mark_ready(i);
   }
-  for (unsigned long i = 0; i < 100; i++) {
+  for (uint64_t i = 0; i < 100; i++) {
     ASSERT_EQ(in_use[i], 1);
   }
 
-  for (unsigned long i = 0; i < 100; i++) {
+  for (uint64_t i = 0; i < 100; i++) {
     mark_ready(i);
   }
 
-  for (unsigned long i = 0; i < 100; i++) {
+  for (uint64_t i = 0; i < 100; i++) {
     ASSERT_EQ(in_use.find(i), in_use.end());
   }
   ASSERT_EQ(in_use.size(), 0);

@@ -259,10 +259,10 @@ void PredicatesIndexCacheMD::load_all_predicates() {
     auto first_offset = metadata.get_map().at(all_predicates[0]).tree_offset;
     is->seekg(first_offset);
     predicates.reserve(all_predicates.size() +
-                       (unsigned long)((double)all_predicates.size() * .5));
+                       (uint64_t)((double)all_predicates.size() * .5));
   }
 
-  for (unsigned long predicate_id : all_predicates) {
+  for (uint64_t predicate_id : all_predicates) {
     predicates[predicate_id] = std::make_unique<K2TreeMixed>(
         K2TreeMixed::read_from_istream(is->get_istream(), mem_segment));
   }
@@ -303,9 +303,9 @@ void PredicatesIndexCacheMD::sync_logs_to_indexes() {
 
   static constexpr auto threshold = 1'000'000'000UL; // 1GB
 
-  std::set<unsigned long> loaded_predicates;
+  std::set<uint64_t> loaded_predicates;
 
-  unsigned long total_sz = 0;
+  uint64_t total_sz = 0;
   for (auto p : logger_predicates) {
     // we are only interested on saving non-loaded indexes in this step
     if (has_predicate_active(p))
@@ -326,7 +326,7 @@ void PredicatesIndexCacheMD::sync_logs_to_indexes() {
     clean_up_bulk_sync(loaded_predicates, total_sz);
 }
 void PredicatesIndexCacheMD::clean_up_bulk_sync(
-    std::set<unsigned long> &loaded_predicates, unsigned long &total_sz) {
+    std::set<uint64_t> &loaded_predicates, uint64_t &total_sz) {
   sync_to_persistent();
   for (auto p : loaded_predicates) {
     discard_in_memory_predicate(p);

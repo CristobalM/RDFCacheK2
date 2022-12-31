@@ -17,7 +17,7 @@ struct parsed_options {
   std::string node_ids_file;
   std::string mapped_node_ids_filename;
 
-  unsigned long memory_budget_bytes;
+  uint64_t memory_budget_bytes;
   int port;
   int workers_count;
 

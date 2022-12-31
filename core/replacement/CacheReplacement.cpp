@@ -19,7 +19,7 @@ CacheReplacement<CRStrategy>::CacheReplacement(size_t max_size_allowed,
       max_size_allowed(max_size_allowed), size_used(0),
       data_manager(data_manager) {}
 template <class CRStrategy>
-bool CacheReplacement<CRStrategy>::hit_key(unsigned long key,
+bool CacheReplacement<CRStrategy>::hit_key(uint64_t key,
                                            size_t space_required) {
   if (space_required > max_size_allowed) {
     std::cerr << "ignoring " << key << " because its size " << space_required
@@ -38,7 +38,7 @@ bool CacheReplacement<CRStrategy>::hit_key(unsigned long key,
 
   auto next_size = space_required + size_used;
   it = priority_set.begin();
-  unsigned long in_use_sz;
+  uint64_t in_use_sz;
   {
     std::lock_guard lg(m);
     in_use_sz = in_use.size();
@@ -96,7 +96,7 @@ bool CacheReplacement<CRStrategy>::hit_key(unsigned long key,
   return true;
 }
 template <class CRStrategy>
-void CacheReplacement<CRStrategy>::mark_using(unsigned long key) {
+void CacheReplacement<CRStrategy>::mark_using(uint64_t key) {
   auto it = in_use.find(key);
   if (it == in_use.end()) {
     in_use[key] = 1;
@@ -106,7 +106,7 @@ void CacheReplacement<CRStrategy>::mark_using(unsigned long key) {
 }
 
 template <class CRStrategy>
-void CacheReplacement<CRStrategy>::mark_ready(unsigned long key) {
+void CacheReplacement<CRStrategy>::mark_ready(uint64_t key) {
   auto it = in_use.find(key);
   if (it == in_use.end()) {
     return;
@@ -117,7 +117,7 @@ void CacheReplacement<CRStrategy>::mark_ready(unsigned long key) {
   }
 }
 template <class CRStrategy>
-bool CacheReplacement<CRStrategy>::is_using(unsigned long key) {
+bool CacheReplacement<CRStrategy>::is_using(uint64_t key) {
   std::lock_guard lg(m);
   return in_use.find(key) != in_use.end();
 }
@@ -128,7 +128,7 @@ std::mutex &CacheReplacement<CRStrategy>::get_replacement_mutex() {
 
 template <class CRStrategy>
 bool CacheReplacement<CRStrategy>::StrategyWrapper::operator()(
-    unsigned long lhs, unsigned long rhs) const {
+    uint64_t lhs, uint64_t rhs) const {
   // return strategy.operator()(lhs, rhs);
   auto left = strategy.cost_function(lhs);
   auto right = strategy.cost_function(rhs);
@@ -157,7 +157,7 @@ CacheReplacement<CRStrategy>::CRPriorityQueue::pq_traverse() {
 }
 template <class CRStrategy>
 size_t
-CacheReplacement<CRStrategy>::CRPriorityQueue::get_key_size(unsigned long key) {
+CacheReplacement<CRStrategy>::CRPriorityQueue::get_key_size(uint64_t key) {
   return space_map[key];
 }
 
@@ -166,7 +166,7 @@ bool CacheReplacement<CRStrategy>::CRPQTraverse::has_next() {
   return it != pq.end();
 }
 template <class CRStrategy>
-unsigned long CacheReplacement<CRStrategy>::CRPQTraverse::next_key() {
+uint64_t CacheReplacement<CRStrategy>::CRPQTraverse::next_key() {
   auto result = *it;
   it++;
   return result;

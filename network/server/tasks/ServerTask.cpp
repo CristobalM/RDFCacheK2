@@ -118,7 +118,7 @@ void ServerTask::process_predicates_lock_for_triple_stream(Message &message) {
   const auto &sep_pred =
       message.get_cache_request().cache_request_separate_predicates();
 
-  std::vector<unsigned long> predicates_requested;
+  std::vector<uint64_t> predicates_requested;
   std::cout << "requested predicates: ";
   for (int i = 0; i < sep_pred.predicates_size(); i++) {
     const auto &pred_term = sep_pred.predicates(i);
@@ -132,7 +132,7 @@ void ServerTask::process_predicates_lock_for_triple_stream(Message &message) {
   }
   std::cout << std::endl;
 
-  std::vector<unsigned long> loaded_predicates;
+  std::vector<uint64_t> loaded_predicates;
 
   if (cache.get_strategy_id() !=
       I_CacheReplacement::REPLACEMENT_STRATEGY::NO_CACHING) {
@@ -147,18 +147,18 @@ void ServerTask::process_predicates_lock_for_triple_stream(Message &message) {
 
     if (loaded_predicates.size() < predicates_requested.size()) {
 
-      std::set<unsigned long> requested_set(predicates_requested.begin(),
+      std::set<uint64_t> requested_set(predicates_requested.begin(),
                                             predicates_requested.end());
-      std::set<unsigned long> loaded_set(loaded_predicates.begin(),
+      std::set<uint64_t> loaded_set(loaded_predicates.begin(),
                                          loaded_predicates.end());
-      std::set<unsigned long> difference;
+      std::set<uint64_t> difference;
 
       std::set_difference(requested_set.begin(), requested_set.end(),
                           loaded_set.begin(), loaded_set.end(),
                           std::inserter(difference, difference.begin()));
 
       task_processor.process_missed_predicates(
-          std::make_shared<const std::vector<unsigned long>>(difference.begin(),
+          std::make_shared<const std::vector<uint64_t>>(difference.begin(),
                                                              difference.end()));
     }
   } else {

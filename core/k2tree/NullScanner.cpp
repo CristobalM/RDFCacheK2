@@ -7,11 +7,11 @@
 #include "NullScanner.hpp"
 namespace k2cache {
 bool NullScanner::has_next() { return false; }
-std::pair<unsigned long, unsigned long> NullScanner::next() {
+std::pair<uint64_t, uint64_t> NullScanner::next() {
   throw std::runtime_error("null scanner");
 }
 void NullScanner::reset_scan() { throw std::runtime_error("empty scanner"); }
-unsigned long NullScanner::get_band_value() {
+uint64_t NullScanner::get_band_value() {
   throw std::runtime_error("empty scanner");
 }
 K2TreeMixed &NullScanner::get_tree() {

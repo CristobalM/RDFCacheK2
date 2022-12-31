@@ -124,7 +124,7 @@ PredicatesCacheMetadata PredicatesIndexFileBuilder::build_debug(
   uint64_t current_predicate = 0;
   bool first = true;
 
-  unsigned long current_counter = 0;
+  uint64_t current_counter = 0;
   std::set<uint64_t> already_added;
   while (!filedata.finished()) {
     auto triple = filedata.read_triple(input_file);
@@ -152,11 +152,11 @@ PredicatesCacheMetadata PredicatesIndexFileBuilder::build_debug(
     current_bulk_op->insert(triple.first, triple.third);
     current_counter++;
     if (slow_check) {
-      unsigned long scan_counter = 0;
+      uint64_t scan_counter = 0;
       // This makes it very slow
       current_bulk_op->get_tree().scan_points(
-          [](unsigned long, unsigned long, void *rs) {
-            (*reinterpret_cast<unsigned long *>(rs))++;
+          [](uint64_t, uint64_t, void *rs) {
+            (*reinterpret_cast<uint64_t *>(rs))++;
           },
           &scan_counter);
       if (scan_counter != current_counter) {

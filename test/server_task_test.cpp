@@ -35,7 +35,7 @@ struct ServerTaskWrapper {
 
 static std::unique_ptr<ServerTaskWrapper>
 mock_server_task(const std::vector<TripleValue> &triples,
-                 const std::vector<unsigned long> &nids) {
+                 const std::vector<uint64_t> &nids) {
   auto out = std::make_unique<ServerTaskWrapper>();
 
   K2TreeConfig config;
@@ -63,12 +63,12 @@ mock_server_task(const std::vector<TripleValue> &triples,
 }
 struct TriplesNidsSet {
   std::vector<TripleValue> triples;
-  std::vector<unsigned long> node_ids;
+  std::vector<uint64_t> node_ids;
 };
 
 static std::vector<TripleValue>
-random_triples_from_nids(unsigned long total_triples,
-                         const std::vector<unsigned long> &nids) {
+random_triples_from_nids(uint64_t total_triples,
+                         const std::vector<uint64_t> &nids) {
 
   auto fy1 = fisher_yates(total_triples, nids.size());
   auto fy2 = fisher_yates(total_triples, nids.size());
@@ -132,7 +132,7 @@ TEST(server_task_test, process_req_triple_stream) {
   auto pred_first = tn.triples[0].second;
   auto pred_real = tn.node_ids[pred_first];
 
-  std::set<std::pair<unsigned long, unsigned long>> matches;
+  std::set<std::pair<uint64_t, uint64_t>> matches;
   for(auto t : tn.triples){
     if(t.second == pred_first){
       matches.insert({t.first, t.third});

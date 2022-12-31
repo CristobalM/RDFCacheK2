@@ -29,7 +29,7 @@ int main(int argc, char **argv) {
 
   // auto &metadata = predicates_manager.get_metadata();
 
-  unsigned long total_points = 0;
+  uint64_t total_points = 0;
   for (auto predicate_id : predicates_manager.get_predicates_ids()) {
     auto fetch_result = predicates_manager.fetch_k2tree(predicate_id);
     total_points += fetch_result.get().size();

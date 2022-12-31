@@ -30,7 +30,7 @@ class UpdatesLoggerImpl : public UpdatesLogger {
   std::unique_ptr<I_IOStream> metadata_file_rw;
 
   using offsets_map_t =
-      std::map<unsigned long, std::unique_ptr<std::vector<long>>>;
+      std::map<uint64_t, std::unique_ptr<std::vector<long>>>;
 
   offsets_map_t offsets_map;
 
@@ -42,13 +42,13 @@ public:
   void recover_all() override;
   void log(std::vector<K2TreeUpdates> &k2tree_updates) override;
 
-  void recover_predicate(unsigned long predicate_id) override;
+  void recover_predicate(uint64_t predicate_id) override;
 
   bool has_predicate_stored(uint64_t predicate_id) override;
 
   void clean_append_log() override;
 
-  std::vector<unsigned long> get_predicates() override;
+  std::vector<uint64_t> get_predicates() override;
 
   void compact_logs() override;
 
@@ -56,13 +56,13 @@ public:
 
   UpdatesLoggerFilesManager &get_fh_manager() override;
 
-  void recover(const std::vector<unsigned long> &predicates);
+  void recover(const std::vector<uint64_t> &predicates);
 
 private:
   static void log(std::vector<K2TreeUpdates> &k2tree_updates,
                   offsets_map_t &offsets, I_OStream &trees_writer);
   static void register_update_offset(offsets_map_t &offsets,
-                                     unsigned long predicate_id,
+                                     uint64_t predicate_id,
                                      std::ostream &ofs);
   static void dump_offsets_map(UpdatesLoggerImpl::offsets_map_t &_offsets_map,
                                I_OStream &offsets_file);
@@ -71,25 +71,25 @@ private:
                                    int _total_updates);
 
   struct PredicateUpdate {
-    unsigned long predicate_id;
+    uint64_t predicate_id;
     std::unique_ptr<K2TreeMixed> add_update;
     std::unique_ptr<K2TreeMixed> del_update;
     void merge_with(PredicateUpdate &update);
   };
 
-  void recover_data(const std::vector<unsigned long> &predicates);
+  void recover_data(const std::vector<uint64_t> &predicates);
   void recover_single_update(I_IStream &ifs);
   void retrieve_offsets_map();
   void dump_offsets_map();
   PredicateUpdate recover_single_predicate_update(I_IStream &ifs);
   void merge_update(PredicateUpdate &predicate_update);
-  void register_update_offset(unsigned long predicate_id, std::ostream &ofs);
+  void register_update_offset(uint64_t predicate_id, std::ostream &ofs);
   void recover_all_data();
   int read_total_updates();
   void commit_total_updates();
 
   std::unique_ptr<UpdatesLoggerImpl::PredicateUpdate>
-  compact_predicate(unsigned long predicate_id);
+  compact_predicate(uint64_t predicate_id);
 };
 } // namespace k2cache
 

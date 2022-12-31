@@ -9,12 +9,12 @@
 #include <fstream>
 namespace k2cache {
 class ULConnectorWHeaderCustomSerialization {
-  unsigned long value;
+  uint64_t value;
 
 public:
   static constexpr bool fixed_size = true;
 
-  explicit ULConnectorWHeaderCustomSerialization(unsigned long value)
+  explicit ULConnectorWHeaderCustomSerialization(uint64_t value)
       : value(value) {}
 
   ULConnectorWHeaderCustomSerialization() : value(0) {}
@@ -56,12 +56,12 @@ public:
 
   static bool read_value(std::ifstream &ifs,
                          ULConnectorWHeaderCustomSerialization &next_val) {
-    unsigned long value = read_u64(ifs);
+    uint64_t value = read_u64(ifs);
     next_val = ULConnectorWHeaderCustomSerialization(value);
     return true;
   }
 
-  static size_t size() { return sizeof(unsigned long); }
+  static size_t size() { return sizeof(uint64_t); }
 };
 
 std::ostream &operator<<(std::ostream &os,

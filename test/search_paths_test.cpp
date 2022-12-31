@@ -9,8 +9,8 @@
 
 using namespace k2cache;
 
-std::vector<unsigned long> get_consecutive_seq(int size) {
-  std::vector<unsigned long> sequence;
+std::vector<uint64_t> get_consecutive_seq(int size) {
+  std::vector<uint64_t> sequence;
   sequence.reserve(size);
   for (int i = 1; i <= size; i++) {
     sequence.push_back(i);
@@ -18,11 +18,11 @@ std::vector<unsigned long> get_consecutive_seq(int size) {
   return sequence;
 }
 
-using pul_t = std::pair<unsigned long, unsigned long>;
+using pul_t = std::pair<uint64_t, uint64_t>;
 
 static std::vector<pul_t>
 find_n_paths_for_input(const std::vector<TripleValue> &triples,
-                       const std::vector<unsigned long> &node_ids,
+                       const std::vector<uint64_t> &node_ids,
                        int n,
                        int max_number
                        ) {
@@ -47,7 +47,7 @@ TEST(search_paths_test, can_search_simple_paths_1) {
       {1, 2, 3},
       {3, 4, 5},
   };
-  std::vector<unsigned long> node_ids = get_consecutive_seq(5);
+  std::vector<uint64_t> node_ids = get_consecutive_seq(5);
 
   auto paths = find_n_paths_for_input(triples, node_ids, 2, 1);
 
@@ -63,7 +63,7 @@ TEST(search_paths_test, can_search_simple_paths_2) {
       {3, 4, 5},
       {3, 6, 7},
   };
-  std::vector<unsigned long> node_ids = get_consecutive_seq(7);
+  std::vector<uint64_t> node_ids = get_consecutive_seq(7);
 
   auto paths = find_n_paths_for_input(triples, node_ids, 2, 2);
 
@@ -83,7 +83,7 @@ TEST(search_paths_test, can_search_simple_paths_3) {
       {3, 6, 7},
       {7, 1, 2},
   };
-  std::vector<unsigned long> node_ids = get_consecutive_seq(7);
+  std::vector<uint64_t> node_ids = get_consecutive_seq(7);
 
   auto paths = find_n_paths_for_input(triples, node_ids, 2, 3);
 
@@ -104,7 +104,7 @@ TEST(search_paths_test, can_search_simple_paths_3_max_number_works) {
       {3, 6, 7},
       {7, 1, 2},
   };
-  std::vector<unsigned long> node_ids = get_consecutive_seq(7);
+  std::vector<uint64_t> node_ids = get_consecutive_seq(7);
 
   auto paths = find_n_paths_for_input(triples, node_ids, 2, 1);
 
@@ -124,7 +124,7 @@ TEST(search_paths_test, can_find_simple_path_100) {
     triples.emplace_back(i, i+1, i+2);
   }
 
-  std::vector<unsigned long> node_ids = get_consecutive_seq(sz);
+  std::vector<uint64_t> node_ids = get_consecutive_seq(sz);
 
   auto paths = find_n_paths_for_input(triples, node_ids, 50, 1);
 

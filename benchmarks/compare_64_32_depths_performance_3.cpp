@@ -18,7 +18,7 @@ int main(int, char **) {
   config2.max_node_count = 256;
   K2TreeMixed tree2(config2);
 
-  static constexpr unsigned long TEN_MILL = 10'000'000;
+  static constexpr uint64_t TEN_MILL = 10'000'000;
 
   std::cout << "inserting to tree1 " << std::endl;
   auto start = std::chrono::high_resolution_clock::now();
@@ -44,7 +44,7 @@ int main(int, char **) {
   start = std::chrono::high_resolution_clock::now();
 
   tree1.scan_points(
-      [](unsigned long col, unsigned long, void *) { (void)(col); }, nullptr);
+      [](uint64_t col, uint64_t, void *) { (void)(col); }, nullptr);
 
   stop = std::chrono::high_resolution_clock::now();
   duration =
@@ -55,7 +55,7 @@ int main(int, char **) {
   start = std::chrono::high_resolution_clock::now();
 
   tree2.scan_points(
-      [](unsigned long col, unsigned long, void *) { (void)(col); }, nullptr);
+      [](uint64_t col, uint64_t, void *) { (void)(col); }, nullptr);
 
   stop = std::chrono::high_resolution_clock::now();
   duration =

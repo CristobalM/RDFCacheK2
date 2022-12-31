@@ -25,7 +25,7 @@ bool TPMSortedStreamer::all_sent() {
 TPMSortedStreamer::TPMSortedStreamer(int channel_id, int pattern_channel_id,
                                      const TripleNodeId &triple_pattern_node,
                                      CacheContainer *cache,
-                                     unsigned long threshold_part_size)
+                                     uint64_t threshold_part_size)
     : channel_id(channel_id), pattern_channel_id(pattern_channel_id),
       triple_pattern_node(triple_pattern_node), cache(cache),
       threshold_part_size(threshold_part_size), current_sent(0) {
@@ -76,8 +76,8 @@ void TPMSortedStreamer::get_all_data(K2TreeScanner &scanner,
                                      bool subject_variable,
                                      bool object_variable) {
   auto &nis = cache->get_nodes_ids_manager();
-  std::vector<unsigned long> single_results;
-  std::vector<std::pair<unsigned long, unsigned long>> pair_results;
+  std::vector<uint64_t> single_results;
+  std::vector<std::pair<uint64_t, uint64_t>> pair_results;
   int err_code = 0;
   while (scanner.has_next()) {
     auto matching_pair_so = scanner.next();
@@ -129,10 +129,10 @@ proto_msg::CacheResponse TPMSortedStreamer::get_next_pairs_response() {
 
   auto acc_size = 0UL;
 
-  unsigned long i = current_sent;
+  uint64_t i = current_sent;
   for (; i < data_results.pair_results.size() && acc_size < threshold_part_size;
        i++) {
-    acc_size += sizeof(unsigned long) * 2;
+    acc_size += sizeof(uint64_t) * 2;
 
     auto *matching_values = stream_response->mutable_matching_values()->Add();
     auto *first_match = matching_values->mutable_single_match()->Add();
@@ -162,11 +162,11 @@ proto_msg::CacheResponse TPMSortedStreamer::get_next_single_response() {
 
   auto acc_size = 0UL;
 
-  unsigned long i = current_sent;
+  uint64_t i = current_sent;
   for (;
        i < data_results.single_results.size() && acc_size < threshold_part_size;
        i++) {
-    acc_size += sizeof(unsigned long);
+    acc_size += sizeof(uint64_t);
 
     auto *matching_values = stream_response->mutable_matching_values()->Add();
     auto *s_match = matching_values->mutable_single_match()->Add();

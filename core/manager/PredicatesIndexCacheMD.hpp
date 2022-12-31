@@ -36,7 +36,7 @@ private:
 
   K2TreeConfig k2tree_config;
 
-  std::map<unsigned long, MemorySegment *> memory_segments_map;
+  std::map<uint64_t, MemorySegment *> memory_segments_map;
 
   MemorySegment *full_memory_segment;
 
@@ -86,8 +86,8 @@ public:
 
 private:
   void sync_to_stream(std::ostream &os);
-  void clean_up_bulk_sync(std::set<unsigned long> &loaded_predicates,
-                          unsigned long &total_sz);
+  void clean_up_bulk_sync(std::set<uint64_t> &loaded_predicates,
+                          uint64_t &total_sz);
 };
 } // namespace k2cache
 

@@ -52,44 +52,44 @@ void PredicatesCacheManagerImpl::load_all_predicates() {
 }
 
 size_t
-PredicatesCacheManagerImpl::get_predicate_size(unsigned long predicate_id) {
+PredicatesCacheManagerImpl::get_predicate_size(uint64_t predicate_id) {
   auto &metadata_map = predicates_index->get_metadata().get_map();
   if (metadata_map.find(predicate_id) == metadata_map.end())
     return 0;
   return metadata_map.at(predicate_id).tree_size_in_memory;
 }
 
-void PredicatesCacheManagerImpl::remove_key(unsigned long key) {
+void PredicatesCacheManagerImpl::remove_key(uint64_t key) {
   predicates_index->discard_in_memory_predicate(key);
 }
-void PredicatesCacheManagerImpl::retrieve_key(unsigned long key) {
+void PredicatesCacheManagerImpl::retrieve_key(uint64_t key) {
   predicates_index->load_single_predicate(key);
 }
 std::unique_ptr<K2TreeScanner>
 PredicatesCacheManagerImpl::create_null_k2tree_scanner() {
   return std::make_unique<NullScanner>();
 }
-void PredicatesCacheManagerImpl::merge_add_tree(unsigned long predicate_id,
+void PredicatesCacheManagerImpl::merge_add_tree(uint64_t predicate_id,
                                                 K2TreeMixed &k2tree) {
   merge_op_tree(
       predicate_id, k2tree,
-      [](K2TreeBulkOp &bulk_op, unsigned long col, unsigned long row) {
+      [](K2TreeBulkOp &bulk_op, uint64_t col, uint64_t row) {
         bulk_op.insert(col, row);
       },
       true);
 }
-void PredicatesCacheManagerImpl::merge_delete_tree(unsigned long predicate_id,
+void PredicatesCacheManagerImpl::merge_delete_tree(uint64_t predicate_id,
                                                    K2TreeMixed &k2tree) {
   merge_op_tree(
       predicate_id, k2tree,
-      [](K2TreeBulkOp &bulk_op, unsigned long col, unsigned long row) {
+      [](K2TreeBulkOp &bulk_op, uint64_t col, uint64_t row) {
         bulk_op.remove(col, row);
       },
       false);
 }
 void PredicatesCacheManagerImpl::merge_op_tree(
-    unsigned long predicate_id, K2TreeMixed &to_merge_k2tree,
-    const std::function<void(K2TreeBulkOp &, unsigned long, unsigned long)> &op,
+    uint64_t predicate_id, K2TreeMixed &to_merge_k2tree,
+    const std::function<void(K2TreeBulkOp &, uint64_t, uint64_t)> &op,
     bool create_if_doesnt_exists) {
   if (!predicates_index->has_predicate_active(predicate_id)) {
     if (!create_if_doesnt_exists)

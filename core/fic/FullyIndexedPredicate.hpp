@@ -15,22 +15,22 @@
 namespace k2cache {
 // This is a very space-expensive structure, optimized only for speed
 class FullyIndexedPredicate : public I_CachedPredicateSource {
-  std::unordered_map<unsigned long, std::vector<unsigned long>>
+  std::unordered_map<uint64_t, std::vector<uint64_t>>
       subject_to_object;
-  std::unordered_map<unsigned long, std::vector<unsigned long>>
+  std::unordered_map<uint64_t, std::vector<uint64_t>>
       object_to_subject;
-  std::set<unsigned long> subjects;
-  std::set<unsigned long> objects;
+  std::set<uint64_t> subjects;
+  std::set<uint64_t> objects;
 
 public:
   explicit FullyIndexedPredicate(const K2TreeMixed &k2tree);
-  bool has(unsigned long subject_id, unsigned long object_id) override;
-  const std::vector<unsigned long> &
-  get_subjects(unsigned long object_value) override;
-  const std::vector<unsigned long> &
-  get_objects(unsigned long subject_value) override;
-  const std::set<unsigned long> &get_all_subjects() override;
-  const std::set<unsigned long> &get_all_objects() override;
+  bool has(uint64_t subject_id, uint64_t object_id) override;
+  const std::vector<uint64_t> &
+  get_subjects(uint64_t object_value) override;
+  const std::vector<uint64_t> &
+  get_objects(uint64_t subject_value) override;
+  const std::set<uint64_t> &get_all_subjects() override;
+  const std::set<uint64_t> &get_all_objects() override;
 };
 } // namespace k2cache
 

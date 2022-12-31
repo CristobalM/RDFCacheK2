@@ -57,22 +57,22 @@ bool CacheServerTaskProcessor::tasks_available() {
   return !server_tasks.empty();
 }
 void CacheServerTaskProcessor::process_missed_predicates(
-    std::shared_ptr<const std::vector<unsigned long>> predicates) {
+    std::shared_ptr<const std::vector<uint64_t>> predicates) {
   replacement_task_processor.add_task(std::move(predicates));
 }
 
 void CacheServerTaskProcessor::mark_using(
-    const std::vector<unsigned long> &predicates) {
+    const std::vector<uint64_t> &predicates) {
   replacement_task_processor.mark_used(predicates);
 }
 void CacheServerTaskProcessor::mark_ready(
-    const std::vector<unsigned long> &predicates_in_use) {
+    const std::vector<uint64_t> &predicates_in_use) {
   std::lock_guard lg(cache.get_replacement().get_replacement_mutex());
   replacement_task_processor.mark_ready(predicates_in_use);
 }
 
 I_TRStreamer &CacheServerTaskProcessor::create_triples_streamer(
-    std::vector<unsigned long> &&loaded_predicates) {
+    std::vector<uint64_t> &&loaded_predicates) {
   std::lock_guard lg(mutex);
 
   auto streamer = std::make_unique<TripleMatchesPartStreamer>(

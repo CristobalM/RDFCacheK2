@@ -8,7 +8,7 @@
 namespace k2cache {
 FrequencyReplacementStrategy::FrequencyReplacementStrategy() = default;
 
-void FrequencyReplacementStrategy::hit_key(unsigned long key) {
+void FrequencyReplacementStrategy::hit_key(uint64_t key) {
   auto it = frequency_map.find(key);
   if (it == frequency_map.end()) {
     frequency_map[key] = 1;
@@ -19,15 +19,15 @@ void FrequencyReplacementStrategy::hit_key(unsigned long key) {
 
 // we do nothing here, as hit frequency count shouldn't be affected
 // when keys are discarded
-void FrequencyReplacementStrategy::remove_key(unsigned long) {}
-long FrequencyReplacementStrategy::cost_function(unsigned long key) const {
+void FrequencyReplacementStrategy::remove_key(uint64_t) {}
+long FrequencyReplacementStrategy::cost_function(uint64_t key) const {
   auto it = frequency_map.find(key);
   if (it == frequency_map.end())
     return 0;
   return it->second;
 }
 bool FrequencyReplacementStrategy::should_discard_others_for_key(
-    unsigned long key, I_ReplacementPriorityQueue &pq) {
+    uint64_t key, I_ReplacementPriorityQueue &pq) {
   if (pq.empty())
     return false;
 
@@ -51,7 +51,7 @@ bool FrequencyReplacementStrategy::should_discard_others_for_key(
   return false;
 }
 bool FrequencyReplacementStrategy::should_hit_without_retrieval(
-    unsigned long, I_ReplacementPriorityQueue &) {
+    uint64_t, I_ReplacementPriorityQueue &) {
   return true;
 }
 } // namespace k2cache

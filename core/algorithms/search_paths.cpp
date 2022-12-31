@@ -20,28 +20,28 @@ namespace {
 using TripleHSet = std::unordered_set<RDFTriple, RDFTriple::hash>;
 }
 
-unsigned long choose_predicate_index(unsigned long size);
+uint64_t  choose_predicate_index(uint64_t  size);
 
 struct SPPair {
-  unsigned long subject;
-  unsigned long predicate;
+  uint64_t  subject;
+  uint64_t  predicate;
 };
 
 struct POPair {
-  unsigned long predicate;
-  unsigned long object;
+  uint64_t  predicate;
+  uint64_t  object;
 };
 
 void find_paths_subj_origin(
-    std::stack<RDFTriple> current_path,
-    unsigned long first_subject, SPPair sp_pair,
-    std::vector<std::pair<unsigned long, unsigned long>> &paths,
-    PredicatesCacheManager &pcm, TripleHSet &visited_edges,
-    K2TreeMixed &current_k2tree, unsigned long current_predicate,
-    unsigned long current_pred_idx, int curr_path_size, int max_path_size,
-    int max_paths, const std::vector<unsigned long> &sorted_predicates);
+        std::stack<RDFTriple> current_path,
+        uint64_t first_subject, SPPair sp_pair,
+        std::vector<std::pair<uint64_t, uint64_t>> &paths,
+        PredicatesCacheManager &pcm, TripleHSet &visited_edges,
+        K2TreeMixed &current_k2tree, uint64_t current_predicate,
+        uint64_t current_pred_idx, int curr_path_size, int max_path_size,
+        int max_paths, const std::vector<uint64_t> &sorted_predicates);
 
-std::vector<std::pair<unsigned long, unsigned long>>
+std::vector<std::pair<uint64_t , uint64_t >>
 find_n_paths(PredicatesCacheManager &pcm, int n, int max_number) {
 
   auto sorted_predicate_ids =
@@ -80,7 +80,7 @@ find_n_paths(PredicatesCacheManager &pcm, int n, int max_number) {
               return lfetched.get().size() > rfetched.get().size();
             });
 
-  std::vector<std::pair<unsigned long, unsigned long>> paths;
+  std::vector<std::pair<uint64_t , uint64_t >> paths;
 
   for (auto pidx = 0UL; pidx < sorted_predicate_ids.size(); pidx++) {
     auto p = sorted_predicate_ids[pidx];
@@ -88,7 +88,7 @@ find_n_paths(PredicatesCacheManager &pcm, int n, int max_number) {
     assert(fetched.exists() && fetched.loaded());
     auto &k2tree = fetched.get_mutable();
     auto scanner = k2tree.create_full_scanner();
-    std::unordered_set<unsigned long> subjects;
+    std::unordered_set<uint64_t > subjects;
     TripleHSet visited;
     while (scanner->has_next()) {
       auto [subj, obj] = scanner->next();
@@ -110,13 +110,13 @@ find_n_paths(PredicatesCacheManager &pcm, int n, int max_number) {
 }
 void debug_reverse_print_stack(const std::stack<RDFTriple> &s);
 void find_paths_subj_origin(
-    std::stack<RDFTriple> current_path,
-    unsigned long first_subject, SPPair sp_pair,
-    std::vector<std::pair<unsigned long, unsigned long>> &paths,
-    PredicatesCacheManager &pcm, TripleHSet &visited_edges,
-    K2TreeMixed &current_k2tree, unsigned long current_predicate,
-    unsigned long, int curr_path_size, int max_path_size,
-    int max_paths, const std::vector<unsigned long> &sorted_predicates) {
+        std::stack<RDFTriple> current_path,
+        uint64_t first_subject, SPPair sp_pair,
+        std::vector<std::pair<uint64_t, uint64_t>> &paths,
+        PredicatesCacheManager &pcm, TripleHSet &visited_edges,
+        K2TreeMixed &current_k2tree, uint64_t current_predicate,
+        uint64_t current_pred_idx, int curr_path_size, int max_path_size,
+        int max_paths, const std::vector<uint64_t> &sorted_predicates) {
   if((int)paths.size() >= max_paths){
     return;
   }
@@ -180,13 +180,13 @@ void debug_reverse_print_stack(const std::stack<RDFTriple> &s) {
 
 
 
-unsigned long choose_predicate_index(unsigned long size) {
+uint64_t  choose_predicate_index(uint64_t  size) {
   if (size == 0) {
     return 0;
   }
   static std::random_device rd;
   static std::mt19937 gen(rd());
-  static std::uniform_int_distribution<unsigned long> dis(0, size - 1UL);
+  static std::uniform_int_distribution<uint64_t > dis(0, size - 1UL);
   return dis(gen);
 }
 

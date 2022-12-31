@@ -13,7 +13,7 @@
 namespace k2cache {
 std::unique_ptr<I_CacheReplacement>
 CacheReplacementFactory::create_cache_replacement(
-    unsigned long max_size_bytes, DataManager *cache_data_manager,
+    uint64_t max_size_bytes, DataManager *cache_data_manager,
     I_CacheReplacement::REPLACEMENT_STRATEGY strategy) {
   switch (strategy) {
   case I_CacheReplacement::LRU:

@@ -12,9 +12,9 @@ namespace k2cache {
 class NullScanner : public K2TreeScanner {
 public:
   bool has_next() override;
-  std::pair<unsigned long, unsigned long> next() override;
+  std::pair<uint64_t, uint64_t> next() override;
   void reset_scan() override;
-  unsigned long get_band_value() override;
+  uint64_t get_band_value() override;
   K2TreeMixed &get_tree() override;
   K2QStateWrapper &get_k2qw() override;
   ~NullScanner() override;

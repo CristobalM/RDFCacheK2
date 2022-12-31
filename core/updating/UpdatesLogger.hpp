@@ -10,13 +10,12 @@
 #include <vector>
 
 namespace k2cache {
-class UpdatesLogger {
-public:
+struct UpdatesLogger {
   virtual ~UpdatesLogger() = default;
-  virtual void recover_predicate(unsigned long predicate_id) = 0;
-  virtual bool has_predicate_stored(unsigned long predicate_id) = 0;
+  virtual void recover_predicate(uint64_t predicate_id) = 0;
+  virtual bool has_predicate_stored(uint64_t predicate_id) = 0;
   virtual void compact_logs() = 0;
-  virtual std::vector<unsigned long> get_predicates() = 0;
+  virtual std::vector<uint64_t> get_predicates() = 0;
   virtual void clean_append_log() = 0;
   virtual void recover_all() = 0;
   virtual void log(std::vector<K2TreeUpdates> &updates) = 0;
