@@ -8,7 +8,7 @@
 namespace k2cache {
 FullyIndexedPredicate::FullyIndexedPredicate(const K2TreeMixed &k2tree) {
   k2tree.scan_points(
-      [](unsigned long col, unsigned long row, void *report_state) {
+      [](uint64_t col, uint64_t row, void *report_state) {
         auto *self = reinterpret_cast<FullyIndexedPredicate *>(report_state);
         self->subject_to_object[col].push_back(row);
         self->object_to_subject[row].push_back(col);
@@ -17,8 +17,8 @@ FullyIndexedPredicate::FullyIndexedPredicate(const K2TreeMixed &k2tree) {
       },
       this);
 }
-bool FullyIndexedPredicate::has(unsigned long subject_id,
-                                unsigned long object_id) {
+bool FullyIndexedPredicate::has(uint64_t subject_id,
+                                uint64_t object_id) {
   auto &so = subject_to_object[subject_id];
   auto &os = object_to_subject[object_id];
   if (so.size() <= os.size()) {
@@ -26,18 +26,18 @@ bool FullyIndexedPredicate::has(unsigned long subject_id,
   }
   return std::find(os.begin(), os.end(), subject_id) != os.end();
 }
-const std::vector<unsigned long> &
-FullyIndexedPredicate::get_subjects(unsigned long object_value) {
+const std::vector<uint64_t> &
+FullyIndexedPredicate::get_subjects(uint64_t object_value) {
   return object_to_subject[object_value];
 }
-const std::vector<unsigned long> &
-FullyIndexedPredicate::get_objects(unsigned long subject_value) {
+const std::vector<uint64_t> &
+FullyIndexedPredicate::get_objects(uint64_t subject_value) {
   return subject_to_object[subject_value];
 }
-const std::set<unsigned long> &FullyIndexedPredicate::get_all_subjects() {
+const std::set<uint64_t> &FullyIndexedPredicate::get_all_subjects() {
   return subjects;
 }
-const std::set<unsigned long> &FullyIndexedPredicate::get_all_objects() {
+const std::set<uint64_t> &FullyIndexedPredicate::get_all_objects() {
   return objects;
 }
 } // namespace k2cache

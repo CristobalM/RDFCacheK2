@@ -14,8 +14,8 @@ class CacheDataManager : public DataManager {
       K2TreeFetcher &cdm_fetcher;
 
 public:
-  void remove_key(unsigned long key) override;
-  void retrieve_key(unsigned long key) override;
+  void remove_key(uint64_t key) override;
+  void retrieve_key(uint64_t key) override;
 
   CacheDataManager(fic::types::cache_map_t &cache_map, K2TreeFetcher &f);
 };

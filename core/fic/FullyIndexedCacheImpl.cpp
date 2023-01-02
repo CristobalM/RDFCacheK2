@@ -9,7 +9,7 @@
 
 namespace k2cache {
 void FullyIndexedCacheImpl::init_streamer_predicates(
-    const std::vector<unsigned long> &streamer_predicates) {
+    const std::vector<uint64_t> &streamer_predicates) {
   for (auto predicate : streamer_predicates) {
     if (!should_cache(predicate)) {
       std::cout << "not caching predicate " << predicate << std::endl;
@@ -23,7 +23,7 @@ void FullyIndexedCacheImpl::init_streamer_predicates(
   }
 }
 
-bool FullyIndexedCacheImpl::should_cache(unsigned long predicate) {
+bool FullyIndexedCacheImpl::should_cache(uint64_t predicate) {
   auto fetch_result = fetcher.fetch_k2tree_if_loaded(predicate);
   if (!fetch_result.loaded())
     return false;
@@ -32,7 +32,7 @@ bool FullyIndexedCacheImpl::should_cache(unsigned long predicate) {
 }
 
 FullyIndexedCacheResponse
-FullyIndexedCacheImpl::get(unsigned long predicate_id) {
+FullyIndexedCacheImpl::get(uint64_t predicate_id) {
   auto it = cached_predicates_sources->find(predicate_id);
   if (it == cached_predicates_sources->end())
     return FullyIndexedCacheResponse(nullptr);
@@ -49,7 +49,7 @@ FullyIndexedCacheImpl::FullyIndexedCacheImpl(
       data_manager(std::move(data_manager)),
       cache_replacement(std::move(cache_replacement)) {}
 
-void FullyIndexedCacheImpl::resync_predicate(unsigned long predicate_id) {
+void FullyIndexedCacheImpl::resync_predicate(uint64_t predicate_id) {
   // don't sync if it not currently loaded
   if (cached_predicates_sources->find(predicate_id) ==
       cached_predicates_sources->end())

@@ -52,15 +52,15 @@ public:
   PredicatesIndexCacheMD &get_predicates_index_cache() override;
   void load_all_predicates() override;
 
-  size_t get_predicate_size(unsigned long predicate_id) override;
-  void remove_key(unsigned long key) override;
-  void retrieve_key(unsigned long key) override;
+  uint64_t get_predicate_size(uint64_t predicate_id) override;
+  void remove_key(uint64_t key) override;
+  void retrieve_key(uint64_t key) override;
 
   std::unique_ptr<K2TreeScanner> create_null_k2tree_scanner() override;
 
-  void merge_add_tree(unsigned long predicate_id, K2TreeMixed &k2tree) override;
+  void merge_add_tree(uint64_t predicate_id, K2TreeMixed &k2tree) override;
 
-  void merge_delete_tree(unsigned long predicate_id,
+  void merge_delete_tree(uint64_t predicate_id,
                          K2TreeMixed &k2tree) override;
 
   void merge_update(std::vector<K2TreeUpdates> &updates) override;
@@ -70,9 +70,9 @@ public:
   UpdatesLogger &get_updates_logger() override;
 
 private:
-  void merge_op_tree(unsigned long predicate_id, K2TreeMixed &to_merge_k2tree,
-                     const std::function<void(K2TreeBulkOp &, unsigned long,
-                                              unsigned long)> &op,
+  void merge_op_tree(uint64_t predicate_id, K2TreeMixed &to_merge_k2tree,
+                     const std::function<void(K2TreeBulkOp &, uint64_t,
+                                              uint64_t)> &op,
                      bool create_if_doesnt_exists);
 };
 } // namespace k2cache

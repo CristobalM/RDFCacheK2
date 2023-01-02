@@ -25,7 +25,7 @@ int main(int argc, char **argv) {
   std::string line;
   std::string number_string;
 
-  unsigned long total_lines = 0;
+  uint64_t total_lines = 0;
   while (std::getline(ifs, line)) {
     total_lines++;
   }
@@ -36,7 +36,7 @@ int main(int argc, char **argv) {
   while (std::getline(ifs, line)) {
     std::stringstream ss(line);
     int i = 0;
-    unsigned long numbers[3];
+    uint64_t numbers[3];
     while (std::getline(ss, number_string, ',')) {
       numbers[i++] = std::stoul(number_string);
     }

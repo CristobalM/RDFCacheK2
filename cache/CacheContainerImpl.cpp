@@ -19,10 +19,10 @@ I_CacheReplacement &CacheContainerImpl::get_replacement() {
 I_CacheReplacement::REPLACEMENT_STRATEGY CacheContainerImpl::get_strategy_id() {
   return strategy_id;
 }
-std::vector<unsigned long>
+std::vector<uint64_t>
 CacheContainerImpl::extract_loaded_predicates_from_sequence(
-    const std::vector<unsigned long> &input_predicates_ids) {
-  std::vector<unsigned long> result;
+    const std::vector<uint64_t> &input_predicates_ids) {
+  std::vector<uint64_t> result;
   auto &predicates_index_cache = pcm->get_predicates_index_cache();
 
   for (auto current_predicate_id : input_predicates_ids) {

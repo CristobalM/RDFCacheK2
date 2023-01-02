@@ -145,13 +145,13 @@ std::vector<TripleNodeId> read_all_from_streamer(I_TRMatchingStreamer &streamer,
 }
 
 CreatedPredData build_pred_data_sz(K2TreeConfig config,
-                                   unsigned long predicate_id,
-                                   unsigned long sz) {
+                                   uint64_t predicate_id,
+                                   uint64_t sz) {
   struct my_pair_str : public PairStream {
-    unsigned long sz = 0;
-    unsigned long pred = 0;
-    unsigned long i = 1;
-    unsigned long j = 1;
+    uint64_t sz = 0;
+    uint64_t pred = 0;
+    uint64_t i = 1;
+    uint64_t j = 1;
     bool has_next() override { return i <= sz && j < 10; }
     std::pair<long, long> next() override {
       auto out = std::make_pair(i, j);
@@ -170,7 +170,7 @@ CreatedPredData build_pred_data_sz(K2TreeConfig config,
   return build_pred_data(config, predicate_id, mps);
 }
 
-CreatedPredData build_pred_data(K2TreeConfig config, unsigned long predicate_id,
+CreatedPredData build_pred_data(K2TreeConfig config, uint64_t predicate_id,
                                 PairStream &pair_stream) {
   std::stringstream ss;
   auto out = std::make_unique<std::stringstream>();
@@ -204,7 +204,7 @@ CreatedPredData::CreatedPredData(std::shared_ptr<std::string> raw_str)
     : raw_str(std::move(raw_str)) {}
 
 std::stringstream
-build_node_ids_seq_mem(const std::vector<unsigned long> &nis_seq) {
+build_node_ids_seq_mem(const std::vector<uint64_t> &nis_seq) {
   std::stringstream ss;
   write_u64(ss, nis_seq.size());
   for (auto v : nis_seq) {
@@ -229,7 +229,7 @@ no_logs_static_ni_dh(std::shared_ptr<std::string> plain_ni) {
   return dh;
 }
 
-TD_Nis boilerplate_nis_from_vec(const std::vector<unsigned long> &data_vec) {
+TD_Nis boilerplate_nis_from_vec(const std::vector<uint64_t> &data_vec) {
   auto ss =
       std::make_shared<std::string>(build_node_ids_seq_mem(data_vec).str());
   auto dh = no_logs_static_ni_dh(std::move(ss));
@@ -255,7 +255,7 @@ std::stringstream build_k2tree_to_ss(const std::vector<TripleValue> &data,
 
 std::unique_ptr<TDWrapper>
 mock_cache_container(const std::vector<TripleValue> &triples,
-                     const std::vector<unsigned long> &nids,
+                     const std::vector<uint64_t> &nids,
                      K2TreeConfig config, bool sort_results = false) {
   auto plain_str =
       std::make_shared<std::string>(build_k2tree_to_ss(triples, config).str());

@@ -11,7 +11,7 @@
 
 namespace k2cache{
 class MockFetcher : public K2TreeFetcher {
-  std::unordered_map<unsigned long, std::unique_ptr<K2TreeMixed>> data;
+  std::unordered_map<uint64_t, std::unique_ptr<K2TreeMixed>> data;
 public:
   MockFetcher();
   PredicateFetchResult fetch_k2tree(uint64_t predicate_index) override;

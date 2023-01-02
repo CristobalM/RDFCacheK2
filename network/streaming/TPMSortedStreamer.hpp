@@ -15,15 +15,15 @@ class TPMSortedStreamer : public I_TRMatchingStreamer {
   int pattern_channel_id;
   const TripleNodeId &triple_pattern_node;
   CacheContainer *cache;
-  unsigned long threshold_part_size;
+  uint64_t threshold_part_size;
 
   struct DataResults {
-    std::vector<std::pair<unsigned long, unsigned long>> pair_results;
-    std::vector<unsigned long> single_results;
+    std::vector<std::pair<uint64_t, uint64_t>> pair_results;
+    std::vector<uint64_t> single_results;
   };
 
   DataResults data_results;
-  unsigned long current_sent;
+  uint64_t current_sent;
 
 public:
   proto_msg::CacheResponse get_next_response() override;
@@ -33,7 +33,7 @@ public:
 
   TPMSortedStreamer(int channel_id, int pattern_channel_id,
                     const TripleNodeId &triple_pattern_node,
-                    CacheContainer *cache, unsigned long threshold_part_size);
+                    CacheContainer *cache, uint64_t threshold_part_size);
   void initialize();
 
 private:

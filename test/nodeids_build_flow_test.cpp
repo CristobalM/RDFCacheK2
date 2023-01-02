@@ -14,7 +14,7 @@ namespace fs = std::filesystem;
 
 static void
 write_triples_dataset_to_file(const std::string &filename,
-                              const std::vector<unsigned long> &dataset) {
+                              const std::vector<uint64_t> &dataset) {
   std::ofstream ofs(filename, std::ios::binary | std::ios::out);
   k2cache::write_u64(ofs, dataset.size());
   for (auto v : dataset) {
@@ -24,7 +24,7 @@ write_triples_dataset_to_file(const std::string &filename,
   }
 }
 
-static void do_checks(const std::vector<unsigned long> &dataset,
+static void do_checks(const std::vector<uint64_t> &dataset,
                       k2cache::NodesSequence &nseq) {
 
   long last_read = std::numeric_limits<long>::lowest();
@@ -156,7 +156,7 @@ TEST(nodeids_build_flow_test, can_sort_correctly_out_of_int63_range) {
   //  std::cout << "nodes sequence is;\n";
   //  for(auto i = 0L; i <= nseq.get_last_assigned(); i++){
   //    auto real_id = nseq.get_real_id(i);
-  //    std::cout << (unsigned long)real_id << ", ";
+  //    std::cout << (uint64_t)real_id << ", ";
   //  }
   //  std::cout << std::endl;
 

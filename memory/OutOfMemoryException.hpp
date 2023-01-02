@@ -10,8 +10,8 @@ namespace k2cache {
 
 class OutOfMemoryException : public std::runtime_error {
 public:
-  OutOfMemoryException(unsigned long required_bytes,
-                       unsigned long capacity_bytes);
+  OutOfMemoryException(uint64_t required_bytes,
+                       uint64_t capacity_bytes);
 };
 } // namespace k2cache
 #endif // RDFCACHEK2_OUTOFMEMORYEXCEPTION_HPP

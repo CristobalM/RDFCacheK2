@@ -10,7 +10,7 @@
 #include <sstream>
 
 using namespace k2cache;
-using ul = unsigned long;
+using ul = uint64_t;
 bool sort_pair(const std::pair<ul, ul> &lhs, const std::pair<ul, ul> &rhs) {
   if (lhs.first != rhs.first)
     return lhs.first < rhs.first;

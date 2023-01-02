@@ -4,7 +4,7 @@
 
 #include "K2TreeUpdates.hpp"
 namespace k2cache {
-K2TreeUpdates::K2TreeUpdates(unsigned long predicate_id,
+K2TreeUpdates::K2TreeUpdates(uint64_t predicate_id,
                              K2TreeMixed *k2tree_add, K2TreeMixed *k2tree_del)
 
     : predicate_id(predicate_id), k2tree_add(k2tree_add),

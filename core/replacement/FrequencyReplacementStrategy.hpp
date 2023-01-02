@@ -11,7 +11,7 @@
 namespace k2cache {
 class FrequencyReplacementStrategy {
 
-  std::map<unsigned long, long> frequency_map;
+  std::map<uint64_t, long> frequency_map;
 
 public:
   FrequencyReplacementStrategy();
@@ -20,13 +20,13 @@ public:
   FrequencyReplacementStrategy &
   operator=(FrequencyReplacementStrategy &other) = delete;
 
-  long cost_function(unsigned long key) const;
+  long cost_function(uint64_t key) const;
 
-  void hit_key(unsigned long key);
-  void remove_key(unsigned long key);
-  bool should_discard_others_for_key(unsigned long key,
+  void hit_key(uint64_t key);
+  void remove_key(uint64_t key);
+  bool should_discard_others_for_key(uint64_t key,
                                      I_ReplacementPriorityQueue &pq);
-  bool should_hit_without_retrieval(unsigned long key,
+  bool should_hit_without_retrieval(uint64_t key,
                                     I_ReplacementPriorityQueue &pq);
 };
 } // namespace k2cache

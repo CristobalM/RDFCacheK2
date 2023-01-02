@@ -15,7 +15,7 @@ public:
   virtual I_TRMatchingStreamer &
   start_streaming_matching_triples(const TripleNodeId &triple_pattern) = 0;
   virtual int get_id() = 0;
-  virtual const std::vector<unsigned long> &get_predicates_in_use() = 0;
+  virtual const std::vector<uint64_t> &get_predicates_in_use() = 0;
   virtual bool is_done() = 0;
 
   virtual ~I_TRStreamer() = default;

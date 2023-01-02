@@ -60,7 +60,7 @@ public:
     while (std::getline(ifs, line)) {
       std::stringstream ss(line);
       int i = 0;
-      unsigned long numbers[2];
+      uint64_t numbers[2];
       while (std::getline(ss, number_string, ',')) {
         numbers[i++] = std::stoul(number_string);
       }
@@ -74,9 +74,9 @@ public:
 std::unique_ptr<K2TreeMixed> K2MixedFromFileFixture::k2tree = nullptr;
 
 struct coords_sets {
-  std::set<ulong> &cols;
-  std::set<ulong> &rows;
-  coords_sets(std::set<ulong> &cols, std::set<ulong> &rows)
+  std::set<uint64_t> &cols;
+  std::set<uint64_t> &rows;
+  coords_sets(std::set<uint64_t> &cols, std::set<uint64_t> &rows)
       : cols(cols), rows(rows) {}
 };
 

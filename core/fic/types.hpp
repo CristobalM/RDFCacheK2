@@ -9,7 +9,7 @@
 #include <unordered_map>
 namespace k2cache::fic::types{
 using cache_map_t =
-    std::unordered_map<unsigned long,
+    std::unordered_map<uint64_t,
                        std::unique_ptr<I_CachedPredicateSource>>;
 }
 #endif // RDFCACHEK2_TYPES_HPP

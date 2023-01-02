@@ -9,7 +9,7 @@
 #include <stdexcept>
 namespace k2cache {
 long NodesSequence::get_id(long value) {
-  auto ulvalue = (unsigned long)value;
+  auto ulvalue = (uint64_t)value;
   auto it = std::lower_bound(values.begin(), values.end(), ulvalue);
   if (it == values.end())
     return NOT_FOUND_NODEID;
@@ -33,9 +33,9 @@ NodesSequence::NodesSequence(std::vector<long> &&values)
 NodesSequence NodesSequence::from_input_stream(I_IStream &input_stream) {
   std::vector<long> data;
   auto &is = input_stream.get_istream();
-  auto nodes_number = (unsigned long)read_u64(is);
+  auto nodes_number = (uint64_t)read_u64(is);
   data.reserve(nodes_number);
-  for (unsigned long i = 0; i < nodes_number; i++) {
+  for (uint64_t i = 0; i < nodes_number; i++) {
     auto node_id = (long)read_u64(is);
     data.push_back(node_id);
   }

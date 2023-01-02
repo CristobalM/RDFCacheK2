@@ -18,8 +18,8 @@ int main(int, char **) {
   config2.max_node_count = 256;
   K2TreeMixed tree2(config2);
 
-  static constexpr unsigned long TEN_MILL = 10'000'000;
-  static constexpr unsigned long THOUSAND = 1'000;
+  static constexpr uint64_t TEN_MILL = 10'000'000;
+  static constexpr uint64_t THOUSAND = 1'000;
 
   std::cout << "inserting to tree1 " << std::endl;
   for (size_t i = TEN_MILL; i < TEN_MILL + THOUSAND; i++) {

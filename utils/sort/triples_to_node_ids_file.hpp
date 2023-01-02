@@ -11,7 +11,7 @@ struct TriplesToNodeIdsSortParams{
   std::string input_file;
   std::string output_file;
   int workers;
-  unsigned long memory_budget;
+  uint64_t memory_budget;
 };
 
 /**

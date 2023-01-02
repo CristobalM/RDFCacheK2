@@ -5,12 +5,14 @@
 #ifndef RDFCACHEK2_DATAMANAGER_HPP
 #define RDFCACHEK2_DATAMANAGER_HPP
 
+#include <cstdint>
+
 namespace k2cache {
 class DataManager {
 public:
   virtual ~DataManager() = default;
-  virtual void remove_key(unsigned long key) = 0;
-  virtual void retrieve_key(unsigned long key) = 0;
+  virtual void remove_key(uint64_t key) = 0;
+  virtual void retrieve_key(uint64_t key) = 0;
 };
 } // namespace k2cache
 

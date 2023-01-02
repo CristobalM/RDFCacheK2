@@ -31,11 +31,11 @@ TEST(k2tree_mixed_tests, same_insertion_doesnt_increase_size) {
 }
 
 TEST(k2tree_mixed_test, exhaustive_validation) {
-  std::set<std::pair<unsigned long, unsigned long>> points_to_insert = {
+  std::set<std::pair<uint64_t, uint64_t>> points_to_insert = {
       {0, 3}, {2, 1}, {123, 321}, {44, 41}, {33, 21}, {6, 9}};
 
-  unsigned long treedepth = 10;
-  unsigned long side = 1 << treedepth;
+  uint64_t treedepth = 10;
+  uint64_t side = 1 << treedepth;
   K2TreeMixed tree(10, 255, 5);
   K2TreeBulkOp bulk_op(tree);
   for (auto point : points_to_insert) {
@@ -45,8 +45,8 @@ TEST(k2tree_mixed_test, exhaustive_validation) {
     ASSERT_TRUE(bulk_op.has(point.first, point.second));
   }
 
-  for (unsigned long col = 0; col < side; col++) {
-    for (unsigned long row = 0; row < side; row++) {
+  for (uint64_t col = 0; col < side; col++) {
+    for (uint64_t row = 0; row < side; row++) {
       auto pair = std::make_pair(col, row);
       if (points_to_insert.find(pair) == points_to_insert.end()) {
         ASSERT_FALSE(bulk_op.has(col, row));
@@ -57,11 +57,11 @@ TEST(k2tree_mixed_test, exhaustive_validation) {
 }
 
 TEST(k2tree_mixed_test, can_serialize) {
-  std::set<std::pair<unsigned long, unsigned long>> points_to_insert = {
+  std::set<std::pair<uint64_t, uint64_t>> points_to_insert = {
       {0, 3}, {2, 1}, {123, 321}, {44, 41}, {33, 21}, {6, 9}};
 
-  unsigned long treedepth = 10;
-  unsigned long side = 1 << treedepth;
+  uint64_t treedepth = 10;
+  uint64_t side = 1 << treedepth;
   K2TreeMixed tree(10, 255, 5);
   K2TreeBulkOp bulk_op(tree);
   for (auto point : points_to_insert) {
@@ -80,8 +80,8 @@ TEST(k2tree_mixed_test, can_serialize) {
         << "Point (" << point.first << ", " << point.second << ") not found";
   }
 
-  for (unsigned long col = 0; col < side; col++) {
-    for (unsigned long row = 0; row < side; row++) {
+  for (uint64_t col = 0; col < side; col++) {
+    for (uint64_t row = 0; row < side; row++) {
       auto pair = std::make_pair(col, row);
       if (points_to_insert.find(pair) == points_to_insert.end()) {
         ASSERT_FALSE(deserialized_bulk_op.has(col, row))
@@ -96,18 +96,18 @@ TEST(k2tree_mixed_test, can_serialize) {
 }
 
 TEST(k2tree_mixed_test, can_report_column) {
-  unsigned long treedepth = 10;
+  uint64_t treedepth = 10;
   K2TreeMixed tree(treedepth, 255, 5);
   K2TreeBulkOp bulk_op(tree);
   for (int i = 1; i < 100; i++) {
     bulk_op.insert(1, i);
   }
 
-  std::vector<unsigned long> retrieved;
+  std::vector<uint64_t> retrieved;
   tree.traverse_column(
       1,
-      [](unsigned long, unsigned long row, void *report_state) {
-        reinterpret_cast<std::vector<unsigned long> *>(report_state)
+      [](uint64_t, uint64_t row, void *report_state) {
+        reinterpret_cast<std::vector<uint64_t> *>(report_state)
             ->push_back(row);
       },
       &retrieved, bulk_op.get_stw());
@@ -119,18 +119,18 @@ TEST(k2tree_mixed_test, can_report_column) {
 }
 
 TEST(k2tree_mixed_test, can_report_row) {
-  unsigned long treedepth = 10;
+  uint64_t treedepth = 10;
   K2TreeMixed tree(treedepth, 255, 5);
   K2TreeBulkOp bulk_op(tree);
   for (int i = 1; i < 100; i++) {
     bulk_op.insert(i, 1);
   }
 
-  std::vector<unsigned long> retrieved;
+  std::vector<uint64_t> retrieved;
   tree.traverse_row(
       1,
-      [](unsigned long col, unsigned long, void *report_state) {
-        reinterpret_cast<std::vector<unsigned long> *>(report_state)
+      [](uint64_t col, uint64_t, void *report_state) {
+        reinterpret_cast<std::vector<uint64_t> *>(report_state)
             ->push_back(col);
       },
       &retrieved, bulk_op.get_stw());
@@ -142,18 +142,18 @@ TEST(k2tree_mixed_test, can_report_row) {
 }
 
 TEST(k2tree_mixed_test, can_report_row_2) {
-  unsigned long treedepth = 10;
+  uint64_t treedepth = 10;
   K2TreeMixed tree(treedepth, 255, 5);
   K2TreeBulkOp bulk_op(tree);
   for (int i = 1; i < 100; i++) {
     bulk_op.insert(i, 1);
   }
 
-  std::vector<unsigned long> retrieved;
+  std::vector<uint64_t> retrieved;
   tree.traverse_row(
       1,
-      [](unsigned long col, unsigned long, void *report_state) {
-        reinterpret_cast<std::vector<unsigned long> *>(report_state)
+      [](uint64_t col, uint64_t, void *report_state) {
+        reinterpret_cast<std::vector<uint64_t> *>(report_state)
             ->push_back(col);
       },
       &retrieved, bulk_op.get_stw());
@@ -166,14 +166,14 @@ TEST(k2tree_mixed_test, can_report_row_2) {
 }
 
 TEST(k2tree_mixed_test, can_scan_full_lazy_with_virtual_scanner) {
-  unsigned long treedepth = 10;
+  uint64_t treedepth = 10;
   K2TreeMixed tree(treedepth, 255, 5);
   K2TreeBulkOp bulk_op(tree);
   for (int i = 1; i < 100; i++) {
     bulk_op.insert(i, 1);
   }
 
-  unsigned long i = 1;
+  uint64_t i = 1;
   auto scanner = tree.create_full_scanner();
 
   while (scanner->has_next()) {
@@ -184,14 +184,14 @@ TEST(k2tree_mixed_test, can_scan_full_lazy_with_virtual_scanner) {
 }
 
 TEST(k2tree_mixed_test, can_scan_band_lazy_with_virtual_scanner) {
-  unsigned long treedepth = 10;
+  uint64_t treedepth = 10;
   K2TreeMixed tree(treedepth, 255, 5);
   K2TreeBulkOp bulk_op(tree);
   for (int i = 1; i < 100; i++) {
     bulk_op.insert(i, 1);
   }
 
-  unsigned long i = 1;
+  uint64_t i = 1;
   auto scanner =
       tree.create_band_scanner(1, K2TreeScanner::BandType::ROW_BAND_TYPE);
 
@@ -203,11 +203,11 @@ TEST(k2tree_mixed_test, can_scan_band_lazy_with_virtual_scanner) {
 }
 
 TEST(k2tree_mixed_test, check_if_64_depth_works_1) {
-  unsigned long treedepth = 64;
+  uint64_t treedepth = 64;
   K2TreeMixed tree(treedepth, 256, 10);
   K2TreeBulkOp bulk_op(tree);
   constexpr size_t values_sz = 10;
-  std::set<std::pair<unsigned long, unsigned long>> values;
+  std::set<std::pair<uint64_t, uint64_t>> values;
   for (size_t i = 1; i <= values_sz; i++) {
     // values.insert({(1UL << 38) + i, (1UL << 38) + i});
     // values.insert({(1UL << 38UL) + i, (1UL << 38UL) + i});
@@ -220,9 +220,9 @@ TEST(k2tree_mixed_test, check_if_64_depth_works_1) {
   }
   K2QStateWrapper kst(treedepth, 10, 256);
   tree.scan_points(
-      [](unsigned long col, unsigned long row, void *rs) {
+      [](uint64_t col, uint64_t row, void *rs) {
         auto &values = *reinterpret_cast<
-            std::set<std::pair<unsigned long, unsigned long>> *>(rs);
+            std::set<std::pair<uint64_t, uint64_t>> *>(rs);
         // std::cout << col << ", " << row << "\n";
         auto found = values.find({col, row}) != values.end();
         ASSERT_TRUE(found) << "failed with pair (" << col << ", " << row << ")";
@@ -245,11 +245,11 @@ TEST(k2tree_mixed_test, check_if_64_depth_works_1) {
 }
 
 TEST(k2tree_mixed_test, can_copy_full_tree) {
-  unsigned long treedepth = 64;
+  uint64_t treedepth = 64;
   K2TreeMixed tree(treedepth, 256, 10);
   K2TreeBulkOp bulk_op(tree);
   constexpr size_t values_sz = 10;
-  std::set<std::pair<unsigned long, unsigned long>> values;
+  std::set<std::pair<uint64_t, uint64_t>> values;
   for (size_t i = 1; i <= values_sz; i++) {
     auto exp = 63UL;
     auto value = (1UL << exp) + i;

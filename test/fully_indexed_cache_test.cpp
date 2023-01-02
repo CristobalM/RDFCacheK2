@@ -35,8 +35,8 @@ TEST(fully_indexed_cache, test_resynced_on_update_unloaded) {
       PCMFactory::create(std::move(fh_pcm), mock_fh_manager(h2.pcm_h), true);
   auto &updates_logger = pcm->get_updates_logger();
 
-  unsigned long predicate_id_1 = 123;
-  unsigned long predicate_id_2 = 333222;
+  uint64_t predicate_id_1 = 123;
+  uint64_t predicate_id_2 = 333222;
 
   K2TreeMixed k2tree(config);
   K2TreeBulkOp op(k2tree);
@@ -59,7 +59,7 @@ TEST(fully_indexed_cache, test_resynced_on_update_unloaded) {
   // and logging them doesn't do that automatically
   pcm->load_all_predicates();
 
-  std::vector<unsigned long> predicates = {predicate_id_1, predicate_id_2};
+  std::vector<uint64_t> predicates = {predicate_id_1, predicate_id_2};
   pcm->get_fully_indexed_cache().init_streamer_predicates(predicates);
 
   auto fi_resp_1 = pcm->get_fully_indexed_cache().get(predicate_id_1);
@@ -88,8 +88,8 @@ TEST(fully_indexed_cache, test_resynced_on_update_loaded) {
       PCMFactory::create(std::move(fh_pcm), mock_fh_manager(h2.pcm_h), true);
   auto &updates_logger = pcm->get_updates_logger();
 
-  unsigned long predicate_id_1 = 123;
-  unsigned long predicate_id_2 = 333222;
+  uint64_t predicate_id_1 = 123;
+  uint64_t predicate_id_2 = 333222;
 
   K2TreeMixed k2tree(config);
   K2TreeBulkOp op(k2tree);
@@ -112,7 +112,7 @@ TEST(fully_indexed_cache, test_resynced_on_update_loaded) {
   // and logging them doesn't do that automatically
   pcm->load_all_predicates();
 
-  std::vector<unsigned long> predicates = {predicate_id_1, predicate_id_2};
+  std::vector<uint64_t> predicates = {predicate_id_1, predicate_id_2};
   pcm->get_fully_indexed_cache().init_streamer_predicates(predicates);
 
   auto fi_resp_1 = pcm->get_fully_indexed_cache().get(predicate_id_1);
@@ -146,7 +146,7 @@ TEST(fully_indexed_cache, test_impl_1) {
   FullyIndexedCacheImpl idx(*fetcher, std::move(map), std::move(dm),
                             std::move(cr));
 
-  std::vector<unsigned long> predicates = {
+  std::vector<uint64_t> predicates = {
       1, 2, 3, 4, 5,
   };
 

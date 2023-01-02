@@ -17,6 +17,8 @@
 #include <message_type.pb.h>
 #include <request_msg.pb.h>
 #include <response_msg.pb.h>
+#include "custom_endian.hpp"
+
 using namespace k2cache;
 
 struct parsed_options {

@@ -20,7 +20,7 @@ class UpdaterSession : public Updater {
   using tree_update_pair_t =
       std::pair<std::unique_ptr<K2TreeMixed>, std::unique_ptr<K2TreeBulkOp>>;
 
-  using tmap_t = std::map<unsigned long, tree_update_pair_t>;
+  using tmap_t = std::map<uint64_t, tree_update_pair_t>;
 
   tmap_t added_triples;
   tmap_t removed_triples;
@@ -40,9 +40,9 @@ private:
   K2TreeConfig get_config();
   K2TreeBulkOp &get_tree_bulk_op(tmap_t &map_src,
                                  TripleNodeId &triple_resource);
-  K2TreeBulkOp &get_tree_deleter(unsigned long id);
+  K2TreeBulkOp &get_tree_deleter(uint64_t id);
   K2TreeBulkOp &get_tree_bulk_op_id(tmap_t &map_src,
-                                    unsigned long predicate_id);
+                                    uint64_t predicate_id);
   void log_updates();
   void do_commit_updates();
 };

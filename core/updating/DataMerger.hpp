@@ -14,9 +14,9 @@ class DataMerger {
 public:
   virtual ~DataMerger() = default;
 
-  virtual void merge_add_tree(unsigned long predicate_id,
+  virtual void merge_add_tree(uint64_t predicate_id,
                               K2TreeMixed &k2tree) = 0;
-  virtual void merge_delete_tree(unsigned long predicate_id,
+  virtual void merge_delete_tree(uint64_t predicate_id,
                                  K2TreeMixed &k2tree) = 0;
   virtual void merge_update(std::vector<K2TreeUpdates> &updates) = 0;
 };

@@ -6,14 +6,14 @@
 
 namespace k2cache {
 
-void NoUpdate::recover_predicate(unsigned long) {
+void NoUpdate::recover_predicate(uint64_t) {
 }
-bool NoUpdate::has_predicate_stored(unsigned long) {
+bool NoUpdate::has_predicate_stored(uint64_t) {
   return false;
 }
 void NoUpdate::compact_logs() {
 }
-std::vector<unsigned long> NoUpdate::get_predicates() {
+std::vector<uint64_t> NoUpdate::get_predicates() {
   throw std::runtime_error("get_predicates not implemented on NoUpdate");
 }
 void NoUpdate::clean_append_log() {

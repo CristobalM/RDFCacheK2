@@ -59,7 +59,7 @@ K2TreeMixed &K2TreeMixed::operator=(K2TreeMixed &&other) noexcept {
 
 K2TreeMixed::~K2TreeMixed() { clean_up(); }
 
-void K2TreeMixed::insert(unsigned long col, unsigned long row,
+void K2TreeMixed::insert(uint64_t col, uint64_t row,
                          K2QStateWrapper &stw) {
   int already_exists;
   k2node_insert_point(root, col, row, stw.get_ptr(), &already_exists);
@@ -67,33 +67,33 @@ void K2TreeMixed::insert(unsigned long col, unsigned long row,
     points_count++;
 }
 
-void K2TreeMixed::remove(unsigned long col, unsigned long row,
+void K2TreeMixed::remove(uint64_t col, uint64_t row,
                          K2QStateWrapper &stw) {
   int already_not_exists;
   k2node_delete_point(root, col, row, stw.get_ptr(), &already_not_exists);
   if (!already_not_exists)
     points_count--;
 }
-void K2TreeMixed::remove(unsigned long col, unsigned long row) {
+void K2TreeMixed::remove(uint64_t col, uint64_t row) {
   auto stw = create_k2qw();
   remove(col, row, stw);
 }
 
-bool K2TreeMixed::has(unsigned long col, unsigned long row,
+bool K2TreeMixed::has(uint64_t col, uint64_t row,
                       K2QStateWrapper &stw) const {
   int result;
   k2node_has_point(root, col, row, stw.get_ptr(), &result);
   return (bool)result;
 }
 
-unsigned long K2TreeMixed::get_tree_depth() const { return tree_depth; }
+uint64_t K2TreeMixed::get_tree_depth() const { return tree_depth; }
 
-std::vector<std::pair<unsigned long, unsigned long>>
+std::vector<std::pair<uint64_t, uint64_t>>
 K2TreeMixed::get_all_points(K2QStateWrapper &stw) {
   struct vector_pair2dl_t result;
   vector_pair2dl_t__init_vector(&result);
   k2node_naive_scan_points(root, stw.get_ptr(), &result);
-  std::vector<std::pair<unsigned long, unsigned long>> out;
+  std::vector<std::pair<uint64_t, uint64_t>> out;
 
   for (long i = 0; i < result.nof_items; i++) {
     struct pair2dl current = result.data[i];
@@ -111,7 +111,7 @@ void K2TreeMixed::scan_points(point_reporter_fun_t fun_reporter,
     throw std::runtime_error("k2node_scan_points_interactively threw error " +
                              std::to_string(err));
 }
-void K2TreeMixed::traverse_row(unsigned long row,
+void K2TreeMixed::traverse_row(uint64_t row,
                                point_reporter_fun_t fun_reporter,
                                void *report_state, K2QStateWrapper &stw) const {
   int err = k2node_report_row_interactively(root, row, stw.get_ptr(),
@@ -120,7 +120,7 @@ void K2TreeMixed::traverse_row(unsigned long row,
     throw std::runtime_error("k2node_report_row_interactively threw error " +
                              std::to_string(err));
 }
-void K2TreeMixed::traverse_column(unsigned long column,
+void K2TreeMixed::traverse_column(uint64_t column,
                                   point_reporter_fun_t fun_reporter,
                                   void *report_state,
                                   K2QStateWrapper &stw) const {
@@ -214,12 +214,12 @@ void serialize_to_vec_with_k2node_ptrs(struct k2node *node,
   }
 }
 
-unsigned long write_blocks_from_k2nodes(struct k2node *node,
+uint64_t write_blocks_from_k2nodes(struct k2node *node,
                                         uint32_t current_depth,
                                         uint32_t cut_depth,
                                         uint32_t max_nodes_count,
                                         uint32_t tree_depth, std::ostream &os) {
-  unsigned long bytes_written = 0;
+  uint64_t bytes_written = 0;
   if (current_depth < cut_depth) {
     for (int i = 0; i < 4; i++) {
       if (node->k2subtree.children[i]) {
@@ -239,7 +239,7 @@ unsigned long write_blocks_from_k2nodes(struct k2node *node,
   return bytes_written;
 }
 
-unsigned long K2TreeMixed::write_to_ostream(std::ostream &os) const {
+uint64_t K2TreeMixed::write_to_ostream(std::ostream &os) const {
   int k2nodes_count_wchildren = count_k2nodes_wchildren(root, 0, cut_depth);
   int bits_count = k2nodes_count_wchildren * 4;
   const int bits_per_container = (sizeof(uint32_t) * 8);
@@ -256,7 +256,7 @@ unsigned long K2TreeMixed::write_to_ostream(std::ostream &os) const {
   write_u32(os, cut_depth);
   write_u32(os, max_nodes_count);
   write_u32(os, static_cast<uint32_t>(containers_count));
-  unsigned long bytes_written = sizeof(uint32_t) * 4 + sizeof(uint64_t);
+  uint64_t bytes_written = sizeof(uint32_t) * 4 + sizeof(uint64_t);
   for (int i = 0; i < containers_count; i++) {
     write_u32(os, containers[i]);
     bytes_written += sizeof(uint32_t);
@@ -331,7 +331,7 @@ std::unique_ptr<K2TreeScanner> K2TreeMixed::create_full_scanner() {
   return std::make_unique<FullScanner>(*this);
 }
 std::unique_ptr<K2TreeScanner>
-K2TreeMixed::create_band_scanner(unsigned long band,
+K2TreeMixed::create_band_scanner(uint64_t band,
                                  K2TreeScanner::BandType band_type) {
   return std::make_unique<BandScanner>(*this, band, band_type);
 }
@@ -341,7 +341,7 @@ std::unique_ptr<K2TreeScanner> K2TreeMixed::create_empty_scanner() {
 K2QStateWrapper K2TreeMixed::create_k2qw() const {
   return {tree_depth, cut_depth, max_nodes_count};
 }
-std::vector<std::pair<unsigned long, unsigned long>>
+std::vector<std::pair<uint64_t, uint64_t>>
 K2TreeMixed::get_all_points() {
   auto stw = create_k2qw();
   return get_all_points(stw);
@@ -350,11 +350,11 @@ bool K2TreeMixed::has_valid_structure() const {
   auto stw = create_k2qw();
   return has_valid_structure(stw);
 }
-void K2TreeMixed::insert(unsigned long col, unsigned long row) {
+void K2TreeMixed::insert(uint64_t col, uint64_t row) {
   auto stw = create_k2qw();
   return insert(col, row, stw);
 }
-bool K2TreeMixed::has(unsigned long col, unsigned long row) const {
+bool K2TreeMixed::has(uint64_t col, uint64_t row) const {
   auto stw = create_k2qw();
   return has(col, row, stw);
 }
@@ -363,13 +363,13 @@ void K2TreeMixed::scan_points(point_reporter_fun_t fun_reporter,
   auto stw = create_k2qw();
   return scan_points(fun_reporter, report_state, stw);
 }
-void K2TreeMixed::traverse_row(unsigned long row,
+void K2TreeMixed::traverse_row(uint64_t row,
                                point_reporter_fun_t fun_reporter,
                                void *report_state) const {
   auto stw = create_k2qw();
   return traverse_row(row, fun_reporter, report_state, stw);
 }
-void K2TreeMixed::traverse_column(unsigned long column,
+void K2TreeMixed::traverse_column(uint64_t column,
                                   point_reporter_fun_t fun_reporter,
                                   void *report_state) const {
   auto stw = create_k2qw();

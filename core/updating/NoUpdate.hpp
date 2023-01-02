@@ -8,10 +8,10 @@
 namespace k2cache {
 class NoUpdate : public UpdatesLogger {
 public:
-  void recover_predicate(unsigned long predicate_id) override;
-  bool has_predicate_stored(unsigned long predicate_id) override;
+  void recover_predicate(uint64_t predicate_id) override;
+  bool has_predicate_stored(uint64_t predicate_id) override;
   void compact_logs() override;
-  std::vector<unsigned long> get_predicates() override;
+  std::vector<uint64_t> get_predicates() override;
   void clean_append_log() override;
   void recover_all() override;
   void log(std::vector<K2TreeUpdates> &updates) override;

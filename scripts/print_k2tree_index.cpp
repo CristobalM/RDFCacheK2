@@ -45,7 +45,7 @@ int main(int argc, char **argv) {
     auto fetch_result = pc->fetch_k2tree(predicate_id);
     DataHolder data_holder(ofs, predicate_id, total_triples);
     fetch_result.get().scan_points(
-        [](unsigned long col, unsigned long row, void *st) {
+        [](uint64_t col, uint64_t row, void *st) {
           auto &dh = *reinterpret_cast<DataHolder *>(st);
           TripleValue tvalue(col, dh.predicate_id, row);
           tvalue.write_to_file(dh.ofs);

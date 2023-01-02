@@ -22,22 +22,22 @@ void TestingTaskProcessor::clean_triple_streamer(int channel_id) {
   triples_streamer_map.erase(channel_id);
 }
 void TestingTaskProcessor::process_missed_predicates(
-    std::shared_ptr<const std::vector<unsigned long>> predicates) {
+    std::shared_ptr<const std::vector<uint64_t>> predicates) {
   ReplacementTask task(cache, std::move(predicates));
   task.process();
 }
-void TestingTaskProcessor::mark_using(const std::vector<unsigned long> &predicates) {
+void TestingTaskProcessor::mark_using(const std::vector<uint64_t> &predicates) {
   for(auto p : predicates){
     cache.get_replacement().mark_using(p);
   }
 }
-void TestingTaskProcessor::mark_ready(const std::vector<unsigned long> &predicates) {
+void TestingTaskProcessor::mark_ready(const std::vector<uint64_t> &predicates) {
   for(auto p : predicates){
     cache.get_replacement().mark_ready(p);
   }
 }
 I_TRStreamer &TestingTaskProcessor::create_triples_streamer(
-    std::vector<unsigned long> &&loaded_predicates) {
+    std::vector<uint64_t> &&loaded_predicates) {
   auto streamer =
       std::unique_ptr<TripleMatchesPartStreamer>(new TripleMatchesPartStreamer(
           current_triples_streamers_channel_id, std::move(loaded_predicates),

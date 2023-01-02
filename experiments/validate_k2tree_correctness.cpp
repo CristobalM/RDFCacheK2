@@ -46,8 +46,8 @@ std::string generate_uuid_v4() {
 
 using namespace k2cache;
 
-using vpu_t = std::vector<std::pair<unsigned long, unsigned long>>;
-using spu_t = std::set<std::pair<unsigned long, unsigned long>>;
+using vpu_t = std::vector<std::pair<uint64_t, uint64_t>>;
+using spu_t = std::set<std::pair<uint64_t, uint64_t>>;
 
 struct tree_data_t {
   K2TreeMixed tree;
@@ -55,28 +55,28 @@ struct tree_data_t {
 };
 
 void draw_square(K2TreeMixed &tree, K2QStateWrapper &st,
-                 unsigned long start_pos, unsigned long side, vpu_t &data,
-                 unsigned long max_side);
+                 uint64_t start_pos, uint64_t side, vpu_t &data,
+                 uint64_t max_side);
 void draw_square_randomly(K2TreeMixed &tree, K2QStateWrapper &st,
-                 unsigned long start_pos, unsigned long side, vpu_t &data,
-                 unsigned long max_side);
+                 uint64_t start_pos, uint64_t side, vpu_t &data,
+                 uint64_t max_side);
 vpu_t compact_data(vpu_t &data);
 
 void validate(K2TreeMixed &tree, const vpu_t &data, K2TreeConfig config,
-              unsigned long attempt, const std::string &identifier);
+              uint64_t attempt, const std::string &identifier);
 void report_fail_missing_from_input(
-    const std::pair<unsigned long, unsigned long> &pair, const vpu_t &data,
-    unsigned long counter, K2TreeConfig config, unsigned long attempt,
+    const std::pair<uint64_t, uint64_t> &pair, const vpu_t &data,
+    uint64_t counter, K2TreeConfig config, uint64_t attempt,
     const std::string &identifier);
 
 void report_fail_missing_from_tree(
-    const std::pair<unsigned long, unsigned long> &pair, const vpu_t &data,
-    unsigned long counter, K2TreeConfig config, unsigned long attempt,
+    const std::pair<uint64_t, uint64_t> &pair, const vpu_t &data,
+    uint64_t counter, K2TreeConfig config, uint64_t attempt,
     const std::string &identifier);
-void report_common(const std::pair<unsigned long, unsigned long> &pair,
-                   const vpu_t &vector, unsigned long counter,
+void report_common(const std::pair<uint64_t, uint64_t> &pair,
+                   const vpu_t &vector, uint64_t counter,
                    K2TreeConfig config, const std::string &fname,
-                   unsigned long attempt);
+                   uint64_t attempt);
 
 tree_data_t build_rand_tree(K2TreeConfig config);
 void wanted_config_validations_squares() {
@@ -103,11 +103,11 @@ void wanted_config_validations_squares() {
   }
 }
 
-static unsigned long random_int(unsigned long max_val){
+static uint64_t random_int(uint64_t max_val){
   static std::random_device rd;
   static std::mt19937 mt(rd());
   std::uniform_real_distribution<double> dist(1.0, (double)max_val);
-  return (unsigned long)dist(mt);
+  return (uint64_t)dist(mt);
 }
 
 tree_data_t build_rand_tree(K2TreeConfig config) {
@@ -127,7 +127,7 @@ tree_data_t build_rand_tree(K2TreeConfig config) {
 }
 
 void validate(K2TreeMixed &tree, const vpu_t &data, K2TreeConfig config,
-              unsigned long attempt, const std::string &identifier) {
+              uint64_t attempt, const std::string &identifier) {
   auto scan = tree.create_full_scanner();
   spu_t set(data.begin(), data.end());
   std::cout << "points: " << set.size() << std::endl;
@@ -135,8 +135,8 @@ void validate(K2TreeMixed &tree, const vpu_t &data, K2TreeConfig config,
   auto counter = 0UL;
   spu_t scanned;
 
-  std::set<unsigned long> columns;
-  std::set<unsigned long> rows;
+  std::set<uint64_t> columns;
+  std::set<uint64_t> rows;
 
   while (scan->has_next()) {
     auto p = scan->next();
@@ -222,17 +222,17 @@ void validate(K2TreeMixed &tree, const vpu_t &data, K2TreeConfig config,
 }
 
 void report_fail_missing_from_tree(
-    const std::pair<unsigned long, unsigned long> &pair, const vpu_t &data,
-    unsigned long counter, K2TreeConfig config, unsigned long attempt,
+    const std::pair<uint64_t, uint64_t> &pair, const vpu_t &data,
+    uint64_t counter, K2TreeConfig config, uint64_t attempt,
     const std::string &identifier) {
   auto fname = identifier + "_attempt-" + std::to_string(attempt) +
                "_missing_from_tree.txt";
   report_common(pair, data, counter, config, fname, attempt);
 }
-void report_common(const std::pair<unsigned long, unsigned long> &pair,
-                   const vpu_t &vector, unsigned long counter,
+void report_common(const std::pair<uint64_t, uint64_t> &pair,
+                   const vpu_t &vector, uint64_t counter,
                    K2TreeConfig config, const std::string &fname,
-                   unsigned long attempt) {
+                   uint64_t attempt) {
   std::cout << "Missing data found"
             << "with pair (" << pair.first << ", " << pair.second << ")"
             << ", count = " << counter << ", config = ("
@@ -247,8 +247,8 @@ void report_common(const std::pair<unsigned long, unsigned long> &pair,
 }
 
 void report_fail_missing_from_input(
-    const std::pair<unsigned long, unsigned long> &pair, const vpu_t &data,
-    unsigned long counter, K2TreeConfig config, unsigned long attempt,
+    const std::pair<uint64_t, uint64_t> &pair, const vpu_t &data,
+    uint64_t counter, K2TreeConfig config, uint64_t attempt,
     const std::string &identifier) {
   auto fname = identifier + "_attempt-" + std::to_string(attempt) +
                "missing_from_input.txt";
@@ -256,8 +256,8 @@ void report_fail_missing_from_input(
 }
 
 void draw_square(K2TreeMixed &tree, K2QStateWrapper &st,
-                 unsigned long start_pos, unsigned long side, vpu_t &data,
-                 unsigned long max_side) {
+                 uint64_t start_pos, uint64_t side, vpu_t &data,
+                 uint64_t max_side) {
   for (auto i = 0UL; i < side; i++) {
     auto col = start_pos + i;
     if (col >= max_side)
@@ -273,8 +273,8 @@ void draw_square(K2TreeMixed &tree, K2QStateWrapper &st,
 }
 
 void draw_square_randomly(K2TreeMixed &tree, K2QStateWrapper &st,
-                 unsigned long start_pos, unsigned long side, vpu_t &data,
-                 unsigned long max_side) {
+                 uint64_t start_pos, uint64_t side, vpu_t &data,
+                 uint64_t max_side) {
   for (auto i = 0UL; i < side; i++) {
     auto col = start_pos + i;
     if (col >= max_side)

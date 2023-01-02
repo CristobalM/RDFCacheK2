@@ -13,7 +13,7 @@ namespace k2cache {
 bool BandScanner::has_next() {
   return static_cast<bool>(lazy_handler.has_next);
 }
-std::pair<unsigned long, unsigned long> BandScanner::next() {
+std::pair<uint64_t, uint64_t> BandScanner::next() {
   uint64_t result;
   k2node_report_band_next(&lazy_handler, &result);
   if (band_type == K2TreeScanner::BandType::COLUMN_BAND_TYPE) {
@@ -23,7 +23,7 @@ std::pair<unsigned long, unsigned long> BandScanner::next() {
 }
 BandScanner::~BandScanner() { k2node_report_band_lazy_clean(&lazy_handler); }
 
-BandScanner::BandScanner(K2TreeMixed &k2tree, unsigned long band,
+BandScanner::BandScanner(K2TreeMixed &k2tree, uint64_t band,
                          BandType band_type)
     : stw(k2tree.create_k2qw()), band(band), band_type(band_type),
       k2tree(k2tree) {
@@ -37,6 +37,6 @@ BandScanner::BandScanner(K2TreeMixed &k2tree, unsigned long band,
 }
 void BandScanner::reset_scan() { k2node_report_band_reset(&lazy_handler); }
 K2TreeMixed &BandScanner::get_tree() { return k2tree; }
-unsigned long BandScanner::get_band_value() { return band; }
+uint64_t BandScanner::get_band_value() { return band; }
 K2QStateWrapper &BandScanner::get_k2qw() { return stw; }
 } // namespace k2cache

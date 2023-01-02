@@ -19,7 +19,7 @@ std::unique_ptr<ReplacementTask> ReplacementTaskProcessor::get_server_task() {
   return next_task;
 }
 void ReplacementTaskProcessor::add_task(
-    std::shared_ptr<const std::vector<unsigned long>> predicates) {
+    std::shared_ptr<const std::vector<uint64_t>> predicates) {
   {
     std::lock_guard lg(m);
     tasks.push(std::make_unique<ReplacementTask>(cache, std::move(predicates)));
@@ -34,14 +34,14 @@ ReplacementTaskProcessor::ReplacementTaskProcessor(CacheContainer &cache)
 
 void ReplacementTaskProcessor::notify() { worker->notify(); }
 void ReplacementTaskProcessor::mark_used(
-    const std::vector<unsigned long> &predicates) {
+    const std::vector<uint64_t> &predicates) {
   auto &replacement = cache.get_replacement();
   for (auto p : predicates) {
     replacement.mark_using(p);
   }
 }
 void ReplacementTaskProcessor::mark_ready(
-    const std::vector<unsigned long> &predicates_in_use) {
+    const std::vector<uint64_t> &predicates_in_use) {
   auto &replacement = cache.get_replacement();
   for (auto p : predicates_in_use) {
     replacement.mark_ready(p);

@@ -14,9 +14,9 @@ class ULHeaderIOHandlerCustomSerialization {
 public:
   class Reader {
     std::ifstream &is;
-    unsigned long counter;
+    uint64_t counter;
 
-    unsigned long sz;
+    uint64_t sz;
 
   public:
     explicit Reader(std::ifstream &is) : is(is), counter(0), sz(0) {
@@ -32,11 +32,11 @@ public:
 
   class Writer {
     std::ofstream &ofs;
-    unsigned long elements_in_file;
+    uint64_t elements_in_file;
     long header_pos;
 
   public:
-    Writer(std::ofstream &ofs, unsigned long elements_in_file)
+    Writer(std::ofstream &ofs, uint64_t elements_in_file)
         : ofs(ofs), elements_in_file(elements_in_file) {
       header_pos = ofs.tellp();
       write_u64(ofs, elements_in_file);

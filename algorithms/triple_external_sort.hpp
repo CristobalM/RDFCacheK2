@@ -61,7 +61,7 @@ struct FileData {
   bool finished() const { return current_triple >= size; }
 };
 
-using pair_tvalue_ul = std::pair<TripleValue, unsigned long>;
+using pair_tvalue_ul = std::pair<TripleValue, uint64_t>;
 
 template <typename Comparator> struct PairComp {
   bool operator()(const pair_tvalue_ul &lhs, const pair_tvalue_ul &rhs) {
@@ -71,13 +71,13 @@ template <typename Comparator> struct PairComp {
 
 template <typename Comparator>
 static void parallel_sort(std::vector<TripleValue> &data, int max_workers,
-                          unsigned long segment_size, Comparator &comparator) {
+                          uint64_t segment_size, Comparator &comparator) {
 
-  std::vector<unsigned long> offsets = {0};
-  std::set<unsigned long> offsets_set;
-  unsigned long acc_size = sizeof(TripleValue);
+  std::vector<uint64_t> offsets = {0};
+  std::set<uint64_t> offsets_set;
+  uint64_t acc_size = sizeof(TripleValue);
   offsets.reserve(data.size() / (segment_size / sizeof(TripleValue)) + 10);
-  for (unsigned long i = 1; i < data.size(); i++) {
+  for (uint64_t i = 1; i < data.size(); i++) {
     acc_size += sizeof(TripleValue);
     if (acc_size >= segment_size) {
       offsets.push_back(i);
@@ -88,8 +88,8 @@ static void parallel_sort(std::vector<TripleValue> &data, int max_workers,
   offsets.push_back(data.size());
   offsets_set.insert(data.size());
 
-  unsigned long parts = offsets.size() - 1;
-  unsigned long workers = std::min((unsigned long)max_workers, parts);
+  uint64_t parts = offsets.size() - 1;
+  uint64_t workers = std::min((uint64_t)max_workers, parts);
   if (workers == 1) {
     std::sort(data.begin(), data.end(), comparator);
     return;
@@ -97,7 +97,7 @@ static void parallel_sort(std::vector<TripleValue> &data, int max_workers,
 
   ParallelWorkerPool pool(workers);
 
-  for (unsigned long i = 0; i < parts; i++) {
+  for (uint64_t i = 0; i < parts; i++) {
     pool.add_task([i, &offsets, &data, &comparator]() {
       std::sort(data.begin() + offsets[i], data.begin() + offsets[i + 1],
                 comparator);
@@ -113,7 +113,7 @@ static void parallel_sort(std::vector<TripleValue> &data, int max_workers,
                       PairComp<Comparator>>
       pqueue;
 
-  for (unsigned long i = 0; i < parts; i++) {
+  for (uint64_t i = 0; i < parts; i++) {
     pqueue.push({data[offsets[i]], offsets[i]});
   }
 
@@ -136,9 +136,9 @@ static void create_file_part(
     const std::string &input_filename_base, const std::string &tmp_dir,
     int workers, // workers,
     std::vector<char> &buffer_out, Comparator &comparator,
-    unsigned long &accumulated_size, std::vector<TripleValue> &data,
+    uint64_t &accumulated_size, std::vector<TripleValue> &data,
     int &current_file_index, std::vector<std::string> &filenames,
-    unsigned long segment_size) {
+    uint64_t segment_size) {
   accumulated_size = 0;
   auto filename = (std::filesystem::path(tmp_dir) /
                    std::filesystem::path(input_filename_base + "-p" +
@@ -163,9 +163,9 @@ static void create_file_part(
 template <typename Comparator>
 static std::vector<std::string>
 split_file(const std::string &input_filename, const std::string &tmp_dir,
-           unsigned long memory_budget, int workers,
+           uint64_t memory_budget, int workers,
            std::vector<char> &buffer_in, std::vector<char> &buffer_out,
-           unsigned long segment_size, Comparator &comparator) {
+           uint64_t segment_size, Comparator &comparator) {
 
   std::vector<std::string> filenames;
   std::ifstream input_file(input_filename, std::ios::in | std::ios::binary);
@@ -173,7 +173,7 @@ split_file(const std::string &input_filename, const std::string &tmp_dir,
   input_file.rdbuf()->pubsetbuf(buffer_in.data(), buffer_in.size());
 
   int current_file_index = 0;
-  unsigned long accumulated_size = 0;
+  uint64_t accumulated_size = 0;
 
   std::vector<TripleValue> data;
 
@@ -182,14 +182,14 @@ split_file(const std::string &input_filename, const std::string &tmp_dir,
   filedata.current_triple = 0;
 
   auto max_triples_to_hold =
-      std::min(memory_budget / (sizeof(TripleValue)), filedata.size);
+      std::min((uint64_t)memory_budget / (uint64_t)(sizeof(TripleValue)), filedata.size);
   data.reserve(max_triples_to_hold + 10);
 
   // auto upper_bound_offsets = segment_size / sizeof(TripleValue) + 1;
   auto offsets_upper_bound_qty = memory_budget / segment_size + 1;
-  auto offsets_size_ub = offsets_upper_bound_qty * sizeof(unsigned long);
+  auto offsets_size_ub = offsets_upper_bound_qty * sizeof(uint64_t);
   auto offsets_set_size_ub =
-      offsets_upper_bound_qty * (sizeof(unsigned long) + sizeof(void *));
+      offsets_upper_bound_qty * (sizeof(uint64_t) + sizeof(void *));
 
   auto extra_structs_budget = offsets_size_ub + offsets_set_size_ub;
 
@@ -217,9 +217,9 @@ split_file(const std::string &input_filename, const std::string &tmp_dir,
 static inline bool fill_with_file(std::list<TripleValue> &data_block,
                                   std::unique_ptr<std::ifstream> &input_file,
                                   FileData &filedata,
-                                  unsigned long block_size) {
+                                  uint64_t block_size) {
   std::string line;
-  unsigned long accumulated_size = 0;
+  uint64_t accumulated_size = 0;
   while (accumulated_size < block_size) {
     if (filedata.finished()) {
       input_file = nullptr;
@@ -233,12 +233,12 @@ static inline bool fill_with_file(std::list<TripleValue> &data_block,
 
 template <typename Comparator>
 static void
-block_update(unsigned long index, std::vector<std::list<TripleValue>> &data,
+block_update(uint64_t index, std::vector<std::list<TripleValue>> &data,
              std::vector<std::unique_ptr<std::ifstream>> &opened_files,
              std::vector<FileData> &files_data,
              std::priority_queue<pair_tvalue_ul, std::vector<pair_tvalue_ul>,
                                  PairComp<Comparator>> &pqueue,
-             unsigned long block_size) {
+             uint64_t block_size) {
   if (data[index].empty() && opened_files[index]) {
     if (!fill_with_file(data[index], opened_files[index], files_data[index],
                         block_size))
@@ -254,7 +254,7 @@ block_update(unsigned long index, std::vector<std::list<TripleValue>> &data,
 template <typename Comparator>
 static std::string
 merge_pass(const std::vector<std::string> &filenames, int start, int end,
-           const std::string &tmp_dir, unsigned long block_size,
+           const std::string &tmp_dir, uint64_t block_size,
            std::vector<std::vector<char>> &buffers, Comparator &) {
 
   std::vector<std::unique_ptr<std::ifstream>> opened_files;
@@ -293,7 +293,7 @@ merge_pass(const std::vector<std::string> &filenames, int start, int end,
 
   std::string line;
   for (auto &file : opened_files) {
-    unsigned long accumulated_size = 0;
+    uint64_t accumulated_size = 0;
 
     FileData current_file_data;
     current_file_data.size = read_u64(*file);
@@ -320,7 +320,7 @@ merge_pass(const std::vector<std::string> &filenames, int start, int end,
     total_size += fdata.size;
   }
 
-  for (unsigned long i = 0; i < data.size(); i++) {
+  for (uint64_t i = 0; i < data.size(); i++) {
     block_update(i, data, opened_files, files_data, pqueue, block_size);
   }
 
@@ -347,7 +347,7 @@ merge_pass(const std::vector<std::string> &filenames, int start, int end,
 template <typename Comparator>
 static std::vector<std::string> merge_bottom_up(
     const std::vector<std::string> &filenames, const std::string &tmp_dir,
-    int max_files, unsigned long block_size,
+    int max_files, uint64_t block_size,
     std::vector<std::vector<char>> &buffers, Comparator &comparator) {
   std::vector<std::string> result_filenames;
 
@@ -365,7 +365,7 @@ static std::vector<std::string> merge_bottom_up(
 }
 
 static inline std::vector<std::vector<char>>
-init_buffers(int max_files, unsigned long block_size) {
+init_buffers(int max_files, uint64_t block_size) {
   std::vector<std::vector<char>> buffers;
   for (int i = 0; i < max_files + 1; i++) {
     buffers.push_back(std::vector<char>(block_size));
@@ -377,8 +377,8 @@ template <typename Comparator>
 void external_sort_triples(const std::string &input_filename,
                            const std::string &output_filename,
                            const std::string &tmp_dir, int workers,
-                           int max_files, unsigned long memory_budget,
-                           unsigned long block_size, unsigned long segment_size,
+                           int max_files, uint64_t memory_budget,
+                           uint64_t block_size, uint64_t segment_size,
                            Comparator comparator) {
 
   auto buffers = init_buffers(max_files, block_size);

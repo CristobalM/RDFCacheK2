@@ -18,7 +18,7 @@ class TriplePatternMatchingStreamer : public I_TRMatchingStreamer {
   TripleNodeId triple_pattern_node;
 
   CacheContainer *cache;
-  unsigned long threshold_part_size;
+  uint64_t threshold_part_size;
 
   bool first;
   std::unique_ptr<K2TreeScanner> k2tree_scanner;
@@ -32,7 +32,7 @@ public:
   TriplePatternMatchingStreamer(int channel_id, int pattern_channel_id,
                                 const TripleNodeId &triple_pattern_node,
                                 CacheContainer *cache,
-                                unsigned long threshold_part_size);
+                                uint64_t threshold_part_size);
   proto_msg::CacheResponse get_next_response() override;
   int get_pattern_channel_id() override;
   int get_channel_id() override;

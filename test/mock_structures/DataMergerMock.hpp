@@ -18,10 +18,10 @@ struct DataMergerMock : public DataMerger {
   K2TreeConfig config;
   explicit DataMergerMock(K2TreeConfig config);
 
-  std::unordered_map<unsigned long, std::unique_ptr<K2TreeMixed>> trees;
+  std::unordered_map<uint64_t, std::unique_ptr<K2TreeMixed>> trees;
 
-  void merge_add_tree(unsigned long predicate_id, K2TreeMixed &k2tree) override;
-  void merge_delete_tree(unsigned long predicate_id,
+  void merge_add_tree(uint64_t predicate_id, K2TreeMixed &k2tree) override;
+  void merge_delete_tree(uint64_t predicate_id,
                          K2TreeMixed &k2tree) override;
 
   void drop();

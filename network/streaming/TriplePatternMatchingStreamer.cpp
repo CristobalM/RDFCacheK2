@@ -9,7 +9,7 @@ namespace k2cache {
 TriplePatternMatchingStreamer::TriplePatternMatchingStreamer(
     int channel_id, int pattern_channel_id,
     const TripleNodeId &triple_pattern_node, CacheContainer *cache,
-    unsigned long threshold_part_size)
+    uint64_t threshold_part_size)
     : channel_id(channel_id), pattern_channel_id(pattern_channel_id),
       triple_pattern_node(triple_pattern_node), cache(cache),
       threshold_part_size(threshold_part_size), first(true), finished(false) {
@@ -36,7 +36,7 @@ proto_msg::CacheResponse TriplePatternMatchingStreamer::get_next_response() {
       proto_msg::MessageType::STREAM_OF_TRIPLES_MATCHING_PATTERN_RESPONSE);
   auto *stream_response =
       cache_response.mutable_stream_of_triples_matching_pattern_response();
-  unsigned long acc_size = 0;
+  uint64_t acc_size = 0;
   if (first) {
     first = false;
   }
@@ -73,7 +73,7 @@ proto_msg::CacheResponse TriplePatternMatchingStreamer::get_next_response() {
     }
 
     auto *matching_values = stream_response->mutable_matching_values()->Add();
-    acc_size += sizeof(unsigned long) * cnt;
+    acc_size += sizeof(uint64_t) * cnt;
     for(int i = 0; i < cnt; i++){
       auto *s_match = matching_values->mutable_single_match()->Add();
       s_match->set_encoded_data(data[i]);

@@ -10,15 +10,15 @@
 namespace k2cache {
 class CachedObjectScanner : public CachedSourceScanner {
 
-  const std::vector<unsigned long> &objects;
+  const std::vector<uint64_t> &objects;
   int current_position;
-  unsigned long subject_value;
+  uint64_t subject_value;
 
 public:
   CachedObjectScanner(I_CachedPredicateSource *cached_source,
-                      unsigned long subject_value);
+                      uint64_t subject_value);
   bool has_next() override;
-  std::pair<unsigned long, unsigned long> next() override;
+  std::pair<uint64_t, uint64_t> next() override;
 };
 } // namespace k2cache
 #endif // RDFCACHEK2_CACHEDOBJECTSCANNER_HPP

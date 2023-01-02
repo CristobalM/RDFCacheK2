@@ -6,10 +6,10 @@
 #include "FullyIndexedPredicate.hpp"
 
 namespace k2cache {
-void CacheDataManager::remove_key(unsigned long key) {
+void CacheDataManager::remove_key(uint64_t key) {
     cache_map.erase(key);
 }
-void CacheDataManager::retrieve_key(unsigned long key) {
+void CacheDataManager::retrieve_key(uint64_t key) {
     auto fetch_result = cdm_fetcher.fetch_k2tree(key);
     cache_map[key] = std::make_unique<FullyIndexedPredicate>(fetch_result.get());
 }

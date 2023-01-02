@@ -15,7 +15,7 @@
 namespace k2cache {
 class TripleMatchesPartStreamer : public I_TRStreamer {
   int channel_id;
-  std::vector<unsigned long> loaded_predicates;
+  std::vector<uint64_t> loaded_predicates;
   size_t threshold_part_size;
   CacheContainer *cache;
   TaskProcessor *task_processor;
@@ -32,13 +32,13 @@ class TripleMatchesPartStreamer : public I_TRStreamer {
 
 public:
   TripleMatchesPartStreamer(int channel_id,
-                            std::vector<unsigned long> &&loaded_predicates,
+                            std::vector<uint64_t> &&loaded_predicates,
                             size_t threshold_part_size,
                             TaskProcessor *task_processor,
                             CacheContainer *cache,
                             FullyIndexedCache &fully_indexed_cache);
 
-  const std::vector<unsigned long> &get_predicates_in_use() override;
+  const std::vector<uint64_t> &get_predicates_in_use() override;
   int get_id() override;
   proto_msg::CacheResponse get_loaded_predicates_response() override;
 

@@ -11,8 +11,8 @@ class PCMMergerWrapper : public DataMerger {
 
 public:
   void set_ref(DataMerger *ref);
-  void merge_add_tree(unsigned long predicate_id, K2TreeMixed &k2tree) override;
-  void merge_delete_tree(unsigned long predicate_id,
+  void merge_add_tree(uint64_t predicate_id, K2TreeMixed &k2tree) override;
+  void merge_delete_tree(uint64_t predicate_id,
                          K2TreeMixed &k2tree) override;
   void merge_update(std::vector<K2TreeUpdates> &updates) override;
   void no_ref_check();

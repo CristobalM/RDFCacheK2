@@ -18,7 +18,7 @@ int main(int, char **) {
   config2.max_node_count = 256;
   K2TreeMixed tree2(config2);
 
-  static constexpr unsigned long TEN_MILL = 1'000'000;
+  static constexpr uint64_t TEN_MILL = 1'000'000;
 
   std::cout << "inserting to tree1 " << std::endl;
   auto start = std::chrono::high_resolution_clock::now();

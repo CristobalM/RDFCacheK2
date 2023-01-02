@@ -7,6 +7,7 @@
 #include <ostream>
 #include <unordered_map>
 #include <vector>
+#include <array>
 
 #include "k2tree/K2TreeMixed.hpp"
 namespace k2cache {

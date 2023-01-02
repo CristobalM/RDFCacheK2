@@ -4,8 +4,8 @@
 #include <vector>
 
 namespace k2cache{
-std::vector<unsigned long> fisher_yates(unsigned long result_size,
-                                        unsigned long choice_set_size);
+std::vector<uint64_t> fisher_yates(uint64_t result_size,
+                                        uint64_t choice_set_size);
 }
 
 #endif

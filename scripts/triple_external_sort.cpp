@@ -12,12 +12,12 @@ struct parsed_options {
   std::string input_file;
   std::string output_file;
   std::string tmp_dir;
-  unsigned long max_memory;
+  uint64_t max_memory;
   int workers;
 };
 
 parsed_options parse_cmd_line(int argc, char **argv);
-unsigned long get_mem_total();
+uint64_t get_mem_total();
 
 struct Comparator {
 
@@ -131,12 +131,12 @@ parsed_options parse_cmd_line(int argc, char **argv) {
   return out;
 }
 
-unsigned long get_mem_total() {
+uint64_t get_mem_total() {
   std::string token;
   std::ifstream file("/proc/meminfo");
   while (file >> token) {
     if (token == "MemTotal:") {
-      unsigned long mem;
+      uint64_t mem;
       if (file >> mem) {
         return mem;
       } else {
