@@ -6,6 +6,7 @@
 #include <gtest/gtest.h>
 #include <random>
 #include <serialization_util.hpp>
+#include "custom_endian.hpp"
 using namespace k2cache;
 TEST(u64_network_host, test_one) {
   std::random_device rd;
@@ -24,6 +25,25 @@ TEST(u64_network_host, test_one) {
     auto result = read_u64(iss);
     ASSERT_EQ(val, result) << "Fails for val = " << val;
   }
+}
+
+TEST(u64_network_host, endianness_from_host){
+  auto v = 1ULL;
+  auto nval = htobe64(v);
+  ASSERT_EQ(nval, 1ULL << static_cast<uint64_t>(64-8));
+  v = (1ULL << 8ULL)-1;
+  auto shifted = v << (64 -8);
+  nval = htobe64(v);
+  ASSERT_EQ(nval, shifted);
+}
+TEST(u64_network_host, endianness_from_net){
+  auto v = 1ULL;
+  auto nval = be64toh(v);
+  ASSERT_EQ(nval, 1ULL << static_cast<uint64_t>(64-8));
+  v = (1ULL << 8ULL)-1;
+  auto shifted = v << (64 -8);
+  nval = be64toh(v);
+  ASSERT_EQ(nval, shifted);
 }
 
 int main(int argc, char **argv) {

@@ -51,7 +51,7 @@ void PredicatesCacheManagerImpl::load_all_predicates() {
   predicates_index->load_all_predicates();
 }
 
-size_t
+uint64_t
 PredicatesCacheManagerImpl::get_predicate_size(uint64_t predicate_id) {
   auto &metadata_map = predicates_index->get_metadata().get_map();
   if (metadata_map.find(predicate_id) == metadata_map.end())

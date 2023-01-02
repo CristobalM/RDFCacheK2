@@ -288,7 +288,7 @@ add_library(Utils utils/serialization_util.cpp
         utils/sort/ULConnectorWHeaderCustomSerialization.hpp
         utils/sort/ULHeaderIOHandlerCustomSerialization.hpp
 
-        )
+        utils/custom_endian.hpp)
 
 # add_dependencies(RDFCacheK2 _k2tree_merged_noalloc)
 #add_dependencies(RDFCacheK2 k2dyn Utils)
@@ -303,13 +303,21 @@ find_package(Protobuf REQUIRED)
 include_directories(${Protobuf_INCLUDE_DIRS})
 
 find_package(OpenSSL REQUIRED)
-include_directories(${OPENSSL_INCLUDE_DIRS})
+include_directories(${OPENSSL_INCLUDE_DIR})
+message("OPENSSL INCLUDE DIRS: ${OPENSSL_INCLUDE_DIR}" ${OPENSSL_INCLUDE_DIR})
+message("OPENSSL LIBS DIRS: ${OPENSSL_LIBRARIES}")
 
 find_package(CURL REQUIRED)
 include_directories(${CURL_INCLUDE_DIR})
 
 
 #add_executable(start_cache_server_example example/start_cache_server_example.cpp)
+
+if (APPLE)
+    set(STDLIB_OPT "")
+else()
+    set(STDLIB_OPT stdc++fs)
+endif ()
 
 set(BASE_LIBS
         RDFCacheK2
@@ -319,8 +327,8 @@ set(BASE_LIBS
         ${Protobuf_LIBRARIES}
         Utils
         ${OPENSSL_LIBRARIES}
-        stdc++fs
-        pcrecpp
+        ${STDLIB_OPT}
+        #pcrecpp
         ${CURL_LIBRARIES}
         RDFCacheK2_Memory
         )
@@ -341,8 +349,8 @@ set(DEFAULT_LIBS
         ${Protobuf_PROTOC_LIBRARIES}
         Utils
         ${OPENSSL_LIBRARIES}
-        stdc++fs
-        pcrecpp
+        ${STDLIB_OPT}
+        #pcrecpp
         ${CURL_LIBRARIES}
         pthread
         RDFCacheK2_Memory
@@ -351,7 +359,7 @@ set(DEFAULT_LIBS
 
 add_executable(external_sort scripts/triple_external_sort.cpp)
 target_include_directories(external_sort PUBLIC ${INCLUDES})
-target_link_libraries(external_sort pthread Utils stdc++fs)
+target_link_libraries(external_sort pthread Utils ${STDLIB_OPT})
 
 add_executable(extract_triples_binary scripts/extract_triples_binary.cpp)
 target_include_directories(extract_triples_binary PUBLIC ${INCLUDES})

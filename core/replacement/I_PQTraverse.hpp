@@ -5,6 +5,8 @@
 #ifndef RDFCACHEK2_I_PQTRAVERSE_HPP
 #define RDFCACHEK2_I_PQTRAVERSE_HPP
 
+#include <cstdint>
+
 namespace k2cache {
 struct I_PQTraverse {
   virtual ~I_PQTraverse() = default;

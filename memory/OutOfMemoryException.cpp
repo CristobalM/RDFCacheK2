@@ -2,6 +2,7 @@
 // Created by cristobal on 9/30/21.
 //
 
+#include <string>
 #include "OutOfMemoryException.hpp"
 namespace k2cache {
 OutOfMemoryException::OutOfMemoryException(uint64_t required_bytes,

@@ -4,7 +4,7 @@
 
 #include <netinet/in.h>
 
-#include <endian.h>
+#include "custom_endian.hpp"
 
 #include <memory>
 
@@ -43,6 +43,7 @@ uint64_t read_u64(std::istream &input_stream) {
   uint64_t result{};
   input_stream.read(reinterpret_cast<char *>(&result), sizeof(uint64_t));
   result = be64toh(result);
+
   return result;
 }
 

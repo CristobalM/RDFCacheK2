@@ -6,6 +6,8 @@
 #define RDFCACHEK2_CACHEDSOURCESCANNER_HPP
 
 #include <utility>
+#include <cstdint>
+
 namespace k2cache {
 struct CachedSourceScanner {
   virtual ~CachedSourceScanner() = default;

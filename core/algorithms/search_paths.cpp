@@ -115,7 +115,7 @@ void find_paths_subj_origin(
         std::vector<std::pair<uint64_t, uint64_t>> &paths,
         PredicatesCacheManager &pcm, TripleHSet &visited_edges,
         K2TreeMixed &current_k2tree, uint64_t current_predicate,
-        uint64_t current_pred_idx, int curr_path_size, int max_path_size,
+        uint64_t , int curr_path_size, int max_path_size,
         int max_paths, const std::vector<uint64_t> &sorted_predicates) {
   if((int)paths.size() >= max_paths){
     return;
