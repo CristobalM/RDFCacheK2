@@ -61,10 +61,7 @@ K2TreeMixed::~K2TreeMixed() { clean_up(); }
 
 void K2TreeMixed::insert(uint64_t col, uint64_t row,
                          K2QStateWrapper &stw) {
-  int already_exists;
-  k2node_insert_point(root, col, row, stw.get_ptr(), &already_exists);
-  if (!already_exists)
-    points_count++;
+  insert_was_inserted(col, row, stw);
 }
 
 void K2TreeMixed::remove(uint64_t col, uint64_t row,
@@ -515,6 +512,19 @@ bool K2TreeMixed::shares_any_reference_to(K2TreeMixed &other) {
       points_count != other.points_count)
     return false;
   return k2node_any_same_ref(root, other.root, tree_depth, cut_depth, 0);
+}
+
+bool K2TreeMixed::insert_was_inserted(uint64_t col, uint64_t row, K2QStateWrapper &stw) {
+  int already_exists;
+  k2node_insert_point(root, col, row, stw.get_ptr(), &already_exists);
+  if (!already_exists)
+    points_count++;
+  return !already_exists;
+}
+
+bool K2TreeMixed::insert_was_inserted(uint64_t col, uint64_t row) {
+  auto stw = create_k2qw();
+  return insert_was_inserted(col, row, stw);
 }
 
 k2node *deserialize_k2node_tree(std::istream &is,

@@ -9,7 +9,7 @@ enum NodeIdsImplIds {
   STD_MAP_NI_IMPL = 0,
 };
 
-const long NOT_FOUND_NODEID = -1L;
+const uint64_t NOT_FOUND_NODEID = -1L;
 
 enum class NidsErrCode {
   NOT_FOUND_ERR_CODE = -1,

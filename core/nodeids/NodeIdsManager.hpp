@@ -4,15 +4,15 @@
 
 #ifndef RDFCACHEK2_NODEIDSMANAGER_HPP
 #define RDFCACHEK2_NODEIDSMANAGER_HPP
-
+#include <cstdint>
 namespace k2cache {
 class NodesSequence;
 struct NodeIdsManager {
   virtual ~NodeIdsManager() = default;
-  virtual long get_id(long real_id) = 0;
-  virtual long get_id_or_create(long real_id) = 0;
+  virtual uint64_t get_id(uint64_t real_id) = 0;
+  virtual uint64_t get_id_or_create(uint64_t real_id) = 0;
 
-  virtual long get_real_id(long mapped_id, int *err_code) = 0;
+  virtual uint64_t get_real_id(uint64_t mapped_id, int *err_code) = 0;
 };
 } // namespace k2cache
 

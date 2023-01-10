@@ -21,12 +21,12 @@ class NodeIdsManagerImpl : public NodeIdsManager {
   std::unique_ptr<NodesSequence> nodes_sequence;
   std::unique_ptr<NodesMap> nodes_map;
 
-  long last_assigned_id;
+  uint64_t last_assigned_id;
 
   std::unique_ptr<I_OStream> log_writer;
   std::unique_ptr<I_OStream> counter_writer;
 
-  long logs_number;
+  uint64_t logs_number;
 
 public:
   NodeIdsManagerImpl(std::unique_ptr<I_FileRWHandler> &&plain_ni_fh,
@@ -34,11 +34,11 @@ public:
                      std::unique_ptr<I_FileRWHandler> &&log_fh,
                      std::unique_ptr<I_FileRWHandler> &&log_fh_counter);
 
-  long get_id(long real_id) override;
-  long get_real_id(long mapped_id, int *err_code) override;
-  long get_id_or_create(long real_id) override;
-  long find_last_assigned();
-  void log_new_kv(long real_id, long mapped_id);
+  uint64_t get_id(uint64_t real_id) override;
+  uint64_t get_real_id(uint64_t mapped_id, int *err_code) override;
+  uint64_t get_id_or_create(uint64_t real_id) override;
+  uint64_t find_last_assigned();
+  void log_new_kv(uint64_t real_id, uint64_t mapped_id);
 };
 } // namespace k2cache
 

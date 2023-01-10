@@ -9,7 +9,7 @@
 namespace k2cache {
 std::unique_ptr<NodesMap>
 NodesMapFactory::from_input_stream(I_IStream &input_stream) {
-  std::map<long, long> resulting;
+  std::map<uint64_t, uint64_t> resulting;
   auto &is = input_stream.get_istream();
   auto impl_id = (int)read_u32(is);
 
@@ -20,8 +20,8 @@ NodesMapFactory::from_input_stream(I_IStream &input_stream) {
 
   auto map_size = read_u64(is);
   for (auto i = 0UL; i < map_size; i++) {
-    auto key = (long)read_u64(is);
-    auto value = (long)read_u64(is);
+    auto key = read_u64(is);
+    auto value = read_u64(is);
     resulting[key] = value;
   }
   return std::make_unique<NodesMapImpl>(std::move(resulting));

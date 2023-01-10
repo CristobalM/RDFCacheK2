@@ -13,9 +13,9 @@ using namespace k2cache;
 TEST(NodesMapSuite, CanGetNodesIdCorrectly) {
   std::stringstream ss;
 
-  std::vector<long> input_nums;
+  std::vector<uint64_t> input_nums;
 
-  for (long i = 0; i < 100000; i++) {
+  for (uint64_t i = 0; i < 100000; i++) {
     input_nums.push_back((i + 1) * 100);
   }
 
@@ -34,9 +34,9 @@ TEST(NodesMapSuite, CanGetNodesIdCorrectly) {
 TEST(NodesMapSuite, NotFoundFailGraciously) {
   std::stringstream ss;
 
-  std::vector<long> input_nums;
+  std::vector<uint64_t> input_nums;
 
-  for (long i = 0; i < 100000; i++) {
+  for (uint64_t i = 0; i < 100000; i++) {
     input_nums.push_back((i + 1) * 100);
   }
 

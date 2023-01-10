@@ -1,17 +1,27 @@
 #include <gtest/gtest.h>
 
+
+#include <serialization_util.hpp>
+#include <string>
+#include <triple_external_sort.hpp>
+#include <utility>
+#include <sstream>
+
 #include "builder/PredicatesIndexFileBuilder.hpp"
 #include "cache_test_util.hpp"
 #include "k2tree/K2TreeBulkOp.hpp"
 #include "manager/PredicatesIndexCacheMD.hpp"
 #include "mock_structures/FHMock.hpp"
-#include <serialization_util.hpp>
-#include <string>
-#include <triple_external_sort.hpp>
-#include <utility>
+
+
 using namespace k2cache;
-static std::pair<PredicatesIndexCacheMD, uint64_t>
-build_picmd(DataHolders &h) {
+
+static std::pair<PredicatesIndexCacheMD, uint64_t> build_picmd_wbuild_fun(
+    DataHolders &h,
+    const std::function<PredicatesCacheMetadata(
+        std::istream&, std::ostream&, std::iostream&, K2TreeConfig)> &build_fun,
+    uint64_t sz=10000
+    ) {
 
   K2TreeConfig config;
   config.cut_depth = 10;
@@ -22,7 +32,6 @@ build_picmd(DataHolders &h) {
 
   std::stringstream out;
   std::stringstream tmp;
-  uint64_t sz = 10000;
   write_u64(ss, 3 * sz);
   for (uint64_t i = 1; i <= sz; i++) {
     TripleValue(i, i, i).write_to_file(ss);
@@ -32,7 +41,7 @@ build_picmd(DataHolders &h) {
   ss.seekg(0);
   out.seekp(0);
 
-  PredicatesIndexFileBuilder::build(ss, out, tmp, config);
+  build_fun(ss, out, tmp, config);
 
   h.pcm_h.data = std::make_shared<std::string>(out.str());
 
@@ -40,6 +49,14 @@ build_picmd(DataHolders &h) {
 
   return {PredicatesIndexCacheMD(std::move(frw_handler)), sz};
 }
+
+
+static std::pair<PredicatesIndexCacheMD, uint64_t> build_picmd(DataHolders &h) {
+  return build_picmd_wbuild_fun(h,
+                                PredicatesIndexFileBuilder::build);
+}
+
+
 static std::pair<PredicatesIndexCacheMD, uint64_t>
 build_picmd_single_predicate(uint64_t predicate_id, DataHolders &h) {
 
@@ -63,8 +80,7 @@ build_picmd_single_predicate(uint64_t predicate_id, DataHolders &h) {
 
   PredicatesIndexFileBuilder::build(ss, out, tmp, config);
 
-  h.pcm_h.data =  std::make_shared<std::string>(out.str());
-
+  h.pcm_h.data = std::make_shared<std::string>(out.str());
 
   auto frw_handler = std::make_unique<FHMock>(h.pcm_h.data);
 
@@ -227,6 +243,104 @@ TEST(predicates_metadata_serialization, can_store_predicate_size_in_memory) {
   auto stored_in_memory_size = metadata.tree_size_in_memory;
   auto calculated_in_memory_size = k2tree_stats.total_bytes;
   ASSERT_EQ(stored_in_memory_size, calculated_in_memory_size);
+}
+
+TEST(predicates_metadata_serialization, same_perf_original_vs_newer_virt_build_fun){
+  DataHolders h;
+
+  const uint64_t total_samples = 10;
+  uint64_t sum_orig = 0;
+  uint64_t sum_new = 0;
+  const auto measurement_unit = "microsecs";
+  for(uint64_t i = 0; i < total_samples; i++){
+
+    auto start = std::chrono::high_resolution_clock::now();
+
+    auto [pc, sz] =
+        build_picmd_wbuild_fun(h, PredicatesIndexFileBuilder::build_orig);
+    auto stop = std::chrono::high_resolution_clock::now();
+    auto duration_orig =
+        std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+
+    start = std::chrono::high_resolution_clock::now();
+
+    auto [pc2, sz2] =
+        build_picmd_wbuild_fun(h, PredicatesIndexFileBuilder::build);
+    stop = std::chrono::high_resolution_clock::now();
+    auto duration_new =
+        std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+    std::cout << "Duration new " << duration_new.count() << " " << measurement_unit << std::endl;
+    std::cout << "Duration orig " << duration_orig.count() << " " << measurement_unit <<  std::endl;
+
+    sum_new += duration_new.count();
+    sum_orig += duration_orig.count();
+  }
+
+  auto avg_new = sum_new / total_samples;
+  auto avg_orig = sum_orig / total_samples;
+
+  std::cout << "Avg new: " << avg_new << " " << measurement_unit <<  std::endl;
+  std::cout << "Avg orig: " << avg_orig << " " << measurement_unit <<  std::endl;
+  std::cout << "Avg orig - new: " << avg_orig - avg_new << " " << measurement_unit << std::endl;
+  std::cout << "Avg diff (orig - new): " << (sum_orig - sum_new) / total_samples << " " << measurement_unit << std::endl;
+
+  ASSERT_LE(std::abs((int64_t)avg_new - (int64_t)avg_orig), 10000);
+}
+
+TEST(predicates_metadata_serialization, same_perf_original_vs_newer_virt_build_fun_reversed){
+  DataHolders h;
+
+  const int64_t total_samples = 10;
+  int64_t sum_orig = 0;
+  int64_t sum_new = 0;
+  const auto measurement_unit = "microsecs";
+  for(uint64_t i = 0; i < total_samples; i++){
+
+    auto start = std::chrono::high_resolution_clock::now();
+
+    auto [pc, sz] =
+        build_picmd_wbuild_fun(h, PredicatesIndexFileBuilder::build);
+    auto stop = std::chrono::high_resolution_clock::now();
+    auto duration_new =
+        std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+
+    start = std::chrono::high_resolution_clock::now();
+
+    auto [pc2, sz2] =
+        build_picmd_wbuild_fun(h, PredicatesIndexFileBuilder::build_orig);
+    stop = std::chrono::high_resolution_clock::now();
+    auto duration_orig =
+        std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+    std::cout << "Duration new " << duration_new.count() << " " << measurement_unit << std::endl;
+    std::cout << "Duration orig " << duration_orig.count() << " " << measurement_unit <<  std::endl;
+
+    sum_new += duration_new.count();
+    sum_orig += duration_orig.count();
+  }
+
+  int64_t avg_new = (int64_t)sum_new / total_samples;
+  int64_t avg_orig = (int64_t)sum_orig / total_samples;
+
+  std::cout << "Avg new: " << avg_new << " " << measurement_unit <<  std::endl;
+  std::cout << "Avg orig: " << avg_orig << " " << measurement_unit <<  std::endl;
+  std::cout << "Avg orig - new: " << avg_orig - avg_new << " " << measurement_unit << std::endl;
+  std::cout << "Avg diff (orig - new): " << (sum_orig - sum_new) / total_samples << " " << measurement_unit << std::endl;
+
+  ASSERT_LE(std::abs((int64_t)avg_new - (int64_t)avg_orig), 10000);
+}
+
+TEST(predicates_metadata_serialization, benchmark_orig) {
+  DataHolders h;
+  auto [pc, sz] =
+      build_picmd_wbuild_fun(h, PredicatesIndexFileBuilder::build_orig, 100000);
+  ASSERT_GT(sz, 0);
+}
+
+TEST(predicates_metadata_serialization, benchmark_new) {
+  DataHolders h;
+  auto [pc, sz] =
+      build_picmd_wbuild_fun(h, PredicatesIndexFileBuilder::build, 100000);
+  ASSERT_GT(sz, 0);
 }
 
 int main(int argc, char **argv) {

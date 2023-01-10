@@ -4,6 +4,8 @@
 #include "k2tree/K2TreeMixed.hpp"
 #include "serialization_util.hpp"
 #include "triple_external_sort.hpp"
+#include "TriplesFeedSBPFromIstream.hpp"
+#include "K2TreesFeedFromSortedTriplesFeed.hpp"
 #include <set>
 #include <stdexcept>
 #include <unordered_map>
@@ -22,6 +24,91 @@ static void write_ktree_with_size(std::iostream &ios, K2TreeMixed &k2tree) {
 }
 
 PredicatesCacheMetadata PredicatesIndexFileBuilder::build(
+    std::istream &input_file, std::ostream &output_file,
+    std::iostream &tmp_stream, K2TreeConfig config) {
+  TriplesFeedSBPFromIstream feed(input_file);
+  return build_with_feed(feed, output_file, tmp_stream, config);
+}
+
+PredicatesCacheMetadata PredicatesIndexFileBuilder::build_with_feed(
+    TriplesFeedSortedByPredicate &feed, std::ostream &output_file,
+    std::iostream &tmp_stream, K2TreeConfig config) {
+  K2TreesFeedFromSortedTriplesFeed k2trees_feed(feed, config);
+  return build_with_k2tree_feed(k2trees_feed, output_file, tmp_stream, config);
+}
+
+PredicatesCacheMetadata PredicatesIndexFileBuilder::build_with_k2tree_feed(
+    K2TreesFeed &feed, std::ostream &output_file, std::iostream &tmp_stream,
+    K2TreeConfig config) {
+
+  std::vector<uint64_t> predicates_ids;
+
+  while (feed.has_next()) {
+    auto tree_container = feed.get_next();
+    write_ktree_with_size(tmp_stream, *tree_container.tree);
+    predicates_ids.push_back(tree_container.predicate);
+  }
+
+  std::unordered_map<uint64_t, PredicateMetadata> metadata_map;
+
+  uint64_t predicates_count = predicates_ids.size();
+  write_u64(output_file, predicates_count);
+  config.write_to_ostream(output_file);
+  const auto metadata_start = output_file.tellp();
+  for (const auto predicate_id : predicates_ids) {
+    metadata_map[predicate_id] = PredicateMetadata{};
+    metadata_map[predicate_id].write_to_ostream(output_file);
+  }
+
+  tmp_stream.seekg(0);
+  int i = 0;
+  for (const auto predicate_id : predicates_ids) {
+    const auto total_bytes = read_u64(tmp_stream);
+    const auto k2tree_serialized_size = read_u64(tmp_stream);
+    const auto offset = output_file.tellp();
+    std::array<char, 16> md5_read;
+    tmp_stream.read(md5_read.data(), md5_read.size());
+    std::vector<char> buf(k2tree_serialized_size);
+
+    if (!tmp_stream.read(buf.data(), k2tree_serialized_size)) {
+      throw std::runtime_error("Error while reading " +
+                               std::to_string(k2tree_serialized_size) +
+                               " bytes from tmp file");
+    }
+
+    auto md5_calc = md5calc(buf);
+
+    if (md5_read != md5_calc) {
+      throw std::runtime_error(
+          "Hash between read k2tree and stored value differ at i = " +
+          std::to_string(i));
+    }
+
+    output_file.write(buf.data(), k2tree_serialized_size);
+    auto &tree_metadata = metadata_map[predicate_id];
+    tree_metadata.predicate_id = predicate_id;
+    tree_metadata.tree_offset = offset;
+    tree_metadata.tree_size = k2tree_serialized_size;
+    tree_metadata.tree_size_in_memory = total_bytes;
+    tree_metadata.priority = 0;
+    tree_metadata.k2tree_hash = std::move(md5_calc);
+
+    i++;
+  }
+
+  const auto to_restore = output_file.tellp();
+  output_file.seekp(metadata_start);
+  for (const auto predicate_id : predicates_ids) {
+    metadata_map[predicate_id].write_to_ostream(output_file);
+  }
+  output_file.seekp(to_restore);
+
+  return PredicatesCacheMetadata(std::move(metadata_map),
+                                 std::move(predicates_ids), config);
+}
+
+
+PredicatesCacheMetadata PredicatesIndexFileBuilder::build_orig(
     std::istream &input_file, std::ostream &output_file,
     std::iostream &tmp_stream, K2TreeConfig config) {
   FileData filedata{};
@@ -111,6 +198,8 @@ PredicatesCacheMetadata PredicatesIndexFileBuilder::build(
   return PredicatesCacheMetadata(std::move(metadata_map),
                                  std::move(predicates_ids), config);
 }
+
+
 
 PredicatesCacheMetadata PredicatesIndexFileBuilder::build_debug(
     std::istream &input_file, std::ostream &output_file,
@@ -231,4 +320,5 @@ PredicatesCacheMetadata PredicatesIndexFileBuilder::build_debug(
   return PredicatesCacheMetadata(std::move(metadata_map),
                                  std::move(predicates_ids), config);
 }
+
 } // namespace k2cache

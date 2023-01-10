@@ -27,8 +27,8 @@ write_triples_dataset_to_file(const std::string &filename,
 static void do_checks(const std::vector<uint64_t> &dataset,
                       k2cache::NodesSequence &nseq) {
 
-  long last_read = std::numeric_limits<long>::lowest();
-  for (auto i = 0UL; i < dataset.size(); i++) {
+  auto last_read =  nseq.get_real_id(0, nullptr);
+  for (auto i = 1UL; i < dataset.size(); i++) {
     auto nodeid = nseq.get_real_id(i, nullptr);
     ASSERT_LT(last_read, nodeid)
         << "the sequence failed the increasing check at i = " << i
@@ -37,6 +37,7 @@ static void do_checks(const std::vector<uint64_t> &dataset,
     ASSERT_EQ(i, pos_mapped)
         << "i doesn't coincide with pos_mapped, at i = " << i
         << ", pos_mapped = " << pos_mapped << ", nodeid = " << nodeid;
+    last_read = nodeid;
   }
 }
 
