@@ -33,16 +33,16 @@ NodeIdsManagerImpl::NodeIdsManagerImpl(
   auto counter_reader = this->log_fh_counter->get_reader(std::ios::binary);
   auto &is = counter_reader->get_istream();
   is.seekg(0);
-  logs_number = (long)read_u64(is);
+  logs_number = read_u64(is);
 }
 
-long NodeIdsManagerImpl::get_id(long real_id) {
+uint64_t NodeIdsManagerImpl::get_id(uint64_t real_id) {
   auto plain_id = nodes_sequence->get_id(real_id);
   if (plain_id != NOT_FOUND_NODEID)
     return plain_id;
   return nodes_map->get_id(real_id);
 }
-long NodeIdsManagerImpl::get_real_id(long mapped_id, int *err_code = nullptr) {
+uint64_t NodeIdsManagerImpl::get_real_id(uint64_t mapped_id, int *err_code = nullptr) {
   int err_code2 = 0;
   auto from_seq = nodes_sequence->get_real_id(mapped_id, &err_code2);
   if (err_code2 == (int)NidsErrCode::SUCCESS_ERR_CODE){
@@ -53,7 +53,7 @@ long NodeIdsManagerImpl::get_real_id(long mapped_id, int *err_code = nullptr) {
   }
   return nodes_map->get_real_id(mapped_id, err_code);
 }
-long NodeIdsManagerImpl::get_id_or_create(long real_id) {
+uint64_t NodeIdsManagerImpl::get_id_or_create(uint64_t real_id) {
   auto mapped_id = get_id(real_id);
   if (mapped_id != NOT_FOUND_NODEID)
     return mapped_id;
@@ -62,12 +62,12 @@ long NodeIdsManagerImpl::get_id_or_create(long real_id) {
   nodes_map->add(real_id, last_assigned_id);
   return last_assigned_id;
 }
-long NodeIdsManagerImpl::find_last_assigned() {
+uint64_t NodeIdsManagerImpl::find_last_assigned() {
   if (nodes_map->get_last_assigned() == NOT_FOUND_NODEID)
     return nodes_sequence->get_last_assigned();
   return nodes_map->get_last_assigned();
 }
-void NodeIdsManagerImpl::log_new_kv(long real_id, long mapped_id) {
+void NodeIdsManagerImpl::log_new_kv(uint64_t real_id, uint64_t mapped_id) {
   auto &os = log_writer->get_ostream();
   write_u64(os, real_id);
   write_u64(os, mapped_id);

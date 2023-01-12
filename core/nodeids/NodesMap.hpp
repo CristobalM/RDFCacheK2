@@ -12,11 +12,11 @@ class I_OStream;
 struct NodesMap {
   virtual ~NodesMap() = default;
 
-  virtual long get_id(long real_id) = 0;
-  virtual long get_real_id(long id, int *err_code) = 0;
+  virtual uint64_t get_id(uint64_t real_id) = 0;
+  virtual uint64_t get_real_id(uint64_t id, int *err_code) = 0;
 
-  virtual long get_last_assigned() = 0;
-  virtual void add(long real_id, long mapped_id) = 0;
+  virtual uint64_t get_last_assigned() = 0;
+  virtual void add(uint64_t real_id, uint64_t mapped_id) = 0;
 
   virtual void serialize(I_OStream &os) = 0;
 

@@ -9,9 +9,9 @@
 namespace k2cache {
 class NodeIdsManagerIdentity : public NodeIdsManager {
 public:
-  long get_id(long real_id) override;
-  long get_real_id(long mapped_id, int *err_code) override;
-  long get_id_or_create(long real_id) override;
+  uint64_t get_id(uint64_t real_id) override;
+  uint64_t get_real_id(uint64_t mapped_id, int *err_code) override;
+  uint64_t get_id_or_create(uint64_t real_id) override;
 };
 } // namespace k2cache
 

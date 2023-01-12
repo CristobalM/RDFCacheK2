@@ -4,10 +4,10 @@
 
 #include "NodeIdsManagerIdentity.hpp"
 
-long k2cache::NodeIdsManagerIdentity::get_id(long real_id) { return real_id; }
-long k2cache::NodeIdsManagerIdentity::get_real_id(long mapped_id, int *) {
+uint64_t k2cache::NodeIdsManagerIdentity::get_id(uint64_t real_id) { return real_id; }
+uint64_t k2cache::NodeIdsManagerIdentity::get_real_id(uint64_t mapped_id, int *) {
   return mapped_id;
 }
-long k2cache::NodeIdsManagerIdentity::get_id_or_create(long real_id) {
+uint64_t k2cache::NodeIdsManagerIdentity::get_id_or_create(uint64_t real_id) {
   return real_id;
 }

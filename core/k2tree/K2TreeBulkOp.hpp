@@ -14,6 +14,7 @@ class K2TreeBulkOp {
 public:
   explicit K2TreeBulkOp(K2TreeMixed &k2tree);
   void insert(uint64_t col, uint64_t row);
+  bool insert_was_inserted(uint64_t col, uint64_t row);
   void remove(uint64_t col, uint64_t row);
   bool has(uint64_t col, uint64_t row);
   K2QStateWrapper &get_stw();

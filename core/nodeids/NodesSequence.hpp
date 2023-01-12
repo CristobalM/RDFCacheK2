@@ -7,21 +7,24 @@
 
 #include <string>
 #include <vector>
+#include "I_OStream.hpp"
 
 namespace k2cache {
 struct I_IStream;
 class NodesSequence {
-  std::vector<long> values;
+  std::vector<uint64_t> values;
 
 public:
-  explicit NodesSequence(std::vector<long> &&values);
+  explicit NodesSequence(std::vector<uint64_t> &&values);
 
-  long get_id(long value);
-  long get_real_id(long position, int *err_code);
+  uint64_t get_id(uint64_t value);
+  uint64_t get_real_id(uint64_t position, int *err_code);
 
-  long get_last_assigned();
+  uint64_t get_last_assigned();
 
   static NodesSequence from_input_stream(I_IStream &input_stream);
+
+  void serialize(I_OStream &output_stream);
 };
 } // namespace k2cache
 

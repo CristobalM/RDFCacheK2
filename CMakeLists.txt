@@ -36,6 +36,11 @@ set(CORE_SOURCE_FILES
         core/util_algorithms/fisher_yates.hpp
 
         core/builder/PredicatesIndexFileBuilder.cpp
+        core/builder/PredicatesIndexFileBuilder.hpp
+        core/builder/TriplesFeedSortedByPredicate.hpp
+        core/builder/TriplesFeedSBPFromIstream.cpp
+        core/builder/TriplesFeedSBPFromIstream.hpp
+
 
         core/fic/CacheDataManager.cpp
         core/fic/CacheDataManager.hpp
@@ -134,7 +139,7 @@ set(CORE_SOURCE_FILES
         core/algorithms/DirectedPath.cpp
 
         core/util_algorithms/fisher_yates.cpp
-        )
+        core/builder/K2TreesFeed.hpp core/builder/K2TreesFeedFromSortedTriplesFeed.cpp core/builder/K2TreesFeedFromSortedTriplesFeed.hpp)
 
 
 set(NETWORK_SOURCE_FILES
@@ -424,6 +429,10 @@ target_link_libraries(trigger_logs_sync ${DEFAULT_LIBS})
 add_executable(search_paths scripts/search_paths.cpp)
 target_include_directories(search_paths PUBLIC ${INCLUDES})
 target_link_libraries(search_paths ${DEFAULT_LIBS})
+
+add_executable(random_dataset_gen scripts/random_dataset_gen.cpp)
+target_include_directories(random_dataset_gen PUBLIC ${INCLUDES})
+target_link_libraries(random_dataset_gen ${DEFAULT_LIBS})
 
 # Only create test executables if google test is found
 find_package(GTest QUIET)

@@ -19,4 +19,8 @@ bool K2TreeBulkOp::has(uint64_t col, uint64_t row) {
 
 K2QStateWrapper &K2TreeBulkOp::get_stw() { return stw; }
 K2TreeMixed &K2TreeBulkOp::get_tree() { return k2tree; }
+
+bool K2TreeBulkOp::insert_was_inserted(uint64_t col, uint64_t row) {
+  return k2tree.insert_was_inserted(col, row);
+}
 } // namespace k2cache

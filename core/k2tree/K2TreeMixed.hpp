@@ -70,11 +70,13 @@ public:
   struct k2node *get_root_k2node();
 
   void insert(uint64_t col, uint64_t row, K2QStateWrapper &stw);
+  bool insert_was_inserted(uint64_t col, uint64_t row, K2QStateWrapper &stw);
   void remove(uint64_t col, uint64_t row, K2QStateWrapper &stw);
   bool has(uint64_t col, uint64_t row, K2QStateWrapper &stw) const;
 
   void remove(uint64_t col, uint64_t row);
   void insert(uint64_t col, uint64_t row);
+  bool insert_was_inserted(uint64_t col, uint64_t row);
   bool has(uint64_t col, uint64_t row) const;
 
   uint64_t get_tree_depth() const;

@@ -11,17 +11,17 @@
 #include <memory>
 namespace k2cache {
 class NodesMapImpl : public NodesMap {
-  std::map<long, long> imap;
-  std::map<long, long> rev_map;
+  std::map<uint64_t, uint64_t> imap;
+  std::map<uint64_t, uint64_t> rev_map;
 
 public:
-  explicit NodesMapImpl(std::map<long, long> &&imap);
+  explicit NodesMapImpl(std::map<uint64_t, uint64_t> &&imap);
   void serialize(I_OStream &os) override;
   int impl_id() override;
-  long get_id(long real_id) override;
-  long get_real_id(long id, int *err_code) override;
-  long get_last_assigned() override;
-  void add(long real_id, long mapped_id) override;
+  uint64_t get_id(uint64_t real_id) override;
+  uint64_t get_real_id(uint64_t id, int *err_code) override;
+  uint64_t get_last_assigned() override;
+  void add(uint64_t real_id, uint64_t mapped_id) override;
   void restore(std::unique_ptr<I_IStream> &&log_istream,
                std::unique_ptr<I_IStream> &&counter_istream) override;
 };
