@@ -34,18 +34,24 @@ int main(int argc, char **argv) {
   auto paths = find_n_paths(*pcm, parsed.path_size, parsed.max_number_paths);
   std::ofstream ofs(parsed.output_file, std::ios::out);
   int err_code = 0;
+  auto validate = [](int err_code, uint64_t original_value) -> bool {
+    if(err_code != (int)NidsErrCode::SUCCESS_ERR_CODE){
+      std::cerr << "NodeId not found for value: " << original_value << std::endl;
+      return false;
+    }
+    return true;
+  };
   for(auto p: paths){
-    auto first = nim->get_real_id(p.first, &err_code);
-    if(err_code != (int)NidsErrCode::SUCCESS_ERR_CODE){
-      std::cerr << "NodeId not found for value: " << p.first << std::endl;
-      continue;
+    for(const auto &t: p.get_vec()){
+      auto subject = nim->get_real_id(t.subject, &err_code);
+      if(!validate(err_code, subject)) continue;
+      auto predicate = nim->get_real_id(t.predicate, &err_code);
+      if(!validate(err_code, predicate)) continue;
+      auto object = nim->get_real_id(t.object, &err_code);
+      if(!validate(err_code, object)) continue;
+      ofs << "(" << subject << "," << predicate << "," << object << ");";
     }
-    auto second = nim->get_real_id(p.second,  &err_code);
-    if(err_code != (int)NidsErrCode::SUCCESS_ERR_CODE){
-      std::cerr << "NodeId not found for value: " << p.second << std::endl;
-      continue;
-    }
-    ofs << first << "," << second << "\n";
+    ofs << "\n";
   }
 }
 
@@ -112,7 +118,7 @@ parsed_options parse_cmd_line(int argc, char **argv) {
   if (!has_mapped_node_ids)
     throw std::runtime_error("mapped-node-ids-file (M) argument is required");
   if (!has_output)
-    throw std::runtime_error("output-file (o) argument is required");;
+    throw std::runtime_error("output-file (o) argument is required");
   if (!has_path_size)
     throw std::runtime_error("path-size (s) argument is required");
   if (!has_max_number)

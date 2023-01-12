@@ -9,7 +9,7 @@
 namespace k2cache{
 
 struct K2TreeContainer{
-  uint64_t predicate;
+  uint64_t predicate{};
   std::unique_ptr<K2TreeMixed> tree;
 };
 
