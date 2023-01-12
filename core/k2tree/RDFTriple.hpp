@@ -16,20 +16,29 @@ struct RDFTriple {
   uint64_t predicate;
   uint64_t object;
 
+  RDFTriple() = default;
+  RDFTriple(uint64_t subject, uint64_t predicate, uint64_t object)
+      : subject(subject), predicate(predicate), object(object) {}
+
   bool operator==(const RDFTriple &other) const {
     return subject == other.subject && predicate == other.predicate &&
-           object == other.predicate;
+           object == other.object;
   };
+  bool operator<(const RDFTriple &other) const {
+    if (subject != other.subject)
+      return subject < other.subject;
+    if (predicate != other.predicate)
+      return predicate < other.predicate;
+    return object < other.object;
+  }
 
-  struct hash{
+  struct hash {
     std::size_t operator()(const RDFTriple &k) const {
       return k.subject ^ k.predicate ^ k.object;
     }
   };
 
-  std::size_t get_hash() const{
-    return hash().operator()(*this);
-  }
+  std::size_t get_hash() const { return hash().operator()(*this); }
 };
 
 enum RDFResourceType {
