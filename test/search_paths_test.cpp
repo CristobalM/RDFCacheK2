@@ -18,10 +18,22 @@ std::vector<uint64_t> get_consecutive_seq(int size) {
   return sequence;
 }
 
-using pul_t = std::pair<uint64_t, uint64_t>;
 
-static std::vector<pul_t>
-find_n_paths_for_input(const std::vector<TripleValue> &triples,
+
+// TODO: refactor to only use RDFTriple eveywhere
+static std::vector<TripleValue> triple_value_vec_from_rdf_triple_vec(
+    const std::vector<RDFTriple> &v
+){
+  std::vector<TripleValue> result;
+  result.reserve(v.size());
+  for(const auto &t: v){
+    result.emplace_back(t.subject, t.predicate, t.object);
+  }
+  return result;
+}
+
+static std::vector<DirectedPath>
+find_n_paths_for_input(const std::vector<RDFTriple> &triples,
                        const std::vector<uint64_t> &node_ids,
                        int n,
                        int max_number
@@ -31,7 +43,8 @@ find_n_paths_for_input(const std::vector<TripleValue> &triples,
   config.treedepth = 32;
   config.cut_depth = 0;
 
-  auto cc = mock_cache_container(triples, node_ids, config, false);
+  auto triple_value = triple_value_vec_from_rdf_triple_vec(triples);
+  auto cc = mock_cache_container(triple_value, node_ids, config, false);
   auto &pcm = cc->cache_container->get_pcm();
   pcm.load_all_predicates();
   auto paths = find_n_paths(pcm, n, max_number);
@@ -39,26 +52,27 @@ find_n_paths_for_input(const std::vector<TripleValue> &triples,
   return paths;
 }
 
-static bool same_pair(const pul_t &lhs, const pul_t &rhs) { return lhs == rhs; }
+static bool same_path(const DirectedPath &lhs, const DirectedPath &rhs) { return lhs == rhs; }
 
 TEST(search_paths_test, can_search_simple_paths_1) {
 
-  std::vector<TripleValue> triples = {
+  std::vector<RDFTriple> triples = {
       {1, 2, 3},
       {3, 4, 5},
   };
+
   std::vector<uint64_t> node_ids = get_consecutive_seq(5);
 
   auto paths = find_n_paths_for_input(triples, node_ids, 2, 1);
 
   ASSERT_EQ(paths.size(), 1);
-  ASSERT_EQ(paths[0].first, 1);
-  ASSERT_EQ(paths[0].second, 5);
-  ASSERT_TRUE(same_pair(paths[0], {1, 5}));
+  ASSERT_EQ(paths[0].get_vec()[0].subject, 1);
+  ASSERT_EQ(paths[0].get_vec()[1].object, 5);
+  ASSERT_TRUE(same_path(paths[0], DirectedPath(triples)));
 }
 
 TEST(search_paths_test, can_search_simple_paths_2) {
-  std::vector<TripleValue> triples = {
+  std::vector<RDFTriple> triples = {
       {1, 2, 3},
       {3, 4, 5},
       {3, 6, 7},
@@ -68,9 +82,8 @@ TEST(search_paths_test, can_search_simple_paths_2) {
   auto paths = find_n_paths_for_input(triples, node_ids, 2, 2);
 
   ASSERT_EQ(paths.size(), 2);
-  std::sort(paths.begin(), paths.end(), [](const pul_t &lhs, const pul_t &rhs) {
-    return (lhs.first == rhs.first && lhs.second < rhs.second) ||
-           lhs.first < rhs.first;
+  std::sort(paths.begin(), paths.end(), [](const DirectedPath &lhs, const DirectedPath &rhs) {
+    return lhs < rhs;
   });
   ASSERT_TRUE(same_pair(paths[0], {1, 5}));
   ASSERT_TRUE(same_pair(paths[1], {1, 7}));

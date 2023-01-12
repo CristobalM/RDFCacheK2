@@ -16,9 +16,10 @@ namespace k2cache {
  * @param pcm
  * @param n
  * @param max_number
- * @return n DirectedPaths
+ * @return n directed paths
  */
-std::vector<std::pair<uint64_t, uint64_t>> find_n_paths(
+std::vector<DirectedPath>
+ find_n_paths(
     PredicatesCacheManager &pcm,
     int n,
     int max_number

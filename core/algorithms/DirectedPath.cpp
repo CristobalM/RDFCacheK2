@@ -6,7 +6,7 @@
 
 namespace k2cache {
 
-bool DirectedPath::operator==(DirectedPath &other) {
+bool DirectedPath::operator==(const DirectedPath &other) const {
   return edges == other.edges;
 }
 
@@ -17,6 +17,11 @@ std::size_t DirectedPath::hash() const {
     result ^= v.get_hash() * (31UL << (++cnt));
   }
   return result;
+}
+DirectedPath::DirectedPath(std::vector<RDFTriple> edges)
+    : edges(std::move(edges)) {}
+const std::vector<RDFTriple> &DirectedPath::get_vec() {
+  return edges;
 }
 
 } // namespace k2cache

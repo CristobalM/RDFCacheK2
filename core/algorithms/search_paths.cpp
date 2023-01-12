@@ -7,7 +7,7 @@
 #include <queue>
 #include <random>
 #include <set>
-#include <stack>
+#include <list>
 #include <unordered_set>
 #include <vector>
 
@@ -33,15 +33,15 @@ struct POPair {
 };
 
 void find_paths_subj_origin(
-        std::stack<RDFTriple> current_path,
+        std::vector<RDFTriple> current_path,
         uint64_t first_subject, SPPair sp_pair,
-        std::vector<std::pair<uint64_t, uint64_t>> &paths,
+        std::vector<DirectedPath> &paths,
         PredicatesCacheManager &pcm, TripleHSet &visited_edges,
         K2TreeMixed &current_k2tree, uint64_t current_predicate,
-        uint64_t current_pred_idx, int curr_path_size, int max_path_size,
+        int curr_path_size, int max_path_size,
         int max_paths, const std::vector<uint64_t> &sorted_predicates);
 
-std::vector<std::pair<uint64_t , uint64_t >>
+std::vector<DirectedPath>
 find_n_paths(PredicatesCacheManager &pcm, int n, int max_number) {
 
   auto sorted_predicate_ids =
@@ -80,7 +80,7 @@ find_n_paths(PredicatesCacheManager &pcm, int n, int max_number) {
               return lfetched.get().size() > rfetched.get().size();
             });
 
-  std::vector<std::pair<uint64_t , uint64_t >> paths;
+  std::vector<DirectedPath> paths;
 
   for (auto pidx = 0UL; pidx < sorted_predicate_ids.size(); pidx++) {
     auto p = sorted_predicate_ids[pidx];
@@ -99,24 +99,25 @@ find_n_paths(PredicatesCacheManager &pcm, int n, int max_number) {
 
       subjects.insert(subj);
       SPPair sp_pair = {subj, p};
-      std::stack<RDFTriple> current_path;
+      std::vector<RDFTriple> current_path(n);
+
 
       find_paths_subj_origin(current_path, subj, sp_pair, paths, pcm, visited, k2tree, p,
-                             pidx, 1, n, max_number, sorted_predicate_ids);
+                             0, n, max_number, sorted_predicate_ids);
       if((int)paths.size() >= max_number) break;
     }
   }
   return paths;
 }
-void debug_reverse_print_stack(const std::stack<RDFTriple> &s);
+void debug_print_path(const std::vector<RDFTriple> &path);
 void find_paths_subj_origin(
-        std::stack<RDFTriple> current_path,
-        uint64_t first_subject, SPPair sp_pair,
-        std::vector<std::pair<uint64_t, uint64_t>> &paths,
-        PredicatesCacheManager &pcm, TripleHSet &visited_edges,
-        K2TreeMixed &current_k2tree, uint64_t current_predicate,
-        uint64_t , int curr_path_size, int max_path_size,
-        int max_paths, const std::vector<uint64_t> &sorted_predicates) {
+    std::vector<RDFTriple> current_path,
+    uint64_t first_subject, SPPair sp_pair,
+    std::vector<DirectedPath> &paths,
+    PredicatesCacheManager &pcm, TripleHSet &visited_edges,
+    K2TreeMixed &current_k2tree, uint64_t current_predicate,
+    int curr_path_size, int max_path_size,
+    int max_paths, const std::vector<uint64_t> &sorted_predicates) {
   if((int)paths.size() >= max_paths){
     return;
   }
@@ -131,50 +132,44 @@ void find_paths_subj_origin(
       continue;
     }
 
-    if (curr_path_size + 1 > max_path_size) {
-      paths.emplace_back(first_subject, obj2);
-      current_path.push(triple);
-      debug_reverse_print_stack(current_path);
-      current_path.pop();
+    if (curr_path_size ==  max_path_size - 1) {
+      current_path[curr_path_size] = triple;
+      // report path
+      paths.emplace_back(current_path);
+      debug_print_path(current_path);
+      curr_path_size--;
       if((int)paths.size() >= max_paths){
         return;
       }
     } else {
       visited_edges.insert(triple);
-      current_path.push(triple);
-      for (auto cpidx = 0UL; cpidx < sorted_predicates.size(); cpidx++) {
-        auto cp = sorted_predicates[cpidx];
-        auto ck2fetch = pcm.get_predicates_index_cache().fetch_k2tree(cp);
-        auto &ck2 = ck2fetch.get_mutable();
+      current_path[curr_path_size] = triple;
+      curr_path_size++;
+      for (auto pred_idx = 0UL; pred_idx < sorted_predicates.size();
+           pred_idx++) {
+        auto pred_value = sorted_predicates[pred_idx];
+        auto pred_fetch_result = pcm.get_predicates_index_cache().fetch_k2tree(pred_value);
+        auto &tree_selected = pred_fetch_result.get_mutable();
 
         // obj2 is next subject
-        SPPair next_sp_pair = {obj2, cp};
+        SPPair next_sp_pair = {obj2, pred_value};
 
         find_paths_subj_origin(current_path, first_subject, next_sp_pair, paths, pcm,
-                               visited_edges, ck2, cp, cpidx,
+                               visited_edges, tree_selected, pred_value,
                                curr_path_size + 1, max_path_size, max_paths,
                                sorted_predicates);
       }
-      current_path.pop();
+      curr_path_size--;
       visited_edges.erase(triple);
     }
   }
 }
 
-static void debug_reverse_print_stack_rec(std::stack<RDFTriple> &s){
-  if(s.empty()) return;
-  auto t = s.top();
-  s.pop();
-  debug_reverse_print_stack_rec(s);
-  std::cout << "("
-            << t.subject << ", "
-            << t.predicate << ", "
-            << t.object << "), ";
-}
-void debug_reverse_print_stack(const std::stack<RDFTriple> &s) {
-  auto copied = s;
-  std::cout << "printing path of size " << s.size() << ": " << std::endl;
-  debug_reverse_print_stack_rec(copied);
+void debug_print_path(const std::vector<RDFTriple> &path) {
+  std::cout << "printing path of size " << path.size() << ": " << std::endl;
+  for(const auto & triple: path){
+    std::cout << "(" << triple.subject << ", " << triple.predicate << ", " << triple.object << "); ";
+  }
   std::cout << std::endl;
 }
 
