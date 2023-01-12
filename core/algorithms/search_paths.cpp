@@ -136,15 +136,13 @@ void find_paths_subj_origin(
       current_path[curr_path_size] = triple;
       // report path
       paths.emplace_back(current_path);
-      debug_print_path(current_path);
-      curr_path_size--;
+      // debug_print_path(current_path);
       if((int)paths.size() >= max_paths){
         return;
       }
     } else {
       visited_edges.insert(triple);
       current_path[curr_path_size] = triple;
-      curr_path_size++;
       for (auto pred_idx = 0UL; pred_idx < sorted_predicates.size();
            pred_idx++) {
         auto pred_value = sorted_predicates[pred_idx];
@@ -159,7 +157,6 @@ void find_paths_subj_origin(
                                curr_path_size + 1, max_path_size, max_paths,
                                sorted_predicates);
       }
-      curr_path_size--;
       visited_edges.erase(triple);
     }
   }

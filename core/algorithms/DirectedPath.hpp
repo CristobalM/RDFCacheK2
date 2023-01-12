@@ -21,6 +21,7 @@ public:
   bool operator==(const DirectedPath &other) const;
   [[nodiscard]] std::size_t hash() const;
   const std::vector<RDFTriple> &get_vec();
+  bool operator<(const DirectedPath &other) const;
 };
 
 }

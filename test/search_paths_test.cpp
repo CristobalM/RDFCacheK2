@@ -38,7 +38,7 @@ find_n_paths_for_input(const std::vector<RDFTriple> &triples,
                        int n,
                        int max_number
                        ) {
-  K2TreeConfig config;
+  K2TreeConfig config{};
   config.max_node_count = 128;
   config.treedepth = 32;
   config.cut_depth = 0;
@@ -52,7 +52,9 @@ find_n_paths_for_input(const std::vector<RDFTriple> &triples,
   return paths;
 }
 
-static bool same_path(const DirectedPath &lhs, const DirectedPath &rhs) { return lhs == rhs; }
+static bool same_path(const DirectedPath &lhs, const DirectedPath &rhs) {
+  return lhs == rhs;
+}
 
 TEST(search_paths_test, can_search_simple_paths_1) {
 
@@ -82,15 +84,26 @@ TEST(search_paths_test, can_search_simple_paths_2) {
   auto paths = find_n_paths_for_input(triples, node_ids, 2, 2);
 
   ASSERT_EQ(paths.size(), 2);
-  std::sort(paths.begin(), paths.end(), [](const DirectedPath &lhs, const DirectedPath &rhs) {
-    return lhs < rhs;
-  });
-  ASSERT_TRUE(same_pair(paths[0], {1, 5}));
-  ASSERT_TRUE(same_pair(paths[1], {1, 7}));
+  std::sort(paths.begin(), paths.end());
+  ASSERT_TRUE(same_path(paths[0], DirectedPath(
+                                      {
+                                          {1, 2, 3},
+                                          {3, 4, 5},
+                                      }
+                                      )));
+  ASSERT_TRUE(same_path(paths[1], DirectedPath(
+                                      {
+                                          {1, 2, 3},
+                                          {3, 6, 7},
+                                      }
+                                      )));
+//  ASSERT_EQ(paths[0] == DirectedPath({}{}))
+//  ASSERT_TRUE(same_pair(paths[0], {1, 5}));
+//  ASSERT_TRUE(same_pair(paths[1], {1, 7}));
 }
 
 TEST(search_paths_test, can_search_simple_paths_3) {
-  std::vector<TripleValue> triples = {
+  std::vector<RDFTriple> triples = {
       {1, 2, 3},
       {3, 4, 5},
       {3, 6, 7},
@@ -101,17 +114,23 @@ TEST(search_paths_test, can_search_simple_paths_3) {
   auto paths = find_n_paths_for_input(triples, node_ids, 2, 3);
 
   ASSERT_EQ(paths.size(), 3);
-  std::sort(paths.begin(), paths.end(), [](const pul_t &lhs, const pul_t &rhs) {
-    return (lhs.first == rhs.first && lhs.second < rhs.second) ||
-           lhs.first < rhs.first;
-  });
-  ASSERT_TRUE(same_pair(paths[0], {1, 5}));
-  ASSERT_TRUE(same_pair(paths[1], {1, 7}));
-  ASSERT_TRUE(same_pair(paths[2], {3, 2}));
+  std::sort(paths.begin(), paths.end());
+  ASSERT_TRUE(same_path(paths[0], DirectedPath({
+                                      {1, 2, 3},
+                                      {3, 4, 5}
+                                  })));
+  ASSERT_TRUE(same_path(paths[1], DirectedPath({
+                                      {1, 2, 3},
+                                      {3, 6, 7}
+                                  })));
+  ASSERT_TRUE(same_path(paths[2], DirectedPath({
+                                      {3, 6, 7},
+                                      {7, 1, 2}
+                                  })));
 }
 
 TEST(search_paths_test, can_search_simple_paths_3_max_number_works) {
-  std::vector<TripleValue> triples = {
+  std::vector<RDFTriple> triples = {
       {1, 2, 3},
       {3, 4, 5},
       {3, 6, 7},
@@ -122,14 +141,25 @@ TEST(search_paths_test, can_search_simple_paths_3_max_number_works) {
   auto paths = find_n_paths_for_input(triples, node_ids, 2, 1);
 
   ASSERT_EQ(paths.size(), 1);
-  std::sort(paths.begin(), paths.end(), [](const pul_t &lhs, const pul_t &rhs) {
-    return (lhs.first == rhs.first && lhs.second < rhs.second) ||
-           lhs.first < rhs.first;
-  });
+  std::sort(paths.begin(), paths.end());
+
+  const auto possible_paths = std::vector<DirectedPath>{
+      DirectedPath({{1, 2, 3}, {3,4, 5}}),
+      DirectedPath({{1, 2, 3}, {3,6, 7}}),
+      DirectedPath({{3, 6, 7}, {7,1, 2}}),
+  };
+  bool found = false;
+  for(const auto &p: possible_paths){
+    if(same_path(paths[0], p)){
+      found = true;
+      break;
+    }
+  }
+  ASSERT_TRUE(found);
 }
 
 TEST(search_paths_test, can_find_simple_path_100) {
-  std::vector<TripleValue> triples;
+  std::vector<RDFTriple> triples;
 
   const auto sz = 100UL;
 
@@ -142,9 +172,6 @@ TEST(search_paths_test, can_find_simple_path_100) {
   auto paths = find_n_paths_for_input(triples, node_ids, 50, 1);
 
   ASSERT_EQ(paths.size(), 1);
-  std::sort(paths.begin(), paths.end(), [](const pul_t &lhs, const pul_t &rhs) {
-    return (lhs.first == rhs.first && lhs.second < rhs.second) ||
-           lhs.first < rhs.first;
-  });
-  ASSERT_TRUE(same_pair(paths[0], {1, 101}));
+  std::sort(paths.begin(), paths.end());
+  ASSERT_TRUE(same_path(paths[0], DirectedPath(triples)));
 }
