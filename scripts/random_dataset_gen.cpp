@@ -73,8 +73,8 @@ struct K2TreeFeedRandom : public K2TreesFeed {
     for (uint64_t i = 0; i < points_num; i++) {
       bool was_inserted;
       do {
-        const auto col = random_generate(0, node_ids_sz);
-        const auto row = random_generate(0, node_ids_sz);
+        const auto col = random_generate(1, node_ids_sz+1);
+        const auto row = random_generate(1, node_ids_sz+1);
         was_inserted = op.insert_was_inserted(col, row);
       } while (!was_inserted);
     }
