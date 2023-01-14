@@ -254,7 +254,6 @@ set(LIB_NTPARSER_INCLUDES
 
 
 add_subdirectory(${LIB_NTPARSER})
-# add_subdirectory(${K2TREE_PATH})
 
 
 include_directories(
@@ -293,7 +292,7 @@ add_library(Utils utils/serialization_util.cpp
         utils/sort/ULConnectorWHeaderCustomSerialization.hpp
         utils/sort/ULHeaderIOHandlerCustomSerialization.hpp
 
-        utils/custom_endian.hpp)
+        utils/custom_endian.hpp utils/random_dataset_generation.cpp utils/random_dataset_generation.hpp)
 
 # add_dependencies(RDFCacheK2 _k2tree_merged_noalloc)
 #add_dependencies(RDFCacheK2 k2dyn Utils)
@@ -520,6 +519,10 @@ if (GTest_FOUND)
     target_link_libraries(search_paths_test MockStructureLib ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} pthread)
 
 
+    add_executable(random_dataset_gen_test test/random_dataset_gen_test.cpp test/cache_test_util.cpp)
+    target_link_libraries(random_dataset_gen_test MockStructureLib ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} pthread)
+
+
     add_test(NAME serialization_test COMMAND ./serialization_test)
     add_test(NAME k2tree_serialization_test COMMAND ./k2tree_serialization_test)
     add_test(NAME k2tree_tests COMMAND ./k2tree_tests)
@@ -536,6 +539,7 @@ if (GTest_FOUND)
     add_test(NAME server_task_test COMMAND ./server_task_test)
     add_test(NAME nodeids_build_flow_test COMMAND ./nodeids_build_flow_test)
     add_test(NAME search_paths_test COMMAND ./search_paths_test)
+    add_test(NAME random_dataset_gen_test COMMAND ./random_dataset_gen_test)
 
     # K2 Tree Tests
 

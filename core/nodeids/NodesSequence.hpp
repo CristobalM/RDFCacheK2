@@ -25,6 +25,8 @@ public:
   static NodesSequence from_input_stream(I_IStream &input_stream);
 
   void serialize(I_OStream &output_stream);
+
+  const std::vector<uint64_t> &get_values();
 };
 } // namespace k2cache
 

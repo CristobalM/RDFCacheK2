@@ -49,5 +49,8 @@ void NodesSequence::serialize(I_OStream &output_stream) {
     write_u64(os, v);
   }
 }
+const std::vector<uint64_t> &NodesSequence::get_values() {
+  return values;
+}
 
 } // namespace k2cache

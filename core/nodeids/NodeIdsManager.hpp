@@ -6,7 +6,6 @@
 #define RDFCACHEK2_NODEIDSMANAGER_HPP
 #include <cstdint>
 namespace k2cache {
-class NodesSequence;
 struct NodeIdsManager {
   virtual ~NodeIdsManager() = default;
   virtual uint64_t get_id(uint64_t real_id) = 0;

@@ -17,6 +17,8 @@
 #include "util_algorithms/fisher_yates.hpp"
 #include "nodeids/NodesSequence.hpp"
 #include "FileOStream.hpp"
+#include "FileIOStream.hpp"
+#include "random_dataset_generation.hpp"
 
 struct parsed_options {
   uint64_t triples_num;
@@ -99,42 +101,17 @@ int main(int argc, char **argv) {
   config.cut_depth = 10;
   config.treedepth = 32;
 
-  auto node_ids = fisher_yates(opts.resources_num, 1ULL << 63ULL);
-  std::sort(node_ids.begin(), node_ids.end());
-
-  auto predicates_count = static_cast<uint64_t>(
-      node_ids.size() > 10 ? node_ids.size() / 10ULL : 1ULL);
-  auto predicate_ids_selection =
-      fisher_yates(predicates_count, node_ids.size());
-  std::sort(predicate_ids_selection.begin(), predicate_ids_selection.end());
-
-  const auto triples_per_predicate =
-      opts.triples_num / predicate_ids_selection.size();
-  const auto remaining = opts.triples_num % predicate_ids_selection.size();
-
   const auto tmp_filename = opts.dataset_name + ".tmp";
-
-  {
-    auto feed =
-        K2TreeFeedRandom(triples_per_predicate, remaining, node_ids.size(),
-                         predicate_ids_selection, config);
-
-    std::ofstream ofs(opts.dataset_name, std::ios::binary | std::ios::out);
-    std::fstream ofs_tmp(tmp_filename, std::ios::binary | std::ios::out | std::ios::in | std::ios::trunc);
-
-    PredicatesIndexFileBuilder::build_with_k2tree_feed(feed, ofs, ofs_tmp,
-                                                       config);
-  }
-
-  fs::remove(tmp_filename);
-
-  NodesSequence nodes_sequence(std::move(node_ids));
-
   const auto node_ids_file = opts.dataset_name + ".nodeids.bin";
 
-  FileOStream file_ostream(node_ids_file, std::ios::binary);
 
-  nodes_sequence.serialize(file_ostream);
+  FileOStream ofs(opts.dataset_name, std::ios::binary);
+  FileIOStream fs_tmp(tmp_filename, std::ios::binary | std::ios::trunc);
+  FileOStream nodeids_ofs(node_ids_file, std::ios::binary);
+
+  generate_random_dataset(config, opts.triples_num, opts.resources_num, ofs, fs_tmp, nodeids_ofs);
+
+  fs::remove(tmp_filename);
 
   return 0;
 }

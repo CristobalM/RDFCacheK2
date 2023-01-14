@@ -39,6 +39,7 @@ public:
   uint64_t get_id_or_create(uint64_t real_id) override;
   uint64_t find_last_assigned();
   void log_new_kv(uint64_t real_id, uint64_t mapped_id);
+  NodesSequence & get_nodes_sequence();
 };
 } // namespace k2cache
 

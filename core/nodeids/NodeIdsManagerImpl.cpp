@@ -77,5 +77,8 @@ void NodeIdsManagerImpl::log_new_kv(uint64_t real_id, uint64_t mapped_id) {
   write_u64(os_c, logs_number + 1);
   logs_number++;
 }
+NodesSequence &NodeIdsManagerImpl::get_nodes_sequence() {
+  return *nodes_sequence;
+}
 
 } // namespace k2cache
