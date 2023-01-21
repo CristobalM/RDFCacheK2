@@ -5,7 +5,10 @@
 #ifndef RDFCACHEK2_TRIPLESFEEDSORTEDBYPREDICATE_HPP
 #define RDFCACHEK2_TRIPLESFEEDSORTEDBYPREDICATE_HPP
 
+#include <cstdint>
+
 #include "k2tree/RDFTriple.hpp"
+
 namespace k2cache{
 struct TriplesFeedSortedByPredicate{
   virtual ~TriplesFeedSortedByPredicate() = default;

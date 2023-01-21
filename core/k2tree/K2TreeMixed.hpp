@@ -5,6 +5,7 @@
 #include <memory>
 #include <utility>
 #include <vector>
+#include <cstdint>
 
 #include "K2QStateWrapper.hpp"
 #include "K2TreeScanner.hpp"

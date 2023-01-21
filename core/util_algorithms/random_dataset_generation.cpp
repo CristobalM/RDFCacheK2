@@ -2,12 +2,13 @@
 // Created by Cristobal Miranda on 14-01-23.
 //
 
+#include <random>
+
 #include "random_dataset_generation.hpp"
 #include "builder/PredicatesIndexFileBuilder.hpp"
 #include "k2tree/K2TreeBulkOp.hpp"
 #include "util_algorithms/fisher_yates.hpp"
 #include "nodeids/NodesSequence.hpp"
-#include <random>
 namespace k2cache {
 
 static uint64_t random_generate(uint64_t start, uint64_t end) {

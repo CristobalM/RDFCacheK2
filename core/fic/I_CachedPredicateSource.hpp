@@ -7,6 +7,7 @@
 
 #include <set>
 #include <vector>
+#include <cstdint>
 namespace k2cache {
 struct I_CachedPredicateSource {
   virtual ~I_CachedPredicateSource() = default;

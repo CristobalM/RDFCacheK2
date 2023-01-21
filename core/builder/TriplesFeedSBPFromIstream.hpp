@@ -4,7 +4,13 @@
 
 #ifndef RDFCACHEK2_TRIPLESFEEDSBPFROMISTREAM_HPP
 #define RDFCACHEK2_TRIPLESFEEDSBPFROMISTREAM_HPP
+
+#include <cstdint>
+#include <istream>
+
 #include "TriplesFeedSortedByPredicate.hpp"
+#include "k2tree/RDFTriple.hpp"
+
 namespace k2cache{
 class TriplesFeedSBPFromIstream : public TriplesFeedSortedByPredicate {
   std::istream &is;

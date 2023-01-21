@@ -2,6 +2,7 @@
 #define _FISHER_YATES_H
 
 #include <vector>
+#include <cstdint>
 
 namespace k2cache{
 std::vector<uint64_t> fisher_yates(uint64_t result_size,

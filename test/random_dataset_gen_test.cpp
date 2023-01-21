@@ -9,7 +9,7 @@
 #include "nodeids/NodeIdsManagerFactory.hpp"
 #include "nodeids/NodeIdsManagerImpl.hpp"
 #include "nodeids/node_ids_constants.hpp"
-#include "random_dataset_generation.hpp"
+#include "util_algorithms/random_dataset_generation.hpp"
 #include <gtest/gtest.h>
 
 using namespace k2cache;

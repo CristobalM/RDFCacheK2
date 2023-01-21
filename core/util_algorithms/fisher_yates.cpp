@@ -4,6 +4,7 @@
 
 #include <random>
 #include <unordered_map>
+#include <cstdint>
 
 #include "fisher_yates.hpp"
 

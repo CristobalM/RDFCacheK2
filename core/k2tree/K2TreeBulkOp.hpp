@@ -5,7 +5,10 @@
 #ifndef RDFCACHEK2_K2TREEBULKOP_HPP
 #define RDFCACHEK2_K2TREEBULKOP_HPP
 
+#include <cstdint>
+
 #include "K2TreeMixed.hpp"
+
 namespace k2cache {
 class K2TreeBulkOp {
   K2TreeMixed &k2tree;

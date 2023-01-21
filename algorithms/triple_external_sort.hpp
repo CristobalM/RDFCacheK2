@@ -16,6 +16,7 @@
 #include <string>
 #include <unordered_set>
 #include <vector>
+#include <cstdint>
 
 #include "ParallelWorker.hpp"
 #include "serialization_util.hpp"

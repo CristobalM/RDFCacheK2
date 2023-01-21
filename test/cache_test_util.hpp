@@ -4,6 +4,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <cstdint>
 
 #include "CacheContainer.hpp"
 #include "k2tree/RDFTriple.hpp"

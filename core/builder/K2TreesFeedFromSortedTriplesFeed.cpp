@@ -2,6 +2,8 @@
 // Created by Cristobal Miranda on 09-01-23.
 //
 
+#include <cstdint>
+
 #include "K2TreesFeedFromSortedTriplesFeed.hpp"
 #include "k2tree/K2TreeBulkOp.hpp"
 

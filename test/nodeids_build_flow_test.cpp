@@ -1,14 +1,17 @@
 //
 // Created by cristobal on 25-11-22.
 //
+#include <gtest/gtest.h>
+#include <filesystem>
+#include <cstdint>
+
 #include "FileIStream.hpp"
 #include "UuidGenerator.hpp"
 #include "util_algorithms/fisher_yates.hpp"
 #include "nodeids/NodesSequence.hpp"
 #include "sort/triples_to_node_ids_file.hpp"
-#include <filesystem>
-#include <gtest/gtest.h>
 #include <serialization_util.hpp>
+
 
 namespace fs = std::filesystem;
 

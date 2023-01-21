@@ -40,7 +40,9 @@ set(CORE_SOURCE_FILES
         core/builder/TriplesFeedSortedByPredicate.hpp
         core/builder/TriplesFeedSBPFromIstream.cpp
         core/builder/TriplesFeedSBPFromIstream.hpp
-
+        core/builder/K2TreesFeed.hpp
+        core/builder/K2TreesFeedFromSortedTriplesFeed.cpp
+        core/builder/K2TreesFeedFromSortedTriplesFeed.hpp
 
         core/fic/CacheDataManager.cpp
         core/fic/CacheDataManager.hpp
@@ -139,7 +141,12 @@ set(CORE_SOURCE_FILES
         core/algorithms/DirectedPath.cpp
 
         core/util_algorithms/fisher_yates.cpp
-        core/builder/K2TreesFeed.hpp core/builder/K2TreesFeedFromSortedTriplesFeed.cpp core/builder/K2TreesFeedFromSortedTriplesFeed.hpp)
+        core/util_algorithms/random_dataset_generation.cpp
+        core/util_algorithms/random_dataset_generation.hpp
+
+
+
+        )
 
 
 set(NETWORK_SOURCE_FILES
@@ -292,7 +299,8 @@ add_library(Utils utils/serialization_util.cpp
         utils/sort/ULConnectorWHeaderCustomSerialization.hpp
         utils/sort/ULHeaderIOHandlerCustomSerialization.hpp
 
-        utils/custom_endian.hpp utils/random_dataset_generation.cpp utils/random_dataset_generation.hpp)
+        utils/custom_endian.hpp
+        )
 
 # add_dependencies(RDFCacheK2 _k2tree_merged_noalloc)
 #add_dependencies(RDFCacheK2 k2dyn Utils)

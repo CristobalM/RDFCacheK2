@@ -3,9 +3,12 @@
 //
 #include <chrono>
 #include <iostream>
+#include <cstdint>
 
 #include "k2tree/K2TreeMixed.hpp"
+
 using namespace k2cache;
+
 int main(int, char **) {
   K2TreeConfig config1{};
   config1.cut_depth = 10;

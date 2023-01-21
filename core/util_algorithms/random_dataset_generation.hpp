@@ -4,6 +4,9 @@
 
 #ifndef RDFCACHEK2_RANDOM_DATASET_GENERATION_HPP
 #define RDFCACHEK2_RANDOM_DATASET_GENERATION_HPP
+
+#include <cstdint>
+
 #include "k2tree/K2TreeMixed.hpp"
 #include "I_OStream.hpp"
 #include "I_IOStream.hpp"

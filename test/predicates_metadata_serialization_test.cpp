@@ -6,6 +6,7 @@
 #include <triple_external_sort.hpp>
 #include <utility>
 #include <sstream>
+#include <cstdint>
 
 #include "builder/PredicatesIndexFileBuilder.hpp"
 #include "cache_test_util.hpp"

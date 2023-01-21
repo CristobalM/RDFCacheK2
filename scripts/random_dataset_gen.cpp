@@ -18,7 +18,7 @@
 #include "nodeids/NodesSequence.hpp"
 #include "FileOStream.hpp"
 #include "FileIOStream.hpp"
-#include "random_dataset_generation.hpp"
+#include "util_algorithms/random_dataset_generation.hpp"
 
 struct parsed_options {
   uint64_t triples_num;

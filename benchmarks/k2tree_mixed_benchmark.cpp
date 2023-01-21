@@ -5,6 +5,7 @@
 #include <random>
 #include <sstream>
 #include <vector>
+#include <cstdint>
 
 #include "k2tree/K2TreeBulkOp.hpp"
 #include "k2tree/K2TreeMixed.hpp"
