@@ -92,5 +92,41 @@ void generate_random_dataset(k2cache::K2TreeConfig config, uint64_t triples_num,
   NodesSequence nodes_sequence(std::move(node_ids));
   nodes_sequence.serialize(nodeids_ostream);
 }
+std::string make_concrete_resource(const std::string &prefix,
+                                   uint64_t resource_id);
+void random_nt_data_generate(I_OStream &output_file, uint64_t triples_num,
+                             uint64_t resources_num,
+                             const std::string &prefix) {
+  auto resources = fisher_yates(resources_num, resources_num);
+  K2TreeConfig config{};
+  config.max_node_count = 128;
+  config.cut_depth = 10;
+  config.treedepth = 32;
+  std::unordered_map<uint64_t, std::unique_ptr<K2TreeMixed>> trees;
+
+  auto points_per_predicate = triples_num/20;
+  auto predicates_count = triples_num/points_per_predicate;
+
+  auto predicates_pos = fisher_yates(predicates_count, resources.size());
+
+  for(uint64_t i = 0; i < predicates_count; i++){
+    K2TreeMixed k2tree(config);
+    K2TreeBulkOp bulk_op(k2tree);
+    K2TreeFeedRandom::random_insert_n_points(points_per_predicate, resources_num, bulk_op);
+    auto scanner = k2tree.create_full_scanner();
+    auto predicate = make_concrete_resource(prefix, resources[predicates_pos[i]]);
+    while(scanner->has_next()){
+      auto next_pair = scanner->next();
+      auto subject = make_concrete_resource(prefix, next_pair.first);
+      auto object = make_concrete_resource(prefix, next_pair.second);
+      output_file.get_ostream() << subject << " " << predicate << " " << object << " .\n";
+    }
+  }
+  output_file.flush();
+}
+std::string make_concrete_resource(const std::string &prefix,
+                                   uint64_t resource_id) {
+  return "<" + prefix + std::to_string(resource_id) + ">";
+}
 
 } // namespace k2cache

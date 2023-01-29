@@ -1,23 +1,14 @@
 //
-// Created by Cristobal Miranda on 07-01-23.
+// Created by Cristobal Miranda on 28-01-23.
 //
+
 
 #include <getopt.h>
 
-#include <filesystem>
-#include <iostream>
-#include <random>
 #include <string>
 
-#include "builder/K2TreesFeed.hpp"
-#include "builder/PredicatesIndexFileBuilder.hpp"
-#include "builder/TriplesFeedSortedByPredicate.hpp"
-#include "k2tree/K2TreeBulkOp.hpp"
-#include "k2tree/K2TreeMixed.hpp"
 #include "util_algorithms/fisher_yates.hpp"
-#include "nodeids/NodesSequence.hpp"
 #include "FileOStream.hpp"
-#include "FileIOStream.hpp"
 #include "util_algorithms/random_dataset_generation.hpp"
 
 struct parsed_options {
@@ -45,22 +36,11 @@ int main(int argc, char **argv) {
     return 1;
   }
 
-  K2TreeConfig config{};
-  config.max_node_count = 128;
-  config.cut_depth = 10;
-  config.treedepth = 32;
-
-  const auto tmp_filename = opts.dataset_name + ".tmp";
-  const auto node_ids_file = opts.dataset_name + ".nodeids.bin";
-
 
   FileOStream ofs(opts.dataset_name, std::ios::binary);
-  FileIOStream fs_tmp(tmp_filename, std::ios::binary | std::ios::trunc);
-  FileOStream nodeids_ofs(node_ids_file, std::ios::binary);
 
-  generate_random_dataset(config, opts.triples_num, opts.resources_num, ofs, fs_tmp, nodeids_ofs);
+  random_nt_data_generate(ofs, opts.triples_num, opts.resources_num, "http://example.com/resource/");
 
-  fs::remove(tmp_filename);
 
   return 0;
 }

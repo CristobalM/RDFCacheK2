@@ -20,5 +20,11 @@ void generate_random_dataset(
     I_IOStream &trees_tmp_ostream,
     I_OStream &nodeids_ostream
     );
+void random_nt_data_generate(
+    I_OStream &output_file,
+    uint64_t triples_num,
+    uint64_t resources_num,
+    const std::string &prefix
+    );
 }
 #endif // RDFCACHEK2_RANDOM_DATASET_GENERATION_HPP

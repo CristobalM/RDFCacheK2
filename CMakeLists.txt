@@ -143,9 +143,6 @@ set(CORE_SOURCE_FILES
         core/util_algorithms/fisher_yates.cpp
         core/util_algorithms/random_dataset_generation.cpp
         core/util_algorithms/random_dataset_generation.hpp
-
-
-
         )
 
 
@@ -440,6 +437,10 @@ target_link_libraries(search_paths ${DEFAULT_LIBS})
 add_executable(random_dataset_gen scripts/random_dataset_gen.cpp)
 target_include_directories(random_dataset_gen PUBLIC ${INCLUDES})
 target_link_libraries(random_dataset_gen ${DEFAULT_LIBS})
+
+add_executable(random_nt_dataset_generate scripts/random_nt_dataset_generate.cpp)
+target_include_directories(random_nt_dataset_generate PUBLIC ${INCLUDES})
+target_link_libraries(random_nt_dataset_generate ${DEFAULT_LIBS})
 
 # Only create test executables if google test is found
 find_package(GTest QUIET)
