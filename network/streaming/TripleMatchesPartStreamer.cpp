@@ -8,6 +8,7 @@
 #include "TPMSortedStreamer.hpp"
 #include "TriplePatternMatchingStreamer.hpp"
 #include "fic/FullyIndexedPredicate.hpp"
+#include "nodeids/node_ids_constants.hpp"
 #include <map>
 namespace k2cache {
 TripleMatchesPartStreamer::TripleMatchesPartStreamer(
@@ -61,7 +62,15 @@ TripleMatchesPartStreamer::get_loaded_predicates_response() {
 
   for (auto predicate : loaded_predicates) {
     auto *av_predicate = sep_resp->mutable_available_predicates()->Add();
-    av_predicate->set_encoded_data(predicate);
+    // Predicates here are cache-ids, we have to translate to node-ids
+    int err_code;
+    auto real_node_id = cache->get_nodes_ids_manager().get_real_id(predicate, &err_code);
+    if(err_code != (int)NidsErrCode::SUCCESS_ERR_CODE){
+      std::cerr << "There was an error when obtaining real node-id from cache-id: " << err_code <<
+          " - We tried getting from cache-id: " << predicate <<std::endl;
+      continue;
+    }
+    av_predicate->set_encoded_data(real_node_id);
   }
 
   return cache_response;

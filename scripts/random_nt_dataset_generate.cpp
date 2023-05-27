@@ -6,6 +6,7 @@
 #include <getopt.h>
 
 #include <string>
+#include <filesystem>
 
 #include "util_algorithms/fisher_yates.hpp"
 #include "FileOStream.hpp"
