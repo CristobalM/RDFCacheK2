@@ -104,7 +104,7 @@ void ServerTask::send_response(proto_msg::CacheResponse &cache_response) {
   ss.write(serialized.data(), sizeof(char) * serialized.size());
 
   auto result = ss.str();
-  std::cout << "sending result of " << result.size() << " bytes" << std::endl;
+//  std::cout << "sending result of " << result.size() << " bytes" << std::endl;
   req_handler->send_response(result);
 }
 void ServerTask::process_connection_end() {

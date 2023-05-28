@@ -21,6 +21,7 @@ message CacheRequest{
         CacheRequestStartUpdateTriples cache_request_start_update_triples = 9;
         CacheDoneUpdateTriples cache_done_update_triples = 10;
         TriplesUpdateBatch triples_update_batch = 11;
+        RequestBGPJoin bgp_join = 12;
     }
 }
 
@@ -31,6 +32,23 @@ message TriplesUpdateBatch{
     repeated TripleNodeIdEnc triples_to_delete = 3;
 }
 
+
+message NodePattern {
+    oneof node_pattern {
+        uint64 concrete_node_id = 1;
+        string variable_name = 2;
+    }
+}
+
+message TriplePattern {
+    NodePattern subject_node_pattern = 1;
+    NodePattern predicate_node_pattern = 2;
+    NodePattern object_node_pattern = 3;
+}
+
+message RequestBGPJoin{
+    repeated TriplePattern triple_patterns = 1;
+}
 
 message CacheDoneUpdateTriples{
     int32 update_id = 1;
