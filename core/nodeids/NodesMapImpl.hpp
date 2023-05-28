@@ -18,8 +18,8 @@ public:
   explicit NodesMapImpl(std::map<uint64_t, uint64_t> &&imap);
   void serialize(I_OStream &os) override;
   int impl_id() override;
-  uint64_t get_id(uint64_t real_id) override;
-  uint64_t get_real_id(uint64_t id, int *err_code) override;
+  uint64_t get_id(uint64_t real_id) const override;
+  uint64_t get_real_id(uint64_t id, int *err_code) const override;
   uint64_t get_last_assigned() override;
   void add(uint64_t real_id, uint64_t mapped_id) override;
   void restore(std::unique_ptr<I_IStream> &&log_istream,

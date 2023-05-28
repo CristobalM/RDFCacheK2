@@ -19,6 +19,8 @@
 
 namespace k2cache {
 
+static constexpr int timeout_ms = 30000;
+
 void build_cache_test_file(const std::string &fname,
                            std::vector<TripleValue> &data) {
   std::string plain_predicates_fname = fname + "plain_predicates_file.bin";
@@ -123,7 +125,7 @@ mock_cache_container(DataHolders &holders, bool sort_results = false) {
   return std::make_unique<CacheContainerImpl>(
       basic_pcm(holders), mock_nis(holders.nim_h),
       std::make_unique<NoCachingReplacement>(),
-      I_CacheReplacement::REPLACEMENT_STRATEGY::NO_CACHING, sort_results);
+      I_CacheReplacement::REPLACEMENT_STRATEGY::NO_CACHING, sort_results, timeout_ms);
 }
 std::vector<TripleNodeId> read_all_from_streamer(I_TRMatchingStreamer &streamer,
                                                  long predicate_id) {
@@ -272,7 +274,7 @@ mock_cache_container(const std::vector<TripleValue> &triples,
   auto norep = std::make_unique<NoCachingReplacement>();
   auto cache_container = std::make_unique<CacheContainerImpl>(
       std::move(pcm), std::move(bp.nim), std::move(norep),
-      I_CacheReplacement::NO_CACHING, sort_results);
+      I_CacheReplacement::NO_CACHING, sort_results, timeout_ms);
 
   td_wrapper->cache_container = std::move(cache_container);
   td_wrapper->nis_bp = std::move(bp);

@@ -23,13 +23,13 @@ void NodesMapImpl::serialize(I_OStream &os) {
   }
 }
 int NodesMapImpl::impl_id() { return STD_MAP_NI_IMPL; }
-uint64_t NodesMapImpl::get_id(uint64_t real_id) {
+uint64_t NodesMapImpl::get_id(uint64_t real_id) const {
   auto it = imap.find(real_id);
   if (it == imap.end())
     return NOT_FOUND_NODEID;
   return it->second;
 }
-uint64_t NodesMapImpl::get_real_id(uint64_t id, int *err_code) {
+uint64_t NodesMapImpl::get_real_id(uint64_t id, int *err_code) const {
   auto it = rev_map.find(id);
   if(it == rev_map.end()){
     if(err_code != nullptr){

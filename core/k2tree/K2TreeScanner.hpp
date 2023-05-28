@@ -7,6 +7,8 @@
 
 #include <utility>
 
+#include "K2QStateWrapper.hpp"
+
 namespace k2cache {
 
 class K2TreeMixed;

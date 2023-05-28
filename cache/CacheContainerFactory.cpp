@@ -16,7 +16,7 @@ CacheContainerFactory::create(const CacheArgs &args) {
       std::move(pcm), NodeIdsManagerFactory::create(args),
       CacheReplacementFactory::create_cache_replacement(
           args.memory_budget_bytes, pcm_ptr, args.replacement_strategy),
-      args.replacement_strategy, args.has_sort_results);
+      args.replacement_strategy, args.has_sort_results, args.timeout_ms);
   if (args.replacement_strategy ==
       I_CacheReplacement::REPLACEMENT_STRATEGY::NO_CACHING) {
     std::cout << "Loading all predicates..." << std::endl;

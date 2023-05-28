@@ -24,13 +24,15 @@ class CacheContainerImpl : public CacheContainer {
   std::unique_ptr<I_CacheReplacement> cache_replacement;
   I_CacheReplacement::REPLACEMENT_STRATEGY strategy_id;
   bool sort_results;
+  int timeout_ms;
 
 public:
   CacheContainerImpl(std::unique_ptr<PredicatesCacheManager> &&pcm,
                      std::unique_ptr<NodeIdsManager> &&nis,
                      std::unique_ptr<I_CacheReplacement> &&cache_replacement,
                      I_CacheReplacement::REPLACEMENT_STRATEGY strategy_id,
-                     bool sort_results
+                     bool sort_results,
+                     int timeout_ms
                      );
 
   PredicatesCacheManager &get_pcm() override;
@@ -40,6 +42,7 @@ public:
       const std::vector<uint64_t> &input_predicates_ids) override;
   NodeIdsManager &get_nodes_ids_manager() override;
   bool should_sort_results() override;
+  int get_timeout_ms() override;
 };
 } // namespace k2cache
 

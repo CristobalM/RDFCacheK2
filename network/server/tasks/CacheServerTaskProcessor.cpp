@@ -133,13 +133,21 @@ void CacheServerTaskProcessor::sync_logs_to_indexes() {
   cache.get_pcm().get_predicates_index_cache().sync_logs_to_indexes();
 }
 I_BgpStreamer &CacheServerTaskProcessor::get_bgp_streamer(BgpMessage message) {
-  auto streamer = std::make_unique<BgpStreamer>(std::move(message));
+  auto channel_id = ++current_bgp_streamers_channel_id;
+  auto streamer = std::make_unique<BgpStreamer>(
+      channel_id,
+      std::move(message),
+      cache
+      );
   auto *ref = streamer.get();
-  bgp_streamers_map[current_bgp_streamers_channel_id++] = std::move(streamer);
+  bgp_streamers_map[channel_id] = std::move(streamer);
   return *ref;
 }
 I_BgpStreamer &
 CacheServerTaskProcessor::get_existing_bgp_streamer(int channel_id) {
   return *bgp_streamers_map[channel_id];
+}
+void CacheServerTaskProcessor::clean_bgp_streamer(int channel_id) {
+  bgp_streamers_map.erase(channel_id);
 }
 } // namespace k2cache

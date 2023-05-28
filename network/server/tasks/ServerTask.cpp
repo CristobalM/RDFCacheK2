@@ -13,8 +13,8 @@
 #include "message_type.pb.h"
 #include "response_msg.pb.h"
 
+#include "BgpMessage.hpp"
 #include "hashing.hpp"
-#include "messages/BgpMessage.hpp"
 #include "messages/utils.hpp"
 #include "serialization_util.hpp"
 
@@ -295,6 +295,9 @@ void ServerTask::process_request_bgp_join(Message &message) {
   auto &bgp_streamer = task_processor.get_bgp_streamer(std::move(bgp_message));
   auto next_message = bgp_streamer.get_next_message();
   send_response(next_message);
+  if(next_message.bgp_join_response().is_last()){
+    task_processor.clean_bgp_streamer(bgp_streamer.get_channel_id());
+  }
 }
 
 
@@ -304,6 +307,9 @@ void ServerTask::process_request_more_bgp_join(Message &message) {
   auto &streamer = task_processor.get_existing_bgp_streamer((int)channel_id);
   auto next_message = streamer.get_next_message();
   send_response(next_message);
+  if(next_message.bgp_join_response().is_last()){
+    task_processor.clean_bgp_streamer(streamer.get_channel_id());
+  }
 }
 
 } // namespace k2cache

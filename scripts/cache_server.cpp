@@ -20,6 +20,7 @@ struct parsed_options {
   uint64_t memory_budget_bytes;
   int port;
   int workers_count;
+  int timeout_ms;
 
   I_CacheReplacement::REPLACEMENT_STRATEGY replacement_strategy;
 
@@ -28,6 +29,7 @@ struct parsed_options {
 
   bool has_fic;
   bool has_sort_results;
+
 };
 
 parsed_options parse_cmd_line(int argc, char **argv);
@@ -55,6 +57,7 @@ int main(int argc, char **argv) {
   cache_args.node_ids_logs_filename = parsed.node_ids_logs_filename;
   cache_args.has_fic = parsed.has_fic;
   cache_args.has_sort_results = parsed.has_sort_results;
+  cache_args.timeout_ms = parsed.timeout_ms;
 
   std::cout << "has fic: " << (cache_args.has_fic ? "YES": "NO") << std::endl;
 
@@ -78,6 +81,7 @@ parsed_options parse_cmd_line(int argc, char **argv) {
       {"update-log-filename", required_argument, nullptr, 'U'},
       {"fic", optional_argument, nullptr, 'F'},
       {"sort-results", optional_argument, nullptr, 'S'},
+      {"timeout-ms", optional_argument, nullptr, 'T'},
   };
 
   int opt, opt_index;
@@ -91,6 +95,7 @@ parsed_options parse_cmd_line(int argc, char **argv) {
   bool has_workers = false;
   bool has_strategy = false;
   bool has_update_log_filename = false;
+  bool has_timeout = false;
   parsed_options out{};
 
   out.has_fic = false;
@@ -157,6 +162,10 @@ parsed_options parse_cmd_line(int argc, char **argv) {
     case 'S':
       out.has_sort_results = true;
       break;
+    case 'T':
+      has_timeout = true;
+      out.timeout_ms = std::stoi(std::string(optarg));
+      break;
     default:
       break;
     }
@@ -181,6 +190,8 @@ parsed_options parse_cmd_line(int argc, char **argv) {
         "replacement-strategy (R) (one of: 'LRU','None') argument is required");
   if (!has_update_log_filename)
     throw std::runtime_error("update-log-filename (U) argument is required");
+  if (!has_timeout)
+    throw std::runtime_error("timeout-ms (T) argument is required");
 
   return out;
 }

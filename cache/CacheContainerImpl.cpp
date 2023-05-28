@@ -39,10 +39,12 @@ CacheContainerImpl::CacheContainerImpl(
     std::unique_ptr<PredicatesCacheManager> &&pcm,
     std::unique_ptr<NodeIdsManager> &&nis,
     std::unique_ptr<I_CacheReplacement> &&cache_replacement,
-    I_CacheReplacement::REPLACEMENT_STRATEGY strategy_id, bool sort_results)
+    I_CacheReplacement::REPLACEMENT_STRATEGY strategy_id, bool sort_results,
+    int timeout_ms)
     : pcm(std::move(pcm)), nis(std::move(nis)),
       cache_replacement(std::move(cache_replacement)), strategy_id(strategy_id),
-      sort_results(sort_results) {}
+      sort_results(sort_results), timeout_ms(timeout_ms) {}
 bool CacheContainerImpl::should_sort_results() { return sort_results; }
+int CacheContainerImpl::get_timeout_ms() { return timeout_ms; }
 
 } // namespace k2cache

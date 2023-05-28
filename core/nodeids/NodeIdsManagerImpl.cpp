@@ -36,13 +36,13 @@ NodeIdsManagerImpl::NodeIdsManagerImpl(
   logs_number = read_u64(is);
 }
 
-uint64_t NodeIdsManagerImpl::get_id(uint64_t real_id) {
+uint64_t NodeIdsManagerImpl::get_id(uint64_t real_id) const {
   auto plain_id = nodes_sequence->get_id(real_id);
   if (plain_id != NOT_FOUND_NODEID)
     return plain_id;
   return nodes_map->get_id(real_id);
 }
-uint64_t NodeIdsManagerImpl::get_real_id(uint64_t mapped_id, int *err_code = nullptr) {
+uint64_t NodeIdsManagerImpl::get_real_id(uint64_t mapped_id, int *err_code = nullptr) const {
   int err_code2 = 0;
   auto from_seq = nodes_sequence->get_real_id(mapped_id, &err_code2);
   if (err_code2 == (int)NidsErrCode::SUCCESS_ERR_CODE){

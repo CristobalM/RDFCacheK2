@@ -187,12 +187,18 @@ set(NETWORK_SOURCE_FILES
         network/server/ClientReqHandlerImpl.hpp
         network/streaming/TPMSortedStreamer.cpp
         network/streaming/TPMSortedStreamer.hpp
-        network/messages/BgpMessage.hpp
+        query_engine/BgpMessage.hpp
         network/streaming/I_BgpStreamer.hpp
         network/streaming/BgpStreamer.cpp
         network/streaming/BgpStreamer.hpp
 )
 
+file(GLOB_RECURSE QUERY_ENGINE_FILES
+        query_engine/*.cpp
+        query_engine/*.hpp
+        )
+
+add_library(QueryEngine OBJECT ${QUERY_ENGINE_FILES})
 
 set(PROTO_MESSAGES
         proto/generated/message_type.pb.cc
@@ -247,6 +253,7 @@ set(INCLUDES
         memory
         cache
         sort
+        query_engine
         ${PROTO_MESSAGES_PATH}
         )
 
@@ -281,6 +288,9 @@ add_library(RDFCacheK2_Network STATIC ${NETWORK_SOURCE_FILES})
 add_library(RDFCacheK2_Memory STATIC ${MEMORY_SOURCES})
 add_library(RDFCacheK2_Cache STATIC ${CACHE_SOURCES})
 add_library(ProtoMessages STATIC ${PROTO_MESSAGES})
+
+target_link_libraries(RDFCacheK2_Network QueryEngine)
+target_link_libraries(QueryEngine RDFCacheK2)
 
 
 add_library(Utils utils/serialization_util.cpp

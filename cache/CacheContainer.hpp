@@ -19,6 +19,7 @@ struct CacheContainer {
       const std::vector<uint64_t> &input_predicates_ids) = 0;
   virtual NodeIdsManager &get_nodes_ids_manager() = 0;
   virtual bool should_sort_results() = 0;
+  virtual int get_timeout_ms() = 0;
 };
 } // namespace k2cache
 

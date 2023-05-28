@@ -17,6 +17,7 @@ struct CacheArgs {
   std::string node_ids_logs_filename;
   bool has_fic;
   bool has_sort_results;
+  int timeout_ms;
 };
 } // namespace k2cache
 
