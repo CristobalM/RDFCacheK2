@@ -68,7 +68,7 @@ int main(int argc, char **argv) {
 }
 
 parsed_options parse_cmd_line(int argc, char **argv) {
-  const char short_options[] = "I:N:M:L:O:m:p:w:R:U:F::S::";
+  const char short_options[] = "I:N:M:L:O:T:m:p:w:R:U:F::S::";
   struct option long_options[] = {
       {"index-file", required_argument, nullptr, 'I'},
       {"node-ids-file", required_argument, nullptr, 'N'},
