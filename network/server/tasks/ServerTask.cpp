@@ -14,6 +14,7 @@
 #include "response_msg.pb.h"
 
 #include "hashing.hpp"
+#include "messages/BgpMessage.hpp"
 #include "messages/utils.hpp"
 #include "serialization_util.hpp"
 
@@ -66,9 +67,16 @@ void ServerTask::process_next() {
     break;
 
   case proto_msg::MessageType::SYNC_LOGS_WITH_INDEXES_REQUEST:
-    std::cout << "Request of type SYNC_LOGS_WITH_INDEXES_REQUEST"
-              << std::endl;
+    std::cout << "Request of type SYNC_LOGS_WITH_INDEXES_REQUEST" << std::endl;
     process_sync_logs_with_indexes(*message);
+    break;
+  case proto_msg::MessageType::REQUEST_BGP_JOIN:
+    std::cout << "Request of type REQUEST_BGP_JOIN" << std::endl;
+    process_request_bgp_join(*message);
+    break;
+  case proto_msg::MessageType::REQUEST_MORE_BGP_JOIN:
+    std::cout << "Request of type REQUEST_BGP_JOIN" << std::endl;
+    process_request_more_bgp_join(*message);
     break;
 
   default:
@@ -104,7 +112,8 @@ void ServerTask::send_response(proto_msg::CacheResponse &cache_response) {
   ss.write(serialized.data(), sizeof(char) * serialized.size());
 
   auto result = ss.str();
-//  std::cout << "sending result of " << result.size() << " bytes" << std::endl;
+  //  std::cout << "sending result of " << result.size() << " bytes" <<
+  //  std::endl;
   req_handler->send_response(result);
 }
 void ServerTask::process_connection_end() {
@@ -148,9 +157,9 @@ void ServerTask::process_predicates_lock_for_triple_stream(Message &message) {
     if (loaded_predicates.size() < predicates_requested.size()) {
 
       std::set<uint64_t> requested_set(predicates_requested.begin(),
-                                            predicates_requested.end());
+                                       predicates_requested.end());
       std::set<uint64_t> loaded_set(loaded_predicates.begin(),
-                                         loaded_predicates.end());
+                                    loaded_predicates.end());
       std::set<uint64_t> difference;
 
       std::set_difference(requested_set.begin(), requested_set.end(),
@@ -159,7 +168,7 @@ void ServerTask::process_predicates_lock_for_triple_stream(Message &message) {
 
       task_processor.process_missed_predicates(
           std::make_shared<const std::vector<uint64_t>>(difference.begin(),
-                                                             difference.end()));
+                                                        difference.end()));
     }
   } else {
     loaded_predicates = std::move(predicates_requested);
@@ -255,4 +264,46 @@ void ServerTask::process_sync_logs_with_indexes(const Message &) {
   cache_response.set_response_type(proto_msg::SYNC_LOGS_WITH_INDEXES_RESPONSE);
   send_response(cache_response);
 }
+
+static BgpNode proto_to_bgp_node(const proto_msg::NodePattern &pattern) {
+  BgpNode node;
+  if (pattern.has_variable_name()) {
+    node.is_concrete = false;
+    node.var_name = pattern.variable_name();
+  } else {
+    node.is_concrete = true;
+    node.real_node_id = pattern.concrete_node_id();
+  }
+  return node;
+}
+
+void ServerTask::process_request_bgp_join(Message &message) {
+  const auto &bgp_join = message.get_cache_request().bgp_join();
+
+  BgpMessage bgp_message;
+  for (auto i = 0; i < bgp_join.triple_patterns_size(); i++) {
+    const auto &triple_pattern = bgp_join.triple_patterns(i);
+    BgpTriple bgp_triple;
+    BgpNode subject = proto_to_bgp_node(triple_pattern.subject_node_pattern());
+    BgpNode predicate = proto_to_bgp_node(triple_pattern.predicate_node_pattern());
+    BgpNode object = proto_to_bgp_node(triple_pattern.object_node_pattern());
+    bgp_triple.subject = std::move(subject);
+    bgp_triple.predicate = std::move(predicate);
+    bgp_triple.object = std::move(object);
+    bgp_message.patterns.push_back(std::move(bgp_triple));
+  }
+  auto &bgp_streamer = task_processor.get_bgp_streamer(std::move(bgp_message));
+  auto next_message = bgp_streamer.get_next_message();
+  send_response(next_message);
+}
+
+
+void ServerTask::process_request_more_bgp_join(Message &message) {
+  const auto &req = message.get_cache_request().continue_bgp_join();
+  auto channel_id = req.channel_id();
+  auto &streamer = task_processor.get_existing_bgp_streamer((int)channel_id);
+  auto next_message = streamer.get_next_message();
+  send_response(next_message);
+}
+
 } // namespace k2cache

@@ -5,6 +5,7 @@
 #include "CacheServerTaskProcessor.hpp"
 #include "server/ClientReqHandlerImpl.hpp"
 #include "server/session/UpdaterSession.hpp"
+#include "streaming/BgpStreamer.hpp"
 #include "streaming/TripleMatchesPartStreamer.hpp"
 
 #include <iostream>
@@ -34,7 +35,8 @@ CacheServerTaskProcessor::CacheServerTaskProcessor(CacheContainer &cache,
                                                    uint8_t workers_count)
     : cache(cache), workers_count(workers_count),
       replacement_task_processor(cache),
-      current_triples_streamers_channel_id(0), current_update_session_id(0) {}
+      current_triples_streamers_channel_id(0), current_update_session_id(0),
+      current_bgp_streamers_channel_id(0) {}
 
 void CacheServerTaskProcessor::start_workers(
     TCPServerConnection<CacheServerTaskProcessor> &connection) {
@@ -129,5 +131,15 @@ CacheServerTaskProcessor::~CacheServerTaskProcessor() {}
 
 void CacheServerTaskProcessor::sync_logs_to_indexes() {
   cache.get_pcm().get_predicates_index_cache().sync_logs_to_indexes();
+}
+I_BgpStreamer &CacheServerTaskProcessor::get_bgp_streamer(BgpMessage message) {
+  auto streamer = std::make_unique<BgpStreamer>(std::move(message));
+  auto *ref = streamer.get();
+  bgp_streamers_map[current_bgp_streamers_channel_id++] = std::move(streamer);
+  return *ref;
+}
+I_BgpStreamer &
+CacheServerTaskProcessor::get_existing_bgp_streamer(int channel_id) {
+  return *bgp_streamers_map[channel_id];
 }
 } // namespace k2cache

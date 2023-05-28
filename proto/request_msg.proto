@@ -22,6 +22,7 @@ message CacheRequest{
         CacheDoneUpdateTriples cache_done_update_triples = 10;
         TriplesUpdateBatch triples_update_batch = 11;
         RequestBGPJoin bgp_join = 12;
+        RequestContinueBGPJoin continue_bgp_join = 13;
     }
 }
 
@@ -47,7 +48,12 @@ message TriplePattern {
 }
 
 message RequestBGPJoin{
-    repeated TriplePattern triple_patterns = 1;
+    repeated string variable_names = 1;
+    repeated TriplePattern triple_patterns = 2;
+}
+
+message RequestContinueBGPJoin{
+    uint32 channel_id = 1;
 }
 
 message CacheDoneUpdateTriples{

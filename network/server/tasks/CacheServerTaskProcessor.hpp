@@ -42,6 +42,9 @@ class CacheServerTaskProcessor : public TaskProcessor {
   std::unordered_map<int, std::unique_ptr<Updater>> updaters_sessions;
   int current_update_session_id;
 
+  int current_bgp_streamers_channel_id;
+  std::unordered_map<int, std::unique_ptr<I_BgpStreamer>> bgp_streamers_map;
+
 public:
   explicit CacheServerTaskProcessor(CacheContainer &cache,
                                     uint8_t workers_count);
@@ -71,6 +74,8 @@ public:
   ~CacheServerTaskProcessor() override;
   void sync_to_persistent() override;
   void sync_logs_to_indexes();
+  I_BgpStreamer &get_bgp_streamer(BgpMessage message) override;
+  I_BgpStreamer &get_existing_bgp_streamer(int channel_id) override;
 };
 } // namespace k2cache
 

@@ -182,7 +182,16 @@ set(NETWORK_SOURCE_FILES
         network/streaming/TripleMatchesPartStreamer.hpp
         network/streaming/TriplePatternMatchingStreamer.cpp
         network/streaming/TriplePatternMatchingStreamer.hpp
-        network/server/ClientReqHandler.hpp network/server/ClientReqHandlerImpl.cpp network/server/ClientReqHandlerImpl.hpp network/streaming/TPMSortedStreamer.cpp network/streaming/TPMSortedStreamer.hpp)
+        network/server/ClientReqHandler.hpp
+        network/server/ClientReqHandlerImpl.cpp
+        network/server/ClientReqHandlerImpl.hpp
+        network/streaming/TPMSortedStreamer.cpp
+        network/streaming/TPMSortedStreamer.hpp
+        network/messages/BgpMessage.hpp
+        network/streaming/I_BgpStreamer.hpp
+        network/streaming/BgpStreamer.cpp
+        network/streaming/BgpStreamer.hpp
+)
 
 
 set(PROTO_MESSAGES

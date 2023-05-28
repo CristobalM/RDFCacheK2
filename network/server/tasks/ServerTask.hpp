@@ -39,6 +39,8 @@ public:
   void process_done_update_triples(Message &message);
   void process_update_triples_batch(Message &message);
   void process_sync_logs_with_indexes(const Message &);
+  void process_request_bgp_join(Message &message);
+  void process_request_more_bgp_join(Message &message);
 };
 } // namespace k2cache
 

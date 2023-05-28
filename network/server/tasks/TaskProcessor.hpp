@@ -6,7 +6,9 @@
 #define RDFCACHEK2_TASKPROCESSOR_HPP
 
 #include "WriteDataLock.hpp"
+#include "messages/BgpMessage.hpp"
 #include "server/session/Updater.hpp"
+#include "streaming/I_BgpStreamer.hpp"
 #include "streaming/I_TRStreamer.hpp"
 #include "updating/K2TreeUpdates.hpp"
 #include <cstdint>
@@ -33,6 +35,8 @@ public:
   virtual void log_updates(std::vector<K2TreeUpdates> &k2trees_updates) = 0;
   virtual WriteDataLock acquire_write_lock() = 0;
   virtual void sync_to_persistent() = 0;
+  virtual I_BgpStreamer &get_bgp_streamer(BgpMessage message) = 0;
+  virtual I_BgpStreamer &get_existing_bgp_streamer(int channel_id) = 0;
 };
 } // namespace k2cache
 
