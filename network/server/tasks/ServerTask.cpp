@@ -75,7 +75,7 @@ void ServerTask::process_next() {
     process_request_bgp_join(*message);
     break;
   case proto_msg::MessageType::REQUEST_MORE_BGP_JOIN:
-    std::cout << "Request of type REQUEST_BGP_JOIN" << std::endl;
+    std::cout << "Request of type REQUEST_MORE_BGP_JOIN" << std::endl;
     process_request_more_bgp_join(*message);
     break;
 
