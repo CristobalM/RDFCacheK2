@@ -87,6 +87,7 @@ bundle-code: # clean-all
 	--include 'example/***' \
 	--include 'cache/***' \
 	--include 'memory/***' \
+	--include 'query_engine/***' \
 	--include 'network/***' \
 	--include 'proc/***' \
 	--include 'sort/***' \

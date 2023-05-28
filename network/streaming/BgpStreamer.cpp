@@ -35,7 +35,7 @@ proto_msg::CacheResponse BgpStreamer::get_next_message() {
 }
 
 BgpStreamer::BgpStreamer(int channel_id, BgpMessage message, CacheContainer &cache)
-    : channel_id(channel_id), cache(cache),
+    : channel_id(channel_id),
       var_index_manager(std::make_unique<VarIndexManager>()),
       time_control(std::make_unique<TimeControl>(
           1000,

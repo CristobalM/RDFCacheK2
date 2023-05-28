@@ -12,7 +12,6 @@
 namespace k2cache {
 class BgpStreamer : public I_BgpStreamer {
   int channel_id;
-  CacheContainer &cache;
 
   std::unique_ptr<VarIndexManager> var_index_manager;
   std::unique_ptr<TimeControl> time_control;

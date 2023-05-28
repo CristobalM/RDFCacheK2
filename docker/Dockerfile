@@ -1,4 +1,4 @@
-FROM cmirandat/base-debian-rdfcachek2:v2
+FROM cmirandat/base-debian-rdfcachek2:v3
 
 ENV CC clang-11
 ENV CXX clang++-11

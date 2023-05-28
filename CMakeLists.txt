@@ -187,15 +187,14 @@ set(NETWORK_SOURCE_FILES
         network/server/ClientReqHandlerImpl.hpp
         network/streaming/TPMSortedStreamer.cpp
         network/streaming/TPMSortedStreamer.hpp
-        query_engine/BgpMessage.hpp
         network/streaming/I_BgpStreamer.hpp
         network/streaming/BgpStreamer.cpp
         network/streaming/BgpStreamer.hpp
 )
 
 file(GLOB_RECURSE QUERY_ENGINE_FILES
-        query_engine/*.cpp
-        query_engine/*.hpp
+        ${PROJECT_SOURCE_DIR}/query_engine/*.cpp
+        ${PROJECT_SOURCE_DIR}/query_engine/*.hpp
         )
 
 add_library(QueryEngine OBJECT ${QUERY_ENGINE_FILES})
