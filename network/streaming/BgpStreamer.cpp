@@ -11,6 +11,7 @@ proto_msg::CacheResponse BgpStreamer::get_next_message() {
   }
 
   proto_msg::CacheResponse cache_response;
+  cache_response.set_response_type(proto_msg::MessageType::RESPONSE_BGP_JOIN);
   auto * resp = cache_response.mutable_bgp_join_response();
   resp->set_channel_id(channel_id);
   auto * rows = resp->mutable_bgp_response_row();
