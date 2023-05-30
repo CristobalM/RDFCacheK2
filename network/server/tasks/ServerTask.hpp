@@ -18,7 +18,7 @@ class ServerTask {
   std::unique_ptr<ClientReqHandler> req_handler;
   CacheContainer &cache;
   TaskProcessor &task_processor;
-
+  bool finished;
 public:
   ServerTask(std::unique_ptr<ClientReqHandler> &&req_handler,
              CacheContainer &cache, TaskProcessor &task_processor);

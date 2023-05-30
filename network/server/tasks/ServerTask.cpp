@@ -25,11 +25,15 @@ namespace k2cache {
 ServerTask::ServerTask(std::unique_ptr<ClientReqHandler> &&req_handler,
                        CacheContainer &cache, TaskProcessor &task_processor)
     : req_handler(std::move(req_handler)), cache(cache),
-      task_processor(task_processor) {}
+      task_processor(task_processor), finished(false) {}
 
 void ServerTask::process_next() {
   auto message = req_handler->get_next_message();
-
+  if(!message){
+    std::cout << "NULL message terminating server task..." << std::endl;
+    finished = true;
+    return;
+  }
   switch (message->request_type()) {
   case proto_msg::MessageType::CONNECTION_END:
     std::cout << "Request of type CONNECTION_END" << std::endl;
@@ -85,7 +89,7 @@ void ServerTask::process_next() {
   }
 }
 void ServerTask::process() {
-  for (;;) {
+  while (!finished) {
     process_next();
   }
 }
@@ -280,10 +284,10 @@ static BgpNode proto_to_bgp_node(const proto_msg::NodePattern &pattern) {
 void ServerTask::process_request_bgp_join(Message &message) {
   const auto &bgp_join = message.get_cache_request().bgp_join();
 
-  BgpMessage bgp_message;
+  BgpMessage bgp_message{};
   for (auto i = 0; i < bgp_join.triple_patterns_size(); i++) {
     const auto &triple_pattern = bgp_join.triple_patterns(i);
-    BgpTriple bgp_triple;
+    BgpTriple bgp_triple{};
     BgpNode subject = proto_to_bgp_node(triple_pattern.subject_node_pattern());
     BgpNode predicate = proto_to_bgp_node(triple_pattern.predicate_node_pattern());
     BgpNode object = proto_to_bgp_node(triple_pattern.object_node_pattern());
