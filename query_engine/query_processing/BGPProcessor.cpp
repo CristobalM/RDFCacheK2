@@ -14,7 +14,8 @@ namespace k2cache {
 BGPProcessor::BGPProcessor(BgpMessage bgp_message,
                            PredicatesCacheManager &cm,
                            const NodeIdsManager &node_ids_manager,
-                           VarIndexManager &vim, TimeControl &time_control)
+                           VarIndexManager &vim, TimeControl &time_control
+                           )
     : bgp_message(std::move(bgp_message)), cm(cm), node_ids_manager(node_ids_manager),
       vim(vim), time_control(time_control) {
   for(auto &triple : this->bgp_message.patterns){
@@ -137,6 +138,15 @@ uint64_t BGPProcessor::get_cache_id(uint64_t real_id) const {
   }
   return value;
 }
-
+std::vector<unsigned long> BGPProcessor::get_permutation_vec() {
+  std::vector<unsigned long> permutation_vec;
+  permutation_vec.reserve(bgp_message.var_names.size());
+  for(const auto &var_name : bgp_message.var_names){
+    auto internal_index = vim.var_indexes[var_name];
+    auto pos_result = header_reverse_map[internal_index];
+    permutation_vec.push_back(pos_result);
+  }
+  return permutation_vec;
+}
 
 }

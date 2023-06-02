@@ -38,9 +38,12 @@ public:
                PredicatesCacheManager &cm,
                const NodeIdsManager &node_ids_manager,
                VarIndexManager &vim,
-               TimeControl &time_control);
+               TimeControl &time_control
+               );
 
   std::shared_ptr<QueryIterator> execute_it();
+
+  std::vector<unsigned long> get_permutation_vec();
 
 private:
   void find_headers();

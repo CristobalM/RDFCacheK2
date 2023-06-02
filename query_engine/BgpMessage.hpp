@@ -22,6 +22,7 @@ struct BgpTriple {
 };
 
 struct BgpMessage {
+  std::vector<std::string> var_names;
   std::vector<BgpTriple> patterns;
 };
 

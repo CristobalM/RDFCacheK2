@@ -17,6 +17,10 @@ class BgpStreamer : public I_BgpStreamer {
   std::unique_ptr<TimeControl> time_control;
   std::unique_ptr<BGPProcessor> processor;
   std::shared_ptr<QueryIterator> query_iterator;
+
+
+  std::vector<unsigned long> permutation_vec{};
+
 public:
   BgpStreamer(int channel_id, BgpMessage message, CacheContainer &cache);
   proto_msg::CacheResponse get_next_message() override;
