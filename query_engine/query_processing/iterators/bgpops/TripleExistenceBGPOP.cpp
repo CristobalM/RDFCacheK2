@@ -12,7 +12,7 @@ TripleExistenceBGPOP::TripleExistenceBGPOP(
     : scanner(std::move(scanner)), subject_id(subject_id), object_id(object_id),
       time_control(time_control) {}
 BGPOp::RunResult TripleExistenceBGPOP::run(std::vector<unsigned long> &) {
-  BGPOp::RunResult result;
+  BGPOp::RunResult result{};
   if (!time_control.tick())
     return result;
 

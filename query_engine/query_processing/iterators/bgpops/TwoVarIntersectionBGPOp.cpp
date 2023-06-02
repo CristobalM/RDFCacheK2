@@ -13,7 +13,7 @@ TwoVarIntersectionBGPOp::TwoVarIntersectionBGPOp(
       object_pos(object_pos), time_control(time_control) {}
 BGPOp::RunResult
 TwoVarIntersectionBGPOp::run(std::vector<unsigned long> &row_to_fill) {
-  BGPOp::RunResult result;
+  BGPOp::RunResult result{};
   if (!time_control.tick())
     return result;
   auto intersect_value_subject = row_to_fill[subject_pos];

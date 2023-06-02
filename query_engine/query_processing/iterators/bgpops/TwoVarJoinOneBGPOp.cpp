@@ -15,7 +15,7 @@ TwoVarJoinOneBGPOp<WV>::TwoVarJoinOneBGPOp(
 template <BGPOp::VARS WV>
 BGPOp::RunResult
 TwoVarJoinOneBGPOp<WV>::run(std::vector<unsigned long> &row_to_fill) {
-  BGPOp::RunResult result;
+  BGPOp::RunResult result{};
   if (!time_control.tick())
     return result;
 

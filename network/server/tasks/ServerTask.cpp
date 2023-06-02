@@ -281,6 +281,31 @@ static BgpNode proto_to_bgp_node(const proto_msg::NodePattern &pattern) {
   return node;
 }
 
+#ifdef CACHE_DEBUG
+static void print_bgp_join_message(const proto_msg::CacheResponse &response){
+  const auto & bgp_resp = response.bgp_join_response();
+  std::cout << "is_last: " << (bgp_resp.is_last() ? "TRUE" : "FALSE") << std::endl;
+  std::cout << "channel id: " << bgp_resp.channel_id() << std::endl;
+  std::cout << "var names size: " << bgp_resp.var_names_size() << std::endl;
+
+  for(int i = 0; i < bgp_resp.var_names_size(); i++){
+    std::cout << bgp_resp.var_names(i) << " ";
+  }
+  std::cout << std::endl;
+  std::cout << "----------------" << std::endl;
+
+  std::cout << "rows num: " << bgp_resp.bgp_response_row_size() << std::endl;
+  for(int i =0 ; i < bgp_resp.bgp_response_row_size(); i++){
+    const auto &row = bgp_resp.bgp_response_row(i);
+    for(int j = 0; j < row.bgp_response_row_values_size(); j++){
+      std::cout << row.bgp_response_row_values(j) << " ";
+    }
+    std::cout << std::endl;
+
+  }
+}
+#endif
+
 void ServerTask::process_request_bgp_join(Message &message) {
   const auto &bgp_join = message.get_cache_request().bgp_join();
 
@@ -298,6 +323,13 @@ void ServerTask::process_request_bgp_join(Message &message) {
   }
   auto &bgp_streamer = task_processor.get_bgp_streamer(std::move(bgp_message));
   auto next_message = bgp_streamer.get_next_message();
+
+#ifdef CACHE_DEBUG
+  std::cout << "CACHE_DEBUG_START:: bgp_join_msg ===========================================" << std::endl;
+  print_bgp_join_message(next_message);
+  std::cout << "CACHE_DEBUG_END:: bgp_join_msg ===========================================" << std::endl;
+#endif
+
   send_response(next_message);
   if(next_message.bgp_join_response().is_last()){
     task_processor.clean_bgp_streamer(bgp_streamer.get_channel_id());
@@ -310,6 +342,11 @@ void ServerTask::process_request_more_bgp_join(Message &message) {
   auto channel_id = req.channel_id();
   auto &streamer = task_processor.get_existing_bgp_streamer((int)channel_id);
   auto next_message = streamer.get_next_message();
+#ifdef CACHE_DEBUG
+  std::cout << "CACHE_DEBUG_START:: more_bgp_join_msg ===========================================" << std::endl;
+  print_bgp_join_message(next_message);
+  std::cout << "CACHE_DEBUG_END:: more_bgp_join_msg ===========================================" << std::endl;
+#endif
   send_response(next_message);
   if(next_message.bgp_join_response().is_last()){
     task_processor.clean_bgp_streamer(streamer.get_channel_id());

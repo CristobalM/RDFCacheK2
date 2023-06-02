@@ -19,6 +19,12 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}  -fprofile-arcs -ftest-coverage -lgcov --coverage")
 endif ()
+
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    add_link_options("-rdynamic")
+    add_compile_definitions(CACHE_DEBUG)
+endif()
+
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 configure_file(${CMAKE_SOURCE_DIR}/CTestCustom.cmake ${CMAKE_BINARY_DIR})
@@ -549,6 +555,8 @@ if (GTest_FOUND)
     add_executable(random_dataset_gen_test test/random_dataset_gen_test.cpp test/cache_test_util.cpp)
     target_link_libraries(random_dataset_gen_test MockStructureLib ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} pthread)
 
+    add_executable(bgp_ops_test test/bgp_ops_test.cpp test/cache_test_util.cpp)
+    target_link_libraries(bgp_ops_test MockStructureLib ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} pthread)
 
     add_test(NAME serialization_test COMMAND ./serialization_test)
     add_test(NAME k2tree_serialization_test COMMAND ./k2tree_serialization_test)
@@ -567,6 +575,7 @@ if (GTest_FOUND)
     add_test(NAME nodeids_build_flow_test COMMAND ./nodeids_build_flow_test)
     add_test(NAME search_paths_test COMMAND ./search_paths_test)
     add_test(NAME random_dataset_gen_test COMMAND ./random_dataset_gen_test)
+    add_test(NAME bgp_ops_test COMMAND ./bgp_ops_test)
 
     # K2 Tree Tests
 

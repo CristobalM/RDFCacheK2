@@ -12,7 +12,7 @@ TwoVarCProductBGPOp::TwoVarCProductBGPOp(
       object_pos(object_pos), time_control(time_control) {}
 BGPOp::RunResult
 TwoVarCProductBGPOp::run(std::vector<unsigned long> &row_to_fill) {
-  BGPOp::RunResult result;
+  BGPOp::RunResult result{};
   if (!time_control.tick())
     return result;
 
