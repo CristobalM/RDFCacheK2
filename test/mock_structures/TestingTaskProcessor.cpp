@@ -69,11 +69,11 @@ TestingTaskProcessor::TestingTaskProcessor(CacheContainer &cache)
     : cache(cache) {}
 
 } // namespace k2cache
-k2cache::I_BgpStreamer &
-k2cache::TestingTaskProcessor::get_bgp_streamer(BgpMessage ) {
+k2cache::I_BGPStreamer &
+k2cache::TestingTaskProcessor::get_bgp_streamer(BGPMessage) {
   throw std::runtime_error("not implemented");
 }
-k2cache::I_BgpStreamer &
+k2cache::I_BGPStreamer &
 k2cache::TestingTaskProcessor::get_existing_bgp_streamer(int ) {
   throw std::runtime_error("not implemented");
 }

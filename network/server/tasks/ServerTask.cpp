@@ -13,7 +13,7 @@
 #include "message_type.pb.h"
 #include "response_msg.pb.h"
 
-#include "BgpMessage.hpp"
+#include "BGPMessage.hpp"
 #include "hashing.hpp"
 #include "messages/utils.hpp"
 #include "serialization_util.hpp"
@@ -269,8 +269,8 @@ void ServerTask::process_sync_logs_with_indexes(const Message &) {
   send_response(cache_response);
 }
 
-static BgpNode proto_to_bgp_node(const proto_msg::NodePattern &pattern) {
-  BgpNode node;
+static BGPNode proto_to_bgp_node(const proto_msg::NodePattern &pattern) {
+  BGPNode node;
   if (pattern.has_variable_name()) {
     node.is_concrete = false;
     node.var_name = pattern.variable_name();
@@ -309,7 +309,7 @@ static void print_bgp_join_message(const proto_msg::CacheResponse &response) {
 void ServerTask::process_request_bgp_join(Message &message) {
   const auto &bgp_join = message.get_cache_request().bgp_join();
 
-  BgpMessage bgp_message{};
+  BGPMessage bgp_message{};
   bgp_message.var_names.reserve(bgp_join.variable_names_size());
   for (int i = 0; i < bgp_join.variable_names_size(); i++) {
     bgp_message.var_names.push_back(bgp_join.variable_names(i));
@@ -317,11 +317,11 @@ void ServerTask::process_request_bgp_join(Message &message) {
   bgp_message.patterns.reserve(bgp_join.triple_patterns_size());
   for (int i = 0; i < bgp_join.triple_patterns_size(); i++) {
     const auto &triple_pattern = bgp_join.triple_patterns(i);
-    BgpTriple bgp_triple{};
-    BgpNode subject = proto_to_bgp_node(triple_pattern.subject_node_pattern());
-    BgpNode predicate =
+    BGPTriple bgp_triple{};
+    BGPNode subject = proto_to_bgp_node(triple_pattern.subject_node_pattern());
+    BGPNode predicate =
         proto_to_bgp_node(triple_pattern.predicate_node_pattern());
-    BgpNode object = proto_to_bgp_node(triple_pattern.object_node_pattern());
+    BGPNode object = proto_to_bgp_node(triple_pattern.object_node_pattern());
     bgp_triple.subject = std::move(subject);
     bgp_triple.predicate = std::move(predicate);
     bgp_triple.object = std::move(object);

@@ -11,7 +11,7 @@
 #include <query_processing/iterators/bgpops/BGPOpsFactory.hpp>
 namespace k2cache {
 
-BGPProcessor::BGPProcessor(BgpMessage bgp_message,
+BGPProcessor::BGPProcessor(BGPMessage bgp_message,
                            PredicatesCacheManager &cm,
                            const NodeIdsManager &node_ids_manager,
                            VarIndexManager &vim, TimeControl &time_control
@@ -60,7 +60,7 @@ void BGPProcessor::find_headers() {
   build_rev_map();
 }
 
-void BGPProcessor::add_variable(const BgpNode &node) {
+void BGPProcessor::add_variable(const BGPNode &node) {
   auto var_id = vim.assign_index_if_not_found(node.var_name);
   if (var_id != 0){
     header_values.insert(var_id);
@@ -124,7 +124,7 @@ void BGPProcessor::build_rev_map() {
   }
 }
 bool BGPProcessor::do_all_predicates_have_trees() {
-  return std::all_of(bgp_message.patterns.begin(), bgp_message.patterns.end(), [&](const BgpTriple &triple) {
+  return std::all_of(bgp_message.patterns.begin(), bgp_message.patterns.end(), [&](const BGPTriple &triple) {
     return triple.predicate.cache_node_id != 0 &&
            cm.get_predicates_index_cache()
                .fetch_k2tree(triple.predicate.cache_node_id)

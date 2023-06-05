@@ -5,7 +5,7 @@
 #include "CacheServerTaskProcessor.hpp"
 #include "server/ClientReqHandlerImpl.hpp"
 #include "server/session/UpdaterSession.hpp"
-#include "streaming/BgpStreamer.hpp"
+#include "streaming/BGPStreamer.hpp"
 #include "streaming/TripleMatchesPartStreamer.hpp"
 
 #include <iostream>
@@ -132,9 +132,9 @@ CacheServerTaskProcessor::~CacheServerTaskProcessor() {}
 void CacheServerTaskProcessor::sync_logs_to_indexes() {
   cache.get_pcm().get_predicates_index_cache().sync_logs_to_indexes();
 }
-I_BgpStreamer &CacheServerTaskProcessor::get_bgp_streamer(BgpMessage message) {
+I_BGPStreamer &CacheServerTaskProcessor::get_bgp_streamer(BGPMessage message) {
   auto channel_id = ++current_bgp_streamers_channel_id;
-  auto streamer = std::make_unique<BgpStreamer>(
+  auto streamer = std::make_unique<BGPStreamer>(
       channel_id,
       std::move(message),
       cache
@@ -143,7 +143,7 @@ I_BgpStreamer &CacheServerTaskProcessor::get_bgp_streamer(BgpMessage message) {
   bgp_streamers_map[channel_id] = std::move(streamer);
   return *ref;
 }
-I_BgpStreamer &
+I_BGPStreamer &
 CacheServerTaskProcessor::get_existing_bgp_streamer(int channel_id) {
   return *bgp_streamers_map[channel_id];
 }

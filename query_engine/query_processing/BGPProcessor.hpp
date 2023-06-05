@@ -5,7 +5,7 @@
 #ifndef RDFCACHEK2_BGPPROCESSOR_HPP
 #define RDFCACHEK2_BGPPROCESSOR_HPP
 
-#include "BgpMessage.hpp"
+#include "BGPMessage.hpp"
 #include "VarIndexManager.hpp"
 #include "iterators/bgpops/BGPOp.hpp"
 #include "manager/PredicatesCacheManager.hpp"
@@ -18,7 +18,7 @@
 namespace k2cache {
 class BGPProcessor {
 
-  BgpMessage bgp_message;
+  BGPMessage bgp_message;
   PredicatesCacheManager &cm;
   const NodeIdsManager &node_ids_manager;
   VarIndexManager &vim;
@@ -34,7 +34,7 @@ class BGPProcessor {
   TimeControl &time_control;
 
 public:
-  BGPProcessor(BgpMessage bgp_message,
+  BGPProcessor(BGPMessage bgp_message,
                PredicatesCacheManager &cm,
                const NodeIdsManager &node_ids_manager,
                VarIndexManager &vim,
@@ -47,7 +47,7 @@ public:
 
 private:
   void find_headers();
-  void add_variable(const BgpNode &node);
+  void add_variable(const BGPNode &node);
   std::vector<std::unique_ptr<K2TreeScanner>> build_scanners();
   std::vector<std::unique_ptr<BGPOp>>
   build_bgp_ops(std::vector<std::unique_ptr<K2TreeScanner>> &&scanners);

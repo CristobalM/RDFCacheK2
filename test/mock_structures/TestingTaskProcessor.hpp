@@ -42,8 +42,8 @@ public:
   void log_updates(std::vector<K2TreeUpdates> &k2trees_updates) override;
   WriteDataLock acquire_write_lock() override;
   void sync_to_persistent() override;
-  I_BgpStreamer &get_bgp_streamer(BgpMessage message) override;
-  I_BgpStreamer &get_existing_bgp_streamer(int channel_id) override;
+  I_BGPStreamer &get_bgp_streamer(BGPMessage message) override;
+  I_BGPStreamer &get_existing_bgp_streamer(int channel_id) override;
   void clean_bgp_streamer(int channel_id) override;
 };
 } // namespace k2cache

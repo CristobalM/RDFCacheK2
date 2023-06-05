@@ -8,22 +8,22 @@
 #include <string>
 #include <vector>
 
-struct BgpNode {
+struct BGPNode {
   bool is_concrete; // if true, then value is real_node_id or var_name otherwise
   std::string var_name;
   uint64_t real_node_id;
   uint64_t cache_node_id = -1; // not necessarily filled at any time
 };
 
-struct BgpTriple {
-  BgpNode subject;
-  BgpNode predicate;
-  BgpNode object;
+struct BGPTriple {
+  BGPNode subject;
+  BGPNode predicate;
+  BGPNode object;
 };
 
-struct BgpMessage {
+struct BGPMessage {
   std::vector<std::string> var_names;
-  std::vector<BgpTriple> patterns;
+  std::vector<BGPTriple> patterns;
 };
 
 #endif // RDFCACHEK2_BGPMESSAGE_HPP

@@ -193,9 +193,9 @@ set(NETWORK_SOURCE_FILES
         network/server/ClientReqHandlerImpl.hpp
         network/streaming/TPMSortedStreamer.cpp
         network/streaming/TPMSortedStreamer.hpp
-        network/streaming/I_BgpStreamer.hpp
+        network/streaming/I_BGPStreamer.hpp
         network/streaming/BgpStreamer.cpp
-        network/streaming/BgpStreamer.hpp
+        network/streaming/BGPStreamer.hpp
 )
 
 file(GLOB_RECURSE QUERY_ENGINE_FILES
@@ -558,6 +558,12 @@ if (GTest_FOUND)
     add_executable(bgp_ops_test test/bgp_ops_test.cpp test/cache_test_util.cpp)
     target_link_libraries(bgp_ops_test MockStructureLib ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} pthread)
 
+    add_executable(bgp_processor_test test/bgp_processor_test.cpp test/cache_test_util.cpp)
+    target_link_libraries(bgp_processor_test MockStructureLib ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} pthread)
+
+    add_executable(bgp_streamer_test test/bgp_streamer_test.cpp test/cache_test_util.cpp test/bgp_test_util.hpp)
+    target_link_libraries(bgp_streamer_test MockStructureLib ${DEFAULT_LIBS} ${GTEST_BOTH_LIBRARIES} pthread)
+
     add_test(NAME serialization_test COMMAND ./serialization_test)
     add_test(NAME k2tree_serialization_test COMMAND ./k2tree_serialization_test)
     add_test(NAME k2tree_tests COMMAND ./k2tree_tests)
@@ -576,6 +582,7 @@ if (GTest_FOUND)
     add_test(NAME search_paths_test COMMAND ./search_paths_test)
     add_test(NAME random_dataset_gen_test COMMAND ./random_dataset_gen_test)
     add_test(NAME bgp_ops_test COMMAND ./bgp_ops_test)
+    add_test(NAME bgp_processor_test COMMAND ./bgp_processor_test)
 
     # K2 Tree Tests
 

@@ -7,8 +7,8 @@
 
 #include "response_msg.pb.h"
 namespace k2cache {
-struct I_BgpStreamer {
-  virtual ~I_BgpStreamer() = default;
+struct I_BGPStreamer {
+  virtual ~I_BGPStreamer() = default;
   virtual proto_msg::CacheResponse get_next_message() = 0;
   virtual int get_channel_id() = 0;
 };

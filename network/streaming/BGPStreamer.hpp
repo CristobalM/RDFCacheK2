@@ -5,13 +5,14 @@
 #ifndef RDFCACHEK2_BGPSTREAMER_HPP
 #define RDFCACHEK2_BGPSTREAMER_HPP
 
-#include "BgpMessage.hpp"
+#include "BGPMessage.hpp"
 #include "CacheContainer.hpp"
-#include "I_BgpStreamer.hpp"
+#include "I_BGPStreamer.hpp"
 #include "query_processing/BGPProcessor.hpp"
 namespace k2cache {
-class BgpStreamer : public I_BgpStreamer {
+class BGPStreamer : public I_BGPStreamer {
   int channel_id;
+  CacheContainer &cache;
 
   std::unique_ptr<VarIndexManager> var_index_manager;
   std::unique_ptr<TimeControl> time_control;
@@ -22,7 +23,7 @@ class BgpStreamer : public I_BgpStreamer {
   std::vector<unsigned long> permutation_vec{};
 
 public:
-  BgpStreamer(int channel_id, BgpMessage message, CacheContainer &cache);
+  BGPStreamer(int channel_id, BGPMessage message, CacheContainer &cache);
   proto_msg::CacheResponse get_next_message() override;
   int get_channel_id() override;
 };

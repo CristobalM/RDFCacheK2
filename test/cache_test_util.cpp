@@ -6,6 +6,7 @@
 #include <iostream>
 
 #include "CacheContainerImpl.hpp"
+#include "TimeControl.hpp"
 #include "builder/PredicatesIndexFileBuilder.hpp"
 #include "fic/NoFIC.hpp"
 #include "k2tree/K2TreeMixed.hpp"
@@ -13,9 +14,11 @@
 #include "manager/PredicatesCacheManagerImpl.hpp"
 #include "nodeids/NodeIdsManagerFactory.hpp"
 #include "nodeids/NodeIdsManagerIdentity.hpp"
+#include "query_processing/VarIndexManager.hpp"
 #include "replacement/NoCachingReplacement.hpp"
 #include "updating/NoUpdate.hpp"
 #include <serialization_util.hpp>
+
 
 namespace k2cache {
 
@@ -295,4 +298,11 @@ NIMDataHolders::NIMDataHolders()
       mapped(std::make_shared<std::string>()),
       logs(std::make_shared<std::string>()),
       logs_counter(std::make_shared<std::string>()) {}
+
+std::unique_ptr<CacheContainer> create_empty_cache_container() {
+  DataHolders dh{};
+  auto cc = mock_cache_container(dh, false);
+  return cc;
+}
+
 } // namespace k2cache

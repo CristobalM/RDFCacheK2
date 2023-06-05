@@ -103,5 +103,7 @@ mock_cache_container(const std::vector<TripleValue> &triples,
 
 std::shared_ptr<std::string> make_empty_ptr_shared_str();
 
+std::unique_ptr<CacheContainer> create_empty_cache_container();
+
 } // namespace k2cache
 #endif /* _CACHE_TEST_UTIL_HPP_ */

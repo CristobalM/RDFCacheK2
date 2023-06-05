@@ -12,7 +12,7 @@
 namespace k2cache {
 
 std::unique_ptr<BGPOp> BGPOpsFactory::create_bgp_op(
-    std::unique_ptr<K2TreeScanner> &&scanner, BgpTriple &triple,
+    std::unique_ptr<K2TreeScanner> &&scanner, BGPTriple &triple,
     VarIndexManager &vim, std::vector<long> &join_incidence,
     std::unordered_map<unsigned long, unsigned long> &header_rev_map,
     TimeControl &time_control) {
