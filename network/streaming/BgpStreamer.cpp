@@ -20,7 +20,7 @@ proto_msg::CacheResponse BGPStreamer::get_next_message() {
 
   auto *rows = resp->mutable_bgp_response_row();
 
-  const int max_batch_count = 10000;
+  const int max_batch_count = 10'000'000;
   int batch_count = 0;
   const auto& nim = cache.get_nodes_ids_manager();
   while (query_iterator->has_next()) {
