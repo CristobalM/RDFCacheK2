@@ -10,6 +10,7 @@
 #include "k2tree/K2TreeMixed.hpp"
 #include "query_processing/iterators/bgpops/OneVarCPBGPOp.hpp"
 #include "query_processing/iterators/bgpops/OneVarIntersectBGPOp.hpp"
+#include "query_processing/iterators/bgpops/TwoVarCProductBGPOp.hpp"
 
 using namespace k2cache;
 
@@ -168,5 +169,45 @@ TEST(bgp_ops_test, one_var_intersect_bgp_op_full_subjvar_test){
   } while (!done);
   ASSERT_EQ(valid_count, 1);
   ASSERT_EQ(match_value, 100 * 100 + 50);
+}
+
+
+TEST(bgp_ops_test, two_var_cross_product_test){
+  TimeControl tc(1000, std::chrono::milliseconds(30000));
+  K2TreeConfig config{};
+  config.cut_depth = 10;
+  config.max_node_count = 128;
+  config.treedepth = 32;
+  auto k2tree = std::make_unique<K2TreeMixed>(config);
+  K2TreeBulkOp bulk_insert(*k2tree);
+  for(int i = 100; i < 200; i++){
+    bulk_insert.insert(i , i);
+  }
+
+  auto scanner =k2tree->create_full_scanner();
+  auto op = std::make_unique<TwoVarCProductBGPOp>(
+      std::move(scanner), 0, 1, tc);
+  std::vector<unsigned long> row_to_fill(2, 100*100 + 50);
+  bool done = false;
+  int curr = 0;
+  unsigned long match_value_1 = 0;
+  unsigned long match_value_2 = 0;
+  int valid_count = 0;
+  do {
+    auto run_result = op->run(row_to_fill);
+    done = run_result.scan_done;
+//    ASSERT_TRUE(run_result.valid_value) << "failed at curr = " << curr;
+    curr++;
+    if(run_result.valid_value){
+      match_value_1 = row_to_fill[0];
+      match_value_2 = row_to_fill[1];
+      ASSERT_EQ(match_value_1, valid_count+100);
+      ASSERT_EQ(match_value_2, valid_count+100);
+      valid_count++;
+    }
+  } while (!done);
+  ASSERT_EQ(valid_count, 100);
+  ASSERT_EQ(match_value_1, 199);
+  ASSERT_EQ(match_value_2, 199);
 }
 

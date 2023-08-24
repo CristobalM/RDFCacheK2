@@ -55,6 +55,7 @@ private:
   bool do_all_predicates_have_trees();
 
   uint64_t get_cache_id(uint64_t real_id) const;
+  uint64_t get_cache_id(const BGPNode &node) const;
 };
 
 }

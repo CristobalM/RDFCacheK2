@@ -19,9 +19,9 @@ BGPProcessor::BGPProcessor(BGPMessage bgp_message,
     : bgp_message(std::move(bgp_message)), cm(cm), node_ids_manager(node_ids_manager),
       vim(vim), time_control(time_control) {
   for(auto &triple : this->bgp_message.patterns){
-    triple.subject.cache_node_id = get_cache_id(triple.subject.real_node_id);
-    triple.predicate.cache_node_id = get_cache_id(triple.predicate.real_node_id);
-    triple.object.cache_node_id = get_cache_id(triple.object.real_node_id);
+    triple.subject.cache_node_id = get_cache_id(triple.subject);
+    triple.predicate.cache_node_id = get_cache_id(triple.predicate);
+    triple.object.cache_node_id = get_cache_id(triple.object);
   }
 }
 
@@ -138,6 +138,14 @@ uint64_t BGPProcessor::get_cache_id(uint64_t real_id) const {
   }
   return value;
 }
+
+uint64_t BGPProcessor::get_cache_id(const BGPNode &node) const{
+  if(node.cache_node_id == 0 || node.cache_node_id == (uint64_t)-1){
+    return get_cache_id(node.real_node_id);
+  }
+  return node.cache_node_id;
+}
+
 std::vector<unsigned long> BGPProcessor::get_permutation_vec() {
   std::vector<unsigned long> permutation_vec;
   permutation_vec.reserve(bgp_message.var_names.size());
