@@ -14,3 +14,6 @@ identifiers:
   - type: url
     value: 'https://github.com/CristobalM/RDFCacheK2'
     description: Dynamic and compact K2-tree caching system
+
+url: "https://github.com/CristobalM/RDFCacheK2"
+
