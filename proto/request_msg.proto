@@ -23,9 +23,13 @@ message CacheRequest{
         TriplesUpdateBatch triples_update_batch = 11;
         RequestBGPJoin bgp_join = 12;
         RequestContinueBGPJoin continue_bgp_join = 13;
+        CancelQuery cancel_query = 14;
     }
 }
 
+message CancelQuery {
+    uint32 channel_id = 1;
+}
 
 message TriplesUpdateBatch{
     int32 update_id = 1;
@@ -50,6 +54,7 @@ message TriplePattern {
 message RequestBGPJoin{
     repeated string variable_names = 1;
     repeated TriplePattern triple_patterns = 2;
+    bool first_small = 3;
 }
 
 message RequestContinueBGPJoin{

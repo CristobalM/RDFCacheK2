@@ -82,7 +82,10 @@ void ServerTask::process_next() {
     std::cout << "Request of type REQUEST_MORE_BGP_JOIN" << std::endl;
     process_request_more_bgp_join(*message);
     break;
-
+  case proto_msg::MessageType::CANCEL_QUERY:
+    std::cout << "Request of type CANCEL_QUERY" << std::endl;
+    process_request_cancel_query(*message);
+    break;
   default:
     std::cout << "received unknown message... ignoring " << std::endl;
     break;
@@ -327,6 +330,7 @@ void ServerTask::process_request_bgp_join(Message &message) {
     bgp_triple.object = std::move(object);
     bgp_message.patterns.push_back(std::move(bgp_triple));
   }
+  bgp_message.first_batch_small = bgp_join.first_small();
   auto &bgp_streamer = task_processor.get_bgp_streamer(std::move(bgp_message));
   auto next_message = bgp_streamer.get_next_message();
 
@@ -349,8 +353,14 @@ void ServerTask::process_request_bgp_join(Message &message) {
 void ServerTask::process_request_more_bgp_join(Message &message) {
   const auto &req = message.get_cache_request().continue_bgp_join();
   auto channel_id = req.channel_id();
-  auto &streamer = task_processor.get_existing_bgp_streamer((int)channel_id);
-  auto next_message = streamer.get_next_message();
+  auto *streamer = task_processor.get_existing_bgp_streamer((int)channel_id);
+  if(!streamer){
+    proto_msg::CacheResponse cache_response;
+    cache_response.set_response_type(proto_msg::MessageType::BAD_REQ);
+    send_response(cache_response);
+    return;
+  }
+  auto next_message = streamer->get_next_message();
 #ifdef CACHE_DEBUG
   std::cout << "CACHE_DEBUG_START:: more_bgp_join_msg "
                "==========================================="
@@ -362,7 +372,26 @@ void ServerTask::process_request_more_bgp_join(Message &message) {
 #endif
   send_response(next_message);
   if (next_message.bgp_join_response().is_last()) {
-    task_processor.clean_bgp_streamer(streamer.get_channel_id());
+    task_processor.clean_bgp_streamer(streamer->get_channel_id());
+  }
+}
+void ServerTask::process_request_cancel_query(Message &message) {
+  const auto &req = message.get_cache_request().cancel_query();
+  auto channel_id = req.channel_id();
+  auto *streamer = task_processor.get_existing_bgp_streamer((int)channel_id);
+  if(streamer){
+    std::cout << "process_request_cancel_query: cancelling query with id " << channel_id << std::endl;
+    streamer->cancel_query();
+    proto_msg::CacheResponse cache_response;
+    cache_response.set_response_type(proto_msg::MessageType::ACK_CANCEL_QUERY);
+    cache_response.mutable_ack_cancel_query()->set_channel_id(channel_id);
+    send_response(cache_response);
+  }
+  else {
+    std::cout << "process_request_cancel_query: not found streamer with id " << channel_id << std::endl;
+    proto_msg::CacheResponse cache_response;
+    cache_response.set_response_type(proto_msg::MessageType::BAD_REQ);
+    send_response(cache_response);
   }
 }
 

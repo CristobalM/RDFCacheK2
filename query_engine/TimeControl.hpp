@@ -8,6 +8,7 @@
 #include "QueryError.hpp"
 #include <chrono>
 #include <memory>
+#include <mutex>
 #include <string>
 #include <vector>
 namespace k2cache {
@@ -21,6 +22,8 @@ class TimeControl {
   bool time_has_passed;
   bool with_error;
   std::unique_ptr<QueryError> q_error;
+
+  std::mutex m;
 
 public:
   static constexpr bool with_time_control = true;
@@ -40,6 +43,8 @@ public:
 
   void report_error(std::unique_ptr<QueryError> &&query_error);
   void report_error(std::string error_msg);
+
+  void force_cancel();
 };
 }
 

@@ -36,7 +36,7 @@ public:
   virtual WriteDataLock acquire_write_lock() = 0;
   virtual void sync_to_persistent() = 0;
   virtual I_BGPStreamer &get_bgp_streamer(BGPMessage message) = 0;
-  virtual I_BGPStreamer &get_existing_bgp_streamer(int channel_id) = 0;
+  virtual I_BGPStreamer * get_existing_bgp_streamer(int channel_id) = 0;
   virtual void clean_bgp_streamer(int channel_id) = 0;
 };
 } // namespace k2cache

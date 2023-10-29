@@ -37,20 +37,24 @@ proto_msg::CacheResponse BGPStreamer::get_next_message() {
       values->Add(real_value);
     }
     batch_count++;
+    if(!sent_first_batch && first_batch_small && batch_count >= 100){
+      break;
+    }
     if (batch_count >= max_batch_count) {
       break;
     }
   }
-
+  sent_first_batch = true;
   resp->set_is_last(!query_iterator->has_next());
 
   return cache_response;
 }
 
 BGPStreamer::BGPStreamer(int channel_id, BGPMessage message,
-                         CacheContainer &cache)
+                         CacheContainer &cache, bool first_batch_small)
     : channel_id(channel_id),
       cache(cache),
+      first_batch_small(first_batch_small),
       var_index_manager(std::make_unique<VarIndexManager>()),
       time_control(std::make_unique<TimeControl>(
           1000, std::chrono::milliseconds(cache.get_timeout_ms()))),
@@ -59,5 +63,8 @@ BGPStreamer::BGPStreamer(int channel_id, BGPMessage message,
           *var_index_manager, *time_control)),
       query_iterator(nullptr) {}
 int BGPStreamer::get_channel_id() { return channel_id; }
+void BGPStreamer::cancel_query() {
+  time_control->force_cancel();
+}
 
 } // namespace k2cache

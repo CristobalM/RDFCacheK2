@@ -137,15 +137,20 @@ I_BGPStreamer &CacheServerTaskProcessor::get_bgp_streamer(BGPMessage message) {
   auto streamer = std::make_unique<BGPStreamer>(
       channel_id,
       std::move(message),
-      cache
+      cache,
+      message.first_batch_small
       );
   auto *ref = streamer.get();
   bgp_streamers_map[channel_id] = std::move(streamer);
   return *ref;
 }
-I_BGPStreamer &
+I_BGPStreamer *
 CacheServerTaskProcessor::get_existing_bgp_streamer(int channel_id) {
-  return *bgp_streamers_map[channel_id];
+  auto it = bgp_streamers_map.find(channel_id);
+  if(it == bgp_streamers_map.end()){
+    return nullptr;
+  }
+  return it->second.get();
 }
 void CacheServerTaskProcessor::clean_bgp_streamer(int channel_id) {
   bgp_streamers_map.erase(channel_id);

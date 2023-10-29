@@ -11,6 +11,7 @@ struct I_BGPStreamer {
   virtual ~I_BGPStreamer() = default;
   virtual proto_msg::CacheResponse get_next_message() = 0;
   virtual int get_channel_id() = 0;
+  virtual void cancel_query() = 0;
 };
 }
 #endif // RDFCACHEK2_I_BGPSTREAMER_HPP

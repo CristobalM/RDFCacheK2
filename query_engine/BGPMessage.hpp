@@ -24,6 +24,7 @@ struct BGPTriple {
 struct BGPMessage {
   std::vector<std::string> var_names;
   std::vector<BGPTriple> patterns;
+  bool first_batch_small;
 };
 
 #endif // RDFCACHEK2_BGPMESSAGE_HPP

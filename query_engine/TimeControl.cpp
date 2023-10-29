@@ -13,6 +13,7 @@ bool TimeControl::tick() {
     return true;
   current_ticks = 0;
   auto current_time = std::chrono::system_clock::now();
+  std::lock_guard lg(m);
   if (current_time - starting_time > time_duration) {
     time_has_passed = true;
     return false;
@@ -76,5 +77,9 @@ TimeControl &TimeControl::operator=(TimeControl &&other) noexcept {
   with_error = other.with_error;
   q_error = std::move(other.q_error);
   return *this;
+}
+void TimeControl::force_cancel() {
+  std::lock_guard lg(m);
+  time_duration = std::chrono::milliseconds (0);
 }
 }

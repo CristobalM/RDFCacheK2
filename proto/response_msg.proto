@@ -23,9 +23,13 @@ message CacheResponse{
         AckDoneUpdate ack_done_update = 10;
         BatchReceivedResponse batch_received_response = 11;
         BgpJoinResponse bgp_join_response = 12;
+        AckCancelQuery ack_cancel_query = 13;
     }
 }
 
+message AckCancelQuery {
+    uint32 channel_id = 1;
+}
 
 message BgpJoinResponse {
     repeated string var_names = 1;

@@ -75,7 +75,7 @@ public:
   void sync_to_persistent() override;
   void sync_logs_to_indexes();
   I_BGPStreamer &get_bgp_streamer(BGPMessage message) override;
-  I_BGPStreamer &get_existing_bgp_streamer(int channel_id) override;
+  I_BGPStreamer * get_existing_bgp_streamer(int channel_id) override;
   void clean_bgp_streamer(int channel_id) override;
 };
 } // namespace k2cache

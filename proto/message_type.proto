@@ -37,4 +37,8 @@ enum MessageType {
   RESPONSE_BGP_JOIN = 24;
   REQUEST_MORE_BGP_JOIN = 25;
 
+  CANCEL_QUERY = 26;
+  ACK_CANCEL_QUERY = 27;
+
+  BAD_REQ = 28;
 }

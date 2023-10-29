@@ -41,6 +41,7 @@ public:
   void process_sync_logs_with_indexes(const Message &);
   void process_request_bgp_join(Message &message);
   void process_request_more_bgp_join(Message &message);
+  void process_request_cancel_query(Message &message);
 };
 } // namespace k2cache
 

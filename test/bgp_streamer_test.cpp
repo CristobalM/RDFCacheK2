@@ -176,7 +176,7 @@ TEST(bgp_streamer_test, right_permutation) {
 
   print_bgp_msg(msg);
 
-  auto streamer = std::make_unique<BGPStreamer>(0, msg, *cc);
+  auto streamer = std::make_unique<BGPStreamer>(0, msg, *cc, true);
   auto next_streamer_msg = streamer->get_next_message();
   const auto &join_response = next_streamer_msg.bgp_join_response();
 //  ASSERT_EQ(join_response.var_names_size(), msg.var_names.size());
