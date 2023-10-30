@@ -133,7 +133,8 @@ void CacheServerTaskProcessor::sync_logs_to_indexes() {
   cache.get_pcm().get_predicates_index_cache().sync_logs_to_indexes();
 }
 I_BGPStreamer &CacheServerTaskProcessor::get_bgp_streamer(BGPMessage message) {
-  auto channel_id = ++current_bgp_streamers_channel_id;
+  ++current_bgp_streamers_channel_id;
+  auto channel_id = current_bgp_streamers_channel_id;
   auto streamer = std::make_unique<BGPStreamer>(
       channel_id,
       std::move(message),

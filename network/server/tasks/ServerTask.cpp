@@ -332,6 +332,7 @@ void ServerTask::process_request_bgp_join(Message &message) {
   }
   bgp_message.first_batch_small = bgp_join.first_small();
   auto &bgp_streamer = task_processor.get_bgp_streamer(std::move(bgp_message));
+  std::cout << "started bgp streamer with channel id: " << bgp_streamer.get_channel_id() << std::endl;
   auto next_message = bgp_streamer.get_next_message();
 
 #ifdef CACHE_DEBUG
@@ -346,6 +347,7 @@ void ServerTask::process_request_bgp_join(Message &message) {
 
   send_response(next_message);
   if (next_message.bgp_join_response().is_last()) {
+    std::cout << "cleaning up bgp streamer first go, channel_id: " << bgp_streamer.get_channel_id() << std::endl;
     task_processor.clean_bgp_streamer(bgp_streamer.get_channel_id());
   }
 }
@@ -372,6 +374,7 @@ void ServerTask::process_request_more_bgp_join(Message &message) {
 #endif
   send_response(next_message);
   if (next_message.bgp_join_response().is_last()) {
+    std::cout << "cleaning up bgp streamer with channel_id: " << streamer->get_channel_id() << std::endl;
     task_processor.clean_bgp_streamer(streamer->get_channel_id());
   }
 }
@@ -382,17 +385,14 @@ void ServerTask::process_request_cancel_query(Message &message) {
   if(streamer){
     std::cout << "process_request_cancel_query: cancelling query with id " << channel_id << std::endl;
     streamer->cancel_query();
-    proto_msg::CacheResponse cache_response;
-    cache_response.set_response_type(proto_msg::MessageType::ACK_CANCEL_QUERY);
-    cache_response.mutable_ack_cancel_query()->set_channel_id(channel_id);
-    send_response(cache_response);
   }
   else {
     std::cout << "process_request_cancel_query: not found streamer with id " << channel_id << std::endl;
-    proto_msg::CacheResponse cache_response;
-    cache_response.set_response_type(proto_msg::MessageType::BAD_REQ);
-    send_response(cache_response);
   }
+  proto_msg::CacheResponse cache_response;
+  cache_response.set_response_type(proto_msg::MessageType::ACK_CANCEL_QUERY);
+  cache_response.mutable_ack_cancel_query()->set_channel_id(channel_id);
+  send_response(cache_response);
 }
 
 } // namespace k2cache
