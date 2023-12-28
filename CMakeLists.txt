@@ -659,3 +659,11 @@ target_link_libraries(deserialize_k2tree ${DEFAULT_LIBS})
 add_executable(validate_k2tree_correctness experiments/validate_k2tree_correctness.cpp)
 target_include_directories(validate_k2tree_correctness PUBLIC benchmarks)
 target_link_libraries(validate_k2tree_correctness ${DEFAULT_LIBS})
+
+add_executable(insertion_speed benchmarks/insertion_speed.cpp)
+target_include_directories(insertion_speed PUBLIC benchmarks)
+target_link_libraries(insertion_speed ${DEFAULT_LIBS})
+
+add_executable(cluster_insertion_speed benchmarks/cluster_insertion_speed.cpp)
+target_include_directories(cluster_insertion_speed PUBLIC benchmarks)
+target_link_libraries(cluster_insertion_speed ${DEFAULT_LIBS})
