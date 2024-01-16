@@ -61,7 +61,7 @@ static ExperimentResult run_experiment(K2TreeConfig config, int radius) {
     return {};
   }
 
-  sz /= radius_points;
+  sz /= (2 * radius_points);
 
   auto points_a = fisher_yates(sz, 1 << 30);
   auto points_b = fisher_yates(sz, 1 << 30);
