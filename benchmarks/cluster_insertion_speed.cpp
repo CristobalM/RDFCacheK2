@@ -106,12 +106,13 @@ static ExperimentResult run_experiment(K2TreeConfig config, int radius) {
 }
 
 int main(int argc, char **argv) {
-  if(argc < 2){
-    std::cerr << "Expected radius argument" << std::endl;
+  if(argc < 3){
+    std::cerr << "Expected: <radius> <output-filename>" << std::endl;
     return  1;
   }
 
   auto radius = std::stoi(argv[1]);
+  std::string fname = argv[2];
 
 
   std::vector<int> node_counts = {64, 128, 256, 512, 1024};
@@ -122,13 +123,16 @@ int main(int argc, char **argv) {
   //  std::vector<int> tree_depths = {32};
 //  std::vector<ExperimentResult> results;
 
-  std::ofstream ofs("results_cluster_insertion_deletion_speed.csv", std::ios::out);
+  std::ofstream ofs(fname, std::ios::out);
   ofs << "cut_depth,max_node_count,tree_depth,insertion_speed_ns,deletion_"
          "speed_ns\n";
 
   for (auto nc : node_counts) {
     for (auto cd : cut_depths) {
       for (auto td : tree_depths) {
+        if(td + cd > 64){
+          continue;
+        }
         K2TreeConfig config{};
         config.cut_depth = cd;
         config.max_node_count = nc;

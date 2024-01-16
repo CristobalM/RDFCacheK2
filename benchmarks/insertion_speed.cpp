@@ -7,6 +7,7 @@
 #include "util_algorithms/fisher_yates.hpp"
 #include <algorithm>
 #include <chrono>
+#include <iostream>
 
 using namespace k2cache;
 
@@ -62,7 +63,15 @@ static ExperimentResult run_experiment(K2TreeConfig config) {
   return {insertion_time_per_point, deletion_time_per_point, config};
 }
 
-int main() {
+int main(int argc, char **argv) {
+
+  if(argc < 2){
+    std::cerr << "Expected output-filename" << std::endl;
+    return 1;
+  }
+
+  std::string fname = argv[1];
+
   std::vector<int> node_counts = {64, 128, 256, 512, 1024};
   std::vector<int> cut_depths = {0, 4, 8, 10};
   std::vector<int> tree_depths = {32, 38, 44, 52, 64};
@@ -73,6 +82,9 @@ int main() {
   for (auto nc : node_counts) {
     for (auto cd : cut_depths) {
       for (auto td : tree_depths) {
+        if(td + cd > 64){
+          continue;
+        }
         K2TreeConfig config{};
         config.cut_depth = cd;
         config.max_node_count = nc;
@@ -83,7 +95,7 @@ int main() {
     }
   }
 
-  std::ofstream ofs("results_insertion_deletion_speed.csv", std::ios::out);
+  std::ofstream ofs(fname, std::ios::out);
   ofs << "cut_depth,max_node_count,tree_depth,insertion_speed_ns,deletion_"
          "speed_ns\n";
 
