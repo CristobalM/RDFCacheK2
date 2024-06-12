@@ -24,7 +24,7 @@ enum class OpType {
 
 template<OpType T>
 static void op_cluster(K2TreeBulkOp &op, uint64_t col, uint64_t row,
-                           uint64_t radius, uint64_t limit) {
+                           uint64_t radius, uint64_t limit, int &count) {
   auto min_col = col - radius;
   min_col = std::max(min_col, (uint64_t)0);
   auto max_col = col + radius;
@@ -43,6 +43,7 @@ static void op_cluster(K2TreeBulkOp &op, uint64_t col, uint64_t row,
       else{
         op.remove(c, r);
       }
+      count++;
     }
   }
 }
@@ -61,7 +62,7 @@ static ExperimentResult run_experiment(K2TreeConfig config, int radius) {
     return {};
   }
 
-  sz /= (2 * radius_points);
+  sz /= (4 * radius_points);
 
   auto points_a = fisher_yates(sz, 1 << 30);
   auto points_b = fisher_yates(sz, 1 << 30);
@@ -71,10 +72,11 @@ static ExperimentResult run_experiment(K2TreeConfig config, int radius) {
 
   uint64_t limit = (uint64_t )1 << (uint64_t)config.treedepth;
 
+  int count = 0;
   {
     auto start = std::chrono::high_resolution_clock::now();
     for (int i = 0; i < sz; i++) {
-      op_cluster<OpType::INSERT>(op, points_a[i], points_b[i], (uint64_t )radius, limit);
+      op_cluster<OpType::INSERT>(op, points_a[i], points_b[i], (uint64_t )radius, limit, count);
     }
     auto end = std::chrono::high_resolution_clock::now();
     auto duration =
@@ -82,6 +84,8 @@ static ExperimentResult run_experiment(K2TreeConfig config, int radius) {
             .count();
     insertion_time_per_point = (double)duration / (double)(sz*radius_points);
   }
+
+  std::cout << "total points added " << count << std::endl;
   std::vector<int> permutation;
   permutation.reserve(sz);
   for (int i = 0; i < sz; i++) {
@@ -89,11 +93,12 @@ static ExperimentResult run_experiment(K2TreeConfig config, int radius) {
   }
   std::random_shuffle(permutation.begin(), permutation.end());
 
+  count = 0;
   {
     auto start = std::chrono::high_resolution_clock::now();
     for (int i = 0; i < sz; i++) {
       auto pos = permutation[i];
-      op_cluster<OpType::DELETE>(op, points_a[pos], points_b[pos], (uint64_t )radius, limit);
+      op_cluster<OpType::DELETE>(op, points_a[pos], points_b[pos], (uint64_t )radius, limit, count);
     }
     auto end = std::chrono::high_resolution_clock::now();
     auto duration =
@@ -101,6 +106,9 @@ static ExperimentResult run_experiment(K2TreeConfig config, int radius) {
             .count();
     deletion_time_per_point = (double)duration / (double)(sz*radius_points);
   }
+
+  std::cout << "total points deleted " << count << std::endl;
+
 
   return {insertion_time_per_point, deletion_time_per_point, config};
 }
